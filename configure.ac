@@ -147,14 +147,6 @@ AS_IF([test "$enable_float_api" = "no"],[
   AC_DEFINE([DISABLE_FLOAT_API], [1], [Do not build the float API])
 ])
 
-AC_ARG_ENABLE([fixed-res24],
-	      [AS_HELP_STRING([--disable-fixed-res24], [use 16-bit (instead of 24-bit) internal resolution for fixed-point implementation])],,
-    [enable_fixed_res24=yes])
-
-AS_IF([test "$enable_fixed_res24" = "yes"],[
-  AC_DEFINE([ENABLE_RES24], [1], [24-bit internal resolution for fixed-point])
-])
-
 AC_ARG_ENABLE([qext],
 	      [AS_HELP_STRING([--enable-qext], [enable scalable quality extension])],,
     [enable_qext=no])

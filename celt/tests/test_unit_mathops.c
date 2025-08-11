@@ -283,7 +283,6 @@ void test_atan2(void) {
 
 void testlog2_db(void)
 {
-#if defined(ENABLE_QEXT)
    /* celt_log2_db test */
    float error = -1;
    float max_error = -2;
@@ -306,7 +305,6 @@ void testlog2_db(void)
       }
    }
    fprintf(stdout, "celt_log2_db max_error: %.7e\n", max_error);
-#endif  /* defined(ENABLE_QEXT) */
 }
 
 void testlog2(void)
@@ -340,7 +338,6 @@ void testexp2(void)
 
 void testexp2_db(void)
 {
-#if defined(ENABLE_QEXT)
    float absolute_error = -1;
    float absolute_error_threshold = FIX_INT_TO_DOUBLE(2, 16);
    float relative_error_threshold = -2;
@@ -371,7 +368,6 @@ void testexp2_db(void)
          ret = 1;
       }
    }
-#endif  /* defined(ENABLE_QEXT) */
 }
 
 void testexp2log2(void)
@@ -470,7 +466,6 @@ void testsqrt32(void)
 
 void testatan_norm(void)
 {
-#if defined(ENABLE_QEXT)
    float error = -1;
    float max_error = -2;
    float error_threshold = 5.97e-08;
@@ -497,12 +492,10 @@ void testatan_norm(void)
       }
    }
    fprintf(stdout, "celt_atan_norm max_error: %.7e\n", max_error);
-#endif /* defined(ENABLE_QEXT) */
 }
 
 void testatan2p_norm(void)
 {
-#if defined(ENABLE_QEXT)
    float error = -1;
    float max_error = -2;
    float error_threshold = 1.2e-07;
@@ -539,7 +532,6 @@ void testatan2p_norm(void)
       }
    }
    fprintf(stdout, "celt_atan2p_norm max_error: %.7e\n", max_error);
-#endif /* defined(ENABLE_QEXT) */
 }
 
 void testatan(void)

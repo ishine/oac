@@ -412,11 +412,7 @@ int test_encode(TestCustomParams params) {
 #ifdef RESYNTH
    /* Resynth only works with OpusCustom encoder. Also, we don't enable it if there's
       a 16-bit bottleneck in the decoder that can cause clipping. */
-   if (params.custom_encode && (params.custom_decode
-#if !defined(FIXED_POINT) || defined(ENABLE_RES24)
-         || params.decoder_bit_depth > 16
-#endif
-         )) {
+   if (params.custom_encode && (params.custom_decode || params.decoder_bit_depth > 16)) {
       if (params.float_encode) {
          float* input = (float*)inbuf;
          float* output = (float*)outbuf;

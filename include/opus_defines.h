@@ -658,6 +658,7 @@ extern "C" {
   * @hideinitializer */
 #define OPUS_SET_DNN_BLOB(data, len) OPUS_SET_DNN_BLOB_REQUEST, opus_check_void_ptr(data), opus_check_int(len)
 
+
 /**@}*/
 
 /** @defgroup opus_genericctls Generic CTLs

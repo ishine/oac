@@ -46,11 +46,7 @@
 #include "arch.h"
 
 #  define kiss_fft_scalar opus_int32
-#  ifdef ENABLE_QEXT
-#   define COEF_SHIFT 32
-#  else
-#   define COEF_SHIFT 16
-#  endif
+#  define COEF_SHIFT 32
 
 #  define kiss_twiddle_scalar celt_coef
 
