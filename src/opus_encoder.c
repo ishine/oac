@@ -104,9 +104,6 @@ struct OpusEncoder {
 #ifndef DISABLE_FLOAT_API
     TonalityAnalysisState analysis;
 #endif
-#ifdef ENABLE_QEXT
-   int enable_qext;
-#endif
 
 #define OPUS_ENCODER_RESET_START stream_channels
     int          stream_channels;
@@ -461,18 +458,10 @@ static void hp_cutoff(const opus_res *in, opus_int32 cutoff_Hz, opus_res *out, o
    A_Q28[ 0 ] = silk_SMULWW( r_Q22, silk_SMULWW( Fc_Q19, Fc_Q19 ) - SILK_FIX_CONST( 2.0,  22 ) );
    A_Q28[ 1 ] = silk_SMULWW( r_Q22, r_Q22 );
 
-#if defined(FIXED_POINT) && !defined(ENABLE_RES24)
-   if( channels == 1 ) {
-      silk_biquad_alt_stride1( in, B_Q28, A_Q28, hp_mem, out, len );
-   } else {
-      silk_biquad_alt_stride2( in, B_Q28, A_Q28, hp_mem, out, len, arch );
-   }
-#else
    silk_biquad_res( in, B_Q28, A_Q28, hp_mem, out, len, channels );
    if( channels == 2 ) {
        silk_biquad_res( in+1, B_Q28, A_Q28, hp_mem+2, out+1, len, channels );
    }
-#endif
 }
 
 #ifdef FIXED_POINT
@@ -493,12 +482,8 @@ static void dc_reject(const opus_res *in, opus_int32 cutoff_Hz, opus_res *out, o
          x = SHL32(x, 14-RES_SHIFT);
          y = x-hp_mem[2*c];
          hp_mem[2*c] = hp_mem[2*c] + PSHR32(x - hp_mem[2*c], shift);
-#ifdef ENABLE_RES24
          /* Don't saturate if we have the headroom to avoid it. */
          out[channels*i+c] = PSHR32(y, 14-RES_SHIFT);
-#else
-         out[channels*i+c] = SATURATE(PSHR32(y, 14-RES_SHIFT), 32767);
-#endif
       }
    }
 }
@@ -1734,13 +1719,6 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_res *pcm, int frame_si
         * 2 frames: Code 2 with different compressed sizes
         * >2 frames: Code 3 VBR */
        max_header_bytes = nb_frames == 2 ? 3 : (2+(nb_frames-1)*2);
-#ifdef ENABLE_QEXT
-       /* Cover the use of the separators that are the only thing that can get us over
-          once we consider that we need to subtract the extension overhead in each
-          of the individual frames. Also consider that a separator can get our padding
-          from 254 to 255, which costs an extra length byte (at most once). */
-       if (st->enable_qext) max_header_bytes += (nb_frames-1) + 1;
-#endif
 
        if (st->use_vbr || st->user_bitrate_bps==OPUS_BITRATE_MAX)
           repacketize_len = out_data_bytes;
@@ -1991,11 +1969,6 @@ static opus_int32 opus_encode_frame_native(OpusEncoder *st, const opus_res *pcm,
        }
 #endif
     } else {
-#ifdef ENABLE_QEXT
-       /* FIXME: Avoid glitching when we switch qext on/off dynamically. */
-       if (st->enable_qext) OPUS_COPY(&pcm_buf[total_buffer*st->channels], pcm, frame_size*st->channels);
-       else
-#endif
        dc_reject(pcm, 3, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs);
     }
 #ifndef FIXED_POINT
@@ -2381,12 +2354,6 @@ static opus_int32 opus_encode_frame_native(OpusEncoder *st, const opus_res *pcm,
         nb_compr_bytes = ret;
     } else {
         nb_compr_bytes = (max_data_bytes-1)-redundancy_bytes;
-#ifdef ENABLE_QEXT
-        if (st->mode == MODE_CELT_ONLY && st->enable_qext) {
-           celt_assert(redundancy_bytes==0);
-           nb_compr_bytes = orig_max_data_bytes-1;
-        }
-#endif
 #ifdef ENABLE_DRED
         if (st->dred_duration > 0)
         {
@@ -2643,16 +2610,6 @@ static opus_int32 opus_encode_frame_native(OpusEncoder *st, const opus_res *pcm,
 
 
 
-#if defined(FIXED_POINT) && !defined(ENABLE_RES24)
-opus_int32 opus_encode(OpusEncoder *st, const opus_int16 *pcm, int analysis_frame_size,
-                unsigned char *data, opus_int32 max_data_bytes)
-{
-   int frame_size;
-   frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
-   return opus_encode_native(st, pcm, frame_size, data, max_data_bytes, 16,
-                             pcm, analysis_frame_size, 0, -2, st->channels, downmix_int, 0);
-}
-#else
 opus_int32 opus_encode(OpusEncoder *st, const opus_int16 *pcm, int analysis_frame_size,
                 unsigned char *data, opus_int32 max_data_bytes)
 {
@@ -2676,9 +2633,8 @@ opus_int32 opus_encode(OpusEncoder *st, const opus_int16 *pcm, int analysis_fram
    RESTORE_STACK;
    return ret;
 }
-#endif
 
-#if defined(FIXED_POINT) && defined(ENABLE_RES24)
+#if defined(FIXED_POINT)
 opus_int32 opus_encode24(OpusEncoder *st, const opus_int32 *pcm, int analysis_frame_size,
                 unsigned char *data, opus_int32 max_data_bytes)
 {

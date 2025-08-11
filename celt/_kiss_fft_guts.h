@@ -54,13 +54,8 @@
 
 #define SAMP_MIN -SAMP_MAX
 
-#ifdef ENABLE_QEXT
 #   define S_MUL(a,b) MULT32_32_P31_ovflw(b, a)
 #   define S_MUL2(a,b) MULT32_32_P31_ovflw(b, a)
-#else
-#   define S_MUL(a,b) MULT16_32_Q15(b, a)
-#   define S_MUL2(a,b) MULT16_32_Q16(b, a)
-#endif
 
 #   define C_MUL(m,a,b) \
       do{ (m).r = SUB32_ovflw(S_MUL((a).r,(b).r) , S_MUL((a).i,(b).i)); \

@@ -146,7 +146,6 @@ typedef opus_val32 celt_norm;
 typedef opus_val32 celt_ener;
 typedef opus_val32 celt_glog;
 
-#ifdef ENABLE_RES24
 typedef opus_val32 opus_res;
 #define RES_SHIFT 8
 #define SIG2RES(a)      PSHR32(a, SIG_SHIFT-RES_SHIFT)
@@ -160,28 +159,12 @@ typedef opus_val32 opus_res;
 #define RES2SIG(a)      SHL32((a), SIG_SHIFT-RES_SHIFT)
 #define MULT16_RES_Q15(a,b) MULT16_32_Q15(a,b)
 #define MAX_ENCODING_DEPTH 24
-#else
-typedef opus_val16 opus_res;
-#define RES_SHIFT 0
-#define SIG2RES(a)      SIG2WORD16(a)
-#define RES2INT16(a)    (a)
-#define RES2INT24(a)    SHL32(EXTEND32(a), 8)
-#define RES2FLOAT(a)    ((1.f/32768.f)*(a))
-#define INT16TORES(a)   (a)
-#define INT24TORES(a)   SAT16(PSHR32(a, 8))
-#define ADD_RES(a, b)   SAT16(ADD32((a), (b)));
-#define FLOAT2RES(a)    FLOAT2INT16(a)
-#define RES2SIG(a)      SHL32(EXTEND32(a), SIG_SHIFT)
-#define MULT16_RES_Q15(a,b) MULT16_16_Q15(a,b)
-#define MAX_ENCODING_DEPTH 16
-#endif
 
 #define RES2VAL16(a)    RES2INT16(a)
 #define INT16TOSIG(a)   SHL32(EXTEND32(a), SIG_SHIFT)
 #define INT24TOSIG(a)   SHL32(a, SIG_SHIFT-8)
 
 #define NORM_SHIFT 24
-#ifdef ENABLE_QEXT
 typedef opus_val32 celt_coef;
 #define COEF_ONE Q31ONE
 #define MULT_COEF_32(a, b) MULT32_32_P31(a,b)
@@ -189,15 +172,6 @@ typedef opus_val32 celt_coef;
 #define MULT_COEF(a, b) MULT32_32_Q31(a,b)
 #define MULT_COEF_TAPS(a, b) SHL32(MULT16_16(a,b), 1)
 #define COEF2VAL16(x) EXTRACT16(SHR32(x, 16))
-#else
-typedef opus_val16 celt_coef;
-#define COEF_ONE Q15ONE
-#define MULT_COEF_32(a, b) MULT16_32_Q15(a,b)
-#define MAC_COEF_32_ARM(a, b, c) MAC16_32_Q16(a,b,c)
-#define MULT_COEF(a, b) MULT16_16_Q15(a,b)
-#define MULT_COEF_TAPS(a, b) MULT16_16_P15(a,b)
-#define COEF2VAL16(x) (x)
-#endif
 
 #define celt_isnan(x) 0
 

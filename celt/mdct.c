@@ -89,13 +89,8 @@ int clt_mdct_init(mdct_lookup *l,int N, int maxshift, int arch)
    {
       /* We have enough points that sine isn't necessary */
 #if defined(FIXED_POINT)
-#ifndef ENABLE_QEXT
-      for (i=0;i<N2;i++)
-         trig[i] = TRIG_UPSCALE*celt_cos_norm(DIV32(ADD32(SHL32(EXTEND32(i),17),N2+16384),N));
-#else
       for (i=0;i<N2;i++)
          trig[i] = (kiss_twiddle_scalar)MAX32(-2147483647,MIN32(2147483647,floor(.5+2147483648*cos(2*M_PI*(i+.125)/N))));
-#endif
 #else
       for (i=0;i<N2;i++)
          trig[i] = (kiss_twiddle_scalar)cos(2*PI*(i+.125)/N);
@@ -210,15 +205,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          im = *yp++;
          yr = S_MUL(re,t0)  -  S_MUL(im,t1);
          yi = S_MUL(im,t0)  +  S_MUL(re,t1);
-         /* For QEXT, it's best to scale before the FFT, but otherwise it's best to scale after.
-            For floating-point it doesn't matter. */
-#ifdef ENABLE_QEXT
          yc.r = yr;
          yc.i = yi;
-#else
-         yc.r = S_MUL2(yr, scale);
-         yc.i = S_MUL2(yi, scale);
-#endif
 #ifdef FIXED_POINT
          maxval = MAX32(maxval, MAX32(ABS32(yc.r), ABS32(yc.i)));
 #endif
@@ -244,13 +232,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
       {
          kiss_fft_scalar yr, yi;
          kiss_fft_scalar t0, t1;
-#ifdef ENABLE_QEXT
          t0 = S_MUL2(t[i], scale);
          t1 = S_MUL2(t[N4+i], scale);
-#else
-         t0 = t[i];
-         t1 = t[N4+i];
-#endif
          yr = PSHR32(S_MUL(fp->i,t1) - S_MUL(fp->r,t0), headroom);
          yi = PSHR32(S_MUL(fp->r,t1) + S_MUL(fp->i,t0), headroom);
          *yp1 = yr;

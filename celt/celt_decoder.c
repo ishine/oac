@@ -1513,12 +1513,6 @@ int celt_decode_with_ec(CELTDecoder * OPUS_RESTRICT st, const unsigned char *dat
 
 #if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API)
 
-#if defined(FIXED_POINT) && !defined(ENABLE_RES24)
-int opus_custom_decode(CELTDecoder * OPUS_RESTRICT st, const unsigned char *data, int len, opus_int16 * OPUS_RESTRICT pcm, int frame_size)
-{
-   return celt_decode_with_ec(st, data, len, pcm, frame_size, NULL, 0);
-}
-#else
 int opus_custom_decode(CELTDecoder * OPUS_RESTRICT st, const unsigned char *data, int len, opus_int16 * OPUS_RESTRICT pcm, int frame_size)
 {
    int j, ret, C, N;
@@ -1540,9 +1534,8 @@ int opus_custom_decode(CELTDecoder * OPUS_RESTRICT st, const unsigned char *data
    RESTORE_STACK;
    return ret;
 }
-#endif
 
-#if defined(FIXED_POINT) && defined(ENABLE_RES24)
+#if defined(FIXED_POINT)
 int opus_custom_decode24(CELTDecoder * OPUS_RESTRICT st, const unsigned char *data, int len, opus_int32 * OPUS_RESTRICT pcm, int frame_size)
 {
    return celt_decode_with_ec(st, data, len, pcm, frame_size, NULL, 0);

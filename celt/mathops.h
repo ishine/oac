@@ -97,7 +97,7 @@ static OPUS_INLINE opus_val32 celt_maxabs16(const opus_val16 *x, int len)
 }
 #endif
 
-#if defined(ENABLE_RES24) && defined(FIXED_POINT)
+#if defined(FIXED_POINT)
 static OPUS_INLINE opus_res celt_maxabs_res(const opus_res *x, int len)
 {
    int i;
@@ -186,7 +186,7 @@ static OPUS_INLINE float celt_atan2p_norm(float y, float x)
 }
 #endif
 
-#if !defined(FIXED_POINT) || defined(ENABLE_QEXT)
+#if !defined(FIXED_POINT)
 /* Computes estimated cosine values for (PI/2 * x) using only terms with even
  * exponents. */
 static OPUS_INLINE float celt_cos_norm2(float x)
@@ -441,8 +441,6 @@ static OPUS_INLINE opus_val32 celt_exp2(opus_val16 x)
    return VSHR32(EXTEND32(frac), -integer-2);
 }
 
-#ifdef ENABLE_QEXT
-
 /* Calculates the base-2 logarithm of a Q14 input value. The result is returned
  * in Q(DB_SHIFT). If the input value is 0, the function will output -32.0f. */
 static OPUS_INLINE opus_val32 celt_log2_db(opus_val32 x) {
@@ -524,13 +522,7 @@ static OPUS_INLINE opus_val32 celt_exp2_db(opus_val32 x)
    frac = celt_exp2_db_frac(x-SHL32(integer, DB_SHIFT));  /* Q28 */
    return VSHR32(frac, -integer + 28 - 16);  /* Q16 */
 }
-#else
 
-#define celt_log2_db(x) SHL32(EXTEND32(celt_log2(x)), DB_SHIFT-10)
-#define celt_exp2_db_frac(x) SHL32(celt_exp2_frac(PSHR32(x, DB_SHIFT-10)), 14)
-#define celt_exp2_db(x) celt_exp2(PSHR32(x, DB_SHIFT-10))
-
-#endif
 
 
 opus_val32 celt_rcp(opus_val32 x);

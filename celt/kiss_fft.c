@@ -416,12 +416,8 @@ static void compute_twiddles(kiss_twiddle_cpx *twiddles, int nfft)
 #ifdef FIXED_POINT
    for (i=0;i<nfft;++i) {
       opus_val32 phase = -i;
-#ifdef ENABLE_QEXT
       twiddles[i].r = (int)MIN32(2147483647, floor(.5+2147483648*cos((2*M_PI/nfft)*phase)));
       twiddles[i].i = (int)MIN32(2147483647, floor(.5+2147483648*sin((2*M_PI/nfft)*phase)));
-#else
-      kf_cexp2(twiddles+i, DIV32(SHL32(phase,17),nfft));
-#endif
    }
 #else
    for (i=0;i<nfft;++i) {
@@ -463,17 +459,10 @@ kiss_fft_state *opus_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
         st->nfft=nfft;
 #ifdef FIXED_POINT
         st->scale_shift = celt_ilog2(st->nfft);
-# ifdef ENABLE_QEXT
         if (st->nfft == 1<<st->scale_shift)
            st->scale = QCONST32(1.0f, 30);
         else
            st->scale = (((opus_int64)1073741824<<st->scale_shift)+st->nfft/2)/st->nfft;
-# else
-        if (st->nfft == 1<<st->scale_shift)
-           st->scale = Q15ONE;
-        else
-           st->scale = (1073741824+st->nfft/2)/st->nfft>>(15-st->scale_shift);
-# endif
 #else
         st->scale = 1.f/nfft;
 #endif

@@ -216,7 +216,6 @@ OpusDecoder *opus_decoder_create(opus_int32 Fs, int channels, int *error)
    return st;
 }
 
-#ifdef ENABLE_RES24
 static void smooth_fade(const opus_res *in1, const opus_res *in2,
       opus_res *out, int overlap, int channels,
       const celt_coef *window, opus_int32 Fs)
@@ -233,25 +232,6 @@ static void smooth_fade(const opus_res *in1, const opus_res *in2,
       }
    }
 }
-#else
-static void smooth_fade(const opus_res *in1, const opus_res *in2,
-      opus_res *out, int overlap, int channels,
-      const celt_coef *window, opus_int32 Fs)
-{
-   int i, c;
-   int inc = 48000/Fs;
-   for (c=0;c<channels;c++)
-   {
-      for (i=0;i<overlap;i++)
-      {
-         opus_val16 w = COEF2VAL16(window[i*inc]);
-         w = MULT16_16_Q15(w, w);
-         out[i*channels+c] = SHR32(MAC16_16(MULT16_16(w,in2[i*channels+c]),
-                                   Q15ONE-w, in1[i*channels+c]), 15);
-      }
-   }
-}
-#endif
 
 static int opus_packet_get_mode(const unsigned char *data)
 {
@@ -685,11 +665,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
       for (i=0;i<frame_size*st->channels;i++)
       {
          opus_val32 x;
-#ifdef ENABLE_RES24
          x = MULT32_32_Q16(pcm[i],gain);
-#else
-         x = MULT16_32_P16(pcm[i],gain);
-#endif
          pcm[i] = SATURATE(x, 32767);
       }
    }
@@ -869,15 +845,6 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
 #define OPTIONAL_CLIP 1
 #endif
 
-#if defined(FIXED_POINT) && !defined(ENABLE_RES24)
-int opus_decode(OpusDecoder *st, const unsigned char *data,
-      opus_int32 len, opus_int16 *pcm, int frame_size, int decode_fec)
-{
-   if(frame_size<=0)
-      return OPUS_BAD_ARG;
-   return opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, NULL, 0, NULL, 0);
-}
-#else
 int opus_decode(OpusDecoder *st, const unsigned char *data,
       opus_int32 len, opus_int16 *pcm, int frame_size, int decode_fec)
 {
@@ -916,9 +883,8 @@ int opus_decode(OpusDecoder *st, const unsigned char *data,
        RESTORE_STACK;
        return ret;
 }
-#endif
 
-#if defined(FIXED_POINT) && defined(ENABLE_RES24)
+#if defined(FIXED_POINT)
 int opus_decode24(OpusDecoder *st, const unsigned char *data,
       opus_int32 len, opus_int32 *pcm, int frame_size, int decode_fec)
 {

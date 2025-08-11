@@ -163,7 +163,7 @@ static void normalise_residual(int * OPUS_RESTRICT iy, celt_norm * OPUS_RESTRICT
    g = MULT32_32_Q31(celt_rsqrt_norm32(t),gain);
    i=0;
    (void)shift;
-#if defined(FIXED_POINT) && defined(ENABLE_QEXT)
+#if defined(FIXED_POINT)
    if (shift>0) {
       int tot_shift = NORM_SHIFT+1-k-shift;
       if (tot_shift >= 0) {
@@ -375,7 +375,6 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
       RESTORE_STACK;
    RESTORE_STACK;
    RESTORE_STACK;
-
 unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
       opus_val32 gain, int resynth, int arch)
 {
@@ -489,8 +488,6 @@ opus_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int
    return itheta;
 }
 
-#ifdef ENABLE_QEXT
-
 static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int sign, opus_val32 gain) {
    int i;
    opus_val32 sum=0;
@@ -601,4 +598,3 @@ unsigned cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, opus_va
    RESTORE_STACK;
    return (1<<B)-1;
 }
-#endif

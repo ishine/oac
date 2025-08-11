@@ -12,9 +12,7 @@ SOURCES = dump_modes.c \
           ../mathops.c \
           ../mdct.c \
           ../celt.c \
-          ../kiss_fft.c \
-          ../quant_bands.c \
-          ../laplace.c
+          ../kiss_fft.c
 
 ifdef HAVE_ARM_NE10
 CC = gcc

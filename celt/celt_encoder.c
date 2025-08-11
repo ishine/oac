@@ -584,45 +584,30 @@ void celt_preemphasis(const opus_res * OPUS_RESTRICT pcmp, celt_sig * OPUS_RESTR
    for (i=0;i<Nu;i++)
       inp[i*upsample] = RES2SIG(pcmp[CC*i]);
 
-#ifndef FIXED_POINT
    if (clip)
    {
       /* Clip input to avoid encoding non-portable files */
       for (i=0;i<Nu;i++)
-         inp[i*upsample] = MAX32(-65536.f, MIN32(65536.f,inp[i*upsample]));
+         inp[i*upsample] = MAX32(-QCONST32(65536.f, SIG_SHIFT), MIN32(QCONST32(65536.f, SIG_SHIFT), inp[i*upsample]));
    }
-#elif defined(ENABLE_RES24)
-   if (clip)
-   {
-      /* Clip input to avoid encoding non-portable files */
-      for (i=0;i<Nu;i++)
-         inp[i*upsample] = MAX32(-(65536<<SIG_SHIFT), MIN32(65536<<SIG_SHIFT,inp[i*upsample]));
-   }
-#else
-   (void)clip; /* Avoids a warning about clip being unused. */
-#endif
 #if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API) || defined(ENABLE_QEXT)
    if (coef[1] != 0)
    {
       opus_val16 coef1 = coef[1];
-#if defined(FIXED_POINT) && defined(ENABLE_QEXT)
+#if defined(FIXED_POINT)
       /* If we need the extra precision, we use the fact that coef[3] is exact to do a Newton-Raphson
          iteration and get us more precision on coef[2]. */
       opus_val32 coef2_q30 = SHL32(coef[2], 18) + PSHR32(MULT16_16(QCONST32(1.f, 25) - MULT16_16(coef[3], coef[2]), coef[2]), 7);
       celt_assert(SIG_SHIFT == 12);
 #else
-      opus_val16 coef2 = coef[2];
+      opus_val32 coef2_q30 = coef[2];
 #endif
       for (i=0;i<N;i++)
       {
          celt_sig x, tmp;
          x = inp[i];
          /* Apply pre-emphasis */
-#if defined(FIXED_POINT) && defined(ENABLE_QEXT)
          tmp = SHL32(MULT32_32_Q31(coef2_q30, x), 1);
-#else
-         tmp = SHL32(MULT16_32_Q15(coef2, x), 15-SIG_SHIFT);
-#endif
          inp[i] = tmp + m;
          m = MULT16_32_Q15(coef1, inp[i]) - MULT16_32_Q15(coef0, tmp);
       }
@@ -1869,7 +1854,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
    celt_assert(st->signalling==0);
 #endif
 
-   /* Can't produce more than 1275 output bytes for the main payload, plus any QEXT extra data. */
+   /* Can't produce more than 1275 output bytes for the main payload. */
    nbCompressedBytes = IMIN(nbCompressedBytes,packet_size_cap);
 
    if (st->vbr && st->bitrate!=OPUS_BITRATE_MAX)
@@ -2673,12 +2658,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
 
 #if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API)
 
-#if defined(FIXED_POINT) && !defined(ENABLE_RES24)
-int opus_custom_encode(CELTEncoder * OPUS_RESTRICT st, const opus_int16 * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes)
-{
-   return celt_encode_with_ec(st, pcm, frame_size, compressed, nbCompressedBytes, NULL);
-}
-#else
 int opus_custom_encode(CELTEncoder * OPUS_RESTRICT st, const opus_int16 * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes)
 {
    int j, ret, C, N;
@@ -2703,10 +2682,9 @@ int opus_custom_encode(CELTEncoder * OPUS_RESTRICT st, const opus_int16 * pcm, i
    RESTORE_STACK;
    return ret;
 }
-#endif
 
 
-#if defined(FIXED_POINT) && defined(ENABLE_RES24)
+#if defined(FIXED_POINT)
 int opus_custom_encode24(CELTEncoder * OPUS_RESTRICT st, const opus_int32 * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes)
 {
    return celt_encode_with_ec(st, pcm, frame_size, compressed, nbCompressedBytes, NULL);

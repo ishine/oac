@@ -140,11 +140,7 @@ void test1d(int nfft,int isinverse,int arch)
     }
 
     for (k=0;k<nfft/2;++k) {
-#ifdef ENABLE_QEXT
        window[k] = Q31ONE;
-#else
-       window[k] = Q15ONE;
-#endif
     }
     for (k=0;k<nfft;++k) {
        in[k] *= 32768;
