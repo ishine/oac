@@ -832,11 +832,7 @@ static opus_int32 rate_allocation(
 }
 
 /* Max size in case the encoder decides to return six frames (6 x 20 ms = 120 ms) */
-#ifdef ENABLE_QEXT
-#define MS_FRAME_TMP (6*QEXT_PACKET_SIZE_CAP+12)
-#else
 #define MS_FRAME_TMP (6*1275+12)
-#endif
 
 int opus_multistream_encode_native
 (
@@ -1209,7 +1205,6 @@ int opus_multistream_encoder_ctl_va_list(OpusMSEncoder *st, int request,
    case OPUS_GET_FORCE_CHANNELS_REQUEST:
    case OPUS_GET_PREDICTION_DISABLED_REQUEST:
    case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
-   case OPUS_GET_QEXT_REQUEST:
    {
       OpusEncoder *enc;
       /* For int32* GET params, just query the first stream */
@@ -1257,7 +1252,6 @@ int opus_multistream_encoder_ctl_va_list(OpusMSEncoder *st, int request,
    case OPUS_SET_FORCE_CHANNELS_REQUEST:
    case OPUS_SET_PREDICTION_DISABLED_REQUEST:
    case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST:
-   case OPUS_SET_QEXT_REQUEST:
    {
       int s;
       /* This works for int32 params */

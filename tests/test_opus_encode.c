@@ -279,9 +279,6 @@ void fuzz_encoder_settings(const int num_encoders, const int num_setting_changes
 #ifdef ENABLE_DRED
          if(opus_encoder_ctl(enc, OPUS_SET_DRED_DURATION(fast_rand()%101)) != OPUS_OK) test_failed();
 #endif
-#ifdef ENABLE_QEXT
-         if(opus_encoder_ctl(enc, OPUS_SET_QEXT(fast_rand()%2))!=OPUS_OK)test_failed();
-#endif
          if(test_encode(enc, num_channels, frame_size, dec)) {
             fprintf(stderr,
                "fuzz_encoder_settings: %d kHz, %d ch, application: %d, "
@@ -438,8 +435,7 @@ int run_test1(int no_fuzz)
          rate=rates[j]+fast_rand()%rates[j];
          count=i=0;
          do {
-            int bw,len,out_samples,frame_size,unpad;
-            int qext=0;
+            int bw,len,out_samples,frame_size;
             frame_size=frame[j];
             if((fast_rand()&255)==0)
             {
@@ -471,10 +467,6 @@ int run_test1(int no_fuzz)
                            OPUS_BANDWIDTH_NARROWBAND+(fast_rand()%5);
             if(modes[j]==2&&bw==OPUS_BANDWIDTH_MEDIUMBAND)bw+=3;
             if(opus_encoder_ctl(enc, OPUS_SET_BANDWIDTH(bw))!=OPUS_OK)test_failed();
-#ifdef ENABLE_QEXT
-            qext=fast_rand()%2;
-            if(opus_encoder_ctl(enc, OPUS_SET_QEXT(qext))!=OPUS_OK)test_failed();
-#endif
             len = opus_encode(enc, &inbuf[i<<1], frame_size, packet, MAX_PACKET);
             if(len<0 || len>MAX_PACKET)test_failed();
             if(opus_encoder_ctl(enc, OPUS_GET_FINAL_RANGE(&enc_final_range))!=OPUS_OK)test_failed();
@@ -488,17 +480,15 @@ int run_test1(int no_fuzz)
                if(opus_packet_pad(packet,len,len+256)!=OPUS_OK)test_failed();
                len+=256;
             }
-            unpad = 0;
             if((fast_rand()&3)==0)
             {
-               unpad=1;
                len=opus_packet_unpad(packet,len);
                if(len<1)test_failed();
             }
             out_samples = opus_decode(dec, packet, len, &outbuf[i<<1], MAX_FRAME_SAMP, 0);
             if(out_samples!=frame_size)test_failed();
             if(opus_decoder_ctl(dec, OPUS_GET_FINAL_RANGE(&dec_final_range))!=OPUS_OK)test_failed();
-            if(enc_final_range!=dec_final_range && !(unpad && qext))test_failed();
+            if(enc_final_range!=dec_final_range)test_failed();
             /*LBRR decode*/
             out_samples = opus_decode(dec_err[0], packet, len, out2buf, frame_size, (fast_rand()&3)!=0);
             if(out_samples!=frame_size)test_failed();
@@ -536,9 +526,8 @@ int run_test1(int no_fuzz)
          if(opus_multistream_encoder_ctl(MSenc, OPUS_SET_BITRATE(rate))!=OPUS_OK)test_failed();
          count=i=0;
          do {
-            int len,out_samples,frame_size,loss,unpad;
+            int len,out_samples,frame_size,loss;
             opus_int32 pred;
-            int qext=0;
             if(opus_multistream_encoder_ctl(MSenc, OPUS_GET_PREDICTION_DISABLED(&pred))!=OPUS_OK)test_failed();
             if(opus_multistream_encoder_ctl(MSenc, OPUS_SET_PREDICTION_DISABLED((int)(fast_rand()&15)<(pred?11:4)))!=OPUS_OK)test_failed();
             frame_size=frame[j];
@@ -557,10 +546,6 @@ int run_test1(int no_fuzz)
             {
                if(opus_multistream_decoder_ctl(MSdec_err, OPUS_RESET_STATE)!=OPUS_OK)test_failed();
             }
-#ifdef ENABLE_QEXT
-            qext=fast_rand()%2;
-            if(opus_multistream_encoder_ctl(MSenc, OPUS_SET_QEXT(qext))!=OPUS_OK)test_failed();
-#endif
             len = opus_multistream_encode(MSenc, &inbuf[i<<1], frame_size, packet, MAX_PACKET);
             if(len<0 || len>MAX_PACKET)test_failed();
             if(opus_multistream_encoder_ctl(MSenc, OPUS_GET_FINAL_RANGE(&enc_final_range))!=OPUS_OK)test_failed();
@@ -574,17 +559,15 @@ int run_test1(int no_fuzz)
                if(opus_multistream_packet_pad(packet,len,len+256,2)!=OPUS_OK)test_failed();
                len+=256;
             }
-            unpad=0;
             if((fast_rand()&3)==0)
             {
                len=opus_multistream_packet_unpad(packet,len,2);
                if(len<1)test_failed();
-               unpad=1;
             }
             out_samples = opus_multistream_decode(MSdec, packet, len, out2buf, MAX_FRAME_SAMP, 0);
             if(out_samples!=frame_size*6)test_failed();
             if(opus_multistream_decoder_ctl(MSdec, OPUS_GET_FINAL_RANGE(&dec_final_range))!=OPUS_OK)test_failed();
-            if(enc_final_range!=dec_final_range && !(unpad && qext))test_failed();
+            if(enc_final_range!=dec_final_range)test_failed();
             /*LBRR decode*/
             loss=(fast_rand()&63)==0;
             out_samples = opus_multistream_decode(MSdec_err, packet, loss?0:len, out2buf, frame_size*6, (fast_rand()&3)!=0);

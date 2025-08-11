@@ -269,7 +269,7 @@ static int opus_packet_get_mode(const unsigned char *data)
 }
 
 static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
-      opus_int32 len, opus_res *pcm, int frame_size, int decode_fec ARG_QEXT(opus_extension_data *ext))
+      opus_int32 len, opus_res *pcm, int frame_size, int decode_fec)
 {
    void *silk_dec;
    CELTDecoder *celt_dec;
@@ -345,7 +345,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
       if (audiosize > F20)
       {
          do {
-            int ret = opus_decode_frame(st, NULL, 0, pcm, IMIN(audiosize, F20), 0 ARG_QEXT(NULL));
+            int ret = opus_decode_frame(st, NULL, 0, pcm, IMIN(audiosize, F20), 0);
             if (ret<0)
             {
                RESTORE_STACK;
@@ -387,7 +387,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    if (transition && mode == MODE_CELT_ONLY)
    {
       pcm_transition = pcm_transition_celt;
-      opus_decode_frame(st, NULL, 0, pcm_transition, IMIN(F5, audiosize), 0 ARG_QEXT(NULL));
+      opus_decode_frame(st, NULL, 0, pcm_transition, IMIN(F5, audiosize), 0);
    }
    if (audiosize > frame_size)
    {
@@ -540,7 +540,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
    if (transition && mode != MODE_CELT_ONLY)
    {
       pcm_transition = pcm_transition_silk;
-      opus_decode_frame(st, NULL, 0, pcm_transition, IMIN(F5, audiosize), 0 ARG_QEXT(NULL));
+      opus_decode_frame(st, NULL, 0, pcm_transition, IMIN(F5, audiosize), 0);
    }
 
 
@@ -608,7 +608,7 @@ static int opus_decode_frame(OpusDecoder *st, const unsigned char *data,
 #ifdef ENABLE_DEEP_PLC
                                      , &st->lpcnet
 #endif
-                                     ARG_QEXT(ext ? ext->data : NULL) ARG_QEXT(ext ? ext->len : 0));
+                                     );
       celt_decoder_ctl(celt_dec, OPUS_GET_FINAL_RANGE(&st->rangeFinal));
    } else {
       unsigned char silence[2] = {0xFF, 0xFF};
@@ -765,7 +765,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       int pcm_count=0;
       do {
          int ret;
-         ret = opus_decode_frame(st, NULL, 0, pcm+pcm_count*st->channels, frame_size-pcm_count, 0 ARG_QEXT(NULL));
+         ret = opus_decode_frame(st, NULL, 0, pcm+pcm_count*st->channels, frame_size-pcm_count, 0);
          if (ret<0)
             return ret;
          pcm_count += ret;
@@ -820,7 +820,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
       st->frame_size = packet_frame_size;
       st->stream_channels = packet_stream_channels;
       ret = opus_decode_frame(st, data, size[0], pcm+st->channels*(frame_size-packet_frame_size),
-            packet_frame_size, 1 ARG_QEXT(NULL));
+            packet_frame_size, 1);
       if (ret<0)
          return ret;
       else {
@@ -844,22 +844,7 @@ int opus_decode_native(OpusDecoder *st, const unsigned char *data,
    for (i=0;i<count;i++)
    {
       int ret;
-#ifdef ENABLE_QEXT
-      opus_extension_data ext;
-      ext.frame = -1;
-      ext.data = NULL;
-      ext.len = 0;
-      ext.id = -1;
-      while (ext.frame < i) {
-         OpusExtensionIterator iter_copy;
-         iter_copy = iter;
-         ret = opus_extension_iterator_find(&iter, &ext, QEXT_EXTENSION_ID);
-         if (ret <= 0) break;
-         if (ext.frame > i) iter = iter_copy;
-      }
-      if (ext.frame != i) ext.data = NULL;
-#endif
-      ret = opus_decode_frame(st, data, size[i], pcm+nb_samples*st->channels, frame_size-nb_samples, 0 ARG_QEXT(&ext));
+      ret = opus_decode_frame(st, data, size[i], pcm+nb_samples*st->channels, frame_size-nb_samples, 0);
       if (ret<0)
          return ret;
       celt_assert(ret==packet_frame_size);

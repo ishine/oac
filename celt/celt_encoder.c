@@ -82,7 +82,6 @@ struct OpusCustomEncoder {
    int disable_inv;
    int arch;
 #ifdef ENABLE_QEXT
-   int enable_qext;
    int qext_scale;
 #endif
 
@@ -153,11 +152,9 @@ int celt_encoder_get_size(int channels)
 
 OPUS_CUSTOM_NOSTATIC int opus_custom_encoder_get_size(const CELTMode *mode, int channels)
 {
-   int extra=0;
    int size;
 #ifdef ENABLE_QEXT
    int qext_scale;
-   extra = channels*NB_QEXT_BANDS*sizeof(celt_glog);
    if (mode->Fs == 96000 && (mode->shortMdctSize==240 || mode->shortMdctSize==180)) {
       qext_scale = 2;
    } else qext_scale = 1;
@@ -165,11 +162,10 @@ OPUS_CUSTOM_NOSTATIC int opus_custom_encoder_get_size(const CELTMode *mode, int 
    size = sizeof(struct CELTEncoder)
          + (channels*mode->overlap-1)*sizeof(celt_sig)    /* celt_sig in_mem[channels*mode->overlap]; */
          + channels*QEXT_SCALE(COMBFILTER_MAXPERIOD)*sizeof(celt_sig) /* celt_sig prefilter_mem[channels*COMBFILTER_MAXPERIOD]; */
-         + 4*channels*mode->nbEBands*sizeof(celt_glog)    /* celt_glog oldBandE[channels*mode->nbEBands]; */
+         + 4*channels*mode->nbEBands*sizeof(celt_glog);   /* celt_glog oldBandE[channels*mode->nbEBands]; */
                                                           /* celt_glog oldLogE[channels*mode->nbEBands]; */
                                                           /* celt_glog oldLogE2[channels*mode->nbEBands]; */
                                                           /* celt_glog energyError[channels*mode->nbEBands]; */
-         + extra;
    return size;
 }
 
@@ -1050,8 +1046,7 @@ static celt_glog dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *b
       int nbEBands, int start, int end, int C, int *offsets, int lsb_depth, const opus_int16 *logN,
       int isTransient, int vbr, int constrained_vbr, const opus_int16 *eBands, int LM,
       int effectiveBytes, opus_int32 *tot_boost_, int lfe, celt_glog *surround_dynalloc,
-      AnalysisInfo *analysis, int *importance, int *spread_weight, opus_val16 tone_freq, opus_val32 toneishness
-      ARG_QEXT(int qext_scale))
+      AnalysisInfo *analysis, int *importance, int *spread_weight, opus_val16 tone_freq, opus_val32 toneishness, int qext_scale)
 {
    int i, c;
    opus_int32 tot_boost=0;
@@ -1060,6 +1055,11 @@ static celt_glog dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *b
    VARDECL(celt_glog, noise_floor);
    VARDECL(celt_glog, bandLogE3);
    SAVE_STACK;
+
+#ifndef ENABLE_QEXT
+   (void)qext_scale;
+#endif
+
    ALLOC(follower, C*nbEBands, celt_glog);
    ALLOC(noise_floor, C*nbEBands, celt_glog);
    ALLOC(bandLogE3, nbEBands, celt_glog);
@@ -1403,7 +1403,7 @@ static opus_val16 tone_detect(const celt_sig *in, int CC, int N, opus_val32 *ton
 
 static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem, int CC, int N,
       int prefilter_tapset, int *pitch, opus_val16 *gain, int *qgain, int enabled, int complexity, opus_val16 tf_estimate,
-      int nbAvailableBytes, AnalysisInfo *analysis, opus_val16 tone_freq, opus_val32 toneishness ARG_QEXT(int qext_scale))
+      int nbAvailableBytes, AnalysisInfo *analysis, opus_val16 tone_freq, opus_val32 toneishness, int qext_scale)
 {
    int c;
    VARDECL(celt_sig, _pre);
@@ -1419,6 +1419,10 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
    opus_val32 before[2]={0}, after[2]={0};
    int cancel_pitch=0;
    SAVE_STACK;
+
+#ifndef ENABLE_QEXT
+   (void)qext_scale;
+#endif
 
    max_period = QEXT_SCALE(COMBFILTER_MAXPERIOD);
    min_period = QEXT_SCALE(COMBFILTER_MINPERIOD);
@@ -1606,7 +1610,7 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, opus_int32 
       int constrained_vbr, opus_val16 stereo_saving, int tot_boost,
       opus_val16 tf_estimate, int pitch_change, celt_glog maxDepth,
       int lfe, int has_surround_mask, celt_glog surround_masking,
-      celt_glog temporal_vbr ARG_QEXT(int enable_qext))
+      celt_glog temporal_vbr)
 {
    /* The target rate in 8th bits per frame */
    opus_int32 target;
@@ -1683,9 +1687,6 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, opus_int32 
       opus_int32 floor_depth;
       int bins;
       bins = eBands[nbEBands-2]<<LM;
-#ifdef ENABLE_QEXT
-      if (enable_qext) bins  = mode->shortMdctSize<<LM;
-#endif
       /*floor_depth = SHR32(MULT16_16((C*bins<<BITRES),celt_log2(SHL32(MAX16(1,sample_max),13))), DB_SHIFT);*/
       floor_depth = (opus_int32)SHR32(MULT16_32_Q15((C*bins<<BITRES),maxDepth), DB_SHIFT-15);
       floor_depth = IMAX(floor_depth, target>>2);
@@ -1714,13 +1715,6 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, opus_int32 
 
    return target;
 }
-
-#ifdef ENABLE_QEXT
-static void encode_qext_stereo_params(ec_enc *ec, int qext_end, int qext_intensity, int qext_dual_stereo) {
-   ec_enc_uint(ec, qext_intensity, qext_end+1);
-   if (qext_intensity != 0) ec_enc_bit_logp(ec, qext_dual_stereo, 1);
-}
-#endif
 
 int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes, ec_enc *enc)
 {
@@ -1797,27 +1791,8 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
    opus_val16 tone_freq=-1;
    opus_val32 toneishness=0;
    VARDECL(celt_glog, surround_dynalloc);
-   int qext_bytes=0;
    int packet_size_cap = 1275;
-#ifdef ENABLE_QEXT
-   int qext_scale;
-   int qext_end=0;
-   int qext_intensity=0;
-   int qext_dual_stereo=0;
-   int padding_len_bytes=0;
-   unsigned char *ext_payload;
-   opus_int32 qext_bits;
-   ec_enc ext_enc;
-   VARDECL(int, extra_quant);
-   VARDECL(int, extra_pulses);
-   VARDECL(celt_glog, error_bak);
-   const CELTMode *qext_mode = NULL;
-   CELTMode qext_mode_struct;
-   celt_ener qext_bandE[2*NB_QEXT_BANDS];
-   celt_glog qext_bandLogE[2*NB_QEXT_BANDS];
-   celt_glog *qext_oldBandE=NULL;
-   celt_glog qext_error[2*NB_QEXT_BANDS];
-#endif
+   int qext_scale=1;
    ALLOC_STACK;
 
    mode = st->mode;
@@ -1848,7 +1823,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
 
 #ifdef ENABLE_QEXT
    qext_scale = st->qext_scale;
-   if (st->enable_qext) packet_size_cap = QEXT_PACKET_SIZE_CAP;
 #endif
 
    prefilter_mem = st->in_mem+CC*(overlap);
@@ -1992,14 +1966,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
          nbAvailableBytes=2;
          ec_enc_shrink(enc, nbCompressedBytes);
       }
-#ifdef ENABLE_QEXT
-      else if (st->enable_qext) {
-         nbCompressedBytes = IMIN(nbCompressedBytes, 1275);
-         nbAvailableBytes = nbCompressedBytes - nbFilledBytes;
-         total_bits = nbCompressedBytes*8;
-         ec_enc_shrink(enc, nbCompressedBytes);
-      }
-#endif
       /* Pretend we've filled all the remaining bits with zeros
             (that's what the initialiser did anyway) */
       tell = nbCompressedBytes*8;
@@ -2038,7 +2004,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
       enabled = ((st->lfe&&nbAvailableBytes>3) || nbAvailableBytes>12*C) && !hybrid && !silence && tell+16<=total_bits && !st->disable_pf;
 
       prefilter_tapset = st->tapset_decision;
-      pf_on = run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled, st->complexity, tf_estimate, nbAvailableBytes, &st->analysis, tone_freq, toneishness ARG_QEXT(qext_scale));
+      pf_on = run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled, st->complexity, tf_estimate, nbAvailableBytes, &st->analysis, tone_freq, toneishness, qext_scale);
       if ((gain1 > QCONST16(.4f,15) || st->prefilter_gain > QCONST16(.4f,15)) && (!st->analysis.valid || st->analysis.tonality > .3)
             && (pitch_index > 1.26*st->prefilter_period || pitch_index < .79*st->prefilter_period))
          pitch_change = 1;
@@ -2247,7 +2213,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
 
    maxDepth = dynalloc_analysis(bandLogE, bandLogE2, oldBandE, nbEBands, start, end, C, offsets,
          st->lsb_depth, mode->logN, isTransient, st->vbr, st->constrained_vbr,
-         eBands, LM, effectiveBytes, &tot_boost, st->lfe, surround_dynalloc, &st->analysis, importance, spread_weight, tone_freq, toneishness ARG_QEXT(qext_scale));
+         eBands, LM, effectiveBytes, &tot_boost, st->lfe, surround_dynalloc, &st->analysis, importance, spread_weight, tone_freq, toneishness, qext_scale);
 
    ALLOC(tf_res, nbEBands, int);
    /* Disable variable tf resolution for hybrid and at very low bitrate */
@@ -2459,7 +2425,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
            st->lastCodedBands, C, st->intensity, st->constrained_vbr,
            st->stereo_saving, tot_boost, tf_estimate, pitch_change, maxDepth,
            st->lfe, st->energy_mask!=NULL, surround_masking,
-           temporal_vbr ARG_QEXT(st->enable_qext));
+           temporal_vbr);
      } else {
         target = base_target;
         /* Tonal frames (offset<100) need more bits than noisy (offset>100) ones. */
@@ -2531,68 +2497,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
      /* This moves the raw bits to take into account the new compressed size */
      ec_enc_shrink(enc, nbCompressedBytes);
    }
-#ifdef ENABLE_QEXT
-   if (st->enable_qext) {
-      int new_compressedBytes;
-      /* Don't give any bits for the first 80 kb/s per channel. Then 80% of the excess. */
-      opus_int32 offset = bitrate_to_bits(C*80000, mode->Fs, frame_size)/8;
-      qext_bytes = IMAX(nbCompressedBytes-1275, IMAX(0, (nbCompressedBytes-offset)*4/5));
-      if (qext_bytes > 20) {
-         opus_int32 target;
-         opus_val16 scale;
-         target = ((nbCompressedBytes-qext_bytes/3)*8<<BITRES);
-         if (!vbr_rate) {
-            opus_val16 tf_estimate2;
-            target -= ((40*C+20)<<BITRES);
-            tf_estimate2 = MIN32(QCONST16(1.f, 14), 2*EXTEND32(tf_estimate));
-            target = compute_vbr(mode, &st->analysis, target, LM, equiv_rate,
-                  st->lastCodedBands, C, st->intensity, st->constrained_vbr,
-                  st->stereo_saving, tot_boost, tf_estimate2, pitch_change, maxDepth,
-                  st->lfe, st->energy_mask!=NULL, surround_masking,
-                  temporal_vbr ARG_QEXT(st->enable_qext));
-            target += tell;
-         }
-         scale = PSHR32(toneishness,14);
-         scale = Q15ONE - MULT16_16_Q15(scale, scale);
-         qext_bytes += MULT16_32_Q15(scale, (nbCompressedBytes-(target/(8<<BITRES))) - qext_bytes);
-         qext_bytes = IMAX(nbCompressedBytes-1275, IMAX(21, qext_bytes));
-      }
-      padding_len_bytes = (qext_bytes+253)/254;
-      qext_bytes = IMIN(qext_bytes, nbCompressedBytes-min_allowed-padding_len_bytes-1);
-      padding_len_bytes = (qext_bytes+253)/254;
-      if (qext_bytes > 20) {
-         new_compressedBytes = nbCompressedBytes-qext_bytes-padding_len_bytes-1;
-         ec_enc_shrink(enc, new_compressedBytes);
-         if (compressed == NULL) {
-            compressed = enc->buf;
-         }
-         compressed[-1] |= 0x03; /* Code 3 packet */
-         enc->buf += 1+padding_len_bytes;
-         OPUS_MOVE(compressed+1+padding_len_bytes, compressed, new_compressedBytes);
-         compressed[0] = 0x41; /* Set padding */
-         for (i=0;i<padding_len_bytes-1;i++) compressed[i+1] = 255;
-         compressed[padding_len_bytes] = qext_bytes%254 == 0 ? 254 : qext_bytes%254;
-         ext_payload = compressed+padding_len_bytes+1+new_compressedBytes;
-         ext_payload[0] = QEXT_EXTENSION_ID<<1;
-         ext_payload += 1;
-         qext_bytes -= 1;
-         OPUS_CLEAR(ext_payload, qext_bytes);
-         ec_enc_init(&ext_enc, ext_payload, qext_bytes);
-         nbCompressedBytes = new_compressedBytes;
-         if (end == nbEBands && (mode->Fs == 48000 ||  mode->Fs == 96000) && (mode->shortMdctSize==120*qext_scale || mode->shortMdctSize==90*qext_scale)) {
-            compute_qext_mode(&qext_mode_struct, mode);
-            qext_mode = &qext_mode_struct;
-            qext_end = (qext_scale == 2) ? NB_QEXT_BANDS : 2;
-            ec_enc_bit_logp(&ext_enc, qext_end == NB_QEXT_BANDS, 1);
-         }
-      } else {
-         ec_enc_init(&ext_enc, NULL, 0);
-         qext_bytes = 0;
-      }
-   } else {
-      ec_enc_init(&ext_enc, NULL, 0);
-   }
-#endif
 
    /* Bit allocation */
    ALLOC(fine_quant, nbEBands, int);
@@ -2633,66 +2537,13 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
 
    quant_fine_energy(mode, start, end, oldBandE, error, NULL, fine_quant, enc, C);
    OPUS_CLEAR(energyError, nbEBands*CC);
-#ifdef ENABLE_QEXT
-   if (qext_mode)
-   {
-      /* Don't bias for intra. */
-      opus_val32 qext_delayedIntra=0;
-      qext_oldBandE = energyError + CC*nbEBands;
-      compute_band_energies(qext_mode, freq, qext_bandE, qext_end, C, LM, st->arch);
-      normalise_bands(qext_mode, freq, X, qext_bandE, qext_end, C, M);
-      amp2Log2(qext_mode, qext_end, qext_end, qext_bandE, qext_bandLogE, C);
-      if (C==2) {
-         qext_intensity = qext_end;
-         qext_dual_stereo = dual_stereo;
-         encode_qext_stereo_params(&ext_enc, qext_end, qext_intensity, qext_dual_stereo);
-      }
-      quant_coarse_energy(qext_mode, 0, qext_end, qext_end, qext_bandLogE,
-               qext_oldBandE, qext_bytes*8, qext_error, &ext_enc,
-               C, LM, qext_bytes, st->force_intra,
-               &qext_delayedIntra, st->complexity >= 4, st->loss_rate, st->lfe);
-   }
-   ALLOC(extra_quant, nbEBands+NB_QEXT_BANDS, int);
-   ALLOC(extra_pulses, nbEBands+NB_QEXT_BANDS, int);
-   ALLOC(error_bak, C*nbEBands, celt_glog);
-
-   qext_bits = ((opus_int32)qext_bytes*8<<BITRES) - (opus_int32)ec_tell_frac(enc) - 1;
-   clt_compute_extra_allocation(mode, qext_mode, start, end, qext_end, bandLogE, qext_bandLogE,
-         qext_bits, extra_pulses, extra_quant, C, LM, &ext_enc, 1, tone_freq, toneishness);
-   OPUS_COPY(error_bak, error, C*nbEBands);
-   if (qext_bytes > 0) {
-      quant_fine_energy(mode, start, end, oldBandE, error, fine_quant, extra_quant, &ext_enc, C);
-   }
-#endif
 
    /* Residual quantisation */
    ALLOC(collapse_masks, C*nbEBands, unsigned char);
    quant_all_bands(1, mode, start, end, X, C==2 ? X+N : NULL, collapse_masks,
          bandE, pulses, shortBlocks, st->spread_decision,
          dual_stereo, st->intensity, tf_res, nbCompressedBytes*(8<<BITRES)-anti_collapse_rsv,
-         balance, enc, LM, codedBands, &st->rng, st->complexity, st->arch, st->disable_inv
-         ARG_QEXT(&ext_enc) ARG_QEXT(extra_pulses)
-         ARG_QEXT(qext_bytes*(8<<BITRES)) ARG_QEXT(cap));
-
-#ifdef ENABLE_QEXT
-   if (qext_mode) {
-      VARDECL(int, zeros);
-      VARDECL(unsigned char, qext_collapse_masks);
-      ec_enc dummy_enc;
-      int ext_balance;
-      ALLOC(zeros, nbEBands, int);
-      ALLOC(qext_collapse_masks, C*NB_QEXT_BANDS, unsigned char);
-      ec_enc_init(&dummy_enc, NULL, 0);
-      OPUS_CLEAR(zeros, end);
-      ext_balance = qext_bytes*(8<<BITRES) - ec_tell_frac(&ext_enc);
-      for (i=0;i<qext_end;i++) ext_balance -= extra_pulses[nbEBands+i] + C*(extra_quant[nbEBands+1]<<BITRES);
-      quant_fine_energy(qext_mode, 0, qext_end, qext_oldBandE, qext_error, NULL, &extra_quant[nbEBands], &ext_enc, C);
-      quant_all_bands(1, qext_mode, 0, qext_end, X, C==2 ? X+N : NULL, qext_collapse_masks,
-            qext_bandE, &extra_pulses[nbEBands], shortBlocks, st->spread_decision,
-            qext_dual_stereo, qext_intensity, zeros, qext_bytes*(8<<BITRES),
-            ext_balance, &ext_enc, LM, qext_end, &st->rng, st->complexity, st->arch, st->disable_inv, &dummy_enc, zeros, 0, NULL);
-   }
-#endif
+         balance, enc, LM, codedBands, &st->rng, st->complexity, st->arch, st->disable_inv);
 
    if (anti_collapse_rsv > 0)
    {
@@ -2702,8 +2553,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
 #endif
       ec_enc_bits(enc, anti_collapse_on, 1);
    }
-   if (qext_bytes == 0)
-      quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority, nbCompressedBytes*8-ec_tell(enc), enc, C);
+   quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority, nbCompressedBytes*8-ec_tell(enc), enc, C);
    c=0;
    do {
       for (i=start;i<end;i++)
@@ -2711,10 +2561,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
          energyError[i+c*nbEBands] = MAXG(-GCONST(0.5f), MING(GCONST(0.5f), error[i+c*nbEBands]));
       }
    } while (++c < C);
-#ifdef ENABLE_QEXT
-   if (qext_bytes > 0)
-      quant_energy_finalise(mode, start, end, NULL, error_bak, fine_quant, fine_priority, nbCompressedBytes*8-ec_tell(enc), enc, C);
-#endif
+
    if (silence)
    {
       for (i=0;i<C*nbEBands;i++)
@@ -2741,7 +2588,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
       } while (++c<CC);
 
       celt_synthesis(mode, X, out_mem, oldBandE, start, effEnd,
-                     C, CC, isTransient, LM, st->upsample, silence, st->arch ARG_QEXT(qext_mode) ARG_QEXT(qext_oldBandE) ARG_QEXT(qext_end));
+                     C, CC, isTransient, LM, st->upsample, silence, st->arch);
 
       c=0; do {
          st->prefilter_period=IMAX(st->prefilter_period, COMBFILTER_MINPERIOD);
@@ -2811,14 +2658,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, const opus_res * pcm, in
    /* If there's any room left (can only happen for very high rates),
       it's already filled with zeros */
    ec_enc_done(enc);
-#ifdef ENABLE_QEXT
-   ec_enc_done(&ext_enc);
-   if (qext_bytes > 0)
-      nbCompressedBytes += padding_len_bytes+2+qext_bytes;
-   if (qext_bytes) st->rng = st->rng ^ ext_enc.rng;
-   if (ec_get_error(&ext_enc))
-      return OPUS_INTERNAL_ERROR;
-#endif
 #if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API)
    if (st->signalling)
       nbCompressedBytes++;
@@ -3049,28 +2888,6 @@ int opus_custom_encoder_ctl(CELTEncoder * OPUS_RESTRICT st, int request, ...)
           *value = st->disable_inv;
       }
       break;
-#ifdef ENABLE_QEXT
-      case OPUS_SET_QEXT_REQUEST:
-      {
-          opus_int32 value = va_arg(ap, opus_int32);
-          if(value<0 || value>1)
-          {
-             goto bad_arg;
-          }
-          st->enable_qext = value;
-      }
-      break;
-      case OPUS_GET_QEXT_REQUEST:
-      {
-          opus_int32 *value = va_arg(ap, opus_int32*);
-          if (!value)
-          {
-             goto bad_arg;
-          }
-          *value = st->enable_qext;
-      }
-      break;
-#endif
       case OPUS_RESET_STATE:
       {
          int i;
