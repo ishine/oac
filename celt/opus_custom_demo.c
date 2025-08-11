@@ -38,11 +38,7 @@
 #include <math.h>
 #include <string.h>
 
-#ifdef ENABLE_QEXT
-#define MAX_PACKET QEXT_PACKET_SIZE_CAP
-#else
 #define MAX_PACKET 1275
-#endif
 
 static OPUS_INLINE void _opus_ctl_failed(const char *file, int line)
 {
@@ -68,9 +64,6 @@ static void print_usage(char **argv) {
    fprintf (stderr, "     -f32                     format is 32-bit float little-endian\n");
    fprintf (stderr, "     -complexity <0-10>       optional only when encoding\n");
    fprintf (stderr, "     -loss <percentage>       encoding (robsutness setting) and decoding (simulating loss)\n");
-#ifdef ENABLE_QEXT
-   fprintf (stderr, "     -qext                    use quality extension\n");
-#endif
 }
 
 static void int_to_char(opus_uint32 i, unsigned char ch[4])
@@ -125,9 +118,6 @@ int main(int argc, char *argv[])
    int i;
 #if !(defined (FIXED_POINT) && !defined(CUSTOM_MODES)) && defined(RESYNTH)
    double rmsd = 0;
-#endif
-#ifdef ENABLE_QEXT
-   int qext = 0;
 #endif
    int count = 0;
    opus_int32 skip;
@@ -219,11 +209,6 @@ int main(int argc, char *argv[])
        } else if( strcmp( argv[ args ], "-f32" ) == 0 ) {
           format = FORMAT_F32_LE;
           args++;
-#ifdef ENABLE_QEXT
-       } else if( strcmp( argv[ args ], "-qext" ) == 0 ) {
-          qext = 1;
-          args++;
-#endif
        } else {
           printf( "Error: unrecognized setting: %s\n\n", argv[ args ] );
           print_usage( argv );
@@ -253,12 +238,6 @@ int main(int argc, char *argv[])
             goto failure;
          }
       }
-#ifdef ENABLE_QEXT
-      if(opus_custom_encoder_ctl(enc, OPUS_SET_QEXT(qext)) != OPUS_OK) {
-         opus_ctl_failed();
-         goto failure;
-      }
-#endif
    }
    if (!encode_only) {
       dec = opus_custom_decoder_create(mode, channels, &err);

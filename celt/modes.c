@@ -410,15 +410,6 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
    mode->logN = logN;
 
    compute_pulse_cache(mode, mode->maxLM);
-#ifdef ENABLE_QEXT
-   OPUS_CLEAR(&mode->qext_cache, 1);
-   if ( (mode->Fs == 48000 && (mode->shortMdctSize==120 || mode->shortMdctSize==90)) || (mode->Fs == 96000 && (mode->shortMdctSize==240 || mode->shortMdctSize==180)) ) {
-      CELTMode dummy;
-      compute_qext_mode(&dummy, mode);
-      compute_pulse_cache(&dummy, dummy.maxLM);
-      OPUS_COPY(&mode->qext_cache, &dummy.cache, 1);
-   }
-#endif
 
    if (clt_mdct_init(&mode->mdct, 2*mode->shortMdctSize*mode->nbShortMdcts,
            mode->maxLM, arch) == 0)
@@ -457,11 +448,6 @@ void opus_custom_mode_destroy(CELTMode *mode)
    }
 #endif /* CUSTOM_MODES_ONLY */
 #ifdef CUSTOM_MODES
-#ifdef ENABLE_QEXT
-   if (mode->qext_cache.index) opus_free((opus_int16*)mode->qext_cache.index);
-   if (mode->qext_cache.bits) opus_free((unsigned char*)mode->qext_cache.bits);
-   if (mode->qext_cache.caps) opus_free((unsigned char*)mode->qext_cache.caps);
-#endif
    opus_free((opus_int16*)mode->eBands);
    opus_free((unsigned char*)mode->allocVectors);
 
@@ -478,43 +464,5 @@ void opus_custom_mode_destroy(CELTMode *mode)
    (void)arch;
    celt_assert(0);
 #endif
-}
-#endif
-
-#ifdef ENABLE_QEXT
-
-static const opus_int16 qext_eBands_180[] = {
-/* 20k  22k  24k  26k  28k  30k  32k  34k  36k  38k  40k  42k  44k  47k  48k */
-    74,  82,  90,  98, 106, 114, 122, 130, 138, 146, 154, 162, 168, 174, 180
-};
-
-static const opus_int16 qext_logN_180[] = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 21, 21, 21};
-
-/* Extra bands. */
-static const opus_int16 qext_eBands_240[] = {
-/* 20k  22k  24k  26k  28k  30k  32k  34k  36k  38k  40k  42k  44k  47k  48k */
-   100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240
-};
-
-static const opus_int16 qext_logN_240[] = {27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27};
-
-void compute_qext_mode(CELTMode *qext, const CELTMode *m)
-{
-   OPUS_COPY(qext, m, 1);
-   if (m->shortMdctSize*48000 == 120*m->Fs) {
-      qext->eBands = qext_eBands_240;
-      qext->logN = qext_logN_240;
-   } else if (m->shortMdctSize*48000 == 90*m->Fs) {
-      qext->eBands = qext_eBands_180;
-      qext->logN = qext_logN_180;
-   } else {
-      celt_assert(0);
-   }
-   qext->nbEBands = qext->effEBands = NB_QEXT_BANDS;
-   while (qext->eBands[qext->effEBands] > qext->shortMdctSize)
-      qext->effEBands--;
-   qext->nbAllocVectors = 0;
-   qext->allocVectors = NULL;
-   OPUS_COPY(&qext->cache, &m->qext_cache, 1);
 }
 #endif

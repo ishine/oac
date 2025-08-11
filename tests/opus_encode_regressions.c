@@ -1153,7 +1153,6 @@ int projection_overflow(void)
     opus_test_assert(err == OPUS_BAD_ARG);
     return 0;
 #endif
-    opus_projection_encoder_ctl(enc, OPUS_SET_QEXT(1));
     data_len = opus_projection_encode(enc, pcm, 1920, data, 10000);
     opus_test_assert(data_len > 0 && data_len <= 10000);
     opus_projection_encoder_destroy(enc);
@@ -1192,7 +1191,6 @@ int projection_overflow4(void)
 
     enc = opus_projection_ambisonics_encoder_create(96000, 36, 3, &streams,
         &coupled_streams, OPUS_APPLICATION_AUDIO, &err);
-    opus_projection_encoder_ctl(enc, OPUS_SET_QEXT(1));
     opus_projection_encoder_ctl(enc, OPUS_SET_BITRATE(256000));
     data_len = opus_projection_encode(enc, pcm, 480, data, 1000);
     opus_test_assert(data_len > 0 && data_len <= 1000);
@@ -1212,7 +1210,6 @@ int qext_repacketize_fail(void)
 
     enc = opus_encoder_create(16000, 1, OPUS_APPLICATION_VOIP, &err);
     opus_encoder_ctl(enc, OPUS_SET_VBR(0));
-    opus_encoder_ctl(enc, OPUS_SET_QEXT(1));
     opus_encoder_ctl(enc, OPUS_SET_BITRATE(OPUS_BITRATE_MAX));
     data_len = opus_encode(enc, pcm, 960, data, 9000);
     /* returns OPUS_INTERNAL_ERROR (-3) */
@@ -1262,7 +1259,6 @@ int qext_dred_combination(void)
         &coupled_streams, mapping, OPUS_APPLICATION_VOIP, &err);
     opus_multistream_encoder_ctl(enc, OPUS_SET_COMPLEXITY(3));
     opus_multistream_encoder_ctl(enc, OPUS_SET_PACKET_LOSS_PERC(12));
-    opus_multistream_encoder_ctl(enc, OPUS_SET_QEXT(1));
     opus_multistream_encoder_ctl(enc, OPUS_MULTISTREAM_GET_ENCODER_STATE(0, &stream_enc));
     opus_encoder_ctl(stream_enc, OPUS_SET_DRED_DURATION(103));
     opus_multistream_encoder_ctl(enc, OPUS_SET_BITRATE(755850));

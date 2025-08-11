@@ -618,9 +618,6 @@ void test_opus_custom(const int num_encoders, const int num_setting_changes) {
             if (opus_custom_encoder_ctl(encC, OPUS_SET_COMPLEXITY(complexity)) != OPUS_OK) test_failed();
             if (opus_custom_encoder_ctl(encC, OPUS_SET_PACKET_LOSS_PERC(pkt_loss)) != OPUS_OK) test_failed();
             if (opus_custom_encoder_ctl(encC, OPUS_SET_LSB_DEPTH(lsb_depth)) != OPUS_OK) test_failed();
-#ifdef ENABLE_QEXT
-            if (opus_custom_encoder_ctl(encC, OPUS_SET_QEXT(params.qext)) != OPUS_OK) test_failed();
-#endif
          }
          else {
             if (opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate)) != OPUS_OK) test_failed();

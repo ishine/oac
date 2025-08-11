@@ -1213,10 +1213,6 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_res *pcm, int frame_si
 #endif
     ALLOC_STACK;
 
-#ifdef ENABLE_QEXT
-   if (st->enable_qext) packet_size_cap = QEXT_PACKET_SIZE_CAP;
-#endif
-
     /* Just avoid insane packet sizes here, but the real bounds are applied later on. */
     max_data_bytes = IMIN(packet_size_cap*6, out_data_bytes);
 
@@ -1786,11 +1782,6 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_res *pcm, int frame_si
 #ifdef ENABLE_DRED
           curr_max = IMIN(curr_max, (max_len_sum-bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8)/nb_frames);
           if (first_frame) curr_max += bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8;
-#endif
-#ifdef ENABLE_QEXT
-          /* Leave room for signaling the extension size once we repacketize. */
-          if (st->enable_qext)
-             curr_max -= curr_max/254;
 #endif
           curr_max = IMIN(max_len_sum-tot_size, curr_max);
 #ifndef DISABLE_FLOAT_API
@@ -2487,13 +2478,7 @@ static opus_int32 opus_encode_frame_native(OpusEncoder *st, const opus_res *pcm,
         /* If false, we already busted the budget and we'll end up with a "PLC frame" */
         if (ec_tell(&enc) <= 8*nb_compr_bytes)
         {
-#ifdef ENABLE_QEXT
-           if (st->mode == MODE_CELT_ONLY) celt_encoder_ctl(celt_enc, OPUS_SET_QEXT(st->enable_qext));
-#endif
            ret = celt_encode_with_ec(celt_enc, pcm_buf, frame_size, NULL, nb_compr_bytes, &enc);
-#ifdef ENABLE_QEXT
-           celt_encoder_ctl(celt_enc, OPUS_SET_QEXT(0));
-#endif
            if (ret < 0)
            {
               RESTORE_STACK;
@@ -3217,28 +3202,6 @@ int opus_encoder_ctl(OpusEncoder *st, int request, ...)
             *value = st->dred_duration;
         }
         break;
-#endif
-#ifdef ENABLE_QEXT
-      case OPUS_SET_QEXT_REQUEST:
-      {
-          opus_int32 value = va_arg(ap, opus_int32);
-          if(value<0 || value>1)
-          {
-             goto bad_arg;
-          }
-          st->enable_qext = value;
-      }
-      break;
-      case OPUS_GET_QEXT_REQUEST:
-      {
-          opus_int32 *value = va_arg(ap, opus_int32*);
-          if (!value)
-          {
-             goto bad_arg;
-          }
-          *value = st->enable_qext;
-      }
-      break;
 #endif
         case OPUS_RESET_STATE:
         {
