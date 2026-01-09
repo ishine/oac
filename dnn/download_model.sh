@@ -38,3 +38,4 @@ else
 fi
 
 tar xvzomf $model
+dnn/rename_downloads.sh
