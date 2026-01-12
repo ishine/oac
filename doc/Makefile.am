@@ -10,7 +10,7 @@ DOCINPUTS = $(top_srcdir)/include/oac.h \
             $(top_srcdir)/doc/customdoxygen.css
 
 EXTRA_DIST = customdoxygen.css Doxyfile.in footer.html header.html \
-             oac_logo.svg trivial_example.c
+             trivial_example.c
 
 
 if HAVE_DOXYGEN
