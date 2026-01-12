@@ -222,7 +222,7 @@ HTML_STYLESHEET        = @top_srcdir@/doc/customdoxygen.css
 # files will be copied as-is; there are no commands or markers available.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_FILES       = @top_srcdir@/doc/oac_logo.svg
+HTML_EXTRA_FILES       =
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A
