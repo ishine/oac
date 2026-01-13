@@ -2,8 +2,7 @@
 
 tarball=`realpath "$1"`
 nb_tests="$2"
-oldvectors=`realpath "$3"`
-newvectors=`realpath "$4"`
+vectors=`realpath "$3"`
 base=`basename "$tarball" .tar.gz`
 
 tar xvzf "$tarball" > /dev/null 2>&1
@@ -18,7 +17,7 @@ fi
 mkdir build_tests
 
 configure_dir=`pwd`
-seq -w "$nb_tests" | parallel --halt now,fail=10 -j +2 -q ../random_config.sh "build_tests/run_{}" "$configure_dir" "$oldvectors" "$newvectors"
+seq -w "$nb_tests" | parallel --halt now,fail=10 -j +2 -q ../random_config.sh "build_tests/run_{}" "$configure_dir" "$vectors"
 
 if [ $? -ne 0 ]
 then

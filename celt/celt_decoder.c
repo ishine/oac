@@ -246,11 +246,7 @@ OAC_CUSTOM_NOSTATIC int oac_custom_decoder_init(CELTDecoder *st, const CELTMode 
     st->start = 0;
     st->end = st->mode->effEBands;
     st->signalling = 1;
-#ifndef DISABLE_UPDATE_DRAFT
     st->disable_inv = channels == 1;
-#else
-    st->disable_inv = 0;
-#endif
     st->arch = oac_select_arch();
 
 #ifdef ENABLE_QEXT

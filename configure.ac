@@ -975,15 +975,6 @@ AC_ARG_ENABLE([extra-programs],
 AM_CONDITIONAL([EXTRA_PROGRAMS], [test "$enable_extra_programs" = "yes"])
 
 
-AC_ARG_ENABLE([rfc8251],
-	      AS_HELP_STRING([--disable-rfc8251], [disable bitstream fixes from RFC 8251]),,
-  [enable_rfc8251=yes])
-
-AS_IF([test "$enable_rfc8251" = "no"], [
-       AC_DEFINE([DISABLE_UPDATE_DRAFT], [1], [Disable bitstream fixes from RFC 8251])
-])
-
-
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -fvisibility=hidden"
 AC_MSG_CHECKING([if ${CC} supports -fvisibility=hidden])
