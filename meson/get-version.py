@@ -64,11 +64,11 @@ if __name__ == '__main__':
         with open(os.path.join(srcroot, 'configure.ac'), 'r') as f:
             for line in f:
                 if line.strip().startswith('OAC_LT_CURRENT='):
-                    oac_lt_cur = line[16:].strip()
+                    oac_lt_cur = line[15:].strip()
                 elif line.strip().startswith('OAC_LT_REVISION='):
-                    oac_lt_rev = line[17:].strip()
+                    oac_lt_rev = line[16:].strip()
                 elif line.strip().startswith('OAC_LT_AGE='):
-                    oac_lt_age = line[12:].strip()
+                    oac_lt_age = line[11:].strip()
 
         if oac_lt_cur and oac_lt_rev and oac_lt_age:
             oac_lt_cur = int(oac_lt_cur)
