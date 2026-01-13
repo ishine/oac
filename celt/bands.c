@@ -1363,7 +1363,6 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
     return cm;
 }
 
-#ifndef DISABLE_UPDATE_DRAFT
 static void special_hybrid_folding(const CELTMode *m, celt_norm *norm, celt_norm *norm2, int start, int M,
                                    int dual_stereo) {
     int n1, n2;
@@ -1376,7 +1375,6 @@ static void special_hybrid_folding(const CELTMode *m, celt_norm *norm, celt_norm
     if (dual_stereo)
         OAC_COPY(&norm2[n1], &norm2[2*n1 - n2], n2 - n1);
 }
-#endif
 
 void quant_all_bands(int encode, const CELTMode *m, int start, int end,
                      celt_norm *X_, celt_norm *Y_, unsigned char *collapse_masks,
@@ -1492,16 +1490,11 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
             b = 0;
         }
 
-#ifndef DISABLE_UPDATE_DRAFT
         if (resynth && (M*eBands[i] - N >= M*eBands[start] || i == start + 1)
             && (update_lowband || lowband_offset == 0))
             lowband_offset = i;
         if (i == start + 1)
             special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
-#else
-        if (resynth && M*eBands[i] - N >= M*eBands[start] && (update_lowband || lowband_offset == 0))
-            lowband_offset = i;
-#endif
 
         tf_change = tf_res[i];
         ctx.tf_change = tf_change;
@@ -1525,11 +1518,7 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
             fold_start = lowband_offset;
             while (M*eBands[--fold_start] > effective_lowband + norm_offset) ;
             fold_end = lowband_offset - 1;
-#ifndef DISABLE_UPDATE_DRAFT
             while (++fold_end < i && M*eBands[fold_end] < effective_lowband + norm_offset + N) ;
-#else
-            while (M*eBands[++fold_end] < effective_lowband + norm_offset + N) ;
-#endif
             x_cm = y_cm = 0;
             fold_i = fold_start; do {
                 x_cm |= collapse_masks[fold_i*C + 0];
@@ -1601,10 +1590,8 @@ void quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     ctx = ctx_save;
                     OAC_COPY(X, X_save, N);
                     OAC_COPY(Y, Y_save, N);
-#ifndef DISABLE_UPDATE_DRAFT
                     if (i == start + 1)
                         special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
-#endif
                     /* Encode and round up. */
                     ctx.theta_round = 1;
                     x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,

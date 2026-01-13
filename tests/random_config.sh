@@ -64,19 +64,13 @@ assert=`echo -e "\n--enable-assertions" | shuf -n1`
 harden=`echo -e "\n--enable-hardening\n--disable-hardening" | shuf -n1`
 fuzz=`echo -e "\n--enable-fuzzing" | shuf -n1`
 checkasm=`echo -e "\n--enable-check-asm" | shuf -n1`
-rfc8251=`echo -e "\n--disable-rfc8251" | shuf -n1`
 lossgen=`echo -e "\n--enable-lossgen" | shuf -n1`
 
-if [ "$rfc8251" = --disable-rfc8251 ]
-then
-        vectors="$3"
-else
-        vectors="$4"
-fi
+vectors="$3"
 echo using testvectors at "$vectors" >> "$config"
 
 
-config_opt="$lib $arithmetic $custom $res $asm $assert $harden $fuzz $checkasm $rfc8251 $approx $lossgen"
+config_opt="$lib $arithmetic $custom $res $asm $assert $harden $fuzz $checkasm $approx $lossgen"
 
 echo configure $config_opt >> "$config"
 
