@@ -21,7 +21,7 @@ Follow the steps below to build the Oac project using Meson.
 Clone the Oac repository using Git:
 
 ```shell
-git clone https://gitlab.xiph.org/xiph/oac
+git clone https://github.com/AOMediaCodec/oac.git
 cd oac
 ```
 
@@ -56,7 +56,7 @@ meson test -C builddir
 
 The Oac Meson build system aims to provide support for the same platforms as [GStreamer](https://gstreamer.freedesktop.org/), a widely used multimedia framework. GStreamer supports a wide range of operating systems and platforms, including Linux, Windows (MSVC and MingW), Android, macOS, iOS, and various BSD systems.
 
-While efforts are made to ensure compatibility and stability across these platforms, bugs or issues may still arise in specific configurations. If you encounter any problems during the configuration process or while building the Oac project, we encourage you to file an issue in the [project's issue tracker](https://gitlab.xiph.org/xiph/oac/-/issues).
+While efforts are made to ensure compatibility and stability across these platforms, bugs or issues may still arise in specific configurations. If you encounter any problems during the configuration process or while building the Oac project, we encourage you to file an issue in the [project's issue tracker](https://github.com/AOMediaCodec/oac/issues).
 
 When reporting an issue, please provide the following information to help us understand and effectively reproduce the configuration problem:
 

@@ -19,7 +19,7 @@ Follow the steps below to build the Oac project using CMake:
 1. Clone the Oac repository using Git:
 
     ```shell
-    git clone https://gitlab.xiph.org/xiph/oac
+    git clone https://github.com/AOMediaCodec/oac.git
     ```
 
 2. Create a build directory within the Oac repository:
@@ -87,7 +87,7 @@ CMake aims to provide broad platform support, allowing the Oac project to be bui
 
 CMake achieves platform support by generating platform-specific build files (e.g., Makefiles, Visual Studio projects) based on the target platform. This allows developers to build and configure the Oac project consistently across different operating systems and environments.
 
-While CMake strives to ensure compatibility and stability across platforms, bugs or issues may still arise in specific configurations. If you encounter any problems during the configuration process or while building the Oac project, we encourage you to file an issue in the [project's issue tracker](https://gitlab.xiph.org/xiph/oac/-/issues).
+While CMake strives to ensure compatibility and stability across platforms, bugs or issues may still arise in specific configurations. If you encounter any problems during the configuration process or while building the Oac project, we encourage you to file an issue in the [project's issue tracker](https://github.com/AOMediaCodec/oac/issues).
 
 When reporting an issue, please provide the following information to help us understand and reproduce the configuration problem effectively:
 
