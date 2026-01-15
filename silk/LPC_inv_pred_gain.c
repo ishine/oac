@@ -35,17 +35,17 @@ POSSIBILITY OF SUCH DAMAGE.
 #define QA                          24
 #define A_LIMIT                     SILK_FIX_CONST( 0.99975, QA )
 
-#define MUL32_FRAC_Q(a32, b32, Q)   ((opus_int32)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
+#define MUL32_FRAC_Q(a32, b32, Q)   ((oac_int32)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
 
 /* Compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
-static opus_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse prediction gain in energy domain, Q30    */
-    opus_int32           A_QA[ SILK_MAX_ORDER_LPC ],        /* I   Prediction coefficients                                  */
-    const opus_int       order                              /* I   Prediction order                                         */
+static oac_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse prediction gain in energy domain, Q30    */
+    oac_int32           A_QA[ SILK_MAX_ORDER_LPC ],        /* I   Prediction coefficients                                  */
+    const oac_int       order                              /* I   Prediction order                                         */
 )
 {
-    opus_int   k, n, mult2Q;
-    opus_int32 invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
+    oac_int   k, n, mult2Q;
+    oac_int32 invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
 
     invGain_Q30 = SILK_FIX_CONST( 1, 30 );
     for( k = order - 1; k > 0; k-- ) {
@@ -77,7 +77,7 @@ static opus_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns inver
 
         /* Update AR coefficient */
         for( n = 0; n < (k + 1) >> 1; n++ ) {
-            opus_int64 tmp64;
+            oac_int64 tmp64;
             tmp1 = A_QA[ n ];
             tmp2 = A_QA[ k - n - 1 ];
             tmp64 = silk_RSHIFT_ROUND64( silk_SMULL( silk_SUB_SAT32(tmp1,
@@ -85,13 +85,13 @@ static opus_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns inver
             if( tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN ) {
                return 0;
             }
-            A_QA[ n ] = ( opus_int32 )tmp64;
+            A_QA[ n ] = ( oac_int32 )tmp64;
             tmp64 = silk_RSHIFT_ROUND64( silk_SMULL( silk_SUB_SAT32(tmp2,
                   MUL32_FRAC_Q( tmp1, rc_Q31, 31 ) ), rc_mult2), mult2Q);
             if( tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN ) {
                return 0;
             }
-            A_QA[ k - n - 1 ] = ( opus_int32 )tmp64;
+            A_QA[ k - n - 1 ] = ( oac_int32 )tmp64;
         }
     }
 
@@ -119,19 +119,19 @@ static opus_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns inver
 }
 
 /* For input in Q12 domain */
-opus_int32 silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
-    const opus_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
-    const opus_int              order               /* I   Prediction order                                             */
+oac_int32 silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
+    const oac_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
+    const oac_int              order               /* I   Prediction order                                             */
 )
 {
-    opus_int   k;
-    opus_int32 Atmp_QA[ SILK_MAX_ORDER_LPC ];
-    opus_int32 DC_resp = 0;
+    oac_int   k;
+    oac_int32 Atmp_QA[ SILK_MAX_ORDER_LPC ];
+    oac_int32 DC_resp = 0;
 
     /* Increase Q domain of the AR coefficients */
     for( k = 0; k < order; k++ ) {
-        DC_resp += (opus_int32)A_Q12[ k ];
-        Atmp_QA[ k ] = silk_LSHIFT32( (opus_int32)A_Q12[ k ], QA - 12 );
+        DC_resp += (oac_int32)A_Q12[ k ];
+        Atmp_QA[ k ] = silk_LSHIFT32( (oac_int32)A_Q12[ k ], QA - 12 );
     }
     /* If the DC is unstable, we don't even need to do the full calculations */
     if( DC_resp >= 4096 ) {

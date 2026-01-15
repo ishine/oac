@@ -34,11 +34,11 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Chirp (bw expand) LP AR filter */
 void silk_bwexpander_FLP(
     silk_float          *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
-    const opus_int      d,                  /* I    length of ar                                                */
+    const oac_int      d,                  /* I    length of ar                                                */
     const silk_float    chirp               /* I    chirp factor (typically in range (0..1) )                   */
 )
 {
-    opus_int   i;
+    oac_int   i;
     silk_float cfac = chirp;
 
     for( i = 0; i < d - 1; i++ ) {

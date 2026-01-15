@@ -29,11 +29,11 @@
 #endif
 
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "oac_types.h"
+#include "oac_defines.h"
 #include "arch.h"
 #include "os_support.h"
-#include "opus_private.h"
+#include "oac_private.h"
 
 
 /* Given an extension payload (i.e., excluding the initial ID byte), advance
@@ -42,12 +42,12 @@
    N.B., a "Repeat These Extensions" extension (ID==2) does not advance past
     the repeated extension payloads.
    That requires higher-level logic. */
-static opus_int32 skip_extension_payload(const unsigned char **pdata,
- opus_int32 len, opus_int32 *pheader_size, int id_byte,
- opus_int32 trailing_short_len)
+static oac_int32 skip_extension_payload(const unsigned char **pdata,
+ oac_int32 len, oac_int32 *pheader_size, int id_byte,
+ oac_int32 trailing_short_len)
 {
    const unsigned char *data;
-   opus_int32 header_size;
+   oac_int32 header_size;
    int id, L;
    data = *pdata;
    header_size = 0;
@@ -69,8 +69,8 @@ static opus_int32 skip_extension_payload(const unsigned char **pdata,
          data += len - trailing_short_len;
          len = trailing_short_len;
       } else {
-         opus_int32 bytes=0;
-         opus_int32 lacing;
+         oac_int32 bytes=0;
+         oac_int32 lacing;
          do {
             if (len < 1)
                return -1;
@@ -95,8 +95,8 @@ static opus_int32 skip_extension_payload(const unsigned char **pdata,
     extension ID byte.
    Higher-level logic is required to skip the extension payloads that come
     after it.*/
-static opus_int32 skip_extension(const unsigned char **pdata, opus_int32 len,
- opus_int32 *pheader_size)
+static oac_int32 skip_extension(const unsigned char **pdata, oac_int32 len,
+ oac_int32 *pheader_size)
 {
    const unsigned char *data;
    int id_byte;
@@ -117,8 +117,8 @@ static opus_int32 skip_extension(const unsigned char **pdata, opus_int32 len,
    return len;
 }
 
-void opus_extension_iterator_init(OpusExtensionIterator *iter,
- const unsigned char *data, opus_int32 len, opus_int32 nb_frames) {
+void oac_extension_iterator_init(OacExtensionIterator *iter,
+ const unsigned char *data, oac_int32 len, oac_int32 nb_frames) {
    celt_assert(len >= 0);
    celt_assert(data != NULL || len == 0);
    celt_assert(nb_frames >= 0 && nb_frames <= 48);
@@ -134,7 +134,7 @@ void opus_extension_iterator_init(OpusExtensionIterator *iter,
 
 /* Reset the iterator so it can start iterating again from the first
     extension. */
-void opus_extension_iterator_reset(OpusExtensionIterator *iter) {
+void oac_extension_iterator_reset(OacExtensionIterator *iter) {
    iter->repeat_data = iter->curr_data = iter->data;
    iter->last_long = NULL;
    iter->curr_len = iter->len;
@@ -146,7 +146,7 @@ void opus_extension_iterator_reset(OpusExtensionIterator *iter) {
     frame_max or larger.
    This can allow it to stop iterating early if these extensions are not
     needed. */
-void opus_extension_iterator_set_frame_max(OpusExtensionIterator *iter,
+void oac_extension_iterator_set_frame_max(OacExtensionIterator *iter,
  int frame_max) {
    iter->frame_max = frame_max;
 }
@@ -154,9 +154,9 @@ void opus_extension_iterator_set_frame_max(OpusExtensionIterator *iter,
 /* Return the next repeated extension.
    The return value is non-zero if one is found, negative on error, or 0 if we
     have finished repeating extensions. */
-static int opus_extension_iterator_next_repeat(OpusExtensionIterator *iter,
- opus_extension_data *ext) {
-   opus_int32 header_size;
+static int oac_extension_iterator_next_repeat(OacExtensionIterator *iter,
+ oac_extension_data *ext) {
+   oac_int32 header_size;
    celt_assert(iter->repeat_frame > 0);
    for (;iter->repeat_frame < iter->nb_frames; iter->repeat_frame++) {
       while (iter->src_len > 0) {
@@ -182,7 +182,7 @@ static int opus_extension_iterator_next_repeat(OpusExtensionIterator *iter,
           iter->curr_len, &header_size, repeat_id_byte,
           iter->trailing_short_len);
          if (iter->curr_len < 0) {
-            return OPUS_INVALID_PACKET;
+            return OAC_INVALID_PACKET;
          }
          celt_assert(iter->curr_data - iter->data
           == iter->len - iter->curr_len);
@@ -223,19 +223,19 @@ static int opus_extension_iterator_next_repeat(OpusExtensionIterator *iter,
     indicators, but including the repeated extensions) in bitstream order.
    Due to the extension repetition mechanism, extensions are not necessarily
     returned in frame order. */
-int opus_extension_iterator_next(OpusExtensionIterator *iter,
- opus_extension_data *ext) {
-   opus_int32 header_size;
+int oac_extension_iterator_next(OacExtensionIterator *iter,
+ oac_extension_data *ext) {
+   oac_int32 header_size;
    if (iter->curr_len < 0) {
-      return OPUS_INVALID_PACKET;
+      return OAC_INVALID_PACKET;
    }
    if (iter->repeat_frame > 0) {
       int ret;
       /* We are in the process of repeating some extensions. */
-      ret = opus_extension_iterator_next_repeat(iter, ext);
+      ret = oac_extension_iterator_next_repeat(iter, ext);
       if (ret) return ret;
    }
-   /* Checking this here allows opus_extension_iterator_set_frame_max() to be
+   /* Checking this here allows oac_extension_iterator_set_frame_max() to be
        called at any point. */
    if (iter->curr_frame >= iter->frame_max) {
       return 0;
@@ -250,7 +250,7 @@ int opus_extension_iterator_next(OpusExtensionIterator *iter,
       iter->curr_len = skip_extension(&iter->curr_data, iter->curr_len,
        &header_size);
       if (iter->curr_len < 0) {
-         return OPUS_INVALID_PACKET;
+         return OAC_INVALID_PACKET;
       }
       celt_assert(iter->curr_data - iter->data == iter->len - iter->curr_len);
       if (id == 1) {
@@ -264,7 +264,7 @@ int opus_extension_iterator_next(OpusExtensionIterator *iter,
          }
          if (iter->curr_frame >= iter->nb_frames) {
             iter->curr_len = -1;
-            return OPUS_INVALID_PACKET;
+            return OAC_INVALID_PACKET;
          }
          /* If we were asked to stop at frame_max, skip extensions for later
              frames. */
@@ -282,7 +282,7 @@ int opus_extension_iterator_next(OpusExtensionIterator *iter,
          iter->repeat_len = curr_data0 - iter->repeat_data;
          iter->src_data = iter->repeat_data;
          iter->src_len = iter->repeat_len;
-         ret = opus_extension_iterator_next_repeat(iter, ext);
+         ret = oac_extension_iterator_next_repeat(iter, ext);
          if (ret) return ret;
       }
       else if (id > 2) {
@@ -308,12 +308,12 @@ int opus_extension_iterator_next(OpusExtensionIterator *iter,
    return 0;
 }
 
-int opus_extension_iterator_find(OpusExtensionIterator *iter,
- opus_extension_data *ext, int id) {
-   opus_extension_data curr_ext;
+int oac_extension_iterator_find(OacExtensionIterator *iter,
+ oac_extension_data *ext, int id) {
+   oac_extension_data curr_ext;
    int ret;
    for(;;) {
-      ret = opus_extension_iterator_next(iter, &curr_ext);
+      ret = oac_extension_iterator_next(iter, &curr_ext);
       if (ret <= 0) {
          return ret;
       }
@@ -326,51 +326,51 @@ int opus_extension_iterator_find(OpusExtensionIterator *iter,
 
 /* Count the number of extensions, excluding real padding, separators, and
     repeat indicators, but including the repeated extensions. */
-opus_int32 opus_packet_extensions_count(const unsigned char *data,
- opus_int32 len, int nb_frames)
+oac_int32 oac_packet_extensions_count(const unsigned char *data,
+ oac_int32 len, int nb_frames)
 {
-   OpusExtensionIterator iter;
+   OacExtensionIterator iter;
    int count;
-   opus_extension_iterator_init(&iter, data, len, nb_frames);
-   for (count=0; opus_extension_iterator_next(&iter, NULL) > 0; count++);
+   oac_extension_iterator_init(&iter, data, len, nb_frames);
+   for (count=0; oac_extension_iterator_next(&iter, NULL) > 0; count++);
    return count;
 }
 
 /* Count the number of extensions for each frame, excluding real padding and
     separators and repeat indicators, but including the repeated extensions. */
-opus_int32 opus_packet_extensions_count_ext(const unsigned char *data,
- opus_int32 len, opus_int32 *nb_frame_exts, int nb_frames) {
-   OpusExtensionIterator iter;
-   opus_extension_data ext;
+oac_int32 oac_packet_extensions_count_ext(const unsigned char *data,
+ oac_int32 len, oac_int32 *nb_frame_exts, int nb_frames) {
+   OacExtensionIterator iter;
+   oac_extension_data ext;
    int count;
-   opus_extension_iterator_init(&iter, data, len, nb_frames);
-   OPUS_CLEAR(nb_frame_exts, nb_frames);
-   for (count=0; opus_extension_iterator_next(&iter, &ext) > 0; count++) {
+   oac_extension_iterator_init(&iter, data, len, nb_frames);
+   OAC_CLEAR(nb_frame_exts, nb_frames);
+   for (count=0; oac_extension_iterator_next(&iter, &ext) > 0; count++) {
       nb_frame_exts[ext.frame]++;
    }
    return count;
 }
 
-/* Extract extensions from Opus padding (excluding real padding, separators,
+/* Extract extensions from Oac padding (excluding real padding, separators,
     and repeat indicators, but including the repeated extensions) in bitstream
     order.
    Due to the extension repetition mechanism, extensions are not necessarily
     returned in frame order. */
-opus_int32 opus_packet_extensions_parse(const unsigned char *data,
- opus_int32 len, opus_extension_data *extensions, opus_int32 *nb_extensions,
+oac_int32 oac_packet_extensions_parse(const unsigned char *data,
+ oac_int32 len, oac_extension_data *extensions, oac_int32 *nb_extensions,
  int nb_frames) {
-   OpusExtensionIterator iter;
+   OacExtensionIterator iter;
    int count;
    int ret;
    celt_assert(nb_extensions != NULL);
    celt_assert(extensions != NULL || *nb_extensions == 0);
-   opus_extension_iterator_init(&iter, data, len, nb_frames);
+   oac_extension_iterator_init(&iter, data, len, nb_frames);
    for (count=0;; count++) {
-      opus_extension_data ext;
-      ret = opus_extension_iterator_next(&iter, &ext);
+      oac_extension_data ext;
+      ret = oac_extension_iterator_next(&iter, &ext);
       if (ret <= 0) break;
       if (count == *nb_extensions) {
-         return OPUS_BUFFER_TOO_SMALL;
+         return OAC_BUFFER_TOO_SMALL;
       }
       extensions[count] = ext;
    }
@@ -378,17 +378,17 @@ opus_int32 opus_packet_extensions_parse(const unsigned char *data,
    return ret;
 }
 
-/* Extract extensions from Opus padding (excluding real padding, separators,
+/* Extract extensions from Oac padding (excluding real padding, separators,
     and repeat indicators, but including the repeated extensions) in frame
     order.
    nb_frame_exts must be filled with the output of
-    opus_packet_extensions_count_ext(). */
-opus_int32 opus_packet_extensions_parse_ext(const unsigned char *data,
- opus_int32 len, opus_extension_data *extensions, opus_int32 *nb_extensions,
- const opus_int32 *nb_frame_exts, int nb_frames) {
-   OpusExtensionIterator iter;
-   opus_extension_data ext;
-   opus_int32 nb_frames_cum[49];
+    oac_packet_extensions_count_ext(). */
+oac_int32 oac_packet_extensions_parse_ext(const unsigned char *data,
+ oac_int32 len, oac_extension_data *extensions, oac_int32 *nb_extensions,
+ const oac_int32 *nb_frame_exts, int nb_frames) {
+   OacExtensionIterator iter;
+   oac_extension_data ext;
+   oac_int32 nb_frames_cum[49];
    int count;
    int prev_total;
    int ret;
@@ -404,14 +404,14 @@ opus_int32 opus_packet_extensions_parse_ext(const unsigned char *data,
       prev_total = total;
    }
    nb_frames_cum[count] = prev_total;
-   opus_extension_iterator_init(&iter, data, len, nb_frames);
+   oac_extension_iterator_init(&iter, data, len, nb_frames);
    for (count=0;; count++) {
-      opus_int32 idx;
-      ret = opus_extension_iterator_next(&iter, &ext);
+      oac_int32 idx;
+      ret = oac_extension_iterator_next(&iter, &ext);
       if (ret <= 0) break;
       idx = nb_frames_cum[ext.frame]++;
       if (idx >= *nb_extensions) {
-         return OPUS_BUFFER_TOO_SMALL;
+         return OAC_BUFFER_TOO_SMALL;
       }
       celt_assert(idx < nb_frames_cum[ext.frame + 1]);
       extensions[idx] = ext;
@@ -420,31 +420,31 @@ opus_int32 opus_packet_extensions_parse_ext(const unsigned char *data,
    return ret;
 }
 
-static int write_extension_payload(unsigned char *data, opus_int32 len,
- opus_int32 pos, const opus_extension_data *ext, int last) {
+static int write_extension_payload(unsigned char *data, oac_int32 len,
+ oac_int32 pos, const oac_extension_data *ext, int last) {
    celt_assert(ext->id >= 3 && ext->id <= 127);
    if (ext->id < 32)
    {
       if (ext->len < 0 || ext->len > 1)
-         return OPUS_BAD_ARG;
+         return OAC_BAD_ARG;
       if (ext->len > 0) {
          if (len-pos < ext->len)
-            return OPUS_BUFFER_TOO_SMALL;
+            return OAC_BUFFER_TOO_SMALL;
          if (data) data[pos] = ext->data[0];
          pos++;
       }
    } else {
-      opus_int32 length_bytes;
+      oac_int32 length_bytes;
       if (ext->len < 0)
-         return OPUS_BAD_ARG;
+         return OAC_BAD_ARG;
       length_bytes = 1 + ext->len/255;
       if (last)
          length_bytes = 0;
       if (len-pos < length_bytes + ext->len)
-         return OPUS_BUFFER_TOO_SMALL;
+         return OAC_BUFFER_TOO_SMALL;
       if (!last)
       {
-         opus_int32 j;
+         oac_int32 j;
          for (j=0;j<ext->len/255;j++) {
             if (data) data[pos] = 255;
             pos++;
@@ -452,55 +452,55 @@ static int write_extension_payload(unsigned char *data, opus_int32 len,
          if (data) data[pos] = ext->len % 255;
          pos++;
       }
-      if (data) OPUS_COPY(&data[pos], ext->data, ext->len);
+      if (data) OAC_COPY(&data[pos], ext->data, ext->len);
       pos += ext->len;
    }
    return pos;
 }
 
-static int write_extension(unsigned char *data, opus_int32 len, opus_int32 pos,
- const opus_extension_data *ext, int last) {
+static int write_extension(unsigned char *data, oac_int32 len, oac_int32 pos,
+ const oac_extension_data *ext, int last) {
    if (len-pos < 1)
-      return OPUS_BUFFER_TOO_SMALL;
+      return OAC_BUFFER_TOO_SMALL;
    celt_assert(ext->id >= 3 && ext->id <= 127);
    if (data) data[pos] = (ext->id<<1) + (ext->id < 32 ? ext->len : !last);
    pos++;
    return write_extension_payload(data, len, pos, ext, last);
 }
 
-opus_int32 opus_packet_extensions_generate(unsigned char *data, opus_int32 len,
- const opus_extension_data  *extensions, opus_int32 nb_extensions,
+oac_int32 oac_packet_extensions_generate(unsigned char *data, oac_int32 len,
+ const oac_extension_data  *extensions, oac_int32 nb_extensions,
  int nb_frames, int pad)
 {
-   opus_int32 frame_min_idx[48];
-   opus_int32 frame_max_idx[48];
-   opus_int32 frame_repeat_idx[48];
-   opus_int32 i;
+   oac_int32 frame_min_idx[48];
+   oac_int32 frame_max_idx[48];
+   oac_int32 frame_repeat_idx[48];
+   oac_int32 i;
    int f;
    int curr_frame = 0;
-   opus_int32 pos = 0;
-   opus_int32 written = 0;
+   oac_int32 pos = 0;
+   oac_int32 written = 0;
 
    celt_assert(len >= 0);
-   if (nb_frames > 48) return OPUS_BAD_ARG;
+   if (nb_frames > 48) return OAC_BAD_ARG;
 
    /* Do a little work up-front to make this O(nb_extensions) instead of
        O(nb_extensions*nb_frames) so long as the extensions are in frame
        order (without requiring that they be in frame order). */
    for (f=0;f<nb_frames;f++) frame_min_idx[f] = nb_extensions;
-   OPUS_CLEAR(frame_max_idx, nb_frames);
+   OAC_CLEAR(frame_max_idx, nb_frames);
    for (i=0;i<nb_extensions;i++)
    {
       f = extensions[i].frame;
-      if (f < 0 || f >= nb_frames) return OPUS_BAD_ARG;
-      if (extensions[i].id < 3 || extensions[i].id > 127) return OPUS_BAD_ARG;
+      if (f < 0 || f >= nb_frames) return OAC_BAD_ARG;
+      if (extensions[i].id < 3 || extensions[i].id > 127) return OAC_BAD_ARG;
       frame_min_idx[f] = IMIN(frame_min_idx[f], i);
       frame_max_idx[f] = IMAX(frame_max_idx[f], i+1);
    }
    for (f=0;f<nb_frames;f++) frame_repeat_idx[f] = frame_min_idx[f];
    for (f=0;f<nb_frames;f++)
    {
-      opus_int32 last_long_idx;
+      oac_int32 last_long_idx;
       int repeat_count;
       repeat_count = 0;
       last_long_idx = -1;
@@ -571,7 +571,7 @@ opus_int32 opus_packet_extensions_generate(unsigned char *data, opus_int32 len,
             if (f != curr_frame) {
                int diff = f - curr_frame;
                if (len-pos < 2)
-                  return OPUS_BUFFER_TOO_SMALL;
+                  return OAC_BUFFER_TOO_SMALL;
                if (diff == 1) {
                   if (data) data[pos] = 0x02;
                   pos++;
@@ -598,7 +598,7 @@ opus_int32 opus_packet_extensions_generate(unsigned char *data, opus_int32 len,
                last = written + nb_repeated == nb_extensions
                 || (last_long_idx < 0 && i+1 >= frame_max_idx[f]);
                if (len-pos < 1)
-                  return OPUS_BUFFER_TOO_SMALL;
+                  return OAC_BUFFER_TOO_SMALL;
                if (data) data[pos] = 0x04 + !last;
                pos++;
                for (g=f+1;g<nb_frames;g++)
@@ -627,9 +627,9 @@ opus_int32 opus_packet_extensions_generate(unsigned char *data, opus_int32 len,
       an L=1 case still fits. */
    if (pad && pos < len)
    {
-      opus_int32 padding = len - pos;
+      oac_int32 padding = len - pos;
       if (data) {
-         OPUS_MOVE(data+padding, data, pos);
+         OAC_MOVE(data+padding, data, pos);
          for (i=0;i<padding;i++)
             data[i] = 0x01;
       }
@@ -642,16 +642,16 @@ opus_int32 opus_packet_extensions_generate(unsigned char *data, opus_int32 len,
 #include <stdio.h>
 int main()
 {
-   opus_extension_data ext[] = {{2, 0, (const unsigned char *)"a", 1},
+   oac_extension_data ext[] = {{2, 0, (const unsigned char *)"a", 1},
    {32, 10, (const unsigned char *)"DRED", 4},
    {33, 1, (const unsigned char *)"NOT DRED", 8},
    {3, 4, (const unsigned char *)NULL, 0}
    };
-   opus_extension_data ext2[10];
+   oac_extension_data ext2[10];
    int i, len;
    int nb_ext = 10;
    unsigned char packet[10000];
-   len = opus_packet_extensions_generate(packet, 32, ext, 4, 1);
+   len = oac_packet_extensions_generate(packet, 32, ext, 4, 1);
    for (i=0;i<len;i++)
    {
       printf("%#04x ", packet[i]);
@@ -659,8 +659,8 @@ int main()
          printf("\n");
    }
    printf("\n");
-   printf("count = %d\n", opus_packet_extensions_count(packet, len));
-   opus_packet_extensions_parse(packet, len, ext2, &nb_ext);
+   printf("count = %d\n", oac_packet_extensions_count(packet, len));
+   oac_packet_extensions_parse(packet, len, ext2, &nb_ext);
    for (i=0;i<nb_ext;i++)
    {
       int j;

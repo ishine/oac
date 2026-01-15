@@ -32,13 +32,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 
 /* Set decoder sampling rate */
-opus_int silk_decoder_set_fs(
+oac_int silk_decoder_set_fs(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state pointer                       */
-    opus_int                    fs_kHz,                         /* I    Sampling frequency (kHz)                    */
-    opus_int32                  fs_API_Hz                       /* I    API Sampling frequency (Hz)                 */
+    oac_int                    fs_kHz,                         /* I    Sampling frequency (kHz)                    */
+    oac_int32                  fs_API_Hz                       /* I    API Sampling frequency (Hz)                 */
 )
 {
-    opus_int frame_length, ret = 0;
+    oac_int frame_length, ret = 0;
 
     celt_assert( fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16 );
     celt_assert( psDec->nb_subfr == MAX_NB_SUBFR || psDec->nb_subfr == MAX_NB_SUBFR/2 );

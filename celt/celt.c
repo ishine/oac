@@ -59,7 +59,7 @@
 #endif
 
 
-int resampling_factor(opus_int32 rate)
+int resampling_factor(oac_int32 rate)
 {
    int ret;
    switch (rate)
@@ -95,14 +95,14 @@ int resampling_factor(opus_int32 rate)
 
 #if !defined(OVERRIDE_COMB_FILTER_CONST) || defined(NON_STATIC_COMB_FILTER_CONST_C)
 /* This version should be faster on ARM */
-#ifdef OPUS_ARM_ASM
+#ifdef OAC_ARM_ASM
 #ifndef NON_STATIC_COMB_FILTER_CONST_C
 static
 #endif
-void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
+void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
       celt_coef g10, celt_coef g11, celt_coef g12)
 {
-   opus_val32 x0, x1, x2, x3, x4;
+   oac_val32 x0, x1, x2, x3, x4;
    int i;
    x4 = SHL32(x[-T-2], 1);
    x3 = SHL32(x[-T-1], 1);
@@ -110,7 +110,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
    x1 = SHL32(x[-T+1], 1);
    for (i=0;i<N-4;i+=5)
    {
-      opus_val32 t;
+      oac_val32 t;
       x0=SHL32(x[i-T+2],1);
       t = MAC_COEF_32_ARM(x[i], g10, x2);
       t = MAC_COEF_32_ARM(t, g11, ADD32(x1,x3));
@@ -145,7 +145,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #ifdef CUSTOM_MODES
    for (;i<N;i++)
    {
-      opus_val32 t;
+      oac_val32 t;
       x0=SHL32(x[i-T+2],1);
       t = MAC_COEF_32_ARM(x[i], g10, x2);
       t = MAC_COEF_32_ARM(t, g11, ADD32(x1,x3));
@@ -163,10 +163,10 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #ifndef NON_STATIC_COMB_FILTER_CONST_C
 static
 #endif
-void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
+void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
       celt_coef g10, celt_coef g11, celt_coef g12)
 {
-   opus_val32 x0, x1, x2, x3, x4;
+   oac_val32 x0, x1, x2, x3, x4;
    int i;
    x4 = x[-T-2];
    x3 = x[-T-1];
@@ -195,12 +195,12 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #endif
 
 #ifdef ENABLE_QEXT
-void comb_filter_qext(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
-      opus_val16 g0, opus_val16 g1, int tapset0, int tapset1,
+void comb_filter_qext(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
+      oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
       const celt_coef *window, int overlap, int arch)
 {
-   VARDECL(opus_val32, mem_buf);
-   VARDECL(opus_val32, buf);
+   VARDECL(oac_val32, mem_buf);
+   VARDECL(oac_val32, buf);
    celt_coef new_window[120];
    int s;
    int i;
@@ -209,15 +209,15 @@ void comb_filter_qext(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
    SAVE_STACK;
    /* Using ALLOC() instead of a regular stack allocation to minimize real stack use when using the pseudostack.
       This is useful on some embedded systems. */
-   ALLOC(mem_buf, COMBFILTER_MAXPERIOD+960, opus_val32);
-   ALLOC(buf, COMBFILTER_MAXPERIOD+960, opus_val32);
+   ALLOC(mem_buf, COMBFILTER_MAXPERIOD+960, oac_val32);
+   ALLOC(buf, COMBFILTER_MAXPERIOD+960, oac_val32);
    N2 = N/2;
    overlap2=overlap/2;
    /* At 96 kHz, we double the period and the spacing between taps, which is equivalent
       to creating a mirror image of the filter around 24 kHz. It also means we can process
       the even and odd samples completely independently. */
    for (s=0;s<2;s++) {
-      opus_val32 *yptr;
+      oac_val32 *yptr;
       for (i=0;i<overlap2;i++) new_window[i] = window[2*i+s];
       for (i=0;i<COMBFILTER_MAXPERIOD+N2;i++) mem_buf[i] = x[2*i+s-2*COMBFILTER_MAXPERIOD];
       if (x==y) {
@@ -235,15 +235,15 @@ void comb_filter_qext(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
 #endif
 
 #ifndef OVERRIDE_comb_filter
-void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
-      opus_val16 g0, opus_val16 g1, int tapset0, int tapset1,
+void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
+      oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
       const celt_coef *window, int overlap, int arch)
 {
    int i;
    /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
    celt_coef g00, g01, g02, g10, g11, g12;
-   opus_val32 x0, x1, x2, x3, x4;
-   static const opus_val16 gains[3][3] = {
+   oac_val32 x0, x1, x2, x3, x4;
+   static const oac_val16 gains[3][3] = {
          {QCONST16(0.3066406250f, 15), QCONST16(0.2170410156f, 15), QCONST16(0.1296386719f, 15)},
          {QCONST16(0.4638671875f, 15), QCONST16(0.2680664062f, 15), QCONST16(0.f, 15)},
          {QCONST16(0.7998046875f, 15), QCONST16(0.1000976562f, 15), QCONST16(0.f, 15)}};
@@ -255,9 +255,9 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
 #endif
    if (g0==0 && g1==0)
    {
-      /* OPT: Happens to work without the OPUS_MOVE(), but only because the current encoder already copies x to y */
+      /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
       if (x!=y)
-         OPUS_MOVE(y, x, N);
+         OAC_MOVE(y, x, N);
       return;
    }
    /* When the gain is zero, T0 and/or T1 is set to zero. We need
@@ -302,9 +302,9 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
    }
    if (g1==0)
    {
-      /* OPT: Happens to work without the OPUS_MOVE(), but only because the current encoder already copies x to y */
+      /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
       if (x!=y)
-         OPUS_MOVE(y+overlap, x+overlap, N-overlap);
+         OAC_MOVE(y+overlap, x+overlap, N-overlap);
       return;
    }
 
@@ -339,7 +339,7 @@ void init_caps(const CELTMode *m,int *cap,int LM,int C)
 
 
 
-const char *opus_strerror(int error)
+const char *oac_strerror(int error)
 {
    static const char * const error_strings[8] = {
       "success",
@@ -357,9 +357,9 @@ const char *opus_strerror(int error)
       return error_strings[-error];
 }
 
-const char *opus_get_version_string(void)
+const char *oac_get_version_string(void)
 {
-    return "libopus " PACKAGE_VERSION
+    return "liboac " PACKAGE_VERSION
     /* Applications may rely on the presence of this substring in the version
        string to determine if they have a fixed-point or floating-point build
        at runtime. */

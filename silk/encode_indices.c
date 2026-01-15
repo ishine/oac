@@ -35,15 +35,15 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_encode_indices(
     silk_encoder_state          *psEncC,                        /* I/O  Encoder state                               */
     ec_enc                      *psRangeEnc,                    /* I/O  Compressor data structure                   */
-    opus_int                    FrameIndex,                     /* I    Frame number                                */
-    opus_int                    encode_LBRR,                    /* I    Flag indicating LBRR data is being encoded  */
-    opus_int                    condCoding                      /* I    The type of conditional coding to use       */
+    oac_int                    FrameIndex,                     /* I    Frame number                                */
+    oac_int                    encode_LBRR,                    /* I    Flag indicating LBRR data is being encoded  */
+    oac_int                    condCoding                      /* I    The type of conditional coding to use       */
 )
 {
-    opus_int   i, k, typeOffset;
-    opus_int   encode_absolute_lagIndex, delta_lagIndex;
-    opus_int16 ec_ix[ MAX_LPC_ORDER ];
-    opus_uint8 pred_Q8[ MAX_LPC_ORDER ];
+    oac_int   i, k, typeOffset;
+    oac_int   encode_absolute_lagIndex, delta_lagIndex;
+    oac_int16 ec_ix[ MAX_LPC_ORDER ];
+    oac_uint8 pred_Q8[ MAX_LPC_ORDER ];
     const SideInfoIndices *psIndices;
 
     if( encode_LBRR ) {
@@ -130,7 +130,7 @@ void silk_encode_indices(
         }
         if( encode_absolute_lagIndex ) {
             /* Absolute encoding */
-            opus_int32 pitch_high_bits, pitch_low_bits;
+            oac_int32 pitch_high_bits, pitch_low_bits;
             pitch_high_bits = silk_DIV32_16( psIndices->lagIndex, silk_RSHIFT( psEncC->fs_kHz, 1 ) );
             pitch_low_bits = psIndices->lagIndex - silk_SMULBB( pitch_high_bits, silk_RSHIFT( psEncC->fs_kHz, 1 ) );
             silk_assert( pitch_low_bits < psEncC->fs_kHz / 2 );

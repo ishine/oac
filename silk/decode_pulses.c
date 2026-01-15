@@ -36,16 +36,16 @@ POSSIBILITY OF SUCH DAMAGE.
 /*********************************************/
 void silk_decode_pulses(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
-    opus_int16                  pulses[],                       /* O    Excitation signal                           */
-    const opus_int              signalType,                     /* I    Sigtype                                     */
-    const opus_int              quantOffsetType,                /* I    quantOffsetType                             */
-    const opus_int              frame_length                    /* I    Frame length                                */
+    oac_int16                  pulses[],                       /* O    Excitation signal                           */
+    const oac_int              signalType,                     /* I    Sigtype                                     */
+    const oac_int              quantOffsetType,                /* I    quantOffsetType                             */
+    const oac_int              frame_length                    /* I    Frame length                                */
 )
 {
-    opus_int   i, j, k, iter, abs_q, nLS, RateLevelIndex;
-    opus_int   sum_pulses[ MAX_NB_SHELL_BLOCKS ], nLshifts[ MAX_NB_SHELL_BLOCKS ];
-    opus_int16 *pulses_ptr;
-    const opus_uint8 *cdf_ptr;
+    oac_int   i, j, k, iter, abs_q, nLS, RateLevelIndex;
+    oac_int   sum_pulses[ MAX_NB_SHELL_BLOCKS ], nLshifts[ MAX_NB_SHELL_BLOCKS ];
+    oac_int16 *pulses_ptr;
+    const oac_uint8 *cdf_ptr;
 
     /*********************/
     /* Decode rate level */

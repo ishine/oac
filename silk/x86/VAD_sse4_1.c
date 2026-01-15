@@ -37,35 +37,35 @@
 #include "stack_alloc.h"
 
 /* Weighting factors for tilt measure */
-static const opus_int32 tiltWeights[ VAD_N_BANDS ] = { 30000, 6000, -12000, -12000 };
+static const oac_int32 tiltWeights[ VAD_N_BANDS ] = { 30000, 6000, -12000, -12000 };
 
 /***************************************/
 /* Get the speech activity level in Q8 */
 /***************************************/
-opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if success                  */
+oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if success                  */
     silk_encoder_state          *psEncC,            /* I/O  Encoder state                               */
-    const opus_int16            pIn[]               /* I    PCM input                                   */
+    const oac_int16            pIn[]               /* I    PCM input                                   */
 )
 {
-    opus_int   SA_Q15, pSNR_dB_Q7, input_tilt;
-    opus_int   decimated_framelength1, decimated_framelength2;
-    opus_int   decimated_framelength;
-    opus_int   dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
-    opus_int32 sumSquared, smooth_coef_Q16;
-    opus_int16 HPstateTmp;
-    VARDECL( opus_int16, X );
-    opus_int32 Xnrg[ VAD_N_BANDS ];
-    opus_int32 NrgToNoiseRatio_Q8[ VAD_N_BANDS ];
-    opus_int32 speech_nrg, x_tmp;
-    opus_int   X_offset[ VAD_N_BANDS ];
-    opus_int   ret = 0;
+    oac_int   SA_Q15, pSNR_dB_Q7, input_tilt;
+    oac_int   decimated_framelength1, decimated_framelength2;
+    oac_int   decimated_framelength;
+    oac_int   dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
+    oac_int32 sumSquared, smooth_coef_Q16;
+    oac_int16 HPstateTmp;
+    VARDECL( oac_int16, X );
+    oac_int32 Xnrg[ VAD_N_BANDS ];
+    oac_int32 NrgToNoiseRatio_Q8[ VAD_N_BANDS ];
+    oac_int32 speech_nrg, x_tmp;
+    oac_int   X_offset[ VAD_N_BANDS ];
+    oac_int   ret = 0;
     silk_VAD_state *psSilk_VAD = &psEncC->sVAD;
 
     SAVE_STACK;
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     silk_encoder_state psEncC_c;
-    opus_int ret_c;
+    oac_int ret_c;
 
     silk_memcpy( &psEncC_c, psEncC, sizeof( psEncC_c ) );
     ret_c = silk_VAD_GetSA_Q8_c( &psEncC_c, pIn );
@@ -96,7 +96,7 @@ opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if s
     X_offset[ 1 ] = decimated_framelength + decimated_framelength2;
     X_offset[ 2 ] = X_offset[ 1 ] + decimated_framelength;
     X_offset[ 3 ] = X_offset[ 2 ] + decimated_framelength2;
-    ALLOC( X, X_offset[ 3 ] + decimated_framelength1, opus_int16 );
+    ALLOC( X, X_offset[ 3 ] + decimated_framelength1, oac_int16 );
 
     /* 0-8 kHz to 0-4 kHz and 4-8 kHz */
     silk_ana_filt_bank_1( pIn, &psSilk_VAD->AnaState[  0 ],
@@ -206,7 +206,7 @@ opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if s
             sumSquared = silk_SMLABB( sumSquared, SNR_Q7, SNR_Q7 );          /* Q14 */
 
             /* Tilt measure */
-            if( speech_nrg < ( (opus_int32)1 << 20 ) ) {
+            if( speech_nrg < ( (oac_int32)1 << 20 ) ) {
                 /* Scale down SNR value for small subband speech energies */
                 SNR_Q7 = silk_SMULWB( silk_LSHIFT( silk_SQRT_APPROX( speech_nrg ), 6 ), SNR_Q7 );
             }
@@ -220,7 +220,7 @@ opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if s
     sumSquared = silk_DIV32_16( sumSquared, VAD_N_BANDS ); /* Q14 */
 
     /* Root-mean-square approximation, scale to dBs, and write to output pointer */
-    pSNR_dB_Q7 = (opus_int16)( 3 * silk_SQRT_APPROX( sumSquared ) ); /* Q7 */
+    pSNR_dB_Q7 = (oac_int16)( 3 * silk_SQRT_APPROX( sumSquared ) ); /* Q7 */
 
     /*********************************/
     /* Speech Probability Estimation */
@@ -262,7 +262,7 @@ opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if s
     /* Energy Level and SNR estimation */
     /***********************************/
     /* Smoothing coefficient */
-    smooth_coef_Q16 = silk_SMULWB( VAD_SNR_SMOOTH_COEF_Q18, silk_SMULWB( (opus_int32)SA_Q15, SA_Q15 ) );
+    smooth_coef_Q16 = silk_SMULWB( VAD_SNR_SMOOTH_COEF_Q18, silk_SMULWB( (oac_int32)SA_Q15, SA_Q15 ) );
 
     if( psEncC->frame_length == 10 * psEncC->fs_kHz ) {
         smooth_coef_Q16 >>= 1;
@@ -279,7 +279,7 @@ opus_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if s
         psEncC->input_quality_bands_Q15[ b ] = silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16 * 128, 4 ) );
     }
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     silk_assert( ret == ret_c );
     silk_assert( !memcmp( &psEncC_c, psEncC, sizeof( psEncC_c ) ) );
 #endif

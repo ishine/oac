@@ -31,15 +31,15 @@
 
 #include "arch.h"
 #include "float_cast.h"
-#include "opus_private.h"
-#include "opus_defines.h"
+#include "oac_private.h"
+#include "oac_defines.h"
 #include "mapping_matrix.h"
 
 #define MATRIX_INDEX(nb_rows, row, col) (nb_rows * col + row)
 
-opus_int32 mapping_matrix_get_size(int rows, int cols)
+oac_int32 mapping_matrix_get_size(int rows, int cols)
 {
-  opus_int32 size;
+  oac_int32 size;
 
   /* Mapping Matrix must only support up to 255 channels in or out.
    * Additionally, the total cell count must be <= 65004 octets in order
@@ -47,29 +47,29 @@ opus_int32 mapping_matrix_get_size(int rows, int cols)
    */
   if (rows > 255 || cols > 255)
       return 0;
-  size = rows * (opus_int32)cols * sizeof(opus_int16);
+  size = rows * (oac_int32)cols * sizeof(oac_int16);
   if (size > 65004)
     return 0;
 
   return align(sizeof(MappingMatrix)) + align(size);
 }
 
-opus_int16 *mapping_matrix_get_data(const MappingMatrix *matrix)
+oac_int16 *mapping_matrix_get_data(const MappingMatrix *matrix)
 {
   /* void* cast avoids clang -Wcast-align warning */
-  return (opus_int16*)(void*)((char*)matrix + align(sizeof(MappingMatrix)));
+  return (oac_int16*)(void*)((char*)matrix + align(sizeof(MappingMatrix)));
 }
 
 void mapping_matrix_init(MappingMatrix * const matrix,
-  int rows, int cols, int gain, const opus_int16 *data, opus_int32 data_size)
+  int rows, int cols, int gain, const oac_int16 *data, oac_int32 data_size)
 {
   int i;
-  opus_int16 *ptr;
+  oac_int16 *ptr;
 
 #if !defined(ENABLE_ASSERTIONS)
   (void)data_size;
 #endif
-  celt_assert(align(data_size) == align(rows * cols * sizeof(opus_int16)));
+  celt_assert(align(data_size) == align(rows * cols * sizeof(oac_int16)));
 
   matrix->rows = rows;
   matrix->cols = cols;
@@ -86,13 +86,13 @@ void mapping_matrix_multiply_channel_in_float(
     const MappingMatrix *matrix,
     const float *input,
     int input_rows,
-    opus_res *output,
+    oac_res *output,
     int output_row,
     int output_rows,
     int frame_size)
 {
   /* Matrix data is ordered col-wise. */
-  opus_int16* matrix_data;
+  oac_int16* matrix_data;
   int i, col;
 
   celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
@@ -114,7 +114,7 @@ void mapping_matrix_multiply_channel_in_float(
 
 void mapping_matrix_multiply_channel_out_float(
     const MappingMatrix *matrix,
-    const opus_res *input,
+    const oac_res *input,
     int input_row,
     int input_rows,
     float *output,
@@ -123,7 +123,7 @@ void mapping_matrix_multiply_channel_out_float(
 )
 {
   /* Matrix data is ordered col-wise. */
-  opus_int16* matrix_data;
+  oac_int16* matrix_data;
   int i, row;
   float input_sample;
 
@@ -147,15 +147,15 @@ void mapping_matrix_multiply_channel_out_float(
 
 void mapping_matrix_multiply_channel_in_short(
     const MappingMatrix *matrix,
-    const opus_int16 *input,
+    const oac_int16 *input,
     int input_rows,
-    opus_res *output,
+    oac_res *output,
     int output_row,
     int output_rows,
     int frame_size)
 {
   /* Matrix data is ordered col-wise. */
-  opus_int16* matrix_data;
+  oac_int16* matrix_data;
   int i, col;
 
   celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
@@ -164,13 +164,13 @@ void mapping_matrix_multiply_channel_in_short(
 
   for (i = 0; i < frame_size; i++)
   {
-    opus_val32 tmp = 0;
+    oac_val32 tmp = 0;
     for (col = 0; col < input_rows; col++)
     {
 #if defined(FIXED_POINT)
       tmp +=
-        ((opus_int32)matrix_data[MATRIX_INDEX(matrix->rows, output_row, col)] *
-        (opus_int32)input[MATRIX_INDEX(input_rows, col, i)]) >> 8;
+        ((oac_int32)matrix_data[MATRIX_INDEX(matrix->rows, output_row, col)] *
+        (oac_int32)input[MATRIX_INDEX(input_rows, col, i)]) >> 8;
 #else
       tmp +=
         matrix_data[MATRIX_INDEX(matrix->rows, output_row, col)] *
@@ -187,17 +187,17 @@ void mapping_matrix_multiply_channel_in_short(
 
 void mapping_matrix_multiply_channel_out_short(
     const MappingMatrix *matrix,
-    const opus_res *input,
+    const oac_res *input,
     int input_row,
     int input_rows,
-    opus_int16 *output,
+    oac_int16 *output,
     int output_rows,
     int frame_size)
 {
   /* Matrix data is ordered col-wise. */
-  opus_int16* matrix_data;
+  oac_int16* matrix_data;
   int i, row;
-  opus_int32 input_sample;
+  oac_int32 input_sample;
 
   celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
@@ -208,8 +208,8 @@ void mapping_matrix_multiply_channel_out_short(
     input_sample = RES2INT16(input[input_rows * i]);
     for (row = 0; row < output_rows; row++)
     {
-      opus_int32 tmp =
-        (opus_int32)matrix_data[MATRIX_INDEX(matrix->rows, row, input_row)] *
+      oac_int32 tmp =
+        (oac_int32)matrix_data[MATRIX_INDEX(matrix->rows, row, input_row)] *
         input_sample;
       output[MATRIX_INDEX(output_rows, row, i)] += (tmp + 16384) >> 15;
     }
@@ -218,15 +218,15 @@ void mapping_matrix_multiply_channel_out_short(
 
 void mapping_matrix_multiply_channel_in_int24(
     const MappingMatrix *matrix,
-    const opus_int32 *input,
+    const oac_int32 *input,
     int input_rows,
-    opus_res *output,
+    oac_res *output,
     int output_row,
     int output_rows,
     int frame_size)
 {
   /* Matrix data is ordered col-wise. */
-  opus_int16* matrix_data;
+  oac_int16* matrix_data;
   int i, col;
 
   celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
@@ -235,12 +235,12 @@ void mapping_matrix_multiply_channel_in_int24(
 
   for (i = 0; i < frame_size; i++)
   {
-    opus_val64 tmp = 0;
+    oac_val64 tmp = 0;
     for (col = 0; col < input_rows; col++)
     {
       tmp +=
         matrix_data[MATRIX_INDEX(matrix->rows, output_row, col)] *
-        (opus_val64)input[MATRIX_INDEX(input_rows, col, i)];
+        (oac_val64)input[MATRIX_INDEX(input_rows, col, i)];
     }
 #if defined(FIXED_POINT)
     output[output_rows * i] = INT24TORES((tmp + 16384) >> 15);
@@ -252,17 +252,17 @@ void mapping_matrix_multiply_channel_in_int24(
 
 void mapping_matrix_multiply_channel_out_int24(
     const MappingMatrix *matrix,
-    const opus_res *input,
+    const oac_res *input,
     int input_row,
     int input_rows,
-    opus_int32 *output,
+    oac_int32 *output,
     int output_rows,
     int frame_size)
 {
   /* Matrix data is ordered col-wise. */
-  opus_int16* matrix_data;
+  oac_int16* matrix_data;
   int i, row;
-  opus_int32 input_sample;
+  oac_int32 input_sample;
 
   celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
@@ -273,8 +273,8 @@ void mapping_matrix_multiply_channel_out_int24(
     input_sample = RES2INT24(input[input_rows * i]);
     for (row = 0; row < output_rows; row++)
     {
-      opus_int64 tmp =
-        (opus_int64)matrix_data[MATRIX_INDEX(matrix->rows, row, input_row)] *
+      oac_int64 tmp =
+        (oac_int64)matrix_data[MATRIX_INDEX(matrix->rows, row, input_row)] *
         input_sample;
       output[MATRIX_INDEX(output_rows, row, i)] += (tmp + 16384) >> 15;
     }
@@ -283,7 +283,7 @@ void mapping_matrix_multiply_channel_out_int24(
 
 
 const MappingMatrix mapping_matrix_foa_mixing = { 6, 6, 0 };
-const opus_int16 mapping_matrix_foa_mixing_data[36] = {
+const oac_int16 mapping_matrix_foa_mixing_data[36] = {
      16384,      0, -16384,  23170,      0,      0,  16384,  23170,
      16384,      0,      0,      0,  16384,      0, -16384, -23170,
          0,      0,  16384, -23170,  16384,      0,      0,      0,
@@ -292,7 +292,7 @@ const opus_int16 mapping_matrix_foa_mixing_data[36] = {
 };
 
 const MappingMatrix mapping_matrix_soa_mixing = { 11, 11, 0 };
-const opus_int16 mapping_matrix_soa_mixing_data[121] = {
+const oac_int16 mapping_matrix_soa_mixing_data[121] = {
      10923,   7723,  13377, -13377,  11585,   9459,   7723, -16384,
      -6689,      0,      0,  10923,   7723,  13377,  13377, -11585,
       9459,   7723,  16384,  -6689,      0,      0,  10923, -15447,
@@ -312,7 +312,7 @@ const opus_int16 mapping_matrix_soa_mixing_data[121] = {
 };
 
 const MappingMatrix mapping_matrix_toa_mixing = { 18, 18, 0 };
-const opus_int16 mapping_matrix_toa_mixing_data[324] = {
+const oac_int16 mapping_matrix_toa_mixing_data[324] = {
       8208,      0,   -881,  14369,      0,      0,  -8192,  -4163,
      13218,      0,      0,      0,  11095,  -8836,  -6218,  14833,
          0,      0,   8208, -10161,    881,  10161, -13218,  -2944,
@@ -357,7 +357,7 @@ const opus_int16 mapping_matrix_toa_mixing_data[324] = {
 };
 
 const MappingMatrix mapping_matrix_fourthoa_mixing = { 27, 27, 0 };
-const opus_int16 mapping_matrix_fourthoa_mixing_data[729] = {
+const oac_int16 mapping_matrix_fourthoa_mixing_data[729] = {
       9243,      0,  16010,      0,      0,      0,  20669,      0,
          0,      0,      0,      0,  24456,      0,      0,      0,
          0,      0,      0,      0,  27731,      0,      0,      0,
@@ -453,7 +453,7 @@ const opus_int16 mapping_matrix_fourthoa_mixing_data[729] = {
 };
 
 const MappingMatrix mapping_matrix_fifthoa_mixing = { 38, 38, 0 };
-const opus_int16 mapping_matrix_fifthoa_mixing_data[1444] = {
+const oac_int16 mapping_matrix_fifthoa_mixing_data[1444] = {
       9243,      0,  16010,      0,      0,      0,  20669,      0,
          0,      0,      0,      0,  24456,      0,      0,      0,
          0,      0,      0,      0,  27731,      0,      0,      0,
@@ -638,7 +638,7 @@ const opus_int16 mapping_matrix_fifthoa_mixing_data[1444] = {
 };
 
 const MappingMatrix mapping_matrix_foa_demixing = { 6, 6, 0 };
-const opus_int16 mapping_matrix_foa_demixing_data[36] = {
+const oac_int16 mapping_matrix_foa_demixing_data[36] = {
      16384,  16384,  16384,  16384,      0,      0,      0,  23170,
          0, -23170,      0,      0, -16384,  16384, -16384,  16384,
          0,      0,  23170,      0, -23170,      0,      0,      0,
@@ -647,7 +647,7 @@ const opus_int16 mapping_matrix_foa_demixing_data[36] = {
 };
 
 const MappingMatrix mapping_matrix_soa_demixing = { 11, 11, 3050 };
-const opus_int16 mapping_matrix_soa_demixing_data[121] = {
+const oac_int16 mapping_matrix_soa_demixing_data[121] = {
       2771,   2771,   2771,   2771,   2771,   2771,   2771,   2771,
       2771,      0,      0,  10033,  10033, -20066,  10033,  14189,
      14189, -28378,  10033, -20066,      0,      0,   3393,   3393,
@@ -667,7 +667,7 @@ const opus_int16 mapping_matrix_soa_demixing_data[121] = {
 };
 
 const MappingMatrix mapping_matrix_toa_demixing = { 18, 18, 0 };
-const opus_int16 mapping_matrix_toa_demixing_data[324] = {
+const oac_int16 mapping_matrix_toa_demixing_data[324] = {
       8192,   8192,   8192,   8192,   8192,   8192,   8192,   8192,
       8192,   8192,   8192,   8192,   8192,   8192,   8192,   8192,
          0,      0,      0,  -9779,   9779,   6263,   8857,      0,
@@ -712,7 +712,7 @@ const opus_int16 mapping_matrix_toa_demixing_data[324] = {
 };
 
 const MappingMatrix mapping_matrix_fourthoa_demixing = { 27, 27, 0 };
-const opus_int16 mapping_matrix_fourthoa_demixing_data[729] = {
+const oac_int16 mapping_matrix_fourthoa_demixing_data[729] = {
       4870,   4484,   4870,   4347,   4440,   4726,   4683,   4821,
       4883,   4842,   4603,   4484,   4683,   4698,   4234,   4368,
       4603,   4783,   4783,   4820,   4821,   4347,   4820,   4440,
@@ -808,7 +808,7 @@ const opus_int16 mapping_matrix_fourthoa_demixing_data[729] = {
 };
 
 const MappingMatrix mapping_matrix_fifthoa_demixing = { 38, 38, 0 };
-const opus_int16 mapping_matrix_fifthoa_demixing_data[1444] = {
+const oac_int16 mapping_matrix_fifthoa_demixing_data[1444] = {
       3188,   3247,   3268,   3368,   3368,   3138,   3268,   3099,
       3211,   3368,   3099,   3247,   3211,   3368,   3368,   3368,
       3149,   3268,   3247,   3211,   3099,   3188,   3138,   3149,

@@ -40,7 +40,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /************************/
 /* Reset Decoder State  */
 /************************/
-opus_int silk_reset_decoder(
+oac_int silk_reset_decoder(
     silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
 )
 {
@@ -50,7 +50,7 @@ opus_int silk_reset_decoder(
     /* Used to deactivate LSF interpolation */
     psDec->first_frame_after_reset = 1;
     psDec->prev_gain_Q16 = 65536;
-    psDec->arch = opus_select_arch();
+    psDec->arch = oac_select_arch();
 
     /* Reset CNG state */
     silk_CNG_Reset( psDec );
@@ -70,7 +70,7 @@ opus_int silk_reset_decoder(
 /************************/
 /* Init Decoder State   */
 /************************/
-opus_int silk_init_decoder(
+oac_int silk_init_decoder(
     silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
 )
 {

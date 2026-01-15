@@ -38,15 +38,15 @@
 #include "mathops.h"
 #include "pitch.h"
 
-#if defined(OPUS_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)
+#if defined(OAC_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)
 #include <smmintrin.h>
 #include "x86cpu.h"
 
-opus_val32 celt_inner_prod_sse4_1(const opus_val16 *x, const opus_val16 *y,
+oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
       int N)
 {
-    opus_int  i, dataSize16;
-    opus_int32 sum;
+    oac_int  i, dataSize16;
+    oac_int32 sum;
     __m128i inVec1_76543210, inVec1_FEDCBA98, acc1;
     __m128i inVec2_76543210, inVec2_FEDCBA98, acc2;
     __m128i inVec1_3210, inVec2_3210;
@@ -108,7 +108,7 @@ opus_val32 celt_inner_prod_sse4_1(const opus_val16 *x, const opus_val16 *y,
     return sum;
 }
 
-void xcorr_kernel_sse4_1(const opus_val16 * x, const opus_val16 * y, opus_val32 sum[ 4 ], int len)
+void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[ 4 ], int len)
 {
     int j;
 
@@ -117,8 +117,8 @@ void xcorr_kernel_sse4_1(const opus_val16 * x, const opus_val16 * y, opus_val32 
     __m128i sum0, sum1, sum2, sum3, vecSum;
     __m128i initSum;
 
-#ifdef OPUS_CHECK_ASM
-    opus_val32 sum_c[4];
+#ifdef OAC_CHECK_ASM
+    oac_val32 sum_c[4];
     for (j=0;j<4;j++) {
       sum_c[j] = sum[j];
     }
@@ -233,7 +233,7 @@ void xcorr_kernel_sse4_1(const opus_val16 * x, const opus_val16 * y, opus_val32 
     initSum = _mm_add_epi32(initSum, vecSum);
     _mm_storeu_si128((__m128i *)(void*)sum, initSum);
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     celt_assert(!memcmp(sum_c, sum, sizeof(sum_c)));
 #endif
 }

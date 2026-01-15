@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     OSCEModel *osce;
 
 
-    arch = opus_select_arch();
+    arch = oac_select_arch();
     hOSCEBWE = (silk_OSCE_BWE_struct *)calloc(1, sizeof(*hOSCEBWE));
     osce = (OSCEModel *)calloc(1, sizeof(*osce));
     osce_load_models(osce, NULL, arch);

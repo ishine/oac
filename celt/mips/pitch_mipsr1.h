@@ -38,7 +38,7 @@
 
 #if defined (__mips_dsp) && __mips == 32
 
-#define accumulator_t opus_int64
+#define accumulator_t oac_int64
 #define MIPS_MAC(acc,a,b) \
     __builtin_mips_madd((acc), (int)(a), (int)(b))
 
@@ -52,7 +52,7 @@
 #else /* any other MIPS */
 
 /* using madd is slower due to single accumulator */
-#define accumulator_t opus_int32
+#define accumulator_t oac_int32
 #define MIPS_MAC MAC16_16
 
 #define OVERRIDE_CELT_INNER_PROD
@@ -64,8 +64,8 @@
 
 #if defined(OVERRIDE_CELT_INNER_PROD)
 
-static OPUS_INLINE opus_val32 celt_inner_prod(const opus_val16 *x,
-      const opus_val16 *y, int N, int arch)
+static OAC_INLINE oac_val32 celt_inner_prod(const oac_val16 *x,
+      const oac_val16 *y, int N, int arch)
 {
    int j;
    accumulator_t acc = 0;
@@ -156,13 +156,13 @@ fallback:
 
    (void)arch;
 
-   return (opus_val32)acc;
+   return (oac_val32)acc;
 }
 #endif /* OVERRIDE_CELT_INNER_PROD */
 
 #if defined(OVERRIDE_DUAL_INNER_PROD)
-static inline void dual_inner_prod(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
-      int N, opus_val32 *xy1, opus_val32 *xy2, int arch)
+static inline void dual_inner_prod(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+      int N, oac_val32 *xy1, oac_val32 *xy2, int arch)
 {
    int j;
    accumulator_t acc1 = 0;
@@ -245,18 +245,18 @@ fallback:
 
    (void)arch;
 
-   *xy1 = (opus_val32)acc1;
-   *xy2 = (opus_val32)acc2;
+   *xy1 = (oac_val32)acc1;
+   *xy2 = (oac_val32)acc2;
 }
 #endif /* OVERRIDE_DUAL_INNER_PROD */
 
 #if defined(OVERRIDE_XCORR_KERNEL)
 
-static inline void xcorr_kernel_mips(const opus_val16 * x,
-      const opus_val16 * y, opus_val32 sum[4], int len)
+static inline void xcorr_kernel_mips(const oac_val16 * x,
+      const oac_val16 * y, oac_val32 sum[4], int len)
 {
    int j;
-   opus_val16 y_0, y_1, y_2, y_3;
+   oac_val16 y_0, y_1, y_2, y_3;
 
     accumulator_t sum_0, sum_1, sum_2, sum_3;
     sum_0 =  (accumulator_t)sum[0];
@@ -269,7 +269,7 @@ static inline void xcorr_kernel_mips(const opus_val16 * x,
     y_2=*y++;
     for (j=0;j<len-3;j+=4)
     {
-        opus_val16 tmp;
+        oac_val16 tmp;
         tmp = *x++;
         y_3=*y++;
 
@@ -342,10 +342,10 @@ static inline void xcorr_kernel_mips(const opus_val16 * x,
       break;
    }
 
-   sum[0] = (opus_val32)sum_0;
-   sum[1] = (opus_val32)sum_1;
-   sum[2] = (opus_val32)sum_2;
-   sum[3] = (opus_val32)sum_3;
+   sum[0] = (oac_val32)sum_0;
+   sum[1] = (oac_val32)sum_1;
+   sum[2] = (oac_val32)sum_2;
+   sum[3] = (oac_val32)sum_3;
 }
 
 #define xcorr_kernel(x, y, sum, len, arch) \

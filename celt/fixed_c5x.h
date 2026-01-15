@@ -34,7 +34,7 @@
 #include "dsplib.h"
 
 #undef IMUL32
-static OPUS_INLINE long IMUL32(long i, long j)
+static OAC_INLINE long IMUL32(long i, long j)
 {
    long ac0, ac1;
    ac0 = _lmpy(i>>16,j);

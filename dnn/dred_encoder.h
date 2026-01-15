@@ -43,7 +43,7 @@ typedef struct {
     LPCNetEncState lpcnet_enc_state;
     RDOVAEEncState rdovae_enc;
     int loaded;
-    opus_int32 Fs;
+    oac_int32 Fs;
     int channels;
 
 #define DREDENC_RESET_START input_buffer
@@ -59,7 +59,7 @@ typedef struct {
 } DREDEnc;
 
 int dred_encoder_load_model(DREDEnc* enc, const void *data, int len);
-void dred_encoder_init(DREDEnc* enc, opus_int32 Fs, int channels);
+void dred_encoder_init(DREDEnc* enc, oac_int32 Fs, int channels);
 void dred_encoder_reset(DREDEnc* enc);
 
 void dred_deinit_encoder(DREDEnc *enc);

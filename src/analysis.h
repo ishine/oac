@@ -29,7 +29,7 @@
 #define ANALYSIS_H
 
 #include "celt.h"
-#include "opus_private.h"
+#include "oac_private.h"
 #include "mlp.h"
 
 #define NB_FRAMES 8
@@ -47,12 +47,12 @@
 typedef struct {
    int arch;
    int application;
-   opus_int32 Fs;
+   oac_int32 Fs;
 #define TONALITY_ANALYSIS_RESET_START angle
    float angle[240];
    float d_angle[240];
    float d2_angle[240];
-   opus_val32 inmem[ANALYSIS_BUF_SIZE];
+   oac_val32 inmem[ANALYSIS_BUF_SIZE];
    int   mem_fill;                      /* number of usable samples in the buffer */
    float prev_band_tonality[NB_TBANDS];
    float prev_tonality;
@@ -76,7 +76,7 @@ typedef struct {
    float hp_ener_accum;
    int initialized;
    float rnn_state[MAX_NEURONS];
-   opus_val32 downmix_state[3];
+   oac_val32 downmix_state[3];
    AnalysisInfo info[DETECT_SIZE];
 } TonalityAnalysisState;
 
@@ -86,7 +86,7 @@ typedef struct {
  * not be repeated every analysis step. No allocated memory is retained
  * by the state struct, so no cleanup call is required.
  */
-void tonality_analysis_init(TonalityAnalysisState *analysis, opus_int32 Fs);
+void tonality_analysis_init(TonalityAnalysisState *analysis, oac_int32 Fs);
 
 /** Reset a TonalityAnalysisState struct.
  *
@@ -97,7 +97,7 @@ void tonality_analysis_reset(TonalityAnalysisState *analysis);
 void tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len);
 
 void run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, const void *analysis_pcm,
-                 int analysis_frame_size, int frame_size, int c1, int c2, int C, opus_int32 Fs,
+                 int analysis_frame_size, int frame_size, int c1, int c2, int C, oac_int32 Fs,
                  int lsb_depth, downmix_func downmix, AnalysisInfo *analysis_info);
 
 #endif

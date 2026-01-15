@@ -33,20 +33,20 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tuning_parameters.h"
 
 void silk_find_LTP_FIX(
-    opus_int32                      XXLTP_Q17[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ], /* O    Correlation matrix                                               */
-    opus_int32                      xXLTP_Q17[ MAX_NB_SUBFR * LTP_ORDER ],  /* O    Correlation vector                                                          */
-    const opus_int16                r_ptr[],                                /* I    Residual signal after LPC                                                   */
-    const opus_int                  lag[ MAX_NB_SUBFR ],                    /* I    LTP lags                                                                    */
-    const opus_int                  subfr_length,                           /* I    Subframe length                                                             */
-    const opus_int                  nb_subfr,                               /* I    Number of subframes                                                         */
+    oac_int32                      XXLTP_Q17[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ], /* O    Correlation matrix                                               */
+    oac_int32                      xXLTP_Q17[ MAX_NB_SUBFR * LTP_ORDER ],  /* O    Correlation vector                                                          */
+    const oac_int16                r_ptr[],                                /* I    Residual signal after LPC                                                   */
+    const oac_int                  lag[ MAX_NB_SUBFR ],                    /* I    LTP lags                                                                    */
+    const oac_int                  subfr_length,                           /* I    Subframe length                                                             */
+    const oac_int                  nb_subfr,                               /* I    Number of subframes                                                         */
     int                             arch                                    /* I    Run-time architecture                                                       */
 )
 {
-    opus_int   i, k, extra_shifts;
-    opus_int   xx_shifts, xX_shifts, XX_shifts;
-    const opus_int16 *lag_ptr;
-    opus_int32 *XXLTP_Q17_ptr, *xXLTP_Q17_ptr;
-    opus_int32 xx, nrg, temp;
+    oac_int   i, k, extra_shifts;
+    oac_int   xx_shifts, xX_shifts, XX_shifts;
+    const oac_int16 *lag_ptr;
+    oac_int32 *XXLTP_Q17_ptr, *xXLTP_Q17_ptr;
+    oac_int32 xx, nrg, temp;
 
     xXLTP_Q17_ptr = xXLTP_Q17;
     XXLTP_Q17_ptr = XXLTP_Q17;
@@ -85,10 +85,10 @@ TIC(div)
         }
 #else
         for( i = 0; i < LTP_ORDER * LTP_ORDER; i++ ) {
-            XXLTP_Q17_ptr[ i ] = (opus_int32)( silk_LSHIFT64( (opus_int64)XXLTP_Q17_ptr[ i ], 17 ) / temp );
+            XXLTP_Q17_ptr[ i ] = (oac_int32)( silk_LSHIFT64( (oac_int64)XXLTP_Q17_ptr[ i ], 17 ) / temp );
         }
         for( i = 0; i < LTP_ORDER; i++ ) {
-            xXLTP_Q17_ptr[ i ] = (opus_int32)( silk_LSHIFT64( (opus_int64)xXLTP_Q17_ptr[ i ], 17 ) / temp );
+            xXLTP_Q17_ptr[ i ] = (oac_int32)( silk_LSHIFT64( (oac_int64)xXLTP_Q17_ptr[ i ], 17 ) / temp );
         }
 #endif
 TOC(div)

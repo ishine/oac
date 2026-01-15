@@ -38,10 +38,10 @@ POSSIBILITY OF SUCH DAMAGE.
 double silk_inner_product_FLP_avx2(
     const silk_float    *data1,
     const silk_float    *data2,
-    opus_int            dataSize
+    oac_int            dataSize
 )
 {
-    opus_int i;
+    oac_int i;
     __m256d accum1, accum2;
     double   result;
 

@@ -36,12 +36,12 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_autocorrelation_FLP(
     silk_float          *results,           /* O    result (length correlationCount)                            */
     const silk_float    *inputData,         /* I    input data to correlate                                     */
-    opus_int            inputDataSize,      /* I    length of input                                             */
-    opus_int            correlationCount,    /* I    number of correlation taps to compute                       */
+    oac_int            inputDataSize,      /* I    length of input                                             */
+    oac_int            correlationCount,    /* I    number of correlation taps to compute                       */
     int                 arch
 )
 {
-    opus_int i;
+    oac_int i;
 
     if( correlationCount > inputDataSize ) {
         correlationCount = inputDataSize;

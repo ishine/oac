@@ -40,17 +40,17 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Encodes signs of excitation */
 void silk_encode_signs(
     ec_enc                      *psRangeEnc,                        /* I/O  Compressor data structure                   */
-    const opus_int8             pulses[],                           /* I    pulse signal                                */
-    opus_int                    length,                             /* I    length of input                             */
-    const opus_int              signalType,                         /* I    Signal type                                 */
-    const opus_int              quantOffsetType,                    /* I    Quantization offset type                    */
-    const opus_int              sum_pulses[ MAX_NB_SHELL_BLOCKS ]   /* I    Sum of absolute pulses per block            */
+    const oac_int8             pulses[],                           /* I    pulse signal                                */
+    oac_int                    length,                             /* I    length of input                             */
+    const oac_int              signalType,                         /* I    Signal type                                 */
+    const oac_int              quantOffsetType,                    /* I    Quantization offset type                    */
+    const oac_int              sum_pulses[ MAX_NB_SHELL_BLOCKS ]   /* I    Sum of absolute pulses per block            */
 )
 {
-    opus_int         i, j, p;
-    opus_uint8       icdf[ 2 ];
-    const opus_int8  *q_ptr;
-    const opus_uint8 *icdf_ptr;
+    oac_int         i, j, p;
+    oac_uint8       icdf[ 2 ];
+    const oac_int8  *q_ptr;
+    const oac_uint8 *icdf_ptr;
 
     icdf[ 1 ] = 0;
     q_ptr = pulses;
@@ -74,17 +74,17 @@ void silk_encode_signs(
 /* Decodes signs of excitation */
 void silk_decode_signs(
     ec_dec                      *psRangeDec,                        /* I/O  Compressor data structure                   */
-    opus_int16                  pulses[],                           /* I/O  pulse signal                                */
-    opus_int                    length,                             /* I    length of input                             */
-    const opus_int              signalType,                         /* I    Signal type                                 */
-    const opus_int              quantOffsetType,                    /* I    Quantization offset type                    */
-    const opus_int              sum_pulses[ MAX_NB_SHELL_BLOCKS ]   /* I    Sum of absolute pulses per block            */
+    oac_int16                  pulses[],                           /* I/O  pulse signal                                */
+    oac_int                    length,                             /* I    length of input                             */
+    const oac_int              signalType,                         /* I    Signal type                                 */
+    const oac_int              quantOffsetType,                    /* I    Quantization offset type                    */
+    const oac_int              sum_pulses[ MAX_NB_SHELL_BLOCKS ]   /* I    Sum of absolute pulses per block            */
 )
 {
-    opus_int         i, j, p;
-    opus_uint8       icdf[ 2 ];
-    opus_int16       *q_ptr;
-    const opus_uint8 *icdf_ptr;
+    oac_int         i, j, p;
+    oac_uint8       icdf[ 2 ];
+    oac_int16       *q_ptr;
+    const oac_uint8 *icdf_ptr;
 
     icdf[ 1 ] = 0;
     q_ptr = pulses;

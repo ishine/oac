@@ -65,12 +65,12 @@
 #if defined(__GNUC__) && defined(__SSE__)
 
 #include <xmmintrin.h>
-static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_ss(x));}
+static OAC_INLINE oac_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_ss(x));}
 
 #elif (defined(_MSC_VER) && _MSC_VER >= 1400) && (defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1))
 
         #include <xmmintrin.h>
-        static OPUS_INLINE opus_int32 float2int(float value)
+        static OAC_INLINE oac_int32 float2int(float value)
         {
                 /* _mm_load_ss will generate same code as _mm_set_ss
                 ** in _MSC_VER >= 1914 /02 so keep __mm_load__ss
@@ -84,10 +84,10 @@ static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_s
         #include <math.h>
 
         /*      Win32 doesn't seem to have these functions.
-        **      Therefore implement OPUS_INLINE versions of these functions here.
+        **      Therefore implement OAC_INLINE versions of these functions here.
         */
 
-        static OPUS_INLINE opus_int32
+        static OAC_INLINE oac_int32
         float2int (float flt)
         {       int intgr;
 
@@ -101,7 +101,7 @@ static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_s
 #elif defined(__aarch64__)
 
         #include <arm_neon.h>
-        static OPUS_INLINE opus_int32 float2int(float flt)
+        static OAC_INLINE oac_int32 float2int(float flt)
         {
                 return vcvtns_s32_f32(flt);
         }
@@ -147,15 +147,15 @@ static OPUS_INLINE opus_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_s
 #endif
 
 #ifndef DISABLE_FLOAT_API
-static OPUS_INLINE opus_int16 FLOAT2INT16(float x)
+static OAC_INLINE oac_int16 FLOAT2INT16(float x)
 {
    x = x*CELT_SIG_SCALE;
    x = MAX32(x, -32768);
    x = MIN32(x, 32767);
-   return (opus_int16)float2int(x);
+   return (oac_int16)float2int(x);
 }
 
-static OPUS_INLINE opus_int32 FLOAT2INT24(float x)
+static OAC_INLINE oac_int32 FLOAT2INT24(float x)
 {
    x = x*(CELT_SIG_SCALE*256.f);
    x = MAX32(x, -16777216);
@@ -163,9 +163,9 @@ static OPUS_INLINE opus_int32 FLOAT2INT24(float x)
    return float2int(x);
 }
 #ifdef FIXED_POINT
-static OPUS_INLINE opus_int32 FLOAT2SIG(float x)
+static OAC_INLINE oac_int32 FLOAT2SIG(float x)
 {
-   x = x*((opus_int32)32768<<SIG_SHIFT);
+   x = x*((oac_int32)32768<<SIG_SHIFT);
    x = MAX32(x, -(65536<<SIG_SHIFT));
    x = MIN32(x, 65536<<SIG_SHIFT);
    return float2int(x);

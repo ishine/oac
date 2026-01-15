@@ -624,11 +624,11 @@ static inline void vec_sigmoid(float *y, const float *x, int N)
 
 #if defined(__AVXVNNI__) || defined(__AVX512VNNI__)
 
-#define opus_mm256_dpbusds_epi32(src, a, b) _mm256_dpbusds_epi32(src, a, b)
+#define oac_mm256_dpbusds_epi32(src, a, b) _mm256_dpbusds_epi32(src, a, b)
 
 #elif defined(__AVX2__)
 
-static inline __m256i opus_mm256_dpbusds_epi32(__m256i src, __m256i a, __m256i b) {
+static inline __m256i oac_mm256_dpbusds_epi32(__m256i src, __m256i a, __m256i b) {
   __m256i ones, tmp;
   ones = _mm256_set1_epi16(1);
   tmp = _mm256_maddubs_epi16(a, b);
@@ -638,7 +638,7 @@ static inline __m256i opus_mm256_dpbusds_epi32(__m256i src, __m256i a, __m256i b
 
 #elif defined(__SSSE3__)
 
-static inline mm256i_emu opus_mm256_dpbusds_epi32(mm256i_emu src, mm256i_emu a, mm256i_emu b) {
+static inline mm256i_emu oac_mm256_dpbusds_epi32(mm256i_emu src, mm256i_emu a, mm256i_emu b) {
   mm256i_emu ones, tmp;
   ones = _mm256_set1_epi16(1);
   tmp = _mm256_maddubs_epi16(a, b);
@@ -658,7 +658,7 @@ static inline __m128i mm_dpbusds_epi32(__m128i src, __m128i a, __m128i b) {
   return _mm_add_epi32(src, tmp);
 }
 
-static inline mm256i_emu opus_mm256_dpbusds_epi32(mm256i_emu src, mm256i_emu a, mm256i_emu b) {
+static inline mm256i_emu oac_mm256_dpbusds_epi32(mm256i_emu src, mm256i_emu a, mm256i_emu b) {
   mm256i_emu res;
   res.hi = mm_dpbusds_epi32(src.hi, a.hi, b.hi);
   res.lo = mm_dpbusds_epi32(src.lo, a.lo, b.lo);
@@ -777,7 +777,7 @@ static inline void sparse_sgemv8x4(float *out, const float *weights, const int *
    }
 }
 
-static inline void sparse_cgemv8x4(float *_out, const opus_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
+static inline void sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
    unsigned char x[MAX_INPUTS];
@@ -798,19 +798,19 @@ static inline void sparse_cgemv8x4(float *_out, const opus_int8 *w, const int *i
          __m256i vw;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[*idx++]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[*idx++]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[*idx++]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[*idx++]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
       }
 #endif
@@ -820,7 +820,7 @@ static inline void sparse_cgemv8x4(float *_out, const opus_int8 *w, const int *i
          __m256i vw;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[*idx++]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
       }
       vout = _mm256_cvtepi32_ps(vy0);
@@ -828,7 +828,7 @@ static inline void sparse_cgemv8x4(float *_out, const opus_int8 *w, const int *i
       _mm256_storeu_ps(&_out[i], vout);
    }
 }
-static inline void cgemv8x4(float *_out, const opus_int8 *w, const float *scale, int rows, int cols, const float *_x)
+static inline void cgemv8x4(float *_out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
    unsigned char x[MAX_INPUTS];
@@ -847,19 +847,19 @@ static inline void cgemv8x4(float *_out, const opus_int8 *w, const float *scale,
          __m256i vw;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[j]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[j+4]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[j+8]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[j+12]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
       }
 #endif
@@ -869,7 +869,7 @@ static inline void cgemv8x4(float *_out, const opus_int8 *w, const float *scale,
          __m256i vw;
          vxj = _mm256_broadcastd_epi32(_mm_loadu_si32(&x[j]));
          vw = _mm256_loadu_si256((const __m256i *)(void*)w);
-         vy0 = opus_mm256_dpbusds_epi32(vy0, vxj, vw);
+         vy0 = oac_mm256_dpbusds_epi32(vy0, vxj, vw);
          w += 32;
       }
       vout = _mm256_cvtepi32_ps(vy0);

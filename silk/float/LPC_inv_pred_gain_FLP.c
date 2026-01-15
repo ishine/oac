@@ -38,10 +38,10 @@ POSSIBILITY OF SUCH DAMAGE.
 /* this code is based on silk_a2k_FLP()                                 */
 silk_float silk_LPC_inverse_pred_gain_FLP(  /* O    return inverse prediction gain, energy domain               */
     const silk_float    *A,                 /* I    prediction coefficients [order]                             */
-    opus_int32          order               /* I    prediction order                                            */
+    oac_int32          order               /* I    prediction order                                            */
 )
 {
-    opus_int   k, n;
+    oac_int   k, n;
     double     invGain, rc, rc_mult1, rc_mult2, tmp1, tmp2;
     silk_float Atmp[ SILK_MAX_ORDER_LPC ];
 

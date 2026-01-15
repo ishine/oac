@@ -24,7 +24,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* This packet loss simulator can be used independently of the Opus codebase.
+/* This packet loss simulator can be used independently of the Oac codebase.
    To do that, you need to compile the following files:
      dnn/lossgen.c
      dnn/lossgen_data.c
@@ -40,8 +40,8 @@
      celt/os_support.h
      celt/arch.h
      celt/x86/x86_arch_macros.h
-     include/opus_defines.h
-     include/opus_types.h
+     include/oac_defines.h
+     include/oac_types.h
 
    Additionally, the code in dnn/lossgen_demo.c can be used to generate losses from
    the command line.
@@ -156,7 +156,7 @@ int sample_loss(
 void lossgen_init(LossGenState *st)
 {
   int ret;
-  OPUS_CLEAR(st, 1);
+  OAC_CLEAR(st, 1);
   ret = init_lossgen(&st->model, lossgen_arrays);
   celt_assert(ret == 0);
   (void)ret;
@@ -167,7 +167,7 @@ int lossgen_load_model(LossGenState *st, const void *data, int len) {
   int ret;
   parse_weights(&list, data, len);
   ret = init_lossgen(&st->model, list);
-  opus_free(list);
+  oac_free(list);
   if (ret == 0) return 0;
   else return -1;
 }

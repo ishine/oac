@@ -35,21 +35,21 @@
 #include "pitch.h"
 
 void _celt_lpc(
-      opus_val16       *_lpc, /* out: [0...p-1] LPC coefficients      */
-const opus_val32 *ac,  /* in:  [0...p] autocorrelation values  */
+      oac_val16       *_lpc, /* out: [0...p-1] LPC coefficients      */
+const oac_val32 *ac,  /* in:  [0...p] autocorrelation values  */
 int          p
 )
 {
    int i, j;
-   opus_val32 r;
-   opus_val32 error = ac[0];
+   oac_val32 r;
+   oac_val32 error = ac[0];
 #ifdef FIXED_POINT
-   opus_val32 lpc[CELT_LPC_ORDER];
+   oac_val32 lpc[CELT_LPC_ORDER];
 #else
    float *lpc = _lpc;
 #endif
 
-   OPUS_CLEAR(lpc, p);
+   OAC_CLEAR(lpc, p);
 #ifdef FIXED_POINT
    if (ac[0] != 0)
 #else
@@ -58,12 +58,12 @@ int          p
    {
       for (i = 0; i < p; i++) {
          /* Sum up this iteration's reflection coefficient */
-         opus_val32 rr = 0;
-#if defined (FIXED_POINT) && OPUS_FAST_INT64
-         opus_int64 acc = 0;
+         oac_val32 rr = 0;
+#if defined (FIXED_POINT) && OAC_FAST_INT64
+         oac_int64 acc = 0;
          for (j = 0; j < i; j++)
-            acc += (opus_int64)(lpc[j]) * (opus_int64)(ac[i - j]);
-         rr = (opus_val32)SHR64(acc, 31);
+            acc += (oac_int64)(lpc[j]) * (oac_int64)(ac[i - j]);
+         rr = (oac_val32)SHR64(acc, 31);
 #else
          for (j = 0; j < i; j++)
             rr += MULT32_32_Q31(lpc[j],ac[i - j]);
@@ -74,7 +74,7 @@ int          p
          lpc[i] = SHR32(r,6);
          for (j = 0; j < (i+1)>>1; j++)
          {
-            opus_val32 tmp1, tmp2;
+            oac_val32 tmp1, tmp2;
             tmp1 = lpc[j];
             tmp2 = lpc[i-1-j];
             lpc[j]     = tmp1 + MULT32_32_Q31(r,tmp2);
@@ -98,7 +98,7 @@ int          p
          This reuses the logic in silk_LPC_fit() and silk_bwexpander_32(). Any bug
          fixes should also be applied there. */
       int iter, idx = 0;
-      opus_val32 maxabs, absval, chirp_Q16, chirp_minus_one_Q16;
+      oac_val32 maxabs, absval, chirp_Q16, chirp_minus_one_Q16;
 
       for (iter = 0; iter < 10; iter++) {
          maxabs = 0;
@@ -131,7 +131,7 @@ int          p
       if (iter == 10) {
          /* If the coeffs still do not fit into the 16 bit range after 10 iterations,
             fall back to the A(z)=1 filter. */
-         OPUS_CLEAR(lpc, p);
+         OAC_CLEAR(lpc, p);
          _lpc[0] = 4096;  /* Q12 */
       } else {
          for (i = 0; i < p; i++) {
@@ -144,35 +144,35 @@ int          p
 
 
 void celt_fir_c(
-         const opus_val16 *x,
-         const opus_val16 *num,
-         opus_val16 *y,
+         const oac_val16 *x,
+         const oac_val16 *num,
+         oac_val16 *y,
          int N,
          int ord,
          int arch)
 {
    int i,j;
-   VARDECL(opus_val16, rnum);
+   VARDECL(oac_val16, rnum);
    SAVE_STACK;
    celt_assert(x != y);
-   ALLOC(rnum, ord, opus_val16);
+   ALLOC(rnum, ord, oac_val16);
    for(i=0;i<ord;i++)
       rnum[i] = num[ord-i-1];
    for (i=0;i<N-3;i+=4)
    {
-      opus_val32 sum[4];
+      oac_val32 sum[4];
       sum[0] = SHL32(EXTEND32(x[i  ]), SIG_SHIFT);
       sum[1] = SHL32(EXTEND32(x[i+1]), SIG_SHIFT);
       sum[2] = SHL32(EXTEND32(x[i+2]), SIG_SHIFT);
       sum[3] = SHL32(EXTEND32(x[i+3]), SIG_SHIFT);
-#if defined(OPUS_CHECK_ASM) && defined(FIXED_POINT)
+#if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
       {
-         opus_val32 sum_c[4];
+         oac_val32 sum_c[4];
          memcpy(sum_c, sum, sizeof(sum_c));
          xcorr_kernel_c(rnum, x+i-ord, sum_c, ord);
 #endif
          xcorr_kernel(rnum, x+i-ord, sum, ord, arch);
-#if defined(OPUS_CHECK_ASM) && defined(FIXED_POINT)
+#if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
          celt_assert(memcmp(sum, sum_c, sizeof(sum)) == 0);
       }
 #endif
@@ -183,7 +183,7 @@ void celt_fir_c(
    }
    for (;i<N;i++)
    {
-      opus_val32 sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
+      oac_val32 sum = SHL32(EXTEND32(x[i]), SIG_SHIFT);
       for (j=0;j<ord;j++)
          sum = MAC16_16(sum,rnum[j],x[i+j-ord]);
       y[i] = SROUND16(sum, SIG_SHIFT);
@@ -191,12 +191,12 @@ void celt_fir_c(
    RESTORE_STACK;
 }
 
-void celt_iir(const opus_val32 *_x,
-         const opus_val16 *den,
-         opus_val32 *_y,
+void celt_iir(const oac_val32 *_x,
+         const oac_val16 *den,
+         oac_val32 *_y,
          int N,
          int ord,
-         opus_val16 *mem,
+         oac_val16 *mem,
          int arch)
 {
 #ifdef SMALL_FOOTPRINT
@@ -204,7 +204,7 @@ void celt_iir(const opus_val32 *_x,
    (void)arch;
    for (i=0;i<N;i++)
    {
-      opus_val32 sum = _x[i];
+      oac_val32 sum = _x[i];
       for (j=0;j<ord;j++)
       {
          sum -= MULT16_16(den[j],mem[j]);
@@ -218,13 +218,13 @@ void celt_iir(const opus_val32 *_x,
    }
 #else
    int i,j;
-   VARDECL(opus_val16, rden);
-   VARDECL(opus_val16, y);
+   VARDECL(oac_val16, rden);
+   VARDECL(oac_val16, y);
    SAVE_STACK;
 
    celt_assert((ord&3)==0);
-   ALLOC(rden, ord, opus_val16);
-   ALLOC(y, N+ord, opus_val16);
+   ALLOC(rden, ord, oac_val16);
+   ALLOC(y, N+ord, oac_val16);
    for(i=0;i<ord;i++)
       rden[i] = den[ord-i-1];
    for(i=0;i<ord;i++)
@@ -234,19 +234,19 @@ void celt_iir(const opus_val32 *_x,
    for (i=0;i<N-3;i+=4)
    {
       /* Unroll by 4 as if it were an FIR filter */
-      opus_val32 sum[4];
+      oac_val32 sum[4];
       sum[0]=_x[i];
       sum[1]=_x[i+1];
       sum[2]=_x[i+2];
       sum[3]=_x[i+3];
-#if defined(OPUS_CHECK_ASM) && defined(FIXED_POINT)
+#if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
       {
-         opus_val32 sum_c[4];
+         oac_val32 sum_c[4];
          memcpy(sum_c, sum, sizeof(sum_c));
          xcorr_kernel_c(rden, y+i, sum_c, ord);
 #endif
          xcorr_kernel(rden, y+i, sum, ord, arch);
-#if defined(OPUS_CHECK_ASM) && defined(FIXED_POINT)
+#if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
          celt_assert(memcmp(sum, sum_c, sizeof(sum)) == 0);
       }
 #endif
@@ -269,7 +269,7 @@ void celt_iir(const opus_val32 *_x,
    }
    for (;i<N;i++)
    {
-      opus_val32 sum = _x[i];
+      oac_val32 sum = _x[i];
       for (j=0;j<ord;j++)
          sum -= MULT16_16(rden[j],y[i+j]);
       y[i+ord] = SROUND16(sum,SIG_SHIFT);
@@ -282,8 +282,8 @@ void celt_iir(const opus_val32 *_x,
 }
 
 int _celt_autocorr(
-                   const opus_val16 *x,   /*  in: [0...n-1] samples x   */
-                   opus_val32       *ac,  /* out: [0...lag-1] ac values */
+                   const oac_val16 *x,   /*  in: [0...n-1] samples x   */
+                   oac_val32       *ac,  /* out: [0...lag-1] ac values */
                    const celt_coef  *window,
                    int          overlap,
                    int          lag,
@@ -291,14 +291,14 @@ int _celt_autocorr(
                    int          arch
                   )
 {
-   opus_val32 d;
+   oac_val32 d;
    int i, k;
    int fastN=n-lag;
    int shift;
-   const opus_val16 *xptr;
-   VARDECL(opus_val16, xx);
+   const oac_val16 *xptr;
+   VARDECL(oac_val16, xx);
    SAVE_STACK;
-   ALLOC(xx, n, opus_val16);
+   ALLOC(xx, n, oac_val16);
    celt_assert(n>0);
    celt_assert(overlap>=0);
    if (overlap == 0)
@@ -309,7 +309,7 @@ int _celt_autocorr(
          xx[i] = x[i];
       for (i=0;i<overlap;i++)
       {
-         opus_val16 w = COEF2VAL16(window[i]);
+         oac_val16 w = COEF2VAL16(window[i]);
          xx[i] = MULT16_16_Q15(x[i],w);
          xx[n-i-1] = MULT16_16_Q15(x[n-i-1],w);
       }
@@ -318,7 +318,7 @@ int _celt_autocorr(
    shift=0;
 #ifdef FIXED_POINT
    {
-      opus_val32 ac0;
+      oac_val32 ac0;
       int ac0_shift = celt_ilog2(n + (n>>4));
       ac0 = 1+(n<<7);
       if (n&1) ac0 += SHR32(MULT16_16(xptr[0],xptr[0]),ac0_shift);
@@ -351,7 +351,7 @@ int _celt_autocorr(
 #ifdef FIXED_POINT
    shift = 2*shift;
    if (shift<=0)
-      ac[0] += SHL32((opus_int32)1, -shift);
+      ac[0] += SHL32((oac_int32)1, -shift);
    if (ac[0] < 268435456)
    {
       int shift2 = 29 - EC_ILOG(ac[0]);

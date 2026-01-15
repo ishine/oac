@@ -97,18 +97,18 @@ def nomad_process_all(folder, full_reference=False, device=None):
     items = get_itemlist(folder)
     with tempfile.TemporaryDirectory() as dir:
         cleandir  = os.path.join(dir, 'clean')
-        opusdir   = os.path.join(dir, 'opus')
+        oacdir   = os.path.join(dir, 'oac')
         lacedir   = os.path.join(dir, 'lace')
         nolacedir = os.path.join(dir, 'nolace')
 
         # prepare files
-        for d in [cleandir, opusdir, lacedir, nolacedir]: os.makedirs(d)
+        for d in [cleandir, oacdir, lacedir, nolacedir]: os.makedirs(d)
         for br in bitrates:
             for item in items:
-                for cond in ['clean', 'opus', 'lace', 'nolace']:
+                for cond in ['clean', 'oac', 'lace', 'nolace']:
                     shutil.copyfile(os.path.join(folder, cond, f"{item}_{br}_{cond}.wav"), os.path.join(dir, cond, f"{item}_{br}.wav"))
 
-        nomad_opus, ref_embeddings   = nomad_wrapper(cleandir, opusdir, full_reference=full_reference, ref_embeddings=None)
+        nomad_oac, ref_embeddings   = nomad_wrapper(cleandir, oacdir, full_reference=full_reference, ref_embeddings=None)
         nomad_lace, ref_embeddings   = nomad_wrapper(cleandir, lacedir, full_reference=full_reference, ref_embeddings=ref_embeddings)
         nomad_nolace, ref_embeddings = nomad_wrapper(cleandir, nolacedir, full_reference=full_reference, ref_embeddings=ref_embeddings)
 
@@ -117,7 +117,7 @@ def nomad_process_all(folder, full_reference=False, device=None):
         results[br] = np.zeros((len(items), 3))
         for i, item in enumerate(items):
             key = f"{item}_{br}"
-            results[br][i, 0] = nomad_opus[key]
+            results[br][i, 0] = nomad_oac[key]
             results[br][i, 1] = nomad_lace[key]
             results[br][i, 2] = nomad_nolace[key]
 

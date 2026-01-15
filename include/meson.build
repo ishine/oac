@@ -1,13 +1,13 @@
-opus_headers = [
-  'opus.h',
-  'opus_multistream.h',
-  'opus_projection.h',
-  'opus_types.h',
-  'opus_defines.h',
+oac_headers = [
+  'oac.h',
+  'oac_multistream.h',
+  'oac_projection.h',
+  'oac_types.h',
+  'oac_defines.h',
 ]
 
 if opt_custom_modes
-  opus_headers += ['opus_custom.h']
+  oac_headers += ['oac_custom.h']
 endif
 
-install_headers(opus_headers, subdir: 'opus')
+install_headers(oac_headers, subdir: 'oac')

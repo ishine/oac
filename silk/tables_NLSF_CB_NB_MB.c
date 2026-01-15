@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "tables.h"
 
-static const opus_uint8 silk_NLSF_CB1_NB_MB_Q8[ 320 ] = {
+static const oac_uint8 silk_NLSF_CB1_NB_MB_Q8[ 320 ] = {
         12,     35,     60,     83,    108,    132,    157,    180,
        206,    228,     15,     32,     55,     77,    101,    125,
        151,    175,    201,    225,     19,     42,     66,     89,
@@ -74,7 +74,7 @@ static const opus_uint8 silk_NLSF_CB1_NB_MB_Q8[ 320 ] = {
         64,     84,    104,    118,    156,    177,    201,    230
 };
 
-static const opus_int16 silk_NLSF_CB1_Wght_Q9[ 320 ] = {
+static const oac_int16 silk_NLSF_CB1_Wght_Q9[ 320 ] = {
      2897, 2314, 2314, 2314, 2287, 2287, 2314, 2300, 2327, 2287,
      2888, 2580, 2394, 2367, 2314, 2274, 2274, 2274, 2274, 2194,
      2487, 2340, 2340, 2314, 2314, 2314, 2340, 2340, 2367, 2354,
@@ -109,7 +109,7 @@ static const opus_int16 silk_NLSF_CB1_Wght_Q9[ 320 ] = {
      2793, 3160, 2726, 2553, 2846, 2513, 2181, 2394, 2221, 2181
 };
 
-static const opus_uint8 silk_NLSF_CB1_iCDF_NB_MB[ 64 ] = {
+static const oac_uint8 silk_NLSF_CB1_iCDF_NB_MB[ 64 ] = {
        212,    178,    148,    129,    108,     96,     85,     82,
         79,     77,     61,     59,     57,     56,     51,     49,
         48,     45,     42,     41,     40,     38,     36,     34,
@@ -120,7 +120,7 @@ static const opus_uint8 silk_NLSF_CB1_iCDF_NB_MB[ 64 ] = {
         28,     20,     19,     18,     12,     11,      5,      0
 };
 
-static const opus_uint8 silk_NLSF_CB2_SELECT_NB_MB[ 160 ] = {
+static const oac_uint8 silk_NLSF_CB2_SELECT_NB_MB[ 160 ] = {
         16,      0,      0,      0,      0,     99,     66,     36,
         36,     34,     36,     34,     34,     34,     34,     83,
         69,     36,     52,     34,    116,    102,     70,     68,
@@ -143,7 +143,7 @@ static const opus_uint8 silk_NLSF_CB2_SELECT_NB_MB[ 160 ] = {
        171,    137,    139,    137,    155,    218,    219,    139
 };
 
-static const opus_uint8 silk_NLSF_CB2_iCDF_NB_MB[ 72 ] = {
+static const oac_uint8 silk_NLSF_CB2_iCDF_NB_MB[ 72 ] = {
        255,    254,    253,    238,     14,      3,      2,      1,
          0,    255,    254,    252,    218,     35,      3,      2,
          1,      0,    255,    254,    250,    208,     59,      4,
@@ -155,7 +155,7 @@ static const opus_uint8 silk_NLSF_CB2_iCDF_NB_MB[ 72 ] = {
        254,    236,    173,     95,     37,      7,      1,      0
 };
 
-static const opus_uint8 silk_NLSF_CB2_BITS_NB_MB_Q5[ 72 ] = {
+static const oac_uint8 silk_NLSF_CB2_BITS_NB_MB_Q5[ 72 ] = {
        255,    255,    255,    131,      6,    145,    255,    255,
        255,    255,    255,    236,     93,     15,     96,    255,
        255,    255,    255,    255,    194,     83,     25,     71,
@@ -167,13 +167,13 @@ static const opus_uint8 silk_NLSF_CB2_BITS_NB_MB_Q5[ 72 ] = {
        251,    123,     65,     55,     68,    100,    171,    255
 };
 
-static const opus_uint8 silk_NLSF_PRED_NB_MB_Q8[ 18 ] = {
+static const oac_uint8 silk_NLSF_PRED_NB_MB_Q8[ 18 ] = {
        179,    138,    140,    148,    151,    149,    153,    151,
        163,    116,     67,     82,     59,     92,     72,    100,
         89,     92
 };
 
-static const opus_int16 silk_NLSF_DELTA_MIN_NB_MB_Q15[ 11 ] = {
+static const oac_int16 silk_NLSF_DELTA_MIN_NB_MB_Q15[ 11 ] = {
        250,      3,      6,      3,      3,      3,      4,      3,
          3,      3,    461
 };

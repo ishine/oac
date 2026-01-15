@@ -27,7 +27,7 @@
   POSSIBILITY OF SUCH DAMAGE.*/
 
 /* This code is originally from Mark Borgerding's KISS-FFT but has been
-   heavily modified to better suit Opus */
+   heavily modified to better suit Oac */
 
 #ifndef SKIP_CONFIG_H
 #  ifdef HAVE_CONFIG_H
@@ -321,10 +321,10 @@ static void kf_bfly5(
 static
 void compute_bitrev_table(
          int Fout,
-         opus_int16 *f,
+         oac_int16 *f,
          const size_t fstride,
          int in_stride,
-         opus_int16 * factors,
+         oac_int16 * factors,
          const kiss_fft_state *st
             )
 {
@@ -356,7 +356,7 @@ void compute_bitrev_table(
     p[i] * m[i] = m[i-1]
     m0 = n                  */
 static
-int kf_factor(int n,opus_int16 * facbuf)
+int kf_factor(int n,oac_int16 * facbuf)
 {
     int p=4;
     int i;
@@ -371,7 +371,7 @@ int kf_factor(int n,opus_int16 * facbuf)
                 case 2: p = 3; break;
                 default: p += 2; break;
             }
-            if (p>32000 || (opus_int32)p*(opus_int32)p > n)
+            if (p>32000 || (oac_int32)p*(oac_int32)p > n)
                 p = n;          /* no more factors, skip to end */
         }
         n /= p;
@@ -415,7 +415,7 @@ static void compute_twiddles(kiss_twiddle_cpx *twiddles, int nfft)
    int i;
 #ifdef FIXED_POINT
    for (i=0;i<nfft;++i) {
-      opus_val32 phase = -i;
+      oac_val32 phase = -i;
       twiddles[i].r = (int)MIN32(2147483647, floor(.5+2147483648*cos((2*M_PI/nfft)*phase)));
       twiddles[i].i = (int)MIN32(2147483647, floor(.5+2147483648*sin((2*M_PI/nfft)*phase)));
    }
@@ -428,7 +428,7 @@ static void compute_twiddles(kiss_twiddle_cpx *twiddles, int nfft)
 #endif
 }
 
-int opus_fft_alloc_arch_c(kiss_fft_state *st) {
+int oac_fft_alloc_arch_c(kiss_fft_state *st) {
    (void)st;
    return 0;
 }
@@ -439,7 +439,7 @@ int opus_fft_alloc_arch_c(kiss_fft_state *st) {
  * The return value is a contiguous block of memory.  As such,
  * It can be freed with free().
  * */
-kiss_fft_state *opus_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
+kiss_fft_state *oac_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
                                         const kiss_fft_state *base, int arch)
 {
     kiss_fft_state *st=NULL;
@@ -453,7 +453,7 @@ kiss_fft_state *opus_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
         *lenmem = memneeded;
     }
     if (st) {
-        opus_int16 *bitrev;
+        oac_int16 *bitrev;
         kiss_twiddle_cpx *twiddles;
 
         st->nfft=nfft;
@@ -462,7 +462,7 @@ kiss_fft_state *opus_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
         if (st->nfft == 1<<st->scale_shift)
            st->scale = QCONST32(1.0f, 30);
         else
-           st->scale = (((opus_int64)1073741824<<st->scale_shift)+st->nfft/2)/st->nfft;
+           st->scale = (((oac_int64)1073741824<<st->scale_shift)+st->nfft/2)/st->nfft;
 #else
         st->scale = 1.f/nfft;
 #endif
@@ -485,39 +485,39 @@ kiss_fft_state *opus_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
         }
 
         /* bitrev */
-        st->bitrev = bitrev = (opus_int16*)KISS_FFT_MALLOC(sizeof(opus_int16)*nfft);
+        st->bitrev = bitrev = (oac_int16*)KISS_FFT_MALLOC(sizeof(oac_int16)*nfft);
         if (st->bitrev==NULL)
             goto fail;
         compute_bitrev_table(0, bitrev, 1,1, st->factors,st);
 
         /* Initialize architecture specific fft parameters */
-        if (opus_fft_alloc_arch(st, arch))
+        if (oac_fft_alloc_arch(st, arch))
             goto fail;
     }
     return st;
 fail:
-    opus_fft_free(st, arch);
+    oac_fft_free(st, arch);
     return NULL;
 }
 
-kiss_fft_state *opus_fft_alloc(int nfft,void * mem,size_t * lenmem, int arch)
+kiss_fft_state *oac_fft_alloc(int nfft,void * mem,size_t * lenmem, int arch)
 {
-   return opus_fft_alloc_twiddles(nfft, mem, lenmem, NULL, arch);
+   return oac_fft_alloc_twiddles(nfft, mem, lenmem, NULL, arch);
 }
 
-void opus_fft_free_arch_c(kiss_fft_state *st) {
+void oac_fft_free_arch_c(kiss_fft_state *st) {
    (void)st;
 }
 
-void opus_fft_free(const kiss_fft_state *cfg, int arch)
+void oac_fft_free(const kiss_fft_state *cfg, int arch)
 {
    if (cfg)
    {
-      opus_fft_free_arch((kiss_fft_state *)cfg, arch);
-      opus_free((opus_int16*)cfg->bitrev);
+      oac_fft_free_arch((kiss_fft_state *)cfg, arch);
+      oac_free((oac_int16*)cfg->bitrev);
       if (cfg->shift < 0)
-         opus_free((kiss_twiddle_cpx*)cfg->twiddles);
-      opus_free((kiss_fft_state*)cfg);
+         oac_free((kiss_twiddle_cpx*)cfg->twiddles);
+      oac_free((kiss_fft_state*)cfg);
    }
 }
 
@@ -548,7 +548,7 @@ static void fft_downshift(kiss_fft_cpx *x, int N, int *total, int step) {
 #define fft_downshift(x, N, total, step)
 #endif
 
-void opus_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout ARG_FIXED(int downshift))
+void oac_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout ARG_FIXED(int downshift))
 {
     int m2, m;
     int p;
@@ -601,7 +601,7 @@ void opus_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout ARG_FIXED(int dow
     fft_downshift(fout, st->nfft, &downshift, downshift);
 }
 
-void opus_fft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout)
+void oac_fft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout)
 {
    int i;
    celt_coef scale;
@@ -620,11 +620,11 @@ void opus_fft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *f
       fout[st->bitrev[i]].r = S_MUL2(x.r, scale);
       fout[st->bitrev[i]].i = S_MUL2(x.i, scale);
    }
-   opus_fft_impl(st, fout ARG_FIXED(scale_shift));
+   oac_fft_impl(st, fout ARG_FIXED(scale_shift));
 }
 
 
-void opus_ifft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout)
+void oac_ifft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout)
 {
    int i;
    celt_assert2 (fin != fout, "In-place FFT not supported");
@@ -633,7 +633,7 @@ void opus_ifft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *
       fout[st->bitrev[i]] = fin[i];
    for (i=0;i<st->nfft;i++)
       fout[i].i = -fout[i].i;
-   opus_fft_impl(st, fout ARG_FIXED(0));
+   oac_fft_impl(st, fout ARG_FIXED(0));
    for (i=0;i<st->nfft;i++)
       fout[i].i = -fout[i].i;
 }

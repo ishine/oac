@@ -36,7 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define QA                          24
 #define A_LIMIT                     SILK_FIX_CONST( 0.99975, QA )
 
-#define MUL32_FRAC_Q(a32, b32, Q)   ((opus_int32)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
+#define MUL32_FRAC_Q(a32, b32, Q)   ((oac_int32)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)))
 
 /* The difficulty is how to judge a 64-bit signed integer tmp64 is 32-bit overflowed,
  * since NEON has no 64-bit min, max or comparison instructions.
@@ -52,14 +52,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
-static OPUS_INLINE opus_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns inverse prediction gain in energy domain, Q30    */
-    opus_int32           A_QA[ SILK_MAX_ORDER_LPC ],         /* I   Prediction coefficients                                  */
-    const opus_int       order                               /* I   Prediction order                                         */
+static OAC_INLINE oac_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns inverse prediction gain in energy domain, Q30    */
+    oac_int32           A_QA[ SILK_MAX_ORDER_LPC ],         /* I   Prediction coefficients                                  */
+    const oac_int       order                               /* I   Prediction order                                         */
 )
 {
-    opus_int   k, n, mult2Q;
-    opus_int32 invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
-    opus_int32 max, min;
+    oac_int   k, n, mult2Q;
+    oac_int32 invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp1, tmp2;
+    oac_int32 max, min;
     int32x4_t  max_s32x4, min_s32x4;
     int32x2_t  max_s32x2, min_s32x2;
 
@@ -135,7 +135,7 @@ static OPUS_INLINE opus_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns inve
             vst1q_s32( A_QA + k - n - 4, t1_s32x4 );
         }
         for( ; n < (k + 1) >> 1; n++ ) {
-            opus_int64 tmp64;
+            oac_int64 tmp64;
             tmp1 = A_QA[ n ];
             tmp2 = A_QA[ k - n - 1 ];
             tmp64 = silk_RSHIFT_ROUND64( silk_SMULL( silk_SUB_SAT32(tmp1,
@@ -143,13 +143,13 @@ static OPUS_INLINE opus_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns inve
             if( tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN ) {
                return 0;
             }
-            A_QA[ n ] = ( opus_int32 )tmp64;
+            A_QA[ n ] = ( oac_int32 )tmp64;
             tmp64 = silk_RSHIFT_ROUND64( silk_SMULL( silk_SUB_SAT32(tmp2,
                   MUL32_FRAC_Q( tmp1, rc_Q31, 31 ) ), rc_mult2), mult2Q);
             if( tmp64 > silk_int32_MAX || tmp64 < silk_int32_MIN ) {
                return 0;
             }
-            A_QA[ k - n - 1 ] = ( opus_int32 )tmp64;
+            A_QA[ k - n - 1 ] = ( oac_int32 )tmp64;
         }
     }
 
@@ -187,25 +187,25 @@ static OPUS_INLINE opus_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns inve
 }
 
 /* For input in Q12 domain */
-opus_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse prediction gain in energy domain, Q30        */
-    const opus_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
-    const opus_int              order               /* I   Prediction order                                             */
+oac_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse prediction gain in energy domain, Q30        */
+    const oac_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
+    const oac_int              order               /* I   Prediction order                                             */
 )
 {
-#ifdef OPUS_CHECK_ASM
-    const opus_int32 invGain_Q30_c = silk_LPC_inverse_pred_gain_c( A_Q12, order );
+#ifdef OAC_CHECK_ASM
+    const oac_int32 invGain_Q30_c = silk_LPC_inverse_pred_gain_c( A_Q12, order );
 #endif
 
-    opus_int32 invGain_Q30;
+    oac_int32 invGain_Q30;
     if( ( SILK_MAX_ORDER_LPC != 24 ) || ( order & 1 )) {
         invGain_Q30 = silk_LPC_inverse_pred_gain_c( A_Q12, order );
     }
     else {
-        opus_int32 Atmp_QA[ SILK_MAX_ORDER_LPC ];
-        opus_int32 DC_resp;
+        oac_int32 Atmp_QA[ SILK_MAX_ORDER_LPC ];
+        oac_int32 DC_resp;
         int16x8_t  t0_s16x8, t1_s16x8, t2_s16x8;
         int32x4_t  t0_s32x4;
-        const opus_int leftover = order & 7;
+        const oac_int leftover = order & 7;
 
         /* Increase Q domain of the AR coefficients */
         t0_s16x8 = vld1q_s16( A_Q12 +  0 );
@@ -248,24 +248,24 @@ opus_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse predi
         switch( leftover )
         {
         case 6:
-            DC_resp += (opus_int32)A_Q12[ 5 ];
-            DC_resp += (opus_int32)A_Q12[ 4 ];
-            Atmp_QA[ order - leftover + 5 ] = silk_LSHIFT32( (opus_int32)A_Q12[ 5 ], QA - 12 );
-            Atmp_QA[ order - leftover + 4 ] = silk_LSHIFT32( (opus_int32)A_Q12[ 4 ], QA - 12 );
+            DC_resp += (oac_int32)A_Q12[ 5 ];
+            DC_resp += (oac_int32)A_Q12[ 4 ];
+            Atmp_QA[ order - leftover + 5 ] = silk_LSHIFT32( (oac_int32)A_Q12[ 5 ], QA - 12 );
+            Atmp_QA[ order - leftover + 4 ] = silk_LSHIFT32( (oac_int32)A_Q12[ 4 ], QA - 12 );
             /* FALLTHROUGH */
 
         case 4:
-            DC_resp += (opus_int32)A_Q12[ 3 ];
-            DC_resp += (opus_int32)A_Q12[ 2 ];
-            Atmp_QA[ order - leftover + 3 ] = silk_LSHIFT32( (opus_int32)A_Q12[ 3 ], QA - 12 );
-            Atmp_QA[ order - leftover + 2 ] = silk_LSHIFT32( (opus_int32)A_Q12[ 2 ], QA - 12 );
+            DC_resp += (oac_int32)A_Q12[ 3 ];
+            DC_resp += (oac_int32)A_Q12[ 2 ];
+            Atmp_QA[ order - leftover + 3 ] = silk_LSHIFT32( (oac_int32)A_Q12[ 3 ], QA - 12 );
+            Atmp_QA[ order - leftover + 2 ] = silk_LSHIFT32( (oac_int32)A_Q12[ 2 ], QA - 12 );
             /* FALLTHROUGH */
 
         case 2:
-            DC_resp += (opus_int32)A_Q12[ 1 ];
-            DC_resp += (opus_int32)A_Q12[ 0 ];
-            Atmp_QA[ order - leftover + 1 ] = silk_LSHIFT32( (opus_int32)A_Q12[ 1 ], QA - 12 );
-            Atmp_QA[ order - leftover + 0 ] = silk_LSHIFT32( (opus_int32)A_Q12[ 0 ], QA - 12 );
+            DC_resp += (oac_int32)A_Q12[ 1 ];
+            DC_resp += (oac_int32)A_Q12[ 0 ];
+            Atmp_QA[ order - leftover + 1 ] = silk_LSHIFT32( (oac_int32)A_Q12[ 1 ], QA - 12 );
+            Atmp_QA[ order - leftover + 0 ] = silk_LSHIFT32( (oac_int32)A_Q12[ 0 ], QA - 12 );
             /* FALLTHROUGH */
 
         default:
@@ -280,7 +280,7 @@ opus_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse predi
         }
     }
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     silk_assert( invGain_Q30_c == invGain_Q30 );
 #endif
 

@@ -41,7 +41,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Chirp (bw expand) LP AR filter */
 void silk_bwexpander_FLP(
     silk_float          *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
-    const opus_int      d,                  /* I    length of ar                                                */
+    const oac_int      d,                  /* I    length of ar                                                */
     const silk_float    chirp               /* I    chirp factor (typically in range (0..1) )                   */
 );
 
@@ -50,50 +50,50 @@ void silk_bwexpander_FLP(
 /* this code is based on silk_FLP_a2k()                                 */
 silk_float silk_LPC_inverse_pred_gain_FLP(  /* O    return inverse prediction gain, energy domain               */
     const silk_float    *A,                 /* I    prediction coefficients [order]                             */
-    opus_int32          order               /* I    prediction order                                            */
+    oac_int32          order               /* I    prediction order                                            */
 );
 
 silk_float silk_schur_FLP(                  /* O    returns residual energy                                     */
     silk_float          refl_coef[],        /* O    reflection coefficients (length order)                      */
     const silk_float    auto_corr[],        /* I    autocorrelation sequence (length order+1)                   */
-    opus_int            order               /* I    order                                                       */
+    oac_int            order               /* I    order                                                       */
 );
 
 void silk_k2a_FLP(
     silk_float          *A,                 /* O     prediction coefficients [order]                            */
     const silk_float    *rc,                /* I     reflection coefficients [order]                            */
-    opus_int32          order               /* I     prediction order                                           */
+    oac_int32          order               /* I     prediction order                                           */
 );
 
 /* compute autocorrelation */
 void silk_autocorrelation_FLP(
     silk_float          *results,           /* O    result (length correlationCount)                            */
     const silk_float    *inputData,         /* I    input data to correlate                                     */
-    opus_int            inputDataSize,      /* I    length of input                                             */
-    opus_int            correlationCount,    /* I    number of correlation taps to compute                       */
+    oac_int            inputDataSize,      /* I    length of input                                             */
+    oac_int            correlationCount,    /* I    number of correlation taps to compute                       */
     int                 arch
 );
 
-opus_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
+oac_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
     const silk_float    *frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
-    opus_int            *pitch_out,         /* O    Pitch lag values [nb_subfr]                                 */
-    opus_int16          *lagIndex,          /* O    Lag Index                                                   */
-    opus_int8           *contourIndex,      /* O    Pitch contour Index                                         */
+    oac_int            *pitch_out,         /* O    Pitch lag values [nb_subfr]                                 */
+    oac_int16          *lagIndex,          /* O    Lag Index                                                   */
+    oac_int8           *contourIndex,      /* O    Pitch contour Index                                         */
     silk_float          *LTPCorr,           /* I/O  Normalized correlation; input: value from previous frame    */
-    opus_int            prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
+    oac_int            prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
     const silk_float    search_thres1,      /* I    First stage threshold for lag candidates 0 - 1              */
     const silk_float    search_thres2,      /* I    Final threshold for lag candidates 0 - 1                    */
-    const opus_int      Fs_kHz,             /* I    sample frequency (kHz)                                      */
-    const opus_int      complexity,         /* I    Complexity setting, 0-2, where 2 is highest                 */
-    const opus_int      nb_subfr,           /* I    Number of 5 ms subframes                                    */
+    const oac_int      Fs_kHz,             /* I    sample frequency (kHz)                                      */
+    const oac_int      complexity,         /* I    Complexity setting, 0-2, where 2 is highest                 */
+    const oac_int      nb_subfr,           /* I    Number of 5 ms subframes                                    */
     int                 arch                /* I    Run-time architecture                                       */
 );
 
 void silk_insertion_sort_decreasing_FLP(
     silk_float          *a,                 /* I/O  Unsorted / Sorted vector                                    */
-    opus_int            *idx,               /* O    Index vector for the sorted elements                        */
-    const opus_int      L,                  /* I    Vector length                                               */
-    const opus_int      K                   /* I    Number of correctly sorted positions                        */
+    oac_int            *idx,               /* O    Index vector for the sorted elements                        */
+    const oac_int      L,                  /* I    Vector length                                               */
+    const oac_int      K                   /* I    Number of correctly sorted positions                        */
 );
 
 /* Compute reflection coefficients from input signal */
@@ -101,9 +101,9 @@ silk_float silk_burg_modified_FLP(          /* O    returns residual energy     
     silk_float          A[],                /* O    prediction coefficients (length order)                      */
     const silk_float    x[],                /* I    input signal, length: nb_subfr*(D+L_sub)                    */
     const silk_float    minInvGain,         /* I    minimum inverse prediction gain                             */
-    const opus_int      subfr_length,       /* I    input signal subframe length (incl. D preceding samples)    */
-    const opus_int      nb_subfr,           /* I    number of subframes stacked in x                            */
-    const opus_int      D,                  /* I    order                                                       */
+    const oac_int      subfr_length,       /* I    input signal subframe length (incl. D preceding samples)    */
+    const oac_int      nb_subfr,           /* I    number of subframes stacked in x                            */
+    const oac_int      D,                  /* I    order                                                       */
     int                 arch
 );
 
@@ -111,7 +111,7 @@ silk_float silk_burg_modified_FLP(          /* O    returns residual energy     
 void silk_scale_vector_FLP(
     silk_float          *data1,
     silk_float          gain,
-    opus_int            dataSize
+    oac_int            dataSize
 );
 
 /* copy and multiply a vector by a constant */
@@ -119,14 +119,14 @@ void silk_scale_copy_vector_FLP(
     silk_float          *data_out,
     const silk_float    *data_in,
     silk_float          gain,
-    opus_int            dataSize
+    oac_int            dataSize
 );
 
 /* inner product of two silk_float arrays, with result as double */
 double silk_inner_product_FLP_c(
     const silk_float    *data1,
     const silk_float    *data2,
-    opus_int            dataSize
+    oac_int            dataSize
 );
 
 #ifndef OVERRIDE_inner_product_FLP
@@ -137,7 +137,7 @@ double silk_inner_product_FLP_c(
 /* sum of squares of a silk_float array, with result as double */
 double silk_energy_FLP(
     const silk_float    *data,
-    opus_int            dataSize
+    oac_int            dataSize
 );
 
 /********************************************************************/
@@ -151,45 +151,45 @@ double silk_energy_FLP(
 #define silk_abs_float( a )                     ((silk_float)fabs(a))
 
 /* sigmoid function */
-static OPUS_INLINE silk_float silk_sigmoid( silk_float x )
+static OAC_INLINE silk_float silk_sigmoid( silk_float x )
 {
     return (silk_float)(1.0 / (1.0 + exp(-x)));
 }
 
 /* floating-point to integer conversion (rounding) */
-static OPUS_INLINE opus_int32 silk_float2int( silk_float x )
+static OAC_INLINE oac_int32 silk_float2int( silk_float x )
 {
-    return (opus_int32)float2int( x );
+    return (oac_int32)float2int( x );
 }
 
 /* floating-point to integer conversion (rounding) */
-static OPUS_INLINE void silk_float2short_array(
-    opus_int16       *out,
+static OAC_INLINE void silk_float2short_array(
+    oac_int16       *out,
     const silk_float *in,
-    opus_int32       length
+    oac_int32       length
 )
 {
-    opus_int32 k;
+    oac_int32 k;
     for( k = length - 1; k >= 0; k-- ) {
-        out[k] = silk_SAT16( (opus_int32)float2int( in[k] ) );
+        out[k] = silk_SAT16( (oac_int32)float2int( in[k] ) );
     }
 }
 
 /* integer to floating-point conversion */
-static OPUS_INLINE void silk_short2float_array(
+static OAC_INLINE void silk_short2float_array(
     silk_float       *out,
-    const opus_int16 *in,
-    opus_int32       length
+    const oac_int16 *in,
+    oac_int32       length
 )
 {
-    opus_int32 k;
+    oac_int32 k;
     for( k = length - 1; k >= 0; k-- ) {
         out[k] = (silk_float)in[k];
     }
 }
 
 /* using log2() helps the fixed-point conversion */
-static OPUS_INLINE silk_float silk_log2( double x )
+static OAC_INLINE silk_float silk_log2( double x )
 {
     return ( silk_float )( 3.32192809488736 * log10( x ) );
 }

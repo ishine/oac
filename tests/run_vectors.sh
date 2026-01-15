@@ -45,8 +45,8 @@ CMD_PATH=$1
 VECTOR_PATH=$2
 RATE=$3
 
-: ${OPUS_DEMO:=$CMD_PATH/opus_demo}
-: ${OPUS_COMPARE:=$CMD_PATH/opus_compare}
+: ${OAC_DEMO:=$CMD_PATH/oac_demo}
+: ${OAC_COMPARE:=$CMD_PATH/oac_compare}
 
 if [ -d "$VECTOR_PATH" ]; then
     echo "Test vectors found in $VECTOR_PATH"
@@ -57,15 +57,15 @@ else
     exit 0
 fi
 
-if [ ! -x "$OPUS_COMPARE" ]; then
-    echo "ERROR: Compare program not found: $OPUS_COMPARE"
+if [ ! -x "$OAC_COMPARE" ]; then
+    echo "ERROR: Compare program not found: $OAC_COMPARE"
     exit 1
 fi
 
-if [ -x "$OPUS_DEMO" ]; then
-    echo "Decoding with $OPUS_DEMO"
+if [ -x "$OAC_DEMO" ]; then
+    echo "Decoding with $OAC_DEMO"
 else
-    echo "ERROR: Decoder not found: $OPUS_DEMO"
+    echo "ERROR: Decoder not found: $OAC_DEMO"
     exit 1
 fi
 
@@ -81,15 +81,15 @@ do
     else
         echo "Bitstream file not found: testvector$file.bit"
     fi
-    if "$OPUS_DEMO" -d "$RATE" 1 -ignore_extensions "$VECTOR_PATH/testvector$file.bit" tmp.out >> logs_mono.txt 2>&1; then
+    if "$OAC_DEMO" -d "$RATE" 1 -ignore_extensions "$VECTOR_PATH/testvector$file.bit" tmp.out >> logs_mono.txt 2>&1; then
         echo "successfully decoded"
     else
         echo "ERROR: decoding failed"
         exit 1
     fi
-    "$OPUS_COMPARE" -r "$RATE" "$VECTOR_PATH/testvector${file}.dec" tmp.out >> logs_mono.txt 2>&1
+    "$OAC_COMPARE" -r "$RATE" "$VECTOR_PATH/testvector${file}.dec" tmp.out >> logs_mono.txt 2>&1
     float_ret=$?
-    "$OPUS_COMPARE" -r "$RATE" "$VECTOR_PATH/testvector${file}m.dec" tmp.out >> logs_mono2.txt 2>&1
+    "$OAC_COMPARE" -r "$RATE" "$VECTOR_PATH/testvector${file}m.dec" tmp.out >> logs_mono2.txt 2>&1
     float_ret2=$?
     if [ "$float_ret" -eq "0" ] || [ "$float_ret2" -eq "0" ]; then
         echo "output matches reference"
@@ -112,15 +112,15 @@ do
     else
         echo "Bitstream file not found: testvector$file"
     fi
-    if "$OPUS_DEMO" -d "$RATE" 2 -ignore_extensions "$VECTOR_PATH/testvector$file.bit" tmp.out >> logs_stereo.txt 2>&1; then
+    if "$OAC_DEMO" -d "$RATE" 2 -ignore_extensions "$VECTOR_PATH/testvector$file.bit" tmp.out >> logs_stereo.txt 2>&1; then
         echo "successfully decoded"
     else
         echo "ERROR: decoding failed"
         exit 1
     fi
-    "$OPUS_COMPARE" -s -r "$RATE" "$VECTOR_PATH/testvector${file}.dec" tmp.out >> logs_stereo.txt 2>&1
+    "$OAC_COMPARE" -s -r "$RATE" "$VECTOR_PATH/testvector${file}.dec" tmp.out >> logs_stereo.txt 2>&1
     float_ret=$?
-    "$OPUS_COMPARE" -s -r "$RATE" "$VECTOR_PATH/testvector${file}m.dec" tmp.out >> logs_stereo2.txt 2>&1
+    "$OAC_COMPARE" -s -r "$RATE" "$VECTOR_PATH/testvector${file}m.dec" tmp.out >> logs_stereo2.txt 2>&1
     float_ret2=$?
     if [ "$float_ret" -eq "0" ] || [ "$float_ret2" -eq "0" ]; then
         echo "output matches reference"

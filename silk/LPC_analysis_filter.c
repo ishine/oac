@@ -47,21 +47,21 @@ POSSIBILITY OF SUCH DAMAGE.
 #define USE_CELT_FIR 0
 
 void silk_LPC_analysis_filter(
-    opus_int16                  *out,               /* O    Output signal                                               */
-    const opus_int16            *in,                /* I    Input signal                                                */
-    const opus_int16            *B,                 /* I    MA prediction coefficients, Q12 [order]                     */
-    const opus_int32            len,                /* I    Signal length                                               */
-    const opus_int32            d,                  /* I    Filter order                                                */
+    oac_int16                  *out,               /* O    Output signal                                               */
+    const oac_int16            *in,                /* I    Input signal                                                */
+    const oac_int16            *B,                 /* I    MA prediction coefficients, Q12 [order]                     */
+    const oac_int32            len,                /* I    Signal length                                               */
+    const oac_int32            d,                  /* I    Filter order                                                */
     int                         arch                /* I    Run-time architecture                                       */
 )
 {
-    opus_int   j;
+    oac_int   j;
 #if defined(FIXED_POINT) && USE_CELT_FIR
-    opus_int16 num[SILK_MAX_ORDER_LPC];
+    oac_int16 num[SILK_MAX_ORDER_LPC];
 #else
     int ix;
-    opus_int32       out32_Q12, out32;
-    const opus_int16 *in_ptr;
+    oac_int32       out32_Q12, out32;
+    const oac_int16 *in_ptr;
 #endif
 
     celt_assert( d >= 6 );
@@ -96,16 +96,16 @@ void silk_LPC_analysis_filter(
         }
 
         /* Subtract prediction */
-        out32_Q12 = silk_SUB32_ovflw( silk_LSHIFT( (opus_int32)in_ptr[ 1 ], 12 ), out32_Q12 );
+        out32_Q12 = silk_SUB32_ovflw( silk_LSHIFT( (oac_int32)in_ptr[ 1 ], 12 ), out32_Q12 );
 
         /* Scale to Q0 */
         out32 = silk_RSHIFT_ROUND( out32_Q12, 12 );
 
         /* Saturate output */
-        out[ ix ] = (opus_int16)silk_SAT16( out32 );
+        out[ ix ] = (oac_int16)silk_SAT16( out32 );
     }
 
     /* Set first d output samples to zero */
-    silk_memset( out, 0, d * sizeof( opus_int16 ) );
+    silk_memset( out, 0, d * sizeof( oac_int16 ) );
 #endif
 }

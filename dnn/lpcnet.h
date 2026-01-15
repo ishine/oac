@@ -27,7 +27,7 @@
 #ifndef LPCNET_H_
 #define LPCNET_H_
 
-#include "opus_types.h"
+#include "oac_types.h"
 
 #define NB_FEATURES 20
 #define NB_TOTAL_FEATURES 36
@@ -73,10 +73,10 @@ void lpcnet_decoder_destroy(LPCNetDecState *st);
 /** Decodes a packet of LPCNET_COMPRESSED_SIZE bytes (currently 8) into LPCNET_PACKET_SAMPLES samples (currently 640).
   * @param [in] st <tt>LPCNetDecState*</tt>: Decoder state
   * @param [in] buf <tt>const unsigned char *</tt>: Compressed packet
-  * @param [out] pcm <tt>opus_int16 *</tt>: Decoded audio
+  * @param [out] pcm <tt>oac_int16 *</tt>: Decoded audio
   * @retval 0 Success
   */
-int lpcnet_decode(LPCNetDecState *st, const unsigned char *buf, opus_int16 *pcm);
+int lpcnet_decode(LPCNetDecState *st, const unsigned char *buf, oac_int16 *pcm);
 
 
 
@@ -108,19 +108,19 @@ void lpcnet_encoder_destroy(LPCNetEncState *st);
 
 /** Encodes LPCNET_PACKET_SAMPLES speech samples (currently 640) into a packet of LPCNET_COMPRESSED_SIZE bytes (currently 8).
   * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
-  * @param [in] pcm <tt>opus_int16 *</tt>: Input speech to be encoded
+  * @param [in] pcm <tt>oac_int16 *</tt>: Input speech to be encoded
   * @param [out] buf <tt>const unsigned char *</tt>: Compressed packet
   * @retval 0 Success
   */
-int lpcnet_encode(LPCNetEncState *st, const opus_int16 *pcm, unsigned char *buf);
+int lpcnet_encode(LPCNetEncState *st, const oac_int16 *pcm, unsigned char *buf);
 
 /** Compute features on LPCNET_FRAME_SIZE speech samples (currently 160) and output features for one 10-ms frame.
   * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
-  * @param [in] pcm <tt>opus_int16 *</tt>: Input speech to be analyzed
+  * @param [in] pcm <tt>oac_int16 *</tt>: Input speech to be analyzed
   * @param [out] features <tt>float[NB_TOTAL_FEATURES]</tt>: Four feature vectors
   * @retval 0 Success
   */
-int lpcnet_compute_single_frame_features(LPCNetEncState *st, const opus_int16 *pcm, float features[NB_TOTAL_FEATURES], int arch);
+int lpcnet_compute_single_frame_features(LPCNetEncState *st, const oac_int16 *pcm, float features[NB_TOTAL_FEATURES], int arch);
 
 
 /** Compute features on LPCNET_FRAME_SIZE speech samples (currently 160) and output features for one 10-ms frame.
@@ -158,20 +158,20 @@ void lpcnet_destroy(LPCNetState *st);
 /** Synthesizes speech from an LPCNet feature vector.
   * @param [in] st <tt>LPCNetState*</tt>: Synthesis state
   * @param [in] features <tt>const float *</tt>: Compressed packet
-  * @param [out] output <tt>opus_int16 **</tt>: Synthesized speech
+  * @param [out] output <tt>oac_int16 **</tt>: Synthesized speech
   * @param [in] N <tt>int</tt>: Number of samples to generate
   * @retval 0 Success
   */
-void lpcnet_synthesize(LPCNetState *st, const float *features, opus_int16 *output, int N);
+void lpcnet_synthesize(LPCNetState *st, const float *features, oac_int16 *output, int N);
 
 
 
 int lpcnet_plc_init(LPCNetPLCState *st);
 void lpcnet_plc_reset(LPCNetPLCState *st);
 
-int lpcnet_plc_update(LPCNetPLCState *st, opus_int16 *pcm);
+int lpcnet_plc_update(LPCNetPLCState *st, oac_int16 *pcm);
 
-int lpcnet_plc_conceal(LPCNetPLCState *st, opus_int16 *pcm);
+int lpcnet_plc_conceal(LPCNetPLCState *st, oac_int16 *pcm);
 
 void lpcnet_plc_fec_add(LPCNetPLCState *st, const float *features);
 

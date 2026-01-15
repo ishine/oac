@@ -40,8 +40,8 @@ void silk_HP_variable_cutoff(
     silk_encoder_state_Fxx          state_Fxx[]                         /* I/O  Encoder states                              */
 )
 {
-   opus_int   quality_Q15;
-   opus_int32 pitch_freq_Hz_Q16, pitch_freq_log_Q7, delta_freq_Q7;
+   oac_int   quality_Q15;
+   oac_int32 pitch_freq_Hz_Q16, pitch_freq_log_Q7, delta_freq_Q7;
    silk_encoder_state *psEncC1 = &state_Fxx[ 0 ].sCmn;
 
    /* Adaptive cutoff frequency: estimate low end of pitch frequency range */

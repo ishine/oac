@@ -38,14 +38,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 
 /* Helper function, interpolates the filter taps */
-static OPUS_INLINE void silk_LP_interpolate_filter_taps(
-    opus_int32           B_Q28[ TRANSITION_NB ],
-    opus_int32           A_Q28[ TRANSITION_NA ],
-    const opus_int       ind,
-    const opus_int32     fac_Q16
+static OAC_INLINE void silk_LP_interpolate_filter_taps(
+    oac_int32           B_Q28[ TRANSITION_NB ],
+    oac_int32           A_Q28[ TRANSITION_NA ],
+    const oac_int       ind,
+    const oac_int32     fac_Q16
 )
 {
-    opus_int nb, na;
+    oac_int nb, na;
 
     if( ind < TRANSITION_INT_NUM - 1 ) {
         if( fac_Q16 > 0 ) {
@@ -73,23 +73,23 @@ static OPUS_INLINE void silk_LP_interpolate_filter_taps(
                         silk_Transition_LP_B_Q28[ ind + 1 ][ nb ],
                         silk_Transition_LP_B_Q28[ ind + 1 ][ nb ] -
                         silk_Transition_LP_B_Q28[ ind     ][ nb ],
-                        fac_Q16 - ( (opus_int32)1 << 16 ) );
+                        fac_Q16 - ( (oac_int32)1 << 16 ) );
                 }
                 for( na = 0; na < TRANSITION_NA; na++ ) {
                     A_Q28[ na ] = silk_SMLAWB(
                         silk_Transition_LP_A_Q28[ ind + 1 ][ na ],
                         silk_Transition_LP_A_Q28[ ind + 1 ][ na ] -
                         silk_Transition_LP_A_Q28[ ind     ][ na ],
-                        fac_Q16 - ( (opus_int32)1 << 16 ) );
+                        fac_Q16 - ( (oac_int32)1 << 16 ) );
                 }
             }
         } else {
-            silk_memcpy( B_Q28, silk_Transition_LP_B_Q28[ ind ], TRANSITION_NB * sizeof( opus_int32 ) );
-            silk_memcpy( A_Q28, silk_Transition_LP_A_Q28[ ind ], TRANSITION_NA * sizeof( opus_int32 ) );
+            silk_memcpy( B_Q28, silk_Transition_LP_B_Q28[ ind ], TRANSITION_NB * sizeof( oac_int32 ) );
+            silk_memcpy( A_Q28, silk_Transition_LP_A_Q28[ ind ], TRANSITION_NA * sizeof( oac_int32 ) );
         }
     } else {
-        silk_memcpy( B_Q28, silk_Transition_LP_B_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NB * sizeof( opus_int32 ) );
-        silk_memcpy( A_Q28, silk_Transition_LP_A_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NA * sizeof( opus_int32 ) );
+        silk_memcpy( B_Q28, silk_Transition_LP_B_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NB * sizeof( oac_int32 ) );
+        silk_memcpy( A_Q28, silk_Transition_LP_A_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NA * sizeof( oac_int32 ) );
     }
 }
 
@@ -99,12 +99,12 @@ static OPUS_INLINE void silk_LP_interpolate_filter_taps(
 /* Deactivate by setting psEncC->mode = 0;                  */
 void silk_LP_variable_cutoff(
     silk_LP_state               *psLP,                          /* I/O  LP filter state                             */
-    opus_int16                  *frame,                         /* I/O  Low-pass filtered output signal             */
-    const opus_int              frame_length                    /* I    Frame length                                */
+    oac_int16                  *frame,                         /* I/O  Low-pass filtered output signal             */
+    const oac_int              frame_length                    /* I    Frame length                                */
 )
 {
-    opus_int32   B_Q28[ TRANSITION_NB ], A_Q28[ TRANSITION_NA ], fac_Q16 = 0;
-    opus_int     ind = 0;
+    oac_int32   B_Q28[ TRANSITION_NB ], A_Q28[ TRANSITION_NA ], fac_Q16 = 0;
+    oac_int     ind = 0;
 
     silk_assert( psLP->transition_frame_no >= 0 && psLP->transition_frame_no <= TRANSITION_FRAMES );
 

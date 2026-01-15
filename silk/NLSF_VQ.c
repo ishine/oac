@@ -33,18 +33,18 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Compute quantization errors for an LPC_order element input vector for a VQ codebook */
 void silk_NLSF_VQ(
-    opus_int32                  err_Q24[],                      /* O    Quantization errors [K]                     */
-    const opus_int16            in_Q15[],                       /* I    Input vectors to be quantized [LPC_order]   */
-    const opus_uint8            pCB_Q8[],                       /* I    Codebook vectors [K*LPC_order]              */
-    const opus_int16            pWght_Q9[],                     /* I    Codebook weights [K*LPC_order]              */
-    const opus_int              K,                              /* I    Number of codebook vectors                  */
-    const opus_int              LPC_order                       /* I    Number of LPCs                              */
+    oac_int32                  err_Q24[],                      /* O    Quantization errors [K]                     */
+    const oac_int16            in_Q15[],                       /* I    Input vectors to be quantized [LPC_order]   */
+    const oac_uint8            pCB_Q8[],                       /* I    Codebook vectors [K*LPC_order]              */
+    const oac_int16            pWght_Q9[],                     /* I    Codebook weights [K*LPC_order]              */
+    const oac_int              K,                              /* I    Number of codebook vectors                  */
+    const oac_int              LPC_order                       /* I    Number of LPCs                              */
 )
 {
-    opus_int         i, m;
-    opus_int32       diff_Q15, diffw_Q24, sum_error_Q24, pred_Q24;
-    const opus_int16 *w_Q9_ptr;
-    const opus_uint8 *cb_Q8_ptr;
+    oac_int         i, m;
+    oac_int32       diff_Q15, diffw_Q24, sum_error_Q24, pred_Q24;
+    const oac_int16 *w_Q9_ptr;
+    const oac_uint8 *cb_Q8_ptr;
 
     celt_assert( ( LPC_order & 1 ) == 0 );
 
@@ -56,13 +56,13 @@ void silk_NLSF_VQ(
         pred_Q24 = 0;
         for( m = LPC_order-2; m >= 0; m -= 2 ) {
             /* Compute weighted absolute predictive quantization error for index m + 1 */
-            diff_Q15 = silk_SUB_LSHIFT32( in_Q15[ m + 1 ], (opus_int32)cb_Q8_ptr[ m + 1 ], 7 ); /* range: [ -32767 : 32767 ]*/
+            diff_Q15 = silk_SUB_LSHIFT32( in_Q15[ m + 1 ], (oac_int32)cb_Q8_ptr[ m + 1 ], 7 ); /* range: [ -32767 : 32767 ]*/
             diffw_Q24 = silk_SMULBB( diff_Q15, w_Q9_ptr[ m + 1 ] );
             sum_error_Q24 = silk_ADD32( sum_error_Q24, silk_abs( silk_SUB_RSHIFT32( diffw_Q24, pred_Q24, 1 ) ) );
             pred_Q24 = diffw_Q24;
 
             /* Compute weighted absolute predictive quantization error for index m */
-            diff_Q15 = silk_SUB_LSHIFT32( in_Q15[ m ], (opus_int32)cb_Q8_ptr[ m ], 7 ); /* range: [ -32767 : 32767 ]*/
+            diff_Q15 = silk_SUB_LSHIFT32( in_Q15[ m ], (oac_int32)cb_Q8_ptr[ m ], 7 ); /* range: [ -32767 : 32767 ]*/
             diffw_Q24 = silk_SMULBB( diff_Q15, w_Q9_ptr[ m ] );
             sum_error_Q24 = silk_ADD32( sum_error_Q24, silk_abs( silk_SUB_RSHIFT32( diffw_Q24, pred_Q24, 1 ) ) );
             pred_Q24 = diffw_Q24;

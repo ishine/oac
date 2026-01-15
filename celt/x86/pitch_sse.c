@@ -35,12 +35,12 @@
 #include "mathops.h"
 #include "pitch.h"
 
-#if defined(OPUS_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)
+#if defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)
 
 #include <xmmintrin.h>
 #include "arch.h"
 
-void xcorr_kernel_sse(const opus_val16 *x, const opus_val16 *y, opus_val32 sum[4], int len)
+void xcorr_kernel_sse(const oac_val16 *x, const oac_val16 *y, oac_val32 sum[4], int len)
 {
    int j;
    __m128 xsum1, xsum2;
@@ -76,8 +76,8 @@ void xcorr_kernel_sse(const opus_val16 *x, const opus_val16 *y, opus_val32 sum[4
 }
 
 
-void dual_inner_prod_sse(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
-      int N, opus_val32 *xy1, opus_val32 *xy2)
+void dual_inner_prod_sse(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+      int N, oac_val32 *xy1, oac_val32 *xy2)
 {
    int i;
    __m128 xsum1, xsum2;
@@ -105,7 +105,7 @@ void dual_inner_prod_sse(const opus_val16 *x, const opus_val16 *y01, const opus_
    }
 }
 
-opus_val32 celt_inner_prod_sse(const opus_val16 *x, const opus_val16 *y,
+oac_val32 celt_inner_prod_sse(const oac_val16 *x, const oac_val16 *y,
       int N)
 {
    int i;
@@ -130,8 +130,8 @@ opus_val32 celt_inner_prod_sse(const opus_val16 *x, const opus_val16 *y,
    return xy;
 }
 
-void comb_filter_const_sse(opus_val32 *y, opus_val32 *x, int T, int N,
-      opus_val16 g10, opus_val16 g11, opus_val16 g12)
+void comb_filter_const_sse(oac_val32 *y, oac_val32 *x, int T, int N,
+      oac_val16 g10, oac_val16 g11, oac_val16 g12)
 {
    int i;
    __m128 x0v;
@@ -143,7 +143,7 @@ void comb_filter_const_sse(opus_val32 *y, opus_val32 *x, int T, int N,
    for (i=0;i<N-3;i+=4)
    {
       __m128 yi, yi2, x1v, x2v, x3v, x4v;
-      const opus_val32 *xp = &x[i-T-2];
+      const oac_val32 *xp = &x[i-T-2];
       yi = _mm_loadu_ps(x+i);
       x4v = _mm_loadu_ps(xp+4);
 #if 0

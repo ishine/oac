@@ -40,14 +40,14 @@ POSSIBILITY OF SUCH DAMAGE.
 /************************************************/
 
 /* 16th order LPC analysis filter, does not write first 16 samples */
-static OPUS_INLINE void silk_LPC_analysis_filter16_FLP(
+static OAC_INLINE void silk_LPC_analysis_filter16_FLP(
           silk_float                 r_LPC[],            /* O    LPC residual signal                     */
     const silk_float                 PredCoef[],         /* I    LPC coefficients                        */
     const silk_float                 s[],                /* I    Input signal                            */
-    const opus_int                   length              /* I    Length of input signal                  */
+    const oac_int                   length              /* I    Length of input signal                  */
 )
 {
-    opus_int   ix;
+    oac_int   ix;
     silk_float LPC_pred;
     const silk_float *s_ptr;
 
@@ -78,14 +78,14 @@ static OPUS_INLINE void silk_LPC_analysis_filter16_FLP(
 }
 
 /* 12th order LPC analysis filter, does not write first 12 samples */
-static OPUS_INLINE void silk_LPC_analysis_filter12_FLP(
+static OAC_INLINE void silk_LPC_analysis_filter12_FLP(
           silk_float                 r_LPC[],            /* O    LPC residual signal                     */
     const silk_float                 PredCoef[],         /* I    LPC coefficients                        */
     const silk_float                 s[],                /* I    Input signal                            */
-    const opus_int                   length              /* I    Length of input signal                  */
+    const oac_int                   length              /* I    Length of input signal                  */
 )
 {
-    opus_int   ix;
+    oac_int   ix;
     silk_float LPC_pred;
     const silk_float *s_ptr;
 
@@ -112,14 +112,14 @@ static OPUS_INLINE void silk_LPC_analysis_filter12_FLP(
 }
 
 /* 10th order LPC analysis filter, does not write first 10 samples */
-static OPUS_INLINE void silk_LPC_analysis_filter10_FLP(
+static OAC_INLINE void silk_LPC_analysis_filter10_FLP(
           silk_float                 r_LPC[],            /* O    LPC residual signal                     */
     const silk_float                 PredCoef[],         /* I    LPC coefficients                        */
     const silk_float                 s[],                /* I    Input signal                            */
-    const opus_int                   length              /* I    Length of input signal                  */
+    const oac_int                   length              /* I    Length of input signal                  */
 )
 {
-    opus_int   ix;
+    oac_int   ix;
     silk_float LPC_pred;
     const silk_float *s_ptr;
 
@@ -144,14 +144,14 @@ static OPUS_INLINE void silk_LPC_analysis_filter10_FLP(
 }
 
 /* 8th order LPC analysis filter, does not write first 8 samples */
-static OPUS_INLINE void silk_LPC_analysis_filter8_FLP(
+static OAC_INLINE void silk_LPC_analysis_filter8_FLP(
           silk_float                 r_LPC[],            /* O    LPC residual signal                     */
     const silk_float                 PredCoef[],         /* I    LPC coefficients                        */
     const silk_float                 s[],                /* I    Input signal                            */
-    const opus_int                   length              /* I    Length of input signal                  */
+    const oac_int                   length              /* I    Length of input signal                  */
 )
 {
-    opus_int   ix;
+    oac_int   ix;
     silk_float LPC_pred;
     const silk_float *s_ptr;
 
@@ -174,14 +174,14 @@ static OPUS_INLINE void silk_LPC_analysis_filter8_FLP(
 }
 
 /* 6th order LPC analysis filter, does not write first 6 samples */
-static OPUS_INLINE void silk_LPC_analysis_filter6_FLP(
+static OAC_INLINE void silk_LPC_analysis_filter6_FLP(
           silk_float                 r_LPC[],            /* O    LPC residual signal                     */
     const silk_float                 PredCoef[],         /* I    LPC coefficients                        */
     const silk_float                 s[],                /* I    Input signal                            */
-    const opus_int                   length              /* I    Length of input signal                  */
+    const oac_int                   length              /* I    Length of input signal                  */
 )
 {
-    opus_int   ix;
+    oac_int   ix;
     silk_float LPC_pred;
     const silk_float *s_ptr;
 
@@ -211,8 +211,8 @@ void silk_LPC_analysis_filter_FLP(
     silk_float                      r_LPC[],                            /* O    LPC residual signal                         */
     const silk_float                PredCoef[],                         /* I    LPC coefficients                            */
     const silk_float                s[],                                /* I    Input signal                                */
-    const opus_int                  length,                             /* I    Length of input signal                      */
-    const opus_int                  Order                               /* I    LPC order                                   */
+    const oac_int                  length,                             /* I    Length of input signal                      */
+    const oac_int                  Order                               /* I    LPC order                                   */
 )
 {
     celt_assert( Order <= length );

@@ -53,10 +53,10 @@ static const unsigned char LOG2_FRAC_TABLE[24]={
   N and K are themselves limited to 15 bits.*/
 static int fits_in32(int _n, int _k)
 {
-   static const opus_int16 maxN[15] = {
+   static const oac_int16 maxN[15] = {
       32767, 32767, 32767, 1476, 283, 109,  60,  40,
        29,  24,  20,  18,  16,  14,  13};
-   static const opus_int16 maxK[15] = {
+   static const oac_int16 maxK[15] = {
       32767, 32767, 32767, 32767, 1172, 238,  95,  53,
        36,  27,  22,  18,  16,  15,  13};
    if (_n>=14)
@@ -78,13 +78,13 @@ void compute_pulse_cache(CELTMode *m, int LM)
    int curr=0;
    int nbEntries=0;
    int entryN[100], entryK[100], entryI[100];
-   const opus_int16 *eBands = m->eBands;
+   const oac_int16 *eBands = m->eBands;
    PulseCache *cache = &m->cache;
-   opus_int16 *cindex;
+   oac_int16 *cindex;
    unsigned char *bits;
    unsigned char *cap;
 
-   cindex = (opus_int16 *)opus_alloc(sizeof(cache->index[0])*m->nbEBands*(LM+2));
+   cindex = (oac_int16 *)oac_alloc(sizeof(cache->index[0])*m->nbEBands*(LM+2));
    cache->index = cindex;
 
    /* Scan for all unique band sizes */
@@ -124,14 +124,14 @@ void compute_pulse_cache(CELTMode *m, int LM)
          }
       }
    }
-   bits = (unsigned char *)opus_alloc(sizeof(unsigned char)*curr);
+   bits = (unsigned char *)oac_alloc(sizeof(unsigned char)*curr);
    cache->bits = bits;
    cache->size = curr;
    /* Compute the cache for all unique sizes */
    for (i=0;i<nbEntries;i++)
    {
       unsigned char *ptr = bits+entryI[i];
-      opus_int16 tmp[CELT_MAX_PULSES+1];
+      oac_int16 tmp[CELT_MAX_PULSES+1];
       get_required_bits(tmp, entryN[i], get_pulses(entryK[i]), BITRES);
       for (j=1;j<=entryK[i];j++)
          ptr[j] = tmp[get_pulses(j)]-1;
@@ -140,7 +140,7 @@ void compute_pulse_cache(CELTMode *m, int LM)
 
    /* Compute the maximum rate for each band at which we'll reliably use as
        many bits as we ask for. */
-   cache->caps = cap = (unsigned char *)opus_alloc(sizeof(cache->caps[0])*(LM+1)*2*m->nbEBands);
+   cache->caps = cap = (unsigned char *)oac_alloc(sizeof(cache->caps[0])*(LM+1)*2*m->nbEBands);
    for (i=0;i<=LM;i++)
    {
       for (C=1;C<=2;C++)
@@ -156,8 +156,8 @@ void compute_pulse_cache(CELTMode *m, int LM)
             else
             {
                const unsigned char *pcache;
-               opus_int32           num;
-               opus_int32           den;
+               oac_int32           num;
+               oac_int32           den;
                int                  LM0;
                int                  N;
                int                  offset;
@@ -189,13 +189,13 @@ void compute_pulse_cache(CELTMode *m, int LM)
                   /* Offset the number of qtheta bits by log2(N)/2
                       + QTHETA_OFFSET compared to their "fair share" of
                       total/N */
-                  offset = ((m->logN[j]+(opus_int32)((opus_uint32)(LM0+k)<<BITRES))>>1)-QTHETA_OFFSET;
+                  offset = ((m->logN[j]+(oac_int32)((oac_uint32)(LM0+k)<<BITRES))>>1)-QTHETA_OFFSET;
                   /* The number of qtheta bits we'll allocate if the remainder
                       is to be max_bits.
                      The average measured cost for theta is 0.89701 times qb,
                       approximated here as 459/512. */
-                  num=459*(opus_int32)((2*N-1)*offset+max_bits);
-                  den=((opus_int32)(2*N-1)<<9)-459;
+                  num=459*(oac_int32)((2*N-1)*offset+max_bits);
+                  den=((oac_int32)(2*N-1)<<9)-459;
                   qb = IMIN((num+(den>>1))/den, 57);
                   celt_assert(qb >= 0);
                   max_bits += qb;
@@ -209,8 +209,8 @@ void compute_pulse_cache(CELTMode *m, int LM)
                   ndof = 2*N-1-(N==2);
                   /* The average measured cost for theta with the step PDF is
                       0.95164 times qb, approximated here as 487/512. */
-                  num = (N==2?512:487)*(opus_int32)(max_bits+ndof*offset);
-                  den = ((opus_int32)ndof<<9)-(N==2?512:487);
+                  num = (N==2?512:487)*(oac_int32)(max_bits+ndof*offset);
+                  den = ((oac_int32)ndof<<9)-(N==2?512:487);
                   qb = IMIN((num+(den>>1))/den, (N==2?64:61));
                   celt_assert(qb >= 0);
                   max_bits += qb;
@@ -245,21 +245,21 @@ void compute_pulse_cache(CELTMode *m, int LM)
 
 #define ALLOC_STEPS 6
 
-static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start,
-      const int *bits1, const int *bits2, const int *thresh, const int *cap, opus_int32 total, opus_int32 *_balance,
+static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start,
+      const int *bits1, const int *bits2, const int *thresh, const int *cap, oac_int32 total, oac_int32 *_balance,
       int skip_rsv, int *intensity, int intensity_rsv, int *dual_stereo, int dual_stereo_rsv, int *bits,
       int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
 {
-   opus_int32 psum;
+   oac_int32 psum;
    int lo, hi;
    int i, j;
    int logM;
    int stereo;
    int codedBands=-1;
    int alloc_floor;
-   opus_int32 left, percoeff;
+   oac_int32 left, percoeff;
    int done;
-   opus_int32 balance;
+   oac_int32 balance;
    SAVE_STACK;
 
    alloc_floor = C<<BITRES;
@@ -275,7 +275,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
       done = 0;
       for (j=end;j-->start;)
       {
-         int tmp = bits1[j] + (mid*(opus_int32)bits2[j]>>ALLOC_STEPS);
+         int tmp = bits1[j] + (mid*(oac_int32)bits2[j]>>ALLOC_STEPS);
          if (tmp >= thresh[j] || done)
          {
             done = 1;
@@ -296,7 +296,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
    done = 0;
    for (j=end;j-->start;)
    {
-      int tmp = bits1[j] + ((opus_int32)lo*bits2[j]>>ALLOC_STEPS);
+      int tmp = bits1[j] + ((oac_int32)lo*bits2[j]>>ALLOC_STEPS);
       if (tmp < thresh[j] && !done)
       {
          if (tmp >= alloc_floor)
@@ -439,12 +439,12 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
       int N0, N, den;
       int offset;
       int NClogN;
-      opus_int32 excess, bit;
+      oac_int32 excess, bit;
 
       celt_assert(bits[j] >= 0);
       N0 = m->eBands[j+1]-m->eBands[j];
       N=N0<<LM;
-      bit = (opus_int32)bits[j]+balance;
+      bit = (oac_int32)bits[j]+balance;
 
       if (N>1)
       {
@@ -532,7 +532,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
 }
 
 int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim, int *intensity, int *dual_stereo,
-      opus_int32 total, opus_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
+      oac_int32 total, oac_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
 {
    int lo, hi, len, j;
    int codedBands;

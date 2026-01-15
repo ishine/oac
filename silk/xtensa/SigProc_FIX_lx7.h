@@ -29,9 +29,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SILK_SIGPROC_FIX_LX7_H
 
 #undef silk_SAT16
-static inline short int silk_SAT16_lx7(opus_int32 a)
+static inline short int silk_SAT16_lx7(oac_int32 a)
 {
-    opus_int32 res;
+    oac_int32 res;
     __asm__(
         "clamps %0, %1, 15\n\t"
         : "=r"(res)

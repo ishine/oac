@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "celt/cpu_support.h"
 #include "celt/arm/armcpu.h"
 
-opus_int32 silk_noise_shape_quantizer_short_prediction_neon(const opus_int32 *buf32, const opus_int32 *coef32, opus_int order)
+oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf32, const oac_int32 *coef32, oac_int order)
 {
     int32x4_t coef0 = vld1q_s32(coef32);
     int32x4_t coef1 = vld1q_s32(coef32 + 4);
@@ -61,7 +61,7 @@ opus_int32 silk_noise_shape_quantizer_short_prediction_neon(const opus_int32 *bu
 
     int64x1_t f = vadd_s64(vget_low_s64(e), vget_high_s64(e));
 
-    opus_int32 out = vget_lane_s32(vreinterpret_s32_s64(f), 0);
+    oac_int32 out = vget_lane_s32(vreinterpret_s32_s64(f), 0);
 
     out += silk_RSHIFT( order, 1 );
 
@@ -69,9 +69,9 @@ opus_int32 silk_noise_shape_quantizer_short_prediction_neon(const opus_int32 *bu
 }
 
 
-opus_int32 silk_NSQ_noise_shape_feedback_loop_neon(const opus_int32 *data0, opus_int32 *data1, const opus_int16 *coef, opus_int order)
+oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef, oac_int order)
 {
-    opus_int32 out;
+    oac_int32 out;
     if (order == 8)
     {
         int32x4_t a00 = vdupq_n_s32(data0[0]);

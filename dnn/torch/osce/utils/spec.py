@@ -72,11 +72,11 @@ def create_filter_bank(num_bands, n_fft=320, fs=16000, scale='bark', round_cente
     f1 = fs / n_fft * (num_bins - 1)
     fstep = fs / n_fft
 
-    if scale == 'opus':
+    if scale == 'oac':
         bins_5ms = [0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40]
         fac = 1000 * n_fft / fs / 5
         if num_bands != 18:
-            print("warning: requested Opus filter bank with num_bands != 18. Adjusting num_bands.")
+            print("warning: requested Oac filter bank with num_bands != 18. Adjusting num_bands.")
             num_bands = 18
         center_bins = np.array([fac * bin for bin in bins_5ms])
     else:

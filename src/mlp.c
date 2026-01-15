@@ -30,13 +30,13 @@
 #endif
 
 #include <math.h>
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "oac_types.h"
+#include "oac_defines.h"
 #include "arch.h"
 #include "mlp.h"
 
 #define fmadd(a, b, c) ((a)*(b)+(c))
-static OPUS_INLINE float tansig_approx(float x)
+static OAC_INLINE float tansig_approx(float x)
 {
     const float N0 = 952.52801514f;
     const float N1 = 96.39235687f;
@@ -52,12 +52,12 @@ static OPUS_INLINE float tansig_approx(float x)
     return MAX32(-1.f, MIN32(1.f, num));
 }
 
-static OPUS_INLINE float sigmoid_approx(float x)
+static OAC_INLINE float sigmoid_approx(float x)
 {
    return .5f + .5f*tansig_approx(.5f*x);
 }
 
-static void gemm_accum(float *out, const opus_int8 *weights, int rows, int cols, int col_stride, const float *x)
+static void gemm_accum(float *out, const oac_int8 *weights, int rows, int cols, int col_stride, const float *x)
 {
    int i, j;
    for (i=0;i<rows;i++)

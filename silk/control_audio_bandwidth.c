@@ -33,14 +33,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tuning_parameters.h"
 
 /* Control internal sampling rate */
-opus_int silk_control_audio_bandwidth(
+oac_int silk_control_audio_bandwidth(
     silk_encoder_state          *psEncC,                        /* I/O  Pointer to Silk encoder state               */
     silk_EncControlStruct       *encControl                     /* I    Control structure                           */
 )
 {
-    opus_int   fs_kHz;
-    opus_int   orig_kHz;
-    opus_int32 fs_Hz;
+    oac_int   fs_kHz;
+    oac_int   orig_kHz;
+    oac_int32 fs_Hz;
 
     orig_kHz = psEncC->fs_kHz;
     /* Handle a bandwidth-switching reset where we need to be aware what the last sampling rate was. */
@@ -65,7 +65,7 @@ opus_int silk_control_audio_bandwidth(
             /* Stop transition phase */
             psEncC->sLP.mode = 0;
         }
-        if( psEncC->allow_bandwidth_switch || encControl->opusCanSwitch ) {
+        if( psEncC->allow_bandwidth_switch || encControl->oacCanSwitch ) {
             /* Check if we should switch down */
             if( silk_SMULBB( orig_kHz, 1000 ) > psEncC->desiredInternal_fs_Hz )
             {
@@ -77,7 +77,7 @@ opus_int silk_control_audio_bandwidth(
                     /* Reset transition filter state */
                     silk_memset( psEncC->sLP.In_LP_State, 0, sizeof( psEncC->sLP.In_LP_State ) );
                 }
-                if( encControl->opusCanSwitch ) {
+                if( encControl->oacCanSwitch ) {
                     /* Stop transition phase */
                     psEncC->sLP.mode = 0;
 
@@ -99,7 +99,7 @@ opus_int silk_control_audio_bandwidth(
             if( silk_SMULBB( orig_kHz, 1000 ) < psEncC->desiredInternal_fs_Hz )
             {
                 /* Switch up */
-                if( encControl->opusCanSwitch ) {
+                if( encControl->oacCanSwitch ) {
                     /* Switch to a higher sample frequency */
                     fs_kHz = orig_kHz == 8 ? 12 : 16;
 

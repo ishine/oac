@@ -35,10 +35,10 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_LTP_scale_ctrl_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  encoder state                                                               */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  encoder control                                                             */
-    opus_int                        condCoding                              /* I    The type of conditional coding to use                                       */
+    oac_int                        condCoding                              /* I    The type of conditional coding to use                                       */
 )
 {
-    opus_int round_loss;
+    oac_int round_loss;
 
     if( condCoding == CODE_INDEPENDENTLY ) {
         /* Only scale if first frame in packet */

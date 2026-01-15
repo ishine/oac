@@ -55,7 +55,7 @@ def c_export(args, model):
     writer = CWriter(os.path.join(args.output_dir, "plc_data"), message=message, model_struct_name='PLCModel')
     writer.header.write(
 f"""
-#include "opus_types.h"
+#include "oac_types.h"
 """
         )
 

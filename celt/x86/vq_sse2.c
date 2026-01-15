@@ -41,7 +41,7 @@
 
 #ifndef FIXED_POINT
 
-opus_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch)
+oac_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch)
 {
    int i, j;
    int pulsesLeft;
@@ -62,7 +62,7 @@ opus_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch)
    ALLOC(X, N+3, celt_norm);
    ALLOC(signy, N+3, float);
 
-   OPUS_COPY(X, _X, N);
+   OAC_COPY(X, _X, N);
    X[N] = X[N+1] = X[N+2] = 0;
    sums = _mm_setzero_ps();
    for (j=0;j<N;j+=4)
@@ -92,7 +92,7 @@ opus_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch)
       __m128i pulses_sum;
       __m128 yy4, xy4;
       __m128 rcp4;
-      opus_val32 sum = _mm_cvtss_f32(sums);
+      oac_val32 sum = _mm_cvtss_f32(sums);
       /* If X is too small, just replace it with a pulse at 0 */
       /* Prevents infinities and NaNs from causing too many pulses
          to be allocated. 64 is an approximation of infinity here. */
@@ -141,7 +141,7 @@ opus_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch)
       we fill the first bin with pulses. */
    if (pulsesLeft > N+3)
    {
-      opus_val16 tmp = (opus_val16)pulsesLeft;
+      oac_val16 tmp = (oac_val16)pulsesLeft;
       yy = MAC16_16(yy, tmp, tmp);
       yy = MAC16_16(yy, tmp, y[0]);
       iy[0] += pulsesLeft;

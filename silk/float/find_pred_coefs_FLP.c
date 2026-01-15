@@ -37,15 +37,15 @@ void silk_find_pred_coefs_FLP(
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     const silk_float                res_pitch[],                        /* I    Residual from pitch analysis                */
     const silk_float                x[],                                /* I    Speech signal                               */
-    opus_int                        condCoding                          /* I    The type of conditional coding to use       */
+    oac_int                        condCoding                          /* I    The type of conditional coding to use       */
 )
 {
-    opus_int         i;
+    oac_int         i;
     silk_float       XXLTP[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ];
     silk_float       xXLTP[ MAX_NB_SUBFR * LTP_ORDER ];
     silk_float       invGains[ MAX_NB_SUBFR ];
     /* Set to NLSF_Q15 to zero so we don't copy junk to the state. */
-    opus_int16       NLSF_Q15[ MAX_LPC_ORDER ]={0};
+    oac_int16       NLSF_Q15[ MAX_LPC_ORDER ]={0};
     const silk_float *x_ptr;
     silk_float       *x_pre_ptr, LPC_in_pre[ MAX_NB_SUBFR * MAX_LPC_ORDER + MAX_FRAME_LENGTH ];
     silk_float       minInvGain;

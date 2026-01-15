@@ -12,9 +12,9 @@ m4_define([CURRENT_VERSION],
                            printf "unknown"
                        fi ]))
 
-AC_INIT([opus],[CURRENT_VERSION],[opus@xiph.org])
+AC_INIT([oac],[CURRENT_VERSION],[oac@xiph.org])
 
-AC_CONFIG_SRCDIR(src/opus_encoder.c)
+AC_CONFIG_SRCDIR(src/oac_encoder.c)
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl enable silent rules on automake 1.11 and later
@@ -22,13 +22,13 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # For libtool.
 dnl Please update these for releases.
-OPUS_LT_CURRENT=11
-OPUS_LT_REVISION=1
-OPUS_LT_AGE=11
+OAC_LT_CURRENT=11
+OAC_LT_REVISION=1
+OAC_LT_AGE=11
 
-AC_SUBST(OPUS_LT_CURRENT)
-AC_SUBST(OPUS_LT_REVISION)
-AC_SUBST(OPUS_LT_AGE)
+AC_SUBST(OAC_LT_CURRENT)
+AC_SUBST(OAC_LT_REVISION)
+AC_SUBST(OAC_LT_AGE)
 
 AM_INIT_AUTOMAKE([no-define])
 AM_MAINTAINER_MODE([enable])
@@ -42,7 +42,7 @@ AC_C_INLINE
 
 AM_PROG_AS
 
-AC_DEFINE([OPUS_BUILD], [], [This is a build of OPUS])
+AC_DEFINE([OAC_BUILD], [], [This is a build of OAC])
 
 #Use a hacked up version of autoconf's AC_C_RESTRICT because it's not
 #strong enough a test to detect old buggy versions of GCC (e.g. 2.95.3)
@@ -157,7 +157,7 @@ AS_IF([test "$enable_qext" = "yes"],[
 AM_CONDITIONAL([ENABLE_QEXT], [test "$enable_qext" = "yes"])
 
 AC_ARG_ENABLE([custom-modes],
-    [AS_HELP_STRING([--enable-custom-modes], [enable non-Opus modes, e.g. 44.1 kHz & 2^n frames])],,
+    [AS_HELP_STRING([--enable-custom-modes], [enable non-Oac modes, e.g. 44.1 kHz & 2^n frames])],,
     [enable_custom_modes=no])
 
 AS_IF([test "$enable_custom_modes" = "yes"],[
@@ -165,16 +165,16 @@ AS_IF([test "$enable_custom_modes" = "yes"],[
   PC_BUILD="$PC_BUILD, custom modes"
 ])
 
-AC_ARG_ENABLE([opus-custom-api],
-    [AS_HELP_STRING([--enable-opus-custom-api], [enable Opus custom API])],,
-    [enable_opus_custom_api=no])
+AC_ARG_ENABLE([oac-custom-api],
+    [AS_HELP_STRING([--enable-oac-custom-api], [enable Oac custom API])],,
+    [enable_oac_custom_api=no])
 
-AS_IF([test "$enable_opus_custom_api" = "yes"],[
-  AC_DEFINE([ENABLE_OPUS_CUSTOM_API], [1], [Opus custom API])
-  PC_BUILD="$PC_BUILD, Opus custom API"
+AS_IF([test "$enable_oac_custom_api" = "yes"],[
+  AC_DEFINE([ENABLE_OAC_CUSTOM_API], [1], [Oac custom API])
+  PC_BUILD="$PC_BUILD, Oac custom API"
 ])
 
-AM_CONDITIONAL([CUSTOM_MODES], [test "$enable_custom_modes" = "yes" || test "$enable_opus_custom_api" = "yes"])
+AM_CONDITIONAL([CUSTOM_MODES], [test "$enable_custom_modes" = "yes" || test "$enable_oac_custom_api" = "yes"])
 
 AC_ARG_ENABLE([dred],
     [AS_HELP_STRING([--enable-dred], [use Deep REDundancy (DRED)])],,
@@ -195,7 +195,7 @@ AS_IF([test "$enable_deep_plc" = "yes" || test "$enable_dred" = "yes" || test "$
 AM_CONDITIONAL([ENABLE_DEEP_PLC], [test "$enable_deep_plc" = "yes" || test "$enable_dred" = "yes" || test "$enable_osce" = "yes" || test "$enable_osce_training_data" = "yes"])
 
 AC_ARG_ENABLE([lossgen],
-    [AS_HELP_STRING([--enable-lossgen], [build opus_demo with packet loss simulator])],,
+    [AS_HELP_STRING([--enable-lossgen], [build oac_demo with packet loss simulator])],,
     [enable_lossgen=no])
 
 AS_IF([test "$enable_lossgen" = "yes"],[
@@ -245,31 +245,31 @@ AS_IF([test x"${enable_asm}" = x"yes"],[
         dnl Currently we only have asm for fixed-point
         #AS_IF([test "$enable_float" != "yes"],[
             cpu_arm=yes
-            AC_DEFINE([OPUS_ARM_ASM], [],  [Make use of ARM asm optimization])
+            AC_DEFINE([OAC_ARM_ASM], [],  [Make use of ARM asm optimization])
             AS_GCC_INLINE_ASSEMBLY(
                 [inline_optimization="ARM"],
                 [inline_optimization="disabled"]
             )
-            AS_ASM_ARM_EDSP([OPUS_ARM_INLINE_EDSP=1],[OPUS_ARM_INLINE_EDSP=0])
-            AS_ASM_ARM_MEDIA([OPUS_ARM_INLINE_MEDIA=1],
-                [OPUS_ARM_INLINE_MEDIA=0])
-            AS_ASM_ARM_NEON([OPUS_ARM_INLINE_NEON=1],[OPUS_ARM_INLINE_NEON=0])
+            AS_ASM_ARM_EDSP([OAC_ARM_INLINE_EDSP=1],[OAC_ARM_INLINE_EDSP=0])
+            AS_ASM_ARM_MEDIA([OAC_ARM_INLINE_MEDIA=1],
+                [OAC_ARM_INLINE_MEDIA=0])
+            AS_ASM_ARM_NEON([OAC_ARM_INLINE_NEON=1],[OAC_ARM_INLINE_NEON=0])
             AS_IF([test x"$inline_optimization" = x"ARM"],[
-                AM_CONDITIONAL([OPUS_ARM_INLINE_ASM],[true])
-                AC_DEFINE([OPUS_ARM_INLINE_ASM], 1,
+                AM_CONDITIONAL([OAC_ARM_INLINE_ASM],[true])
+                AC_DEFINE([OAC_ARM_INLINE_ASM], 1,
                     [Use generic ARMv4 inline asm optimizations])
-                AS_IF([test x"$OPUS_ARM_INLINE_EDSP" = x"1"],[
-                    AC_DEFINE([OPUS_ARM_INLINE_EDSP], [1],
+                AS_IF([test x"$OAC_ARM_INLINE_EDSP" = x"1"],[
+                    AC_DEFINE([OAC_ARM_INLINE_EDSP], [1],
                         [Use ARMv5E inline asm optimizations])
                     inline_optimization="$inline_optimization (EDSP)"
                 ])
-                AS_IF([test x"$OPUS_ARM_INLINE_MEDIA" = x"1"],[
-                    AC_DEFINE([OPUS_ARM_INLINE_MEDIA], [1],
+                AS_IF([test x"$OAC_ARM_INLINE_MEDIA" = x"1"],[
+                    AC_DEFINE([OAC_ARM_INLINE_MEDIA], [1],
                         [Use ARMv6 inline asm optimizations])
                     inline_optimization="$inline_optimization (Media)"
                 ])
-                AS_IF([test x"$OPUS_ARM_INLINE_NEON" = x"1"],[
-                    AC_DEFINE([OPUS_ARM_INLINE_NEON], 1,
+                AS_IF([test x"$OAC_ARM_INLINE_NEON" = x"1"],[
+                    AC_DEFINE([OAC_ARM_INLINE_NEON], 1,
                         [Use ARM NEON inline asm optimizations])
                     inline_optimization="$inline_optimization (NEON)"
                 ])
@@ -277,98 +277,98 @@ AS_IF([test x"${enable_asm}" = x"yes"],[
             dnl We need Perl to translate RVCT-syntax asm to gas syntax.
             AC_CHECK_PROG([HAVE_PERL], perl, yes, no)
             AS_IF([test x"$HAVE_PERL" = x"yes"],[
-                AM_CONDITIONAL([OPUS_ARM_EXTERNAL_ASM],[true])
+                AM_CONDITIONAL([OAC_ARM_EXTERNAL_ASM],[true])
                 asm_optimization="ARM"
-                AS_IF([test x"$OPUS_ARM_INLINE_EDSP" = x"1"], [
-                    OPUS_ARM_PRESUME_EDSP=1
-                    OPUS_ARM_MAY_HAVE_EDSP=1
+                AS_IF([test x"$OAC_ARM_INLINE_EDSP" = x"1"], [
+                    OAC_ARM_PRESUME_EDSP=1
+                    OAC_ARM_MAY_HAVE_EDSP=1
                 ],
                 [
-                    OPUS_ARM_PRESUME_EDSP=0
-                    OPUS_ARM_MAY_HAVE_EDSP=0
+                    OAC_ARM_PRESUME_EDSP=0
+                    OAC_ARM_MAY_HAVE_EDSP=0
                 ])
-                AS_IF([test x"$OPUS_ARM_INLINE_MEDIA" = x"1"], [
-                    OPUS_ARM_PRESUME_MEDIA=1
-                    OPUS_ARM_MAY_HAVE_MEDIA=1
+                AS_IF([test x"$OAC_ARM_INLINE_MEDIA" = x"1"], [
+                    OAC_ARM_PRESUME_MEDIA=1
+                    OAC_ARM_MAY_HAVE_MEDIA=1
                 ],
                 [
-                    OPUS_ARM_PRESUME_MEDIA=0
-                    OPUS_ARM_MAY_HAVE_MEDIA=0
+                    OAC_ARM_PRESUME_MEDIA=0
+                    OAC_ARM_MAY_HAVE_MEDIA=0
                 ])
-                AS_IF([test x"$OPUS_ARM_INLINE_NEON" = x"1"], [
-                    OPUS_ARM_PRESUME_NEON=1
-                    OPUS_ARM_MAY_HAVE_NEON=1
+                AS_IF([test x"$OAC_ARM_INLINE_NEON" = x"1"], [
+                    OAC_ARM_PRESUME_NEON=1
+                    OAC_ARM_MAY_HAVE_NEON=1
                 ],
                 [
-                    OPUS_ARM_PRESUME_NEON=0
-                    OPUS_ARM_MAY_HAVE_NEON=0
+                    OAC_ARM_PRESUME_NEON=0
+                    OAC_ARM_MAY_HAVE_NEON=0
                 ])
                 AS_IF([test x"$enable_rtcd" = x"yes"],[
-                    AS_IF([test x"$OPUS_ARM_MAY_HAVE_EDSP" != x"1"],[
+                    AS_IF([test x"$OAC_ARM_MAY_HAVE_EDSP" != x"1"],[
                         AC_MSG_NOTICE(
                           [Trying to force-enable armv5e EDSP instructions...])
-                        AS_ASM_ARM_EDSP_FORCE([OPUS_ARM_MAY_HAVE_EDSP=1])
+                        AS_ASM_ARM_EDSP_FORCE([OAC_ARM_MAY_HAVE_EDSP=1])
                     ])
-                    AS_IF([test x"$OPUS_ARM_MAY_HAVE_MEDIA" != x"1"],[
+                    AS_IF([test x"$OAC_ARM_MAY_HAVE_MEDIA" != x"1"],[
                         AC_MSG_NOTICE(
                           [Trying to force-enable ARMv6 media instructions...])
-                        AS_ASM_ARM_MEDIA_FORCE([OPUS_ARM_MAY_HAVE_MEDIA=1])
+                        AS_ASM_ARM_MEDIA_FORCE([OAC_ARM_MAY_HAVE_MEDIA=1])
                     ])
-                    AS_IF([test x"$OPUS_ARM_MAY_HAVE_NEON" != x"1"],[
+                    AS_IF([test x"$OAC_ARM_MAY_HAVE_NEON" != x"1"],[
                         AC_MSG_NOTICE(
                           [Trying to force-enable NEON instructions...])
-                        AS_ASM_ARM_NEON_FORCE([OPUS_ARM_MAY_HAVE_NEON=1])
+                        AS_ASM_ARM_NEON_FORCE([OAC_ARM_MAY_HAVE_NEON=1])
                     ])
                 ])
                 rtcd_support=
-                AS_IF([test x"$OPUS_ARM_MAY_HAVE_EDSP" = x"1"],[
-                    AC_DEFINE(OPUS_ARM_MAY_HAVE_EDSP, 1,
+                AS_IF([test x"$OAC_ARM_MAY_HAVE_EDSP" = x"1"],[
+                    AC_DEFINE(OAC_ARM_MAY_HAVE_EDSP, 1,
                         [Define if assembler supports EDSP instructions])
-                    AS_IF([test x"$OPUS_ARM_PRESUME_EDSP" = x"1"],[
-                        AC_DEFINE(OPUS_ARM_PRESUME_EDSP, 1,
+                    AS_IF([test x"$OAC_ARM_PRESUME_EDSP" = x"1"],[
+                        AC_DEFINE(OAC_ARM_PRESUME_EDSP, 1,
                           [Define if binary requires EDSP instruction support])
                         asm_optimization="$asm_optimization (EDSP)"
                     ],
                         [rtcd_support="$rtcd_support (EDSP)"]
                     )
                 ])
-                AC_SUBST(OPUS_ARM_MAY_HAVE_EDSP)
-                AS_IF([test x"$OPUS_ARM_MAY_HAVE_MEDIA" = x"1"],[
-                    AC_DEFINE(OPUS_ARM_MAY_HAVE_MEDIA, 1,
+                AC_SUBST(OAC_ARM_MAY_HAVE_EDSP)
+                AS_IF([test x"$OAC_ARM_MAY_HAVE_MEDIA" = x"1"],[
+                    AC_DEFINE(OAC_ARM_MAY_HAVE_MEDIA, 1,
                       [Define if assembler supports ARMv6 media instructions])
-                    AS_IF([test x"$OPUS_ARM_PRESUME_MEDIA" = x"1"],[
-                        AC_DEFINE(OPUS_ARM_PRESUME_MEDIA, 1,
+                    AS_IF([test x"$OAC_ARM_PRESUME_MEDIA" = x"1"],[
+                        AC_DEFINE(OAC_ARM_PRESUME_MEDIA, 1,
                           [Define if binary requires ARMv6 media instruction support])
                         asm_optimization="$asm_optimization (Media)"
                     ],
                         [rtcd_support="$rtcd_support (Media)"]
                     )
                 ])
-                AC_SUBST(OPUS_ARM_MAY_HAVE_MEDIA)
-                AS_IF([test x"$OPUS_ARM_MAY_HAVE_NEON" = x"1"],[
-                    AC_DEFINE(OPUS_ARM_MAY_HAVE_NEON, 1,
+                AC_SUBST(OAC_ARM_MAY_HAVE_MEDIA)
+                AS_IF([test x"$OAC_ARM_MAY_HAVE_NEON" = x"1"],[
+                    AC_DEFINE(OAC_ARM_MAY_HAVE_NEON, 1,
                       [Define if compiler supports NEON instructions])
-                    AS_IF([test x"$OPUS_ARM_PRESUME_NEON" = x"1"], [
-                        AC_DEFINE(OPUS_ARM_PRESUME_NEON, 1,
+                    AS_IF([test x"$OAC_ARM_PRESUME_NEON" = x"1"], [
+                        AC_DEFINE(OAC_ARM_PRESUME_NEON, 1,
                           [Define if binary requires NEON instruction support])
                         asm_optimization="$asm_optimization (NEON)"
                     ],
                         [rtcd_support="$rtcd_support (NEON)"]
                     )
                 ])
-                AC_SUBST(OPUS_ARM_MAY_HAVE_NEON)
-                AS_IF([test x"$OPUS_ARM_MAY_HAVE_DOTPROD" = x"1"],[
-                    AC_DEFINE(OPUS_ARM_MAY_HAVE_DOTPROD, 1,
+                AC_SUBST(OAC_ARM_MAY_HAVE_NEON)
+                AS_IF([test x"$OAC_ARM_MAY_HAVE_DOTPROD" = x"1"],[
+                    AC_DEFINE(OAC_ARM_MAY_HAVE_DOTPROD, 1,
                       [Define if compiler supports DOTPROD instructions])
-                    AS_IF([test x"$OPUS_ARM_PRESUME_DOTPROD" = x"1"], [
-                        AC_DEFINE(OPUS_ARM_PRESUME_DOTPROD, 1,
+                    AS_IF([test x"$OAC_ARM_PRESUME_DOTPROD" = x"1"], [
+                        AC_DEFINE(OAC_ARM_PRESUME_DOTPROD, 1,
                           [Define if binary requires DOTPROD instruction support])
                         asm_optimization="$asm_optimization (DOTPROD)"
                     ],
                         [rtcd_support="$rtcd_support (DOTPROD)"]
                     )
                 ])
-                AC_SUBST(OPUS_ARM_MAY_HAVE_DOTPROD)
+                AC_SUBST(OAC_ARM_MAY_HAVE_DOTPROD)
                 dnl Make sure turning on RTCD gets us at least one
                 dnl instruction set.
                 AS_IF([test x"$rtcd_support" != x""],
@@ -397,9 +397,9 @@ AS_IF([test x"${enable_asm}" = x"yes"],[
    asm_optimization="disabled"
 ])
 
-AM_CONDITIONAL([OPUS_ARM_INLINE_ASM],
+AM_CONDITIONAL([OAC_ARM_INLINE_ASM],
     [test x"${inline_optimization%% *}" = x"ARM"])
-AM_CONDITIONAL([OPUS_ARM_EXTERNAL_ASM],
+AM_CONDITIONAL([OAC_ARM_EXTERNAL_ASM],
     [test x"${asm_optimization%% *}" = x"ARM"])
 
 AM_CONDITIONAL([HAVE_SSE], [false])
@@ -439,7 +439,7 @@ AS_VAR_SET_IF([X86_AVX2_CFLAGS], [], [AS_VAR_SET([X86_AVX2_CFLAGS], "DEFAULT_X86
 AS_VAR_SET_IF([ARM_NEON_INTR_CFLAGS], [], [AS_VAR_SET([ARM_NEON_INTR_CFLAGS], ["$RESOLVED_DEFAULT_ARM_NEON_INTR_CFLAGS"])])
 AS_VAR_SET_IF([ARM_DOTPROD_INTR_CFLAGS], [], [AS_VAR_SET([ARM_DOTPROD_INTR_CFLAGS], ["DEFAULT_ARM_DOTPROD_INTR_CFLAGS"])])
 
-AC_DEFUN([OPUS_PATH_NE10],
+AC_DEFUN([OAC_PATH_NE10],
    [
       AC_ARG_WITH(NE10,
                   AS_HELP_STRING([--with-NE10=PFX],[prefix where libNE10 is installed (optional)]),
@@ -519,11 +519,11 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
    [arm*|aarch64*],
    [
       cpu_arm=yes
-      OPUS_CHECK_INTRINSICS(
+      OAC_CHECK_INTRINSICS(
          [ARM Neon],
          [$ARM_NEON_INTR_CFLAGS],
-         [OPUS_ARM_MAY_HAVE_NEON_INTR],
-         [OPUS_ARM_PRESUME_NEON_INTR],
+         [OAC_ARM_MAY_HAVE_NEON_INTR],
+         [OAC_ARM_PRESUME_NEON_INTR],
          [[#include <arm_neon.h>
          ]],
          [[
@@ -532,40 +532,40 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
             return (int)vgetq_lane_f32(SUMM, 0);
          ]]
       )
-      AS_IF([test x"$OPUS_ARM_MAY_HAVE_NEON_INTR" = x"1" && test x"$OPUS_ARM_PRESUME_NEON_INTR" != x"1"],
+      AS_IF([test x"$OAC_ARM_MAY_HAVE_NEON_INTR" = x"1" && test x"$OAC_ARM_PRESUME_NEON_INTR" != x"1"],
           [
-             OPUS_ARM_NEON_INTR_CFLAGS="$ARM_NEON_INTR_CFLAGS"
-             AC_SUBST([OPUS_ARM_NEON_INTR_CFLAGS])
+             OAC_ARM_NEON_INTR_CFLAGS="$ARM_NEON_INTR_CFLAGS"
+             AC_SUBST([OAC_ARM_NEON_INTR_CFLAGS])
           ]
       )
 
-      AS_IF([test x"$OPUS_ARM_MAY_HAVE_NEON_INTR" = x"1"],
+      AS_IF([test x"$OAC_ARM_MAY_HAVE_NEON_INTR" = x"1"],
       [
-         AC_DEFINE([OPUS_ARM_MAY_HAVE_NEON_INTR], 1, [Compiler supports ARMv7/Aarch64 Neon Intrinsics])
+         AC_DEFINE([OAC_ARM_MAY_HAVE_NEON_INTR], 1, [Compiler supports ARMv7/Aarch64 Neon Intrinsics])
          intrinsics_support="$intrinsics_support (NEON)"
 
-         AS_IF([test x"$enable_rtcd" != x"no" && test x"$OPUS_ARM_PRESUME_NEON_INTR" != x"1"],
+         AS_IF([test x"$enable_rtcd" != x"no" && test x"$OAC_ARM_PRESUME_NEON_INTR" != x"1"],
             [AS_IF([test x"$rtcd_support" = x"no"],
                [rtcd_support="ARM (NEON Intrinsics)"],
                [rtcd_support="$rtcd_support (NEON Intrinsics)"])])
 
-         AS_IF([test x"$OPUS_ARM_PRESUME_NEON_INTR" = x"1"],
-            [AC_DEFINE([OPUS_ARM_PRESUME_NEON_INTR], 1, [Define if binary requires NEON intrinsics support])])
+         AS_IF([test x"$OAC_ARM_PRESUME_NEON_INTR" = x"1"],
+            [AC_DEFINE([OAC_ARM_PRESUME_NEON_INTR], 1, [Define if binary requires NEON intrinsics support])])
 
-         OPUS_PATH_NE10()
+         OAC_PATH_NE10()
          AS_IF([test x"$NE10_LIBS" != x""],
          [
               intrinsics_support="$intrinsics_support (NE10)"
               AS_IF([test x"enable_rtcd" != x"" \
-               && test x"$OPUS_ARM_PRESUME_NEON_INTR" != x"1"],
+               && test x"$OAC_ARM_PRESUME_NEON_INTR" != x"1"],
                  [rtcd_support="$rtcd_support (NE10)"])
          ])
 
-         OPUS_CHECK_INTRINSICS(
+         OAC_CHECK_INTRINSICS(
             [Aarch64 Neon],
             [$ARM_NEON_INTR_CFLAGS],
-            [OPUS_ARM_MAY_HAVE_AARCH64_NEON_INTR],
-            [OPUS_ARM_PRESUME_AARCH64_NEON_INTR],
+            [OAC_ARM_MAY_HAVE_AARCH64_NEON_INTR],
+            [OAC_ARM_PRESUME_AARCH64_NEON_INTR],
             [[#include <arm_neon.h>
             ]],
             [[
@@ -575,17 +575,17 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
             ]]
          )
 
-         AS_IF([test x"$OPUS_ARM_PRESUME_AARCH64_NEON_INTR" = x"1"],
+         AS_IF([test x"$OAC_ARM_PRESUME_AARCH64_NEON_INTR" = x"1"],
          [
-            AC_DEFINE([OPUS_ARM_PRESUME_AARCH64_NEON_INTR], 1, [Define if binary requires Aarch64 Neon Intrinsics])
+            AC_DEFINE([OAC_ARM_PRESUME_AARCH64_NEON_INTR], 1, [Define if binary requires Aarch64 Neon Intrinsics])
             intrinsics_support="$intrinsics_support (NEON [Aarch64])"
          ])
 
-         OPUS_CHECK_INTRINSICS(
+         OAC_CHECK_INTRINSICS(
             [Aarch64 dotprod],
 	    [$ARM_DOTPROD_INTR_CFLAGS],
-            [OPUS_ARM_MAY_HAVE_DOTPROD],
-            [OPUS_ARM_PRESUME_DOTPROD],
+            [OAC_ARM_MAY_HAVE_DOTPROD],
+            [OAC_ARM_PRESUME_DOTPROD],
             [[#include <arm_neon.h>
             ]],
             [[
@@ -594,25 +594,25 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
                acc = vdotq_s32(acc, a, b);
             ]]
          )
-         AS_IF([test x"$OPUS_ARM_MAY_HAVE_DOTPROD" = x"1" && test x"$OPUS_ARM_PRESUME_DOTPROD" != x"1"],
+         AS_IF([test x"$OAC_ARM_MAY_HAVE_DOTPROD" = x"1" && test x"$OAC_ARM_PRESUME_DOTPROD" != x"1"],
              [
-                OPUS_ARM_DOTPROD_INTR_CFLAGS="$ARM_NEON_DOTPROD_CFLAGS"
-                AC_SUBST([OPUS_ARM_DOTPROD_INTR_CFLAGS])
+                OAC_ARM_DOTPROD_INTR_CFLAGS="$ARM_NEON_DOTPROD_CFLAGS"
+                AC_SUBST([OAC_ARM_DOTPROD_INTR_CFLAGS])
              ]
          )
 
-         AS_IF([test x"$OPUS_ARM_MAY_HAVE_DOTPROD" = x"1"],
+         AS_IF([test x"$OAC_ARM_MAY_HAVE_DOTPROD" = x"1"],
              [
-                AC_DEFINE([OPUS_ARM_MAY_HAVE_DOTPROD], 1, [Compiler supports Aarch64 DOTPROD Intrinsics])
+                AC_DEFINE([OAC_ARM_MAY_HAVE_DOTPROD], 1, [Compiler supports Aarch64 DOTPROD Intrinsics])
                 intrinsics_support="$intrinsics_support (DOTPROD)"
 
-                AS_IF([test x"$OPUS_ARM_PRESUME_DOTPROD" = x"1"],
+                AS_IF([test x"$OAC_ARM_PRESUME_DOTPROD" = x"1"],
                 [
-                   AC_DEFINE([OPUS_ARM_PRESUME_DOTPROD], 1, [Define if binary requires Aarch64 dotprod Intrinsics])
+                   AC_DEFINE([OAC_ARM_PRESUME_DOTPROD], 1, [Define if binary requires Aarch64 dotprod Intrinsics])
                    intrinsics_support="$intrinsics_support (DOTPROD [Aarch64])"
                 ])
 
-                AS_IF([test x"$enable_rtcd" != x"no" && test x"$OPUS_ARM_PRESUME_DOTPROD" != x"1"],
+                AS_IF([test x"$enable_rtcd" != x"no" && test x"$OAC_ARM_PRESUME_DOTPROD" != x"1"],
                    [AS_IF([test x"$rtcd_support" = x"no"],
                       [rtcd_support="ARM (DOTPROD Intrinsics)"],
                       [rtcd_support="$rtcd_support (DOTPROD Intrinsics)"])])
@@ -633,11 +633,11 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
    [i?86|x86_64],
    [
       cpu_x86=yes
-      OPUS_CHECK_INTRINSICS(
+      OAC_CHECK_INTRINSICS(
          [SSE],
          [$X86_SSE_CFLAGS],
-         [OPUS_X86_MAY_HAVE_SSE],
-         [OPUS_X86_PRESUME_SSE],
+         [OAC_X86_MAY_HAVE_SSE],
+         [OAC_X86_PRESUME_SSE],
          [[#include <xmmintrin.h>
            #include <time.h>
          ]],
@@ -648,17 +648,17 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
              return _mm_cvtss_si32(mtest);
          ]]
       )
-      AS_IF([test x"$OPUS_X86_MAY_HAVE_SSE" = x"1" && test x"$OPUS_X86_PRESUME_SSE" != x"1"],
+      AS_IF([test x"$OAC_X86_MAY_HAVE_SSE" = x"1" && test x"$OAC_X86_PRESUME_SSE" != x"1"],
           [
-             OPUS_X86_SSE_CFLAGS="$X86_SSE_CFLAGS"
-             AC_SUBST([OPUS_X86_SSE_CFLAGS])
+             OAC_X86_SSE_CFLAGS="$X86_SSE_CFLAGS"
+             AC_SUBST([OAC_X86_SSE_CFLAGS])
           ]
       )
-      OPUS_CHECK_INTRINSICS(
+      OAC_CHECK_INTRINSICS(
          [SSE2],
          [$X86_SSE2_CFLAGS],
-         [OPUS_X86_MAY_HAVE_SSE2],
-         [OPUS_X86_PRESUME_SSE2],
+         [OAC_X86_MAY_HAVE_SSE2],
+         [OAC_X86_PRESUME_SSE2],
          [[#include <emmintrin.h>
            #include <time.h>
          ]],
@@ -669,17 +669,17 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
             return _mm_cvtsi128_si32(mtest);
          ]]
       )
-      AS_IF([test x"$OPUS_X86_MAY_HAVE_SSE2" = x"1" && test x"$OPUS_X86_PRESUME_SSE2" != x"1"],
+      AS_IF([test x"$OAC_X86_MAY_HAVE_SSE2" = x"1" && test x"$OAC_X86_PRESUME_SSE2" != x"1"],
           [
-             OPUS_X86_SSE2_CFLAGS="$X86_SSE2_CFLAGS"
-             AC_SUBST([OPUS_X86_SSE2_CFLAGS])
+             OAC_X86_SSE2_CFLAGS="$X86_SSE2_CFLAGS"
+             AC_SUBST([OAC_X86_SSE2_CFLAGS])
           ]
       )
-      OPUS_CHECK_INTRINSICS(
+      OAC_CHECK_INTRINSICS(
          [SSE4.1],
          [$X86_SSE4_1_CFLAGS],
-         [OPUS_X86_MAY_HAVE_SSE4_1],
-         [OPUS_X86_PRESUME_SSE4_1],
+         [OAC_X86_MAY_HAVE_SSE4_1],
+         [OAC_X86_PRESUME_SSE4_1],
          [[#include <smmintrin.h>
            #include <time.h>
          ]],
@@ -690,17 +690,17 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
             return _mm_cvtsi128_si32(mtest);
          ]]
       )
-      AS_IF([test x"$OPUS_X86_MAY_HAVE_SSE4_1" = x"1" && test x"$OPUS_X86_PRESUME_SSE4_1" != x"1"],
+      AS_IF([test x"$OAC_X86_MAY_HAVE_SSE4_1" = x"1" && test x"$OAC_X86_PRESUME_SSE4_1" != x"1"],
           [
-             OPUS_X86_SSE4_1_CFLAGS="$X86_SSE4_1_CFLAGS"
-             AC_SUBST([OPUS_X86_SSE4_1_CFLAGS])
+             OAC_X86_SSE4_1_CFLAGS="$X86_SSE4_1_CFLAGS"
+             AC_SUBST([OAC_X86_SSE4_1_CFLAGS])
           ]
       )
-      OPUS_CHECK_INTRINSICS(
+      OAC_CHECK_INTRINSICS(
          [AVX2],
          [$X86_AVX2_CFLAGS],
-         [OPUS_X86_MAY_HAVE_AVX2],
-         [OPUS_X86_PRESUME_AVX2],
+         [OAC_X86_MAY_HAVE_AVX2],
+         [OAC_X86_PRESUME_AVX2],
          [[#include <immintrin.h>
            #include <time.h>
          ]],
@@ -718,58 +718,58 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
               _mm256_xor_si256(mtest1, mtest2), _mm256_cvttps_epi32(mtest)), 0);
          ]]
       )
-      AS_IF([test x"$OPUS_X86_MAY_HAVE_AVX2" = x"1" && test x"$OPUS_X86_PRESUME_AVX2" != x"1"],
+      AS_IF([test x"$OAC_X86_MAY_HAVE_AVX2" = x"1" && test x"$OAC_X86_PRESUME_AVX2" != x"1"],
           [
-             OPUS_X86_AVX2_CFLAGS="$X86_AVX2_CFLAGS"
-             AC_SUBST([OPUS_X86_AVX2_CFLAGS])
+             OAC_X86_AVX2_CFLAGS="$X86_AVX2_CFLAGS"
+             AC_SUBST([OAC_X86_AVX2_CFLAGS])
           ]
       )
          AS_IF([test x"$rtcd_support" = x"no"], [rtcd_support=""])
-         AS_IF([test x"$OPUS_X86_MAY_HAVE_SSE" = x"1"],
+         AS_IF([test x"$OAC_X86_MAY_HAVE_SSE" = x"1"],
          [
-            AC_DEFINE([OPUS_X86_MAY_HAVE_SSE], 1, [Compiler supports X86 SSE Intrinsics])
+            AC_DEFINE([OAC_X86_MAY_HAVE_SSE], 1, [Compiler supports X86 SSE Intrinsics])
             intrinsics_support="$intrinsics_support SSE"
 
-            AS_IF([test x"$OPUS_X86_PRESUME_SSE" = x"1"],
-               [AC_DEFINE([OPUS_X86_PRESUME_SSE], 1, [Define if binary requires SSE intrinsics support])],
+            AS_IF([test x"$OAC_X86_PRESUME_SSE" = x"1"],
+               [AC_DEFINE([OAC_X86_PRESUME_SSE], 1, [Define if binary requires SSE intrinsics support])],
                [rtcd_support="$rtcd_support SSE"])
          ],
          [
             AC_MSG_WARN([Compiler does not support SSE intrinsics])
          ])
 
-         AS_IF([test x"$OPUS_X86_MAY_HAVE_SSE2" = x"1"],
+         AS_IF([test x"$OAC_X86_MAY_HAVE_SSE2" = x"1"],
          [
-            AC_DEFINE([OPUS_X86_MAY_HAVE_SSE2], 1, [Compiler supports X86 SSE2 Intrinsics])
+            AC_DEFINE([OAC_X86_MAY_HAVE_SSE2], 1, [Compiler supports X86 SSE2 Intrinsics])
             intrinsics_support="$intrinsics_support SSE2"
 
-            AS_IF([test x"$OPUS_X86_PRESUME_SSE2" = x"1"],
-               [AC_DEFINE([OPUS_X86_PRESUME_SSE2], 1, [Define if binary requires SSE2 intrinsics support])],
+            AS_IF([test x"$OAC_X86_PRESUME_SSE2" = x"1"],
+               [AC_DEFINE([OAC_X86_PRESUME_SSE2], 1, [Define if binary requires SSE2 intrinsics support])],
                [rtcd_support="$rtcd_support SSE2"])
          ],
          [
             AC_MSG_WARN([Compiler does not support SSE2 intrinsics])
          ])
 
-         AS_IF([test x"$OPUS_X86_MAY_HAVE_SSE4_1" = x"1"],
+         AS_IF([test x"$OAC_X86_MAY_HAVE_SSE4_1" = x"1"],
          [
-            AC_DEFINE([OPUS_X86_MAY_HAVE_SSE4_1], 1, [Compiler supports X86 SSE4.1 Intrinsics])
+            AC_DEFINE([OAC_X86_MAY_HAVE_SSE4_1], 1, [Compiler supports X86 SSE4.1 Intrinsics])
             intrinsics_support="$intrinsics_support SSE4.1"
 
-            AS_IF([test x"$OPUS_X86_PRESUME_SSE4_1" = x"1"],
-               [AC_DEFINE([OPUS_X86_PRESUME_SSE4_1], 1, [Define if binary requires SSE4.1 intrinsics support])],
+            AS_IF([test x"$OAC_X86_PRESUME_SSE4_1" = x"1"],
+               [AC_DEFINE([OAC_X86_PRESUME_SSE4_1], 1, [Define if binary requires SSE4.1 intrinsics support])],
                [rtcd_support="$rtcd_support SSE4.1"])
          ],
          [
             AC_MSG_WARN([Compiler does not support SSE4.1 intrinsics])
          ])
-         AS_IF([test x"$OPUS_X86_MAY_HAVE_AVX2" = x"1"],
+         AS_IF([test x"$OAC_X86_MAY_HAVE_AVX2" = x"1"],
          [
-            AC_DEFINE([OPUS_X86_MAY_HAVE_AVX2], 1, [Compiler supports X86 AVX2 Intrinsics])
+            AC_DEFINE([OAC_X86_MAY_HAVE_AVX2], 1, [Compiler supports X86 AVX2 Intrinsics])
             intrinsics_support="$intrinsics_support AVX2"
 
-            AS_IF([test x"$OPUS_X86_PRESUME_AVX2" = x"1"],
-               [AC_DEFINE([OPUS_X86_PRESUME_AVX2], 1, [Define if binary requires AVX2 intrinsics support])],
+            AS_IF([test x"$OAC_X86_PRESUME_AVX2" = x"1"],
+               [AC_DEFINE([OAC_X86_PRESUME_AVX2], 1, [Define if binary requires AVX2 intrinsics support])],
                [rtcd_support="$rtcd_support AVX2"])
          ],
          [
@@ -846,29 +846,29 @@ AS_IF([test x"$enable_intrinsics" = x"yes"],[
 
 AM_CONDITIONAL([CPU_ARM], [test "$cpu_arm" = "yes"])
 AM_CONDITIONAL([HAVE_ARM_DOTPROD],
-    [test x"$OPUS_ARM_MAY_HAVE_DOTPROD" = x"1"])
+    [test x"$OAC_ARM_MAY_HAVE_DOTPROD" = x"1"])
 AM_CONDITIONAL([HAVE_ARM_NEON_INTR],
-    [test x"$OPUS_ARM_MAY_HAVE_NEON_INTR" = x"1"])
+    [test x"$OAC_ARM_MAY_HAVE_NEON_INTR" = x"1"])
 AM_CONDITIONAL([HAVE_ARM_NE10],
     [test x"$HAVE_ARM_NE10" = x"1"])
 AM_CONDITIONAL([CPU_X86], [test "$cpu_x86" = "yes"])
 AM_CONDITIONAL([HAVE_SSE],
-    [test x"$OPUS_X86_MAY_HAVE_SSE" = x"1"])
+    [test x"$OAC_X86_MAY_HAVE_SSE" = x"1"])
 AM_CONDITIONAL([HAVE_SSE2],
-    [test x"$OPUS_X86_MAY_HAVE_SSE2" = x"1"])
+    [test x"$OAC_X86_MAY_HAVE_SSE2" = x"1"])
 AM_CONDITIONAL([HAVE_SSE4_1],
-    [test x"$OPUS_X86_MAY_HAVE_SSE4_1" = x"1"])
+    [test x"$OAC_X86_MAY_HAVE_SSE4_1" = x"1"])
 AM_CONDITIONAL([HAVE_AVX2],
-    [test x"$OPUS_X86_MAY_HAVE_AVX2" = x"1"])
+    [test x"$OAC_X86_MAY_HAVE_AVX2" = x"1"])
 
 AM_CONDITIONAL([HAVE_RTCD],
  [test x"$enable_rtcd" = x"yes" && test x"$rtcd_support" != x"no"])
 AS_IF([test x"$enable_rtcd" = x"yes"],[
     AS_IF([test x"$rtcd_support" != x"no"],[
-        AC_DEFINE([OPUS_HAVE_RTCD], [1],
+        AC_DEFINE([OAC_HAVE_RTCD], [1],
             [Use run-time CPU capabilities detection])
-        OPUS_HAVE_RTCD=1
-        AC_SUBST(OPUS_HAVE_RTCD)
+        OAC_HAVE_RTCD=1
+        AC_SUBST(OAC_HAVE_RTCD)
     ])
 ],[
     rtcd_support="disabled"
@@ -904,7 +904,7 @@ AC_ARG_ENABLE([check-asm],
     [enable_check_asm=no])
 
 AS_IF([test "$enable_check_asm" = "yes"], [
-  AC_DEFINE([OPUS_CHECK_ASM], [1], [Run bit-exactness checks between optimized and C implementations])
+  AC_DEFINE([OAC_CHECK_ASM], [1], [Run bit-exactness checks between optimized and C implementations])
 ])
 
 AC_ARG_ENABLE([doc],
@@ -954,8 +954,8 @@ AC_ARG_ENABLE([osce],
 )
 
 AS_IF([test "$enable_osce" = "yes" || test "$enable_osce_training_data" = "yes"], [
-       AC_DEFINE([ENABLE_OSCE], [1], [Enable Opus Speech Coding Enhancement])
-       AC_DEFINE([ENABLE_OSCE_BWE], [1], [Enable Opus Speech Coding Enhancement Blind BWE])
+       AC_DEFINE([ENABLE_OSCE], [1], [Enable Oac Speech Coding Enhancement])
+       AC_DEFINE([ENABLE_OSCE_BWE], [1], [Enable Oac Speech Coding Enhancement Blind BWE])
 ])
 
 AM_CONDITIONAL([ENABLE_OSCE], [test "$enable_osce" = "yes" || test "$enable_osce_training_data" = "yes"])
@@ -1059,8 +1059,8 @@ AC_SUBST([PC_BUILD])
 
 AC_CONFIG_FILES([
     Makefile
-    opus.pc
-    opus-uninstalled.pc
+    oac.pc
+    oac-uninstalled.pc
     celt/arm/armopts.s
     doc/Makefile
     doc/Doxyfile

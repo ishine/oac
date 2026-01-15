@@ -34,10 +34,10 @@ POSSIBILITY OF SUCH DAMAGE.
 /* sum of squares of a silk_float array, with result as double */
 double silk_energy_FLP(
     const silk_float    *data,
-    opus_int            dataSize
+    oac_int            dataSize
 )
 {
-    opus_int i;
+    oac_int i;
     double   result;
 
     /* 4x unrolled loop */

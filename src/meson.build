@@ -1,43 +1,43 @@
-opus_sources = sources['OPUS_SOURCES']
+oac_sources = sources['OAC_SOURCES']
 
-opus_sources_float = sources['OPUS_SOURCES_FLOAT']
+oac_sources_float = sources['OAC_SOURCES_FLOAT']
 
 if not disable_float_api
-  opus_sources += opus_sources_float
+  oac_sources += oac_sources_float
 endif
 
-opus_lib_c_args = []
+oac_lib_c_args = []
 if host_machine.system() == 'windows'
-  opus_lib_c_args += ['-DDLL_EXPORT']
+  oac_lib_c_args += ['-DDLL_EXPORT']
 endif
 
-opus_lib = library('opus',
-  opus_sources,
+oac_lib = library('oac',
+  oac_sources,
   version: libversion,
   darwin_versions: macosversion,
-  c_args: opus_lib_c_args,
-  include_directories: opus_includes,
+  c_args: oac_lib_c_args,
+  include_directories: oac_includes,
   link_whole: [celt_lib, silk_lib, dnn_lib],
   dependencies: libm,
   install: true)
 
-opus_dep = declare_dependency(link_with: opus_lib,
-  include_directories: opus_public_includes)
+oac_dep = declare_dependency(link_with: oac_lib,
+  include_directories: oac_public_includes)
 
-# Extra uninstalled Opus programs
+# Extra uninstalled Oac programs
 if not extra_programs.disabled()
-  foreach prog : ['opus_compare', 'opus_demo', 'repacketizer_demo']
+  foreach prog : ['oac_compare', 'oac_demo', 'repacketizer_demo']
     executable(prog, '@0@.c'.format(prog),
-               include_directories: opus_includes,
-               link_with: opus_lib,
+               include_directories: oac_includes,
+               link_with: oac_lib,
                dependencies: libm,
                install: false)
   endforeach
 
   if opt_custom_modes
-    executable('opus_custom_demo', '../celt/opus_custom_demo.c',
-               include_directories: opus_includes,
-               link_with: opus_lib,
+    executable('oac_custom_demo', '../celt/oac_custom_demo.c',
+               include_directories: oac_includes,
+               link_with: oac_lib,
                dependencies: libm,
                install: false)
   endif

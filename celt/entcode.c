@@ -35,10 +35,10 @@
 #if !defined(EC_CLZ)
 /*This is a fallback for systems where we don't know how to access
    a BSR or CLZ instruction (see ecintrin.h).
-  If you are optimizing Opus on a new platform and it has a native CLZ or
-   BZR (e.g. cell, MIPS, x86, etc) then making it available to Opus will be
+  If you are optimizing Oac on a new platform and it has a native CLZ or
+   BZR (e.g. cell, MIPS, x86, etc) then making it available to Oac will be
    an easy performance win.*/
-int ec_ilog(opus_uint32 _v){
+int ec_ilog(oac_uint32 _v){
   /*On a Pentium M, this branchless version tested as the fastest on
      1,000,000,000 random 32-bit integers, edging out a similar version with
      branches, and a 256-entry LUT version.*/
@@ -66,12 +66,12 @@ int ec_ilog(opus_uint32 _v){
 /* This is a faster version of ec_tell_frac() that takes advantage
    of the low (1/8 bit) resolution to use just a linear function
    followed by a lookup to determine the exact transition thresholds. */
-opus_uint32 ec_tell_frac(ec_ctx *_this){
+oac_uint32 ec_tell_frac(ec_ctx *_this){
   static const unsigned correction[8] =
     {35733, 38967, 42495, 46340,
      50535, 55109, 60097, 65535};
-  opus_uint32 nbits;
-  opus_uint32 r;
+  oac_uint32 nbits;
+  oac_uint32 r;
   int         l;
   unsigned    b;
   nbits=_this->nbits_total<<BITRES;
@@ -83,9 +83,9 @@ opus_uint32 ec_tell_frac(ec_ctx *_this){
   return nbits-l;
 }
 #else
-opus_uint32 ec_tell_frac(ec_ctx *_this){
-  opus_uint32 nbits;
-  opus_uint32 r;
+oac_uint32 ec_tell_frac(ec_ctx *_this){
+  oac_uint32 nbits;
+  oac_uint32 r;
   int         l;
   int         i;
   /*To handle the non-integral number of bits still left in the encoder/decoder
@@ -116,7 +116,7 @@ opus_uint32 ec_tell_frac(ec_ctx *_this){
 
 #ifdef USE_SMALL_DIV_TABLE
 /* Result of 2^32/(2*i+1), except for i=0. */
-const opus_uint32 SMALL_DIV_TABLE[129] = {
+const oac_uint32 SMALL_DIV_TABLE[129] = {
    0xFFFFFFFF, 0x55555555, 0x33333333, 0x24924924,
    0x1C71C71C, 0x1745D174, 0x13B13B13, 0x11111111,
    0x0F0F0F0F, 0x0D79435E, 0x0C30C30C, 0x0B21642C,

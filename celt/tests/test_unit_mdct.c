@@ -121,7 +121,7 @@ void test1d(int nfft,int isinverse,int arch)
 #else
     int shift;
     const mdct_lookup *cfg;
-    CELTMode *mode = opus_custom_mode_create(48000, 960, NULL);
+    CELTMode *mode = oac_custom_mode_create(48000, 960, NULL);
     if (nfft == 1920) shift = 0;
     else if (nfft == 960) shift = 1;
     else if (nfft == 480) shift = 2;
@@ -186,7 +186,7 @@ int main(int argc,char ** argv)
 {
     int arch;
     ALLOC_STACK;
-    arch = opus_select_arch();
+    arch = oac_select_arch();
 
     if (argc>1) {
         int k;

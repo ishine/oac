@@ -36,12 +36,12 @@ POSSIBILITY OF SUCH DAMAGE.
 /* non-warped frequency scale. (So that it can be implemented with a minimum-phase monic filter.) */
 /* Note: A monic filter is one with the first coefficient equal to 1.0. In Silk we omit the first */
 /* coefficient in an array of coefficients, for monic filters.                                    */
-static OPUS_INLINE silk_float warped_gain(
+static OAC_INLINE silk_float warped_gain(
     const silk_float     *coefs,
     silk_float           lambda,
-    opus_int             order
+    oac_int             order
 ) {
-    opus_int   i;
+    oac_int   i;
     silk_float gain;
 
     lambda = -lambda;
@@ -54,13 +54,13 @@ static OPUS_INLINE silk_float warped_gain(
 
 /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
 /* amplitude of monic warped coefficients by using bandwidth expansion on the true coefficients */
-static OPUS_INLINE void warped_true2monic_coefs(
+static OAC_INLINE void warped_true2monic_coefs(
     silk_float           *coefs,
     silk_float           lambda,
     silk_float           limit,
-    opus_int             order
+    oac_int             order
 ) {
-    opus_int   i, iter, ind = 0;
+    oac_int   i, iter, ind = 0;
     silk_float tmp, maxabs, chirp, gain;
 
     /* Convert to monic coefficients */
@@ -113,12 +113,12 @@ static OPUS_INLINE void warped_true2monic_coefs(
     silk_assert( 0 );
 }
 
-static OPUS_INLINE void limit_coefs(
+static OAC_INLINE void limit_coefs(
     silk_float           *coefs,
     silk_float           limit,
-    opus_int             order
+    oac_int             order
 ) {
-    opus_int   i, iter, ind = 0;
+    oac_int   i, iter, ind = 0;
     silk_float tmp, maxabs, chirp;
 
     for( iter = 0; iter < 10; iter++ ) {
@@ -152,7 +152,7 @@ void silk_noise_shape_analysis_FLP(
 )
 {
     silk_shape_state_FLP *psShapeSt = &psEnc->sShape;
-    opus_int     k, nSamples, nSegs;
+    oac_int     k, nSamples, nSegs;
     silk_float   SNR_adj_dB, HarmShapeGain, Tilt;
     silk_float   nrg, log_energy, log_energy_prev, energy_variation;
     silk_float   BWExp, gain_mult, gain_add, strength, b, warping;
@@ -236,7 +236,7 @@ void silk_noise_shape_analysis_FLP(
     /********************************************/
     for( k = 0; k < psEnc->sCmn.nb_subfr; k++ ) {
         /* Apply window: sine slope followed by flat part followed by cosine slope */
-        opus_int shift, slope_part, flat_part;
+        oac_int shift, slope_part, flat_part;
         flat_part = psEnc->sCmn.fs_kHz * 3;
         slope_part = ( psEnc->sCmn.shapeWinLength - flat_part ) / 2;
 

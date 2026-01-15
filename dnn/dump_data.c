@@ -88,7 +88,7 @@ mini_kiss_fft_cpx *load_rir(const char *rir_file, mini_kiss_fft_state *fft, int 
     for (i=0;i<240;i++) {
       rir[480+i] *= (1 - i/240.f);
     }
-    OPUS_CLEAR(&rir[240+480], RIR_MAX_DURATION-240-480);
+    OAC_CLEAR(&rir[240+480], RIR_MAX_DURATION-240-480);
   }
   for (i=0;i<len;i++) x[i].r = rir[i];
   mini_kiss_fft(fft, x, X);
@@ -138,7 +138,7 @@ void rir_filter_sequence(const struct rir_list *rirs, float *audio, int rir_id, 
   i=0;
   while (i<SEQUENCE_SAMPLES) {
     int j;
-    OPUS_COPY(&x[0], &x[RIR_FFT_SIZE/2], RIR_FFT_SIZE/2);
+    OAC_COPY(&x[0], &x[RIR_FFT_SIZE/2], RIR_FFT_SIZE/2);
     for (j=0;j<IMIN(SEQUENCE_SAMPLES-i, RIR_FFT_SIZE/2);j++) x[RIR_FFT_SIZE/2+j].r = audio[i+j];
     for (;j<RIR_FFT_SIZE/2;j++) x[RIR_FFT_SIZE/2+j].r = 0;
     mini_kiss_fft(rirs->fft, x, X);
@@ -207,7 +207,7 @@ static void rand_resp(float *a, float *b) {
   rand_filt(b);
 }
 
-static opus_int16 float2short(float x)
+static oac_int16 float2short(float x)
 {
   int i;
   i = (int)floor(.5+x);
@@ -250,7 +250,7 @@ int main(int argc, char **argv) {
   FILE *f1, *f2=NULL;
   FILE *ffeat;
   FILE *fpcm=NULL;
-  opus_int16 pcm[FRAME_SIZE]={0};
+  oac_int16 pcm[FRAME_SIZE]={0};
   float speech_gain=1;
   LPCNetEncState *st;
   int training = -1;
@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
   struct rir_list rirs;
 #endif
   srand(getpid());
-  arch = opus_select_arch();
+  arch = oac_select_arch();
   st = lpcnet_encoder_create();
   argv0=argv[0];
   if (argc == 5 && strcmp(argv[1], "-btrain")==0) {
@@ -401,13 +401,13 @@ int main(int argc, char **argv) {
       }
     }
 
-    OPUS_CLEAR(mem, 2);
+    OAC_CLEAR(mem, 2);
     biquad(x, mem, x, b_hp, a_hp, SEQUENCE_LENGTH*FRAME_SIZE);
-    OPUS_CLEAR(mem, 2);
+    OAC_CLEAR(mem, 2);
     biquad(x, mem, x, b_sig, a_sig, SEQUENCE_LENGTH*FRAME_SIZE);
-    OPUS_CLEAR(mem, 2);
+    OAC_CLEAR(mem, 2);
     biquad(n, mem, n, b_hp, a_hp, SEQUENCE_LENGTH*FRAME_SIZE);
-    OPUS_CLEAR(mem, 2);
+    OAC_CLEAR(mem, 2);
     biquad(n, mem, n, b_noise, a_noise, SEQUENCE_LENGTH*FRAME_SIZE);
 
     speech_rms = weighted_rms(x);

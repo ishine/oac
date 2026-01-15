@@ -25,21 +25,21 @@
 */
 
 /* This is meant to be a simple example of encoding and decoding audio
-   using Opus. It should make it easy to understand how the Opus API
+   using Oac. It should make it easy to understand how the Oac API
    works. For more information, see the full API documentation at:
-   https://www.opus-codec.org/docs/ */
+   https://www.oac-codec.org/docs/ */
 
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <opus.h>
+#include <oac.h>
 #include <stdio.h>
 
 /*The frame size is hardcoded for this sample code but it doesn't have to be*/
 #define FRAME_SIZE 960
 #define SAMPLE_RATE 48000
 #define CHANNELS 2
-#define APPLICATION OPUS_APPLICATION_AUDIO
+#define APPLICATION OAC_APPLICATION_AUDIO
 #define BITRATE 64000
 
 #define MAX_FRAME_SIZE 6*960
@@ -51,13 +51,13 @@ int main(int argc, char **argv)
    FILE *fin;
    char *outFile;
    FILE *fout;
-   opus_int16 in[FRAME_SIZE*CHANNELS];
-   opus_int16 out[MAX_FRAME_SIZE*CHANNELS];
+   oac_int16 in[FRAME_SIZE*CHANNELS];
+   oac_int16 out[MAX_FRAME_SIZE*CHANNELS];
    unsigned char cbits[MAX_PACKET_SIZE];
    int nbBytes;
    /*Holds the state of the encoder and decoder */
-   OpusEncoder *encoder;
-   OpusDecoder *decoder;
+   OacEncoder *encoder;
+   OacDecoder *decoder;
    int err;
 
    if (argc != 3)
@@ -68,20 +68,20 @@ int main(int argc, char **argv)
    }
 
    /*Create a new encoder state */
-   encoder = opus_encoder_create(SAMPLE_RATE, CHANNELS, APPLICATION, &err);
+   encoder = oac_encoder_create(SAMPLE_RATE, CHANNELS, APPLICATION, &err);
    if (err<0)
    {
-      fprintf(stderr, "failed to create an encoder: %s\n", opus_strerror(err));
+      fprintf(stderr, "failed to create an encoder: %s\n", oac_strerror(err));
       return EXIT_FAILURE;
    }
    /* Set the desired bit-rate. You can also set other parameters if needed.
-      The Opus library is designed to have good defaults, so only set
+      The Oac library is designed to have good defaults, so only set
       parameters you know you need. Doing otherwise is likely to result
       in worse quality, but better. */
-   err = opus_encoder_ctl(encoder, OPUS_SET_BITRATE(BITRATE));
+   err = oac_encoder_ctl(encoder, OAC_SET_BITRATE(BITRATE));
    if (err<0)
    {
-      fprintf(stderr, "failed to set bitrate: %s\n", opus_strerror(err));
+      fprintf(stderr, "failed to set bitrate: %s\n", oac_strerror(err));
       return EXIT_FAILURE;
    }
    inFile = argv[1];
@@ -94,10 +94,10 @@ int main(int argc, char **argv)
 
 
    /* Create a new decoder state. */
-   decoder = opus_decoder_create(SAMPLE_RATE, CHANNELS, &err);
+   decoder = oac_decoder_create(SAMPLE_RATE, CHANNELS, &err);
    if (err<0)
    {
-      fprintf(stderr, "failed to create decoder: %s\n", opus_strerror(err));
+      fprintf(stderr, "failed to create decoder: %s\n", oac_strerror(err));
       return EXIT_FAILURE;
    }
    outFile = argv[2];
@@ -134,10 +134,10 @@ int main(int argc, char **argv)
       }
 
       /* Encode the frame. */
-      nbBytes = opus_encode(encoder, in, FRAME_SIZE, cbits, MAX_PACKET_SIZE);
+      nbBytes = oac_encode(encoder, in, FRAME_SIZE, cbits, MAX_PACKET_SIZE);
       if (nbBytes<0)
       {
-         fprintf(stderr, "encode failed: %s\n", opus_strerror(nbBytes));
+         fprintf(stderr, "encode failed: %s\n", oac_strerror(nbBytes));
          return EXIT_FAILURE;
       }
 
@@ -146,10 +146,10 @@ int main(int argc, char **argv)
          the encoder is using a constant frame size. However, that may not
          be the case for all encoders, so the decoder must always check
          the frame size returned. */
-      frame_size = opus_decode(decoder, cbits, nbBytes, out, MAX_FRAME_SIZE, 0);
+      frame_size = oac_decode(decoder, cbits, nbBytes, out, MAX_FRAME_SIZE, 0);
       if (frame_size<0)
       {
-         fprintf(stderr, "decoder failed: %s\n", opus_strerror(frame_size));
+         fprintf(stderr, "decoder failed: %s\n", oac_strerror(frame_size));
          return EXIT_FAILURE;
       }
 
@@ -163,8 +163,8 @@ int main(int argc, char **argv)
       fwrite(pcm_bytes, sizeof(short), frame_size*CHANNELS, fout);
    }
    /*Destroy the encoder state*/
-   opus_encoder_destroy(encoder);
-   opus_decoder_destroy(decoder);
+   oac_encoder_destroy(encoder);
+   oac_decoder_destroy(decoder);
    fclose(fin);
    fclose(fout);
    return EXIT_SUCCESS;

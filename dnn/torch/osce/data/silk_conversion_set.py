@@ -45,7 +45,7 @@ class SilkEnhancementSet(Dataset):
                  pitch_hangover=8,
                  num_bands_clean_spec=64,
                  num_bands_noisy_spec=18,
-                 noisy_spec_scale='opus',
+                 noisy_spec_scale='oac',
                  noisy_apply_dct=True,
                  add_offset=False,
                  add_double_lag_acorr=False

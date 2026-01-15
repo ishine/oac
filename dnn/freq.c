@@ -42,7 +42,7 @@
 
 #define SQUARE(x) ((x)*(x))
 
-static const opus_int16 eband5ms[] = {
+static const oac_int16 eband5ms[] = {
 /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k*/
   0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40
 };
@@ -79,23 +79,23 @@ static void compute_band_energy_inverse(float *bandE, const kiss_fft_cpx *X) {
 }
 
 static float lpcn_lpc(
-      opus_val16 *lpc, /* out: [0...p-1] LPC coefficients      */
-      opus_val16 *rc,
-const opus_val32 *ac,  /* in:  [0...p] autocorrelation values  */
+      oac_val16 *lpc, /* out: [0...p-1] LPC coefficients      */
+      oac_val16 *rc,
+const oac_val32 *ac,  /* in:  [0...p] autocorrelation values  */
 int          p
 )
 {
    int i, j;
-   opus_val32 r;
-   opus_val32 error = ac[0];
+   oac_val32 r;
+   oac_val32 error = ac[0];
 
-   OPUS_CLEAR(lpc, p);
-   OPUS_CLEAR(rc, p);
+   OAC_CLEAR(lpc, p);
+   OAC_CLEAR(rc, p);
    if (ac[0] != 0)
    {
       for (i = 0; i < p; i++) {
          /* Sum up this iteration's reflection coefficient */
-         opus_val32 rr = 0;
+         oac_val32 rr = 0;
          for (j = 0; j < i; j++)
             rr += MULT32_32_Q31(lpc[j],ac[i - j]);
          rr += SHR32(ac[i + 1],3);
@@ -105,7 +105,7 @@ int          p
          lpc[i] = SHR32(r,3);
          for (j = 0; j < (i+1)>>1; j++)
          {
-            opus_val32 tmp1, tmp2;
+            oac_val32 tmp1, tmp2;
             tmp1 = lpc[j];
             tmp2 = lpc[i-1-j];
             lpc[j]     = tmp1 + MULT32_32_Q31(r,tmp2);
@@ -164,7 +164,7 @@ static void compute_burg_cepstrum(const float *pcm, float *burg_cepstrum, int le
   for (i=0;i<len-1;i++) burg_in[i] = pcm[i+1] - PREEMPHASIS*pcm[i];
   g = silk_burg_analysis(burg_lpc, burg_in, 1e-3, len-1, 1, order);
   g /= len - 2*(order-1);
-  OPUS_CLEAR(x, WINDOW_SIZE);
+  OAC_CLEAR(x, WINDOW_SIZE);
   x[0] = 1;
   for (i=0;i<order;i++) x[i+1] = -burg_lpc[i]*pow(.995, i+1);
   forward_transform(LPC, x);
@@ -242,7 +242,7 @@ void forward_transform(kiss_fft_cpx *out, const float *in) {
     x[i].r = in[i];
     x[i].i = 0;
   }
-  opus_fft(&kfft, x, y, 0);
+  oac_fft(&kfft, x, y, 0);
   for (i=0;i<FREQ_SIZE;i++) {
     out[i] = y[i];
   }
@@ -259,7 +259,7 @@ static void inverse_transform(float *out, const kiss_fft_cpx *in) {
     x[i].r = x[WINDOW_SIZE - i].r;
     x[i].i = -x[WINDOW_SIZE - i].i;
   }
-  opus_fft(&kfft, x, y, 0);
+  oac_fft(&kfft, x, y, 0);
   /* output in reverse order for IFFT. */
   out[0] = WINDOW_SIZE*y[0].r;
   for (i=1;i<WINDOW_SIZE;i++) {
@@ -278,7 +278,7 @@ static float lpc_from_bands(float *lpc, const float *Ex)
    float x_auto[WINDOW_SIZE];
    interp_band_gain(Xr, Ex);
    Xr[FREQ_SIZE-1] = 0;
-   OPUS_CLEAR(X_auto, FREQ_SIZE);
+   OAC_CLEAR(X_auto, FREQ_SIZE);
    for (i=0;i<FREQ_SIZE;i++) X_auto[i].r = Xr[i];
    inverse_transform(x_auto, X_auto);
    for (i=0;i<LPC_ORDER+1;i++) ac[i] = x_auto[i];
@@ -307,7 +307,7 @@ float lpc_from_cepstrum(float *lpc, const float *cepstrum)
    int i;
    float Ex[NB_BANDS];
    float tmp[NB_BANDS];
-   OPUS_COPY(tmp, cepstrum, NB_BANDS);
+   OAC_COPY(tmp, cepstrum, NB_BANDS);
    tmp[0] += 4;
    idct(Ex, tmp);
    for (i=0;i<NB_BANDS;i++) Ex[i] = pow(10.f, Ex[i])*compensation[i];

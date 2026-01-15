@@ -28,40 +28,40 @@
 #if !defined(X86CPU_H)
 # define X86CPU_H
 
-# if defined(OPUS_X86_MAY_HAVE_SSE)
+# if defined(OAC_X86_MAY_HAVE_SSE)
 #  define MAY_HAVE_SSE(name) name ## _sse
 # else
 #  define MAY_HAVE_SSE(name) name ## _c
 # endif
 
-# if defined(OPUS_X86_MAY_HAVE_SSE2)
+# if defined(OAC_X86_MAY_HAVE_SSE2)
 #  define MAY_HAVE_SSE2(name) name ## _sse2
 # else
 #  define MAY_HAVE_SSE2(name) name ## _c
 # endif
 
-# if defined(OPUS_X86_MAY_HAVE_SSE4_1)
+# if defined(OAC_X86_MAY_HAVE_SSE4_1)
 #  define MAY_HAVE_SSE4_1(name) name ## _sse4_1
 # else
 #  define MAY_HAVE_SSE4_1(name) name ## _c
 # endif
 
-# if defined(OPUS_X86_MAY_HAVE_AVX2)
+# if defined(OAC_X86_MAY_HAVE_AVX2)
 #  define MAY_HAVE_AVX2(name) name ## _avx2
 # else
 #  define MAY_HAVE_AVX2(name) name ## _c
 # endif
 
-# if defined(OPUS_HAVE_RTCD) && \
-  ((defined(OPUS_X86_MAY_HAVE_SSE) && !defined(OPUS_X86_PRESUME_SSE)) || \
-  (defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(OPUS_X86_PRESUME_SSE2)) || \
-  (defined(OPUS_X86_MAY_HAVE_SSE4_1) && !defined(OPUS_X86_PRESUME_SSE4_1)) || \
-  (defined(OPUS_X86_MAY_HAVE_AVX2) && !defined(OPUS_X86_PRESUME_AVX2)))
-int opus_select_arch(void);
+# if defined(OAC_HAVE_RTCD) && \
+  ((defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)) || \
+  (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2)) || \
+  (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) || \
+  (defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)))
+int oac_select_arch(void);
 # endif
 
-# if defined(OPUS_X86_MAY_HAVE_SSE2)
-#  include "opus_defines.h"
+# if defined(OAC_X86_MAY_HAVE_SSE2)
+#  include "oac_defines.h"
 
 /*MOVD should not impose any alignment restrictions, but the C standard does,
    and UBSan will report errors if we actually make unaligned accesses.
@@ -80,10 +80,10 @@ int opus_select_arch(void);
 #  if defined(__clang__)
 #   if __has_warning("-Wextra-semi-stmt") || \
  __has_builtin(__builtin_rotateleft32)
-#    define OPUS_CLANG_8 (1)
+#    define OAC_CLANG_8 (1)
 #   endif
 #  endif
-#  if !defined(_MSC_VER) && !OPUS_GNUC_PREREQ(11,3) && !defined(OPUS_CLANG_8)
+#  if !defined(_MSC_VER) && !OAC_GNUC_PREREQ(11,3) && !defined(OAC_CLANG_8)
 #   include <string.h>
 #   include <emmintrin.h>
 

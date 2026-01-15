@@ -38,12 +38,12 @@
 #include "mathops.h"
 #include "pitch.h"
 
-#if defined(OPUS_X86_MAY_HAVE_SSE2) && defined(FIXED_POINT)
-opus_val32 celt_inner_prod_sse2(const opus_val16 *x, const opus_val16 *y,
+#if defined(OAC_X86_MAY_HAVE_SSE2) && defined(FIXED_POINT)
+oac_val32 celt_inner_prod_sse2(const oac_val16 *x, const oac_val16 *y,
       int N)
 {
-    opus_int  i, dataSize16;
-    opus_int32 sum;
+    oac_int  i, dataSize16;
+    oac_int32 sum;
 
     __m128i inVec1_76543210, inVec1_FEDCBA98, acc1;
     __m128i inVec2_76543210, inVec2_FEDCBA98, acc2;

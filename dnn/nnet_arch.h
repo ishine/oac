@@ -40,7 +40,7 @@
 
 /* Force vectorization on for DNN code because some of the loops rely on
    compiler vectorization rather than explicitly using intrinsics. */
-#if OPUS_GNUC_PREREQ(5,1)
+#if OAC_GNUC_PREREQ(5,1)
 #define GCC_POP_OPTIONS
 #pragma GCC push_options
 #pragma GCC optimize("tree-vectorize")
@@ -49,7 +49,7 @@
 
 #define MAX_ACTIVATIONS (4096)
 
-static OPUS_INLINE void vec_swish(float *y, const float *x, int N)
+static OAC_INLINE void vec_swish(float *y, const float *x, int N)
 {
    int i;
    float tmp[MAX_ACTIVATIONS];
@@ -59,7 +59,7 @@ static OPUS_INLINE void vec_swish(float *y, const float *x, int N)
       y[i] = x[i]*tmp[i];
 }
 
-static OPUS_INLINE float relu(float x)
+static OAC_INLINE float relu(float x)
 {
    return x < 0 ? 0 : x;
 }
@@ -94,7 +94,7 @@ void RTCD_SUF(compute_activation_)(float *output, const float *input, int N, int
          output[i] = relu(input[i]);
    } else if (activation == ACTIVATION_SOFTMAX) {
 #ifdef SOFTMAX_HACK
-      OPUS_COPY(output, input, N);
+      OAC_COPY(output, input, N);
       /*for (i=0;i<N;i++)
          output[i] = input[i];*/
 #else
@@ -138,7 +138,7 @@ void RTCD_SUF(compute_linear_) (const LinearLayer *linear, float *out, const flo
      bias = linear->subias;
 #endif
    }
-   else OPUS_CLEAR(out, N);
+   else OAC_CLEAR(out, N);
    if (bias != NULL) {
       for (i=0;i<N;i++) out[i] += bias[i];
    }
@@ -165,7 +165,7 @@ static void conv2d_float(float *out, const float *weights, int in_channels, int 
    in_stride = height+kheight-1;
    for (i=0;i<out_channels;i++) {
       int m;
-      OPUS_CLEAR(&out[i*hstride], height);
+      OAC_CLEAR(&out[i*hstride], height);
       for (m=0;m<in_channels;m++) {
          int t;
          for (t=0;t<ktime;t++) {
@@ -193,7 +193,7 @@ static void conv2d_3x3_float(float *out, const float *weights, int in_channels, 
    in_stride = height+kheight-1;
    for (i=0;i<out_channels;i++) {
       int m;
-      OPUS_CLEAR(&out[i*hstride], height);
+      OAC_CLEAR(&out[i*hstride], height);
       for (m=0;m<in_channels;m++) {
          int j;
          for (j=0;j<height;j++) {
@@ -223,9 +223,9 @@ void RTCD_SUF(compute_conv2d_)(const Conv2dLayer *conv, float *out, float *mem, 
    celt_assert(in != out);
    time_stride = conv->in_channels*(height+conv->kheight-1);
    celt_assert(conv->ktime*time_stride <= MAX_CONV2D_INPUTS);
-   OPUS_COPY(in_buf, mem, (conv->ktime-1)*time_stride);
-   OPUS_COPY(&in_buf[(conv->ktime-1)*time_stride], in, time_stride);
-   OPUS_COPY(mem, &in_buf[time_stride], (conv->ktime-1)*time_stride);
+   OAC_COPY(in_buf, mem, (conv->ktime-1)*time_stride);
+   OAC_COPY(&in_buf[(conv->ktime-1)*time_stride], in, time_stride);
+   OAC_COPY(mem, &in_buf[time_stride], (conv->ktime-1)*time_stride);
    bias = conv->bias;
    if (conv->kheight == 3 && conv->ktime == 3)
      conv2d_3x3_float(out, conv->float_weights, conv->in_channels, conv->out_channels, in_buf, height, hstride);

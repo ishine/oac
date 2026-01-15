@@ -44,7 +44,7 @@
 
 int ec_laplace_get_start_freq(int decay)
 {
-   opus_uint32 ft = 32768 - LAPLACE_MINP*(2*LAPLACE_NMIN+1);
+   oac_uint32 ft = 32768 - LAPLACE_MINP*(2*LAPLACE_NMIN+1);
    int fs = (ft*(16384-decay))/(16384+decay);
    return fs+LAPLACE_MINP;
 }

@@ -32,7 +32,7 @@ float compute_pitchdnn(
   compute_generic_dense(&model->dense_if_upsampler_1, if1_out, if_features, ACTIVATION_TANH, arch);
   compute_generic_dense(&model->dense_if_upsampler_2, &downsampler_in[NB_XCORR_FEATURES], if1_out, ACTIVATION_TANH, arch);
   /* xcorr*/
-  OPUS_COPY(&conv1_tmp1[1], xcorr_features, NB_XCORR_FEATURES);
+  OAC_COPY(&conv1_tmp1[1], xcorr_features, NB_XCORR_FEATURES);
   compute_conv2d(&model->conv2d_1, &conv1_tmp2[1], st->xcorr_mem1, conv1_tmp1, NB_XCORR_FEATURES, NB_XCORR_FEATURES+2, ACTIVATION_TANH, arch);
   compute_conv2d(&model->conv2d_2, downsampler_in, st->xcorr_mem2, conv1_tmp2, NB_XCORR_FEATURES, NB_XCORR_FEATURES, ACTIVATION_TANH, arch);
 
@@ -59,7 +59,7 @@ float compute_pitchdnn(
 void pitchdnn_init(PitchDNNState *st)
 {
   int ret;
-  OPUS_CLEAR(st, 1);
+  OAC_CLEAR(st, 1);
 #ifndef USE_WEIGHTS_FILE
   ret = init_pitchdnn(&st->model, pitchdnn_arrays);
 #else
@@ -73,7 +73,7 @@ int pitchdnn_load_model(PitchDNNState *st, const void *data, int len) {
   int ret;
   parse_weights(&list, data, len);
   ret = init_pitchdnn(&st->model, list);
-  opus_free(list);
+  oac_free(list);
   if (ret == 0) return 0;
   else return -1;
 }

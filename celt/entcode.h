@@ -25,8 +25,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "oac_types.h"
+#include "oac_defines.h"
 
 #if !defined(_entcode_H)
 # define _entcode_H (1)
@@ -34,15 +34,15 @@
 # include <stddef.h>
 # include "ecintrin.h"
 
-extern const opus_uint32 SMALL_DIV_TABLE[129];
+extern const oac_uint32 SMALL_DIV_TABLE[129];
 
-#ifdef OPUS_ARM_ASM
+#ifdef OAC_ARM_ASM
 #define USE_SMALL_DIV_TABLE
 #endif
 
 /*OPT: ec_window must be at least 32 bits, but if you have fast arithmetic on a
    larger type, you can speed up the decoder by using it here.*/
-typedef opus_uint32           ec_window;
+typedef oac_uint32           ec_window;
 typedef struct ec_ctx         ec_ctx;
 typedef struct ec_ctx         ec_enc;
 typedef struct ec_ctx         ec_dec;
@@ -63,9 +63,9 @@ struct ec_ctx{
    /*Buffered input/output.*/
    unsigned char *buf;
    /*The size of the buffer.*/
-   opus_uint32    storage;
+   oac_uint32    storage;
    /*The offset at which the last byte containing raw bits was read/written.*/
-   opus_uint32    end_offs;
+   oac_uint32    end_offs;
    /*Bits that will be read from/written at the end.*/
    ec_window      end_window;
    /*Number of valid bits in end_window.*/
@@ -74,31 +74,31 @@ struct ec_ctx{
      This does not include partial bits currently in the range coder.*/
    int            nbits_total;
    /*The offset at which the next range coder byte will be read/written.*/
-   opus_uint32    offs;
+   oac_uint32    offs;
    /*The number of values in the current range.*/
-   opus_uint32    rng;
+   oac_uint32    rng;
    /*In the decoder: the difference between the top of the current range and
       the input value, minus one.
      In the encoder: the low end of the current range.*/
-   opus_uint32    val;
+   oac_uint32    val;
    /*In the decoder: the saved normalization factor from ec_decode().
      In the encoder: the number of outstanding carry propagating symbols.*/
-   opus_uint32    ext;
+   oac_uint32    ext;
    /*A buffered input/output symbol, awaiting carry propagation.*/
    int            rem;
    /*Nonzero if an error occurred.*/
    int            error;
 };
 
-static OPUS_INLINE opus_uint32 ec_range_bytes(ec_ctx *_this){
+static OAC_INLINE oac_uint32 ec_range_bytes(ec_ctx *_this){
   return _this->offs;
 }
 
-static OPUS_INLINE unsigned char *ec_get_buffer(ec_ctx *_this){
+static OAC_INLINE unsigned char *ec_get_buffer(ec_ctx *_this){
   return _this->buf;
 }
 
-static OPUS_INLINE int ec_get_error(ec_ctx *_this){
+static OAC_INLINE int ec_get_error(ec_ctx *_this){
   return _this->error;
 }
 
@@ -108,7 +108,7 @@ static OPUS_INLINE int ec_get_error(ec_ctx *_this){
   Return: The number of bits.
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
-static OPUS_INLINE int ec_tell(ec_ctx *_this){
+static OAC_INLINE int ec_tell(ec_ctx *_this){
   return _this->nbits_total-EC_ILOG(_this->rng);
 }
 
@@ -118,18 +118,18 @@ static OPUS_INLINE int ec_tell(ec_ctx *_this){
   Return: The number of bits scaled by 2**BITRES.
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
-opus_uint32 ec_tell_frac(ec_ctx *_this);
+oac_uint32 ec_tell_frac(ec_ctx *_this);
 
 /* Tested exhaustively for all n and for 1<=d<=256 */
-static OPUS_INLINE opus_uint32 celt_udiv(opus_uint32 n, opus_uint32 d) {
+static OAC_INLINE oac_uint32 celt_udiv(oac_uint32 n, oac_uint32 d) {
    celt_sig_assert(d>0);
 #ifdef USE_SMALL_DIV_TABLE
    if (d>256)
       return n/d;
    else {
-      opus_uint32 t, q;
+      oac_uint32 t, q;
       t = EC_ILOG(d&-d);
-      q = (opus_uint64)SMALL_DIV_TABLE[d>>t]*(n>>(t-1))>>32;
+      q = (oac_uint64)SMALL_DIV_TABLE[d>>t]*(n>>(t-1))>>32;
       return q+(n-q*d >= d);
    }
 #else
@@ -137,11 +137,11 @@ static OPUS_INLINE opus_uint32 celt_udiv(opus_uint32 n, opus_uint32 d) {
 #endif
 }
 
-static OPUS_INLINE opus_int32 celt_sudiv(opus_int32 n, opus_int32 d) {
+static OAC_INLINE oac_int32 celt_sudiv(oac_int32 n, oac_int32 d) {
    celt_sig_assert(d>0);
 #ifdef USE_SMALL_DIV_TABLE
    if (n<0)
-      return -(opus_int32)celt_udiv(-n, d);
+      return -(oac_int32)celt_udiv(-n, d);
    else
       return celt_udiv(n, d);
 #else

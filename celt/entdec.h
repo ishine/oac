@@ -33,7 +33,7 @@
 /*Initializes the decoder.
   _buf: The input buffer to use.
   Return: 0 on success, or a negative value on error.*/
-void ec_dec_init(ec_dec *_this,unsigned char *_buf,opus_uint32 _storage);
+void ec_dec_init(ec_dec *_this,unsigned char *_buf,oac_uint32 _storage);
 
 /*Calculates the cumulative frequency for the next symbol.
   This can then be fed into the probability model to determine what that
@@ -89,7 +89,7 @@ int ec_dec_icdf(ec_dec *_this,const unsigned char *_icdf,unsigned _ftb);
           must be 0.
   _ftb: The number of bits of precision in the cumulative distribution.
   Return: The decoded symbol s.*/
-int ec_dec_icdf16(ec_dec *_this,const opus_uint16 *_icdf,unsigned _ftb);
+int ec_dec_icdf16(ec_dec *_this,const oac_uint16 *_icdf,unsigned _ftb);
 
 /*Extracts a raw unsigned integer with a non-power-of-2 range from the stream.
   The bits must have been encoded with ec_enc_uint().
@@ -97,7 +97,7 @@ int ec_dec_icdf16(ec_dec *_this,const opus_uint16 *_icdf,unsigned _ftb);
   _ft: The number of integers that can be decoded (one more than the max).
        This must be at least 2, and no more than 2**32-1.
   Return: The decoded bits.*/
-opus_uint32 ec_dec_uint(ec_dec *_this,opus_uint32 _ft);
+oac_uint32 ec_dec_uint(ec_dec *_this,oac_uint32 _ft);
 
 /*Extracts a sequence of raw bits from the stream.
   The bits must have been encoded with ec_enc_bits().
@@ -105,6 +105,6 @@ opus_uint32 ec_dec_uint(ec_dec *_this,opus_uint32 _ft);
   _ftb: The number of bits to extract.
         This must be between 0 and 25, inclusive.
   Return: The decoded bits.*/
-opus_uint32 ec_dec_bits(ec_dec *_this,unsigned _ftb);
+oac_uint32 ec_dec_bits(ec_dec *_this,unsigned _ftb);
 
 #endif

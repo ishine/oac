@@ -37,13 +37,13 @@
 #include "entdec.h"
 #include "modes.h"
 
-#if (defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT))
+#if (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT))
 #include "x86/vq_sse.h"
 #endif
 
 #if defined(FIXED_POINT)
-opus_val32 celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch);
-opus_val32 celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch);
+oac_val32 celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch);
+oac_val32 celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch);
 
 void norm_scaleup(celt_norm *X, int N, int shift);
 void norm_scaledown(celt_norm *X, int N, int shift);
@@ -57,7 +57,7 @@ void norm_scaledown(celt_norm *X, int N, int shift);
 
 void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
 
-opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
+oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
 
 #if !defined(OVERRIDE_OP_PVQ_SEARCH)
 #define op_pvq_search(x, iy, K, N, arch) \
@@ -74,7 +74,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
  * @ret A mask indicating which blocks in the band received pulses
 */
 unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
-      opus_val32 gain, int resynth, int arch);
+      oac_val32 gain, int resynth, int arch);
 
 /** Algebraic pulse decoder
  * @param X Decoded normalised spectrum (returned)
@@ -84,13 +84,13 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
  * @ret A mask indicating which blocks in the band received pulses
  */
 unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
-      ec_dec *dec, opus_val32 gain);
+      ec_dec *dec, oac_val32 gain);
 
-void renormalise_vector(celt_norm *X, int N, opus_val32 gain, int arch);
+void renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch);
 
-opus_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
+oac_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
 
-unsigned cubic_quant(celt_norm *X, int N, int K, int B, ec_enc *enc, opus_val32 gain, int resynth);
-unsigned cubic_unquant(celt_norm *X, int N, int K, int B, ec_dec *dec, opus_val32 gain);
+unsigned cubic_quant(celt_norm *X, int N, int K, int B, ec_enc *enc, oac_val32 gain, int resynth);
+unsigned cubic_unquant(celt_norm *X, int N, int K, int B, ec_dec *dec, oac_val32 gain);
 
 #endif /* VQ_H */

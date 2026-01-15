@@ -41,13 +41,13 @@ static const celt_coef window120[120] = {
 
 #ifndef DEF_LOGN400
 #define DEF_LOGN400
-static const opus_int16 logN400[21] = {
+static const oac_int16 logN400[21] = {
 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 16, 16, 16, 21, 21, 24, 29, 34, 36, };
 #endif
 
 #ifndef DEF_PULSE_CACHE50
 #define DEF_PULSE_CACHE50
-static const opus_int16 cache_index50[105] = {
+static const oac_int16 cache_index50[105] = {
 -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 41, 41, 41,
 82, 82, 123, 164, 200, 222, 0, 0, 0, 0, 0, 0, 0, 0, 41,
 41, 41, 41, 123, 123, 123, 164, 164, 240, 266, 283, 295, 41, 41, 41,
@@ -345,7 +345,7 @@ static const kiss_twiddle_cpx fft_twiddles48000_960[480] = {
 };
 #ifndef FFT_BITREV480
 #define FFT_BITREV480
-static const opus_int16 fft_bitrev480[480] = {
+static const oac_int16 fft_bitrev480[480] = {
 0, 96, 192, 288, 384, 32, 128, 224, 320, 416, 64, 160, 256, 352, 448,
 8, 104, 200, 296, 392, 40, 136, 232, 328, 424, 72, 168, 264, 360, 456,
 16, 112, 208, 304, 400, 48, 144, 240, 336, 432, 80, 176, 272, 368, 464,
@@ -383,7 +383,7 @@ static const opus_int16 fft_bitrev480[480] = {
 
 #ifndef FFT_BITREV240
 #define FFT_BITREV240
-static const opus_int16 fft_bitrev240[240] = {
+static const oac_int16 fft_bitrev240[240] = {
 0, 48, 96, 144, 192, 16, 64, 112, 160, 208, 32, 80, 128, 176, 224,
 4, 52, 100, 148, 196, 20, 68, 116, 164, 212, 36, 84, 132, 180, 228,
 8, 56, 104, 152, 200, 24, 72, 120, 168, 216, 40, 88, 136, 184, 232,
@@ -405,7 +405,7 @@ static const opus_int16 fft_bitrev240[240] = {
 
 #ifndef FFT_BITREV120
 #define FFT_BITREV120
-static const opus_int16 fft_bitrev120[120] = {
+static const oac_int16 fft_bitrev120[120] = {
 0, 24, 48, 72, 96, 8, 32, 56, 80, 104, 16, 40, 64, 88, 112,
 4, 28, 52, 76, 100, 12, 36, 60, 84, 108, 20, 44, 68, 92, 116,
 1, 25, 49, 73, 97, 9, 33, 57, 81, 105, 17, 41, 65, 89, 113,
@@ -419,7 +419,7 @@ static const opus_int16 fft_bitrev120[120] = {
 
 #ifndef FFT_BITREV60
 #define FFT_BITREV60
-static const opus_int16 fft_bitrev60[60] = {
+static const oac_int16 fft_bitrev60[60] = {
 0, 12, 24, 36, 48, 4, 16, 28, 40, 52, 8, 20, 32, 44, 56,
 1, 13, 25, 37, 49, 5, 17, 29, 41, 53, 9, 21, 33, 45, 57,
 2, 14, 26, 38, 50, 6, 18, 30, 42, 54, 10, 22, 34, 46, 58,
@@ -942,13 +942,13 @@ static const celt_coef window240[240] = {
 
 #ifndef DEF_LOGN400
 #define DEF_LOGN400
-static const opus_int16 logN400[21] = {
+static const oac_int16 logN400[21] = {
 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 16, 16, 16, 21, 21, 24, 29, 34, 36, };
 #endif
 
 #ifndef DEF_PULSE_CACHE50
 #define DEF_PULSE_CACHE50
-static const opus_int16 cache_index50[105] = {
+static const oac_int16 cache_index50[105] = {
 -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 41, 41, 41,
 82, 82, 123, 164, 200, 222, 0, 0, 0, 0, 0, 0, 0, 0, 41,
 41, 41, 41, 123, 123, 123, 164, 164, 240, 266, 283, 295, 41, 41, 41,
@@ -1486,7 +1486,7 @@ static const kiss_twiddle_cpx fft_twiddles96000_1920[960] = {
 };
 #ifndef FFT_BITREV960
 #define FFT_BITREV960
-static const opus_int16 fft_bitrev960[960] = {
+static const oac_int16 fft_bitrev960[960] = {
 0, 192, 384, 576, 768, 64, 256, 448, 640, 832, 128, 320, 512, 704, 896,
 16, 208, 400, 592, 784, 80, 272, 464, 656, 848, 144, 336, 528, 720, 912,
 32, 224, 416, 608, 800, 96, 288, 480, 672, 864, 160, 352, 544, 736, 928,
@@ -1556,7 +1556,7 @@ static const opus_int16 fft_bitrev960[960] = {
 
 #ifndef FFT_BITREV480
 #define FFT_BITREV480
-static const opus_int16 fft_bitrev480[480] = {
+static const oac_int16 fft_bitrev480[480] = {
 0, 96, 192, 288, 384, 32, 128, 224, 320, 416, 64, 160, 256, 352, 448,
 8, 104, 200, 296, 392, 40, 136, 232, 328, 424, 72, 168, 264, 360, 456,
 16, 112, 208, 304, 400, 48, 144, 240, 336, 432, 80, 176, 272, 368, 464,
@@ -1594,7 +1594,7 @@ static const opus_int16 fft_bitrev480[480] = {
 
 #ifndef FFT_BITREV240
 #define FFT_BITREV240
-static const opus_int16 fft_bitrev240[240] = {
+static const oac_int16 fft_bitrev240[240] = {
 0, 48, 96, 144, 192, 16, 64, 112, 160, 208, 32, 80, 128, 176, 224,
 4, 52, 100, 148, 196, 20, 68, 116, 164, 212, 36, 84, 132, 180, 228,
 8, 56, 104, 152, 200, 24, 72, 120, 168, 216, 40, 88, 136, 184, 232,
@@ -1616,7 +1616,7 @@ static const opus_int16 fft_bitrev240[240] = {
 
 #ifndef FFT_BITREV120
 #define FFT_BITREV120
-static const opus_int16 fft_bitrev120[120] = {
+static const oac_int16 fft_bitrev120[120] = {
 0, 24, 48, 72, 96, 8, 32, 56, 80, 104, 16, 40, 64, 88, 112,
 4, 28, 52, 76, 100, 12, 36, 60, 84, 108, 20, 44, 68, 92, 116,
 1, 25, 49, 73, 97, 9, 33, 57, 81, 105, 17, 41, 65, 89, 113,

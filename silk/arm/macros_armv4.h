@@ -31,11 +31,11 @@ POSSIBILITY OF SUCH DAMAGE.
 /* This macro only avoids the undefined behaviour from a left shift of
    a negative value. It should only be used in macros that can't include
    SigProc_FIX.h. In other cases, use silk_LSHIFT32(). */
-#define SAFE_SHL(a,b) ((opus_int32)((opus_uint32)(a) << (b)))
+#define SAFE_SHL(a,b) ((oac_int32)((oac_uint32)(a) << (b)))
 
-/* (a32 * (opus_int32)((opus_int16)(b32))) >> 16 output have to be 32bit int */
+/* (a32 * (oac_int32)((oac_int16)(b32))) >> 16 output have to be 32bit int */
 #undef silk_SMULWB
-static OPUS_INLINE opus_int32 silk_SMULWB_armv4(opus_int32 a, opus_int16 b)
+static OAC_INLINE oac_int32 silk_SMULWB_armv4(oac_int32 a, oac_int16 b)
 {
   unsigned rd_lo;
   int rd_hi;
@@ -49,13 +49,13 @@ static OPUS_INLINE opus_int32 silk_SMULWB_armv4(opus_int32 a, opus_int16 b)
 }
 #define silk_SMULWB(a, b) (silk_SMULWB_armv4(a, b))
 
-/* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
+/* a32 + (b32 * (oac_int32)((oac_int16)(c32))) >> 16 output have to be 32bit int */
 #undef silk_SMLAWB
 #define silk_SMLAWB(a, b, c) ((a) + silk_SMULWB(b, c))
 
 /* (a32 * (b32 >> 16)) >> 16 */
 #undef silk_SMULWT
-static OPUS_INLINE opus_int32 silk_SMULWT_armv4(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_SMULWT_armv4(oac_int32 a, oac_int32 b)
 {
   unsigned rd_lo;
   int rd_hi;
@@ -75,7 +75,7 @@ static OPUS_INLINE opus_int32 silk_SMULWT_armv4(opus_int32 a, opus_int32 b)
 
 /* (a32 * b32) >> 16 */
 #undef silk_SMULWW
-static OPUS_INLINE opus_int32 silk_SMULWW_armv4(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_SMULWW_armv4(oac_int32 a, oac_int32 b)
 {
   unsigned rd_lo;
   int rd_hi;
@@ -90,8 +90,8 @@ static OPUS_INLINE opus_int32 silk_SMULWW_armv4(opus_int32 a, opus_int32 b)
 #define silk_SMULWW(a, b) (silk_SMULWW_armv4(a, b))
 
 #undef silk_SMLAWW
-static OPUS_INLINE opus_int32 silk_SMLAWW_armv4(opus_int32 a, opus_int32 b,
- opus_int32 c)
+static OAC_INLINE oac_int32 silk_SMLAWW_armv4(oac_int32 a, oac_int32 b,
+ oac_int32 c)
 {
   unsigned rd_lo;
   int rd_hi;

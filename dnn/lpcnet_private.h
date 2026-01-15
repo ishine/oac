@@ -81,9 +81,9 @@ void run_frame_network_deferred(LPCNetState *lpcnet, const float *features);
 void run_frame_network_flush(LPCNetState *lpcnet);
 
 
-void lpcnet_synthesize_tail_impl(LPCNetState *lpcnet, opus_int16 *output, int N, int preload);
-void lpcnet_synthesize_impl(LPCNetState *lpcnet, const float *features, opus_int16 *output, int N, int preload);
-void lpcnet_synthesize_blend_impl(LPCNetState *lpcnet, const opus_int16 *pcm_in, opus_int16 *output, int N);
+void lpcnet_synthesize_tail_impl(LPCNetState *lpcnet, oac_int16 *output, int N, int preload);
+void lpcnet_synthesize_impl(LPCNetState *lpcnet, const float *features, oac_int16 *output, int N, int preload);
+void lpcnet_synthesize_blend_impl(LPCNetState *lpcnet, const oac_int16 *pcm_in, oac_int16 *output, int N);
 
 void run_frame_network(LPCNetState *lpcnet, float *gru_a_condition, float *gru_b_condition, float *lpc, const float *features);
 

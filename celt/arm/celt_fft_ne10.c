@@ -66,12 +66,12 @@ static const int ne10_fft_scaled_support[NE10_FFTSCALED_SUPPORT_MAX] = {
    480, 240, 120, 60
 };
 
-int opus_fft_alloc_arm_neon(kiss_fft_state *st)
+int oac_fft_alloc_arm_neon(kiss_fft_state *st)
 {
    int i;
    size_t memneeded = sizeof(struct arch_fft_state);
 
-   st->arch_fft = (arch_fft_state *)opus_alloc(memneeded);
+   st->arch_fft = (arch_fft_state *)oac_alloc(memneeded);
    if (!st->arch_fft)
       return -1;
 
@@ -94,7 +94,7 @@ int opus_fft_alloc_arm_neon(kiss_fft_state *st)
    return 0;
 }
 
-void opus_fft_free_arm_neon(kiss_fft_state *st)
+void oac_fft_free_arm_neon(kiss_fft_state *st)
 {
    NE10_FFT_CFG_TYPE_T cfg;
 
@@ -104,11 +104,11 @@ void opus_fft_free_arm_neon(kiss_fft_state *st)
    cfg = (NE10_FFT_CFG_TYPE_T)st->arch_fft->priv;
    if (cfg)
       NE10_FFT_DESTROY_C2C_TYPE(cfg);
-   opus_free(st->arch_fft);
+   oac_free(st->arch_fft);
 }
 #endif
 
-void opus_fft_neon(const kiss_fft_state *st,
+void oac_fft_neon(const kiss_fft_state *st,
                    const kiss_fft_cpx *fin,
                    kiss_fft_cpx *fout)
 {
@@ -120,7 +120,7 @@ void opus_fft_neon(const kiss_fft_state *st,
 
    if (!st->arch_fft->is_supported) {
       /* This nfft length (scaled fft) not supported in NE10 */
-      opus_fft_c(st, fin, fout);
+      oac_fft_c(st, fin, fout);
    }
    else {
       memcpy((void *)cfg, st->arch_fft->priv, sizeof(NE10_FFT_STATE_TYPE_T));
@@ -140,7 +140,7 @@ void opus_fft_neon(const kiss_fft_state *st,
    RESTORE_STACK;
 }
 
-void opus_ifft_neon(const kiss_fft_state *st,
+void oac_ifft_neon(const kiss_fft_state *st,
                     const kiss_fft_cpx *fin,
                     kiss_fft_cpx *fout)
 {
@@ -152,7 +152,7 @@ void opus_ifft_neon(const kiss_fft_state *st,
 
    if (!st->arch_fft->is_supported) {
       /* This nfft length (scaled fft) not supported in NE10 */
-      opus_ifft_c(st, fin, fout);
+      oac_ifft_c(st, fin, fout);
    }
    else {
       memcpy((void *)cfg, st->arch_fft->priv, sizeof(NE10_FFT_STATE_TYPE_T));

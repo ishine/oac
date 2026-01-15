@@ -1,16 +1,16 @@
 ## Process this file with automake to produce Makefile.in
 
-DOCINPUTS = $(top_srcdir)/include/opus.h \
-            $(top_srcdir)/include/opus_multistream.h \
-            $(top_srcdir)/include/opus_defines.h \
-            $(top_srcdir)/include/opus_types.h \
-            $(top_srcdir)/include/opus_custom.h \
+DOCINPUTS = $(top_srcdir)/include/oac.h \
+            $(top_srcdir)/include/oac_multistream.h \
+            $(top_srcdir)/include/oac_defines.h \
+            $(top_srcdir)/include/oac_types.h \
+            $(top_srcdir)/include/oac_custom.h \
             $(top_srcdir)/doc/header.html \
             $(top_srcdir)/doc/footer.html \
             $(top_srcdir)/doc/customdoxygen.css
 
 EXTRA_DIST = customdoxygen.css Doxyfile.in footer.html header.html \
-             opus_logo.svg trivial_example.c
+             oac_logo.svg trivial_example.c
 
 
 if HAVE_DOXYGEN
@@ -28,7 +28,7 @@ install-data-local:
 	done
 
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man3
-	cd man && find man3 -type f -name opus_*.3 \
+	cd man && find man3 -type f -name oac_*.3 \
 		  -exec $(INSTALL_DATA) \{} $(DESTDIR)$(mandir)/man3 \;
 
 clean-local:
@@ -40,6 +40,6 @@ clean-local:
 
 uninstall-local:
 	$(RM) -r $(DESTDIR)$(docdir)/html
-	$(RM) $(DESTDIR)$(mandir)/man3/opus_*.3 $(DESTDIR)$(mandir)/man3/opus.h.3
+	$(RM) $(DESTDIR)$(mandir)/man3/oac_*.3 $(DESTDIR)$(mandir)/man3/oac.h.3
 
 endif

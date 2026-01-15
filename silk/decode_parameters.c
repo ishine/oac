@@ -35,12 +35,12 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_decode_parameters(
     silk_decoder_state          *psDec,                         /* I/O  State                                       */
     silk_decoder_control        *psDecCtrl,                     /* I/O  Decoder control                             */
-    opus_int                    condCoding                      /* I    The type of conditional coding to use       */
+    oac_int                    condCoding                      /* I    The type of conditional coding to use       */
 )
 {
-    opus_int   i, k, Ix;
-    opus_int16 pNLSF_Q15[ MAX_LPC_ORDER ], pNLSF0_Q15[ MAX_LPC_ORDER ];
-    const opus_int8 *cbk_ptr_Q7;
+    oac_int   i, k, Ix;
+    oac_int16 pNLSF_Q15[ MAX_LPC_ORDER ], pNLSF0_Q15[ MAX_LPC_ORDER ];
+    const oac_int8 *cbk_ptr_Q7;
 
     /* Dequant Gains */
     silk_gains_dequant( psDecCtrl->Gains_Q16, psDec->indices.GainsIndices,
@@ -72,10 +72,10 @@ void silk_decode_parameters(
         silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 0 ], pNLSF0_Q15, psDec->LPC_order, psDec->arch );
     } else {
         /* Copy LPC coefficients for first half from second half */
-        silk_memcpy( psDecCtrl->PredCoef_Q12[ 0 ], psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order * sizeof( opus_int16 ) );
+        silk_memcpy( psDecCtrl->PredCoef_Q12[ 0 ], psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order * sizeof( oac_int16 ) );
     }
 
-    silk_memcpy( psDec->prevNLSF_Q15, pNLSF_Q15, psDec->LPC_order * sizeof( opus_int16 ) );
+    silk_memcpy( psDec->prevNLSF_Q15, pNLSF_Q15, psDec->LPC_order * sizeof( oac_int16 ) );
 
     /* After a packet loss do BWE of LPC coefs */
     if( psDec->lossCnt ) {
@@ -107,8 +107,8 @@ void silk_decode_parameters(
         Ix = psDec->indices.LTP_scaleIndex;
         psDecCtrl->LTP_scale_Q14 = silk_LTPScales_table_Q14[ Ix ];
     } else {
-        silk_memset( psDecCtrl->pitchL,      0,             psDec->nb_subfr * sizeof( opus_int   ) );
-        silk_memset( psDecCtrl->LTPCoef_Q14, 0, LTP_ORDER * psDec->nb_subfr * sizeof( opus_int16 ) );
+        silk_memset( psDecCtrl->pitchL,      0,             psDec->nb_subfr * sizeof( oac_int   ) );
+        silk_memset( psDecCtrl->LTPCoef_Q14, 0, LTP_ORDER * psDec->nb_subfr * sizeof( oac_int16 ) );
         psDec->indices.PERIndex  = 0;
         psDecCtrl->LTP_scale_Q14 = 0;
     }

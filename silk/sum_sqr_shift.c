@@ -34,15 +34,15 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Compute number of bits to right shift the sum of squares of a vector */
 /* of int16s to make it fit in an int32                                 */
 void silk_sum_sqr_shift(
-    opus_int32                  *energy,            /* O   Energy of x, after shifting to the right                     */
-    opus_int                    *shift,             /* O   Number of bits right shift applied to energy                 */
-    const opus_int16            *x,                 /* I   Input vector                                                 */
-    opus_int                    len                 /* I   Length of input vector                                       */
+    oac_int32                  *energy,            /* O   Energy of x, after shifting to the right                     */
+    oac_int                    *shift,             /* O   Number of bits right shift applied to energy                 */
+    const oac_int16            *x,                 /* I   Input vector                                                 */
+    oac_int                    len                 /* I   Length of input vector                                       */
 )
 {
-    opus_int   i, shft;
-    opus_uint32 nrg_tmp;
-    opus_int32 nrg;
+    oac_int   i, shft;
+    oac_uint32 nrg_tmp;
+    oac_int32 nrg;
 
     /* Do a first run with the maximum shift we could have. */
     shft = 31-silk_CLZ32(len);
@@ -51,12 +51,12 @@ void silk_sum_sqr_shift(
     for( i = 0; i < len - 1; i += 2 ) {
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
         nrg_tmp = silk_SMLABB_ovflw( nrg_tmp, x[ i + 1 ], x[ i + 1 ] );
-        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
+        nrg = (oac_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
     if( i < len ) {
         /* One sample left to process */
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
-        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
+        nrg = (oac_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
     silk_assert( nrg >= 0 );
     /* Make sure the result will fit in a 32-bit signed integer with two bits
@@ -66,12 +66,12 @@ void silk_sum_sqr_shift(
     for( i = 0 ; i < len - 1; i += 2 ) {
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
         nrg_tmp = silk_SMLABB_ovflw( nrg_tmp, x[ i + 1 ], x[ i + 1 ] );
-        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
+        nrg = (oac_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
     if( i < len ) {
         /* One sample left to process */
         nrg_tmp = silk_SMULBB( x[ i ], x[ i ] );
-        nrg = (opus_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
+        nrg = (oac_int32)silk_ADD_RSHIFT_uint( nrg, nrg_tmp, shft );
     }
 
     silk_assert( nrg >= 0 );

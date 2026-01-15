@@ -66,7 +66,7 @@ def load_data(folder):
 def plot_data(filename, data, title=None):
     compare_dict = dict()
     for br in data.keys():
-        compare_dict[f'Opus {br/1000:.1f} kb/s'] = data[br][:, 0]
+        compare_dict[f'Oac {br/1000:.1f} kb/s'] = data[br][:, 0]
         compare_dict[f'LACE {br/1000:.1f} kb/s'] = data[br][:, 1]
         compare_dict[f'NoLACE {br/1000:.1f} kb/s'] = data[br][:, 2]
 
@@ -80,7 +80,7 @@ def plot_data(filename, data, title=None):
     red = '#ff5745'
     blue = '#007dbc'
     colors = [black, red, blue]
-    legend_elements = [Patch(facecolor=colors[0], label='Opus SILK'),
+    legend_elements = [Patch(facecolor=colors[0], label='Oac SILK'),
                     Patch(facecolor=colors[1], label='LACE'),
                     Patch(facecolor=colors[2], label='NoLACE')]
 

@@ -36,14 +36,14 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Encode quantization indices of excitation */
 /*********************************************/
 
-static OPUS_INLINE opus_int combine_and_check(    /* return ok                           */
-    opus_int         *pulses_comb,           /* O                                   */
-    const opus_int   *pulses_in,             /* I                                   */
-    opus_int         max_pulses,             /* I    max value for sum of pulses    */
-    opus_int         len                     /* I    number of output values        */
+static OAC_INLINE oac_int combine_and_check(    /* return ok                           */
+    oac_int         *pulses_comb,           /* O                                   */
+    const oac_int   *pulses_in,             /* I                                   */
+    oac_int         max_pulses,             /* I    max value for sum of pulses    */
+    oac_int         len                     /* I    number of output values        */
 )
 {
-    opus_int k, sum;
+    oac_int k, sum;
 
     for( k = 0; k < len; k++ ) {
         sum = pulses_in[ 2 * k ] + pulses_in[ 2 * k + 1 ];
@@ -59,25 +59,25 @@ static OPUS_INLINE opus_int combine_and_check(    /* return ok                  
 /* Encode quantization indices of excitation */
 void silk_encode_pulses(
     ec_enc                      *psRangeEnc,                    /* I/O  compressor data structure                   */
-    const opus_int              signalType,                     /* I    Signal type                                 */
-    const opus_int              quantOffsetType,                /* I    quantOffsetType                             */
-    opus_int8                   pulses[],                       /* I    quantization indices                        */
-    const opus_int              frame_length                    /* I    Frame length                                */
+    const oac_int              signalType,                     /* I    Signal type                                 */
+    const oac_int              quantOffsetType,                /* I    quantOffsetType                             */
+    oac_int8                   pulses[],                       /* I    quantization indices                        */
+    const oac_int              frame_length                    /* I    Frame length                                */
 )
 {
-    opus_int   i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;
-    opus_int32 abs_q, minSumBits_Q5, sumBits_Q5;
-    VARDECL( opus_int, abs_pulses );
-    VARDECL( opus_int, sum_pulses );
-    VARDECL( opus_int, nRshifts );
-    opus_int   pulses_comb[ 8 ];
-    opus_int   *abs_pulses_ptr;
-    const opus_int8 *pulses_ptr;
-    const opus_uint8 *cdf_ptr;
-    const opus_uint8 *nBits_ptr;
+    oac_int   i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;
+    oac_int32 abs_q, minSumBits_Q5, sumBits_Q5;
+    VARDECL( oac_int, abs_pulses );
+    VARDECL( oac_int, sum_pulses );
+    VARDECL( oac_int, nRshifts );
+    oac_int   pulses_comb[ 8 ];
+    oac_int   *abs_pulses_ptr;
+    const oac_int8 *pulses_ptr;
+    const oac_uint8 *cdf_ptr;
+    const oac_uint8 *nBits_ptr;
     SAVE_STACK;
 
-    silk_memset( pulses_comb, 0, 8 * sizeof( opus_int ) ); /* Fixing Valgrind reported problem*/
+    silk_memset( pulses_comb, 0, 8 * sizeof( oac_int ) ); /* Fixing Valgrind reported problem*/
 
     /****************************/
     /* Prepare for shell coding */
@@ -88,22 +88,22 @@ void silk_encode_pulses(
     if( iter * SHELL_CODEC_FRAME_LENGTH < frame_length ) {
         celt_assert( frame_length == 12 * 10 ); /* Make sure only happens for 10 ms @ 12 kHz */
         iter++;
-        silk_memset( &pulses[ frame_length ], 0, SHELL_CODEC_FRAME_LENGTH * sizeof(opus_int8));
+        silk_memset( &pulses[ frame_length ], 0, SHELL_CODEC_FRAME_LENGTH * sizeof(oac_int8));
     }
 
     /* Take the absolute value of the pulses */
-    ALLOC( abs_pulses, iter * SHELL_CODEC_FRAME_LENGTH, opus_int );
+    ALLOC( abs_pulses, iter * SHELL_CODEC_FRAME_LENGTH, oac_int );
     silk_assert( !( SHELL_CODEC_FRAME_LENGTH & 3 ) );
     for( i = 0; i < iter * SHELL_CODEC_FRAME_LENGTH; i+=4 ) {
-        abs_pulses[i+0] = ( opus_int )silk_abs( pulses[ i + 0 ] );
-        abs_pulses[i+1] = ( opus_int )silk_abs( pulses[ i + 1 ] );
-        abs_pulses[i+2] = ( opus_int )silk_abs( pulses[ i + 2 ] );
-        abs_pulses[i+3] = ( opus_int )silk_abs( pulses[ i + 3 ] );
+        abs_pulses[i+0] = ( oac_int )silk_abs( pulses[ i + 0 ] );
+        abs_pulses[i+1] = ( oac_int )silk_abs( pulses[ i + 1 ] );
+        abs_pulses[i+2] = ( oac_int )silk_abs( pulses[ i + 2 ] );
+        abs_pulses[i+3] = ( oac_int )silk_abs( pulses[ i + 3 ] );
     }
 
     /* Calc sum pulses per shell code frame */
-    ALLOC( sum_pulses, iter, opus_int );
-    ALLOC( nRshifts, iter, opus_int );
+    ALLOC( sum_pulses, iter, oac_int );
+    ALLOC( nRshifts, iter, oac_int );
     abs_pulses_ptr = abs_pulses;
     for( i = 0; i < iter; i++ ) {
         nRshifts[ i ] = 0;
@@ -187,7 +187,7 @@ void silk_encode_pulses(
             pulses_ptr = &pulses[ i * SHELL_CODEC_FRAME_LENGTH ];
             nLS = nRshifts[ i ] - 1;
             for( k = 0; k < SHELL_CODEC_FRAME_LENGTH; k++ ) {
-                abs_q = (opus_int8)silk_abs( pulses_ptr[ k ] );
+                abs_q = (oac_int8)silk_abs( pulses_ptr[ k ] );
                 for( j = nLS; j > 0; j-- ) {
                     bit = silk_RSHIFT( abs_q, j ) & 1;
                     ec_enc_icdf( psRangeEnc, bit, silk_lsb_iCDF, 8 );

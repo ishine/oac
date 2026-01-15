@@ -36,15 +36,15 @@
 
 #if defined(__arm__) && !defined(__aarch64__) && (__ARM_ARCH < 8 || !defined(__clang__))
 /* Emulate vcvtnq_s32_f32() for ARMv7 Neon. */
-static OPUS_INLINE int32x4_t vcvtnq_s32_f32(float32x4_t x) {
+static OAC_INLINE int32x4_t vcvtnq_s32_f32(float32x4_t x) {
   return vrshrq_n_s32(vcvtq_n_s32_f32(x, 8), 8);
 }
 
-static OPUS_INLINE int16x8_t vpaddq_s16(int16x8_t a, int16x8_t b) {
+static OAC_INLINE int16x8_t vpaddq_s16(int16x8_t a, int16x8_t b) {
   return vcombine_s16(vpadd_s16(vget_low_s16(a), vget_high_s16(a)), vpadd_s16(vget_low_s16(b), vget_high_s16(b)));
 }
 
-static OPUS_INLINE int16x8_t vmull_high_s8(int8x16_t a, int8x16_t b) {
+static OAC_INLINE int16x8_t vmull_high_s8(int8x16_t a, int8x16_t b) {
   return vmull_s8(vget_high_s8(a), vget_high_s8(b));
 }
 #endif
@@ -302,7 +302,7 @@ static inline void sgemv(float *out, const float *weights, int rows, int cols, i
 static inline void sparse_sgemv8x4(float *out, const float *w, const int *idx, int rows, const float *x)
 {
    int i, j;
-   OPUS_CLEAR(out, rows);
+   OAC_CLEAR(out, rows);
    for (i=0;i<rows;i+=8)
    {
       int cols;
@@ -376,11 +376,11 @@ static inline int32x4_t vdotprod(int32x4_t acc, int8x16_t a, int8x16_t b)
 }
 #endif
 
-static inline void cgemv8x4(float *_out, const opus_int8 *w, const float *scale, int rows, int cols, const float *_x)
+static inline void cgemv8x4(float *_out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
-   opus_int32 x_int[MAX_INPUTS/4];
-   opus_int8 *x = (opus_int8*) x_int;
+   oac_int32 x_int[MAX_INPUTS/4];
+   oac_int8 *x = (oac_int8*) x_int;
    const float32x4_t const127 = vdupq_n_f32(127.);
    for (i=0;i<cols;i+=8) {
       int32x4_t xi0, xi4;
@@ -431,11 +431,11 @@ static inline void cgemv8x4(float *_out, const opus_int8 *w, const float *scale,
    }
 }
 
-static inline void sparse_cgemv8x4(float *_out, const opus_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
+static inline void sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
-   opus_int32 x_int[MAX_INPUTS/4];
-   opus_int8 *x = (opus_int8*) x_int;
+   oac_int32 x_int[MAX_INPUTS/4];
+   oac_int8 *x = (oac_int8*) x_int;
    const float32x4_t const127 = vdupq_n_f32(127.);
    for (i=0;i<cols;i+=8) {
       int32x4_t xi0, xi4;

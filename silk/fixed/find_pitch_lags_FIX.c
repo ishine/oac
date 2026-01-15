@@ -37,20 +37,20 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_find_pitch_lags_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  encoder state                                                               */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  encoder control                                                             */
-    opus_int16                      res[],                                  /* O    residual                                                                    */
-    const opus_int16                x[],                                    /* I    Speech signal                                                               */
+    oac_int16                      res[],                                  /* O    residual                                                                    */
+    const oac_int16                x[],                                    /* I    Speech signal                                                               */
     int                             arch                                    /* I    Run-time architecture                                                       */
 )
 {
-    opus_int   buf_len, i, scale;
-    opus_int32 thrhld_Q13, res_nrg;
-    const opus_int16 *x_ptr;
-    VARDECL( opus_int16, Wsig );
-    opus_int16 *Wsig_ptr;
-    opus_int32 auto_corr[ MAX_FIND_PITCH_LPC_ORDER + 1 ];
-    opus_int16 rc_Q15[    MAX_FIND_PITCH_LPC_ORDER ];
-    opus_int32 A_Q24[     MAX_FIND_PITCH_LPC_ORDER ];
-    opus_int16 A_Q12[     MAX_FIND_PITCH_LPC_ORDER ];
+    oac_int   buf_len, i, scale;
+    oac_int32 thrhld_Q13, res_nrg;
+    const oac_int16 *x_ptr;
+    VARDECL( oac_int16, Wsig );
+    oac_int16 *Wsig_ptr;
+    oac_int32 auto_corr[ MAX_FIND_PITCH_LPC_ORDER + 1 ];
+    oac_int16 rc_Q15[    MAX_FIND_PITCH_LPC_ORDER ];
+    oac_int32 A_Q24[     MAX_FIND_PITCH_LPC_ORDER ];
+    oac_int16 A_Q12[     MAX_FIND_PITCH_LPC_ORDER ];
     SAVE_STACK;
 
     /******************************************/
@@ -67,7 +67,7 @@ void silk_find_pitch_lags_FIX(
 
     /* Calculate windowed signal */
 
-    ALLOC( Wsig, psEnc->sCmn.pitch_LPC_win_length, opus_int16 );
+    ALLOC( Wsig, psEnc->sCmn.pitch_LPC_win_length, oac_int16 );
 
     /* First LA_LTP samples */
     x_ptr = x + buf_len - psEnc->sCmn.pitch_LPC_win_length;
@@ -77,7 +77,7 @@ void silk_find_pitch_lags_FIX(
     /* Middle un - windowed samples */
     Wsig_ptr  += psEnc->sCmn.la_pitch;
     x_ptr += psEnc->sCmn.la_pitch;
-    silk_memcpy( Wsig_ptr, x_ptr, ( psEnc->sCmn.pitch_LPC_win_length - silk_LSHIFT( psEnc->sCmn.la_pitch, 1 ) ) * sizeof( opus_int16 ) );
+    silk_memcpy( Wsig_ptr, x_ptr, ( psEnc->sCmn.pitch_LPC_win_length - silk_LSHIFT( psEnc->sCmn.la_pitch, 1 ) ) * sizeof( oac_int16 ) );
 
     /* Last LA_LTP samples */
     Wsig_ptr  += psEnc->sCmn.pitch_LPC_win_length - silk_LSHIFT( psEnc->sCmn.la_pitch, 1 );
@@ -101,7 +101,7 @@ void silk_find_pitch_lags_FIX(
 
     /* Convert From 32 bit Q24 to 16 bit Q12 coefs */
     for( i = 0; i < psEnc->sCmn.pitchEstimationLPCOrder; i++ ) {
-        A_Q12[ i ] = (opus_int16)silk_SAT16( silk_RSHIFT( A_Q24[ i ], 12 ) );
+        A_Q12[ i ] = (oac_int16)silk_SAT16( silk_RSHIFT( A_Q24[ i ], 12 ) );
     }
 
     /* Do BWE */
@@ -126,7 +126,7 @@ void silk_find_pitch_lags_FIX(
         /*****************************************/
         if( silk_pitch_analysis_core( res, psEncCtrl->pitchL, &psEnc->sCmn.indices.lagIndex, &psEnc->sCmn.indices.contourIndex,
                 &psEnc->LTPCorr_Q15, psEnc->sCmn.prevLag, psEnc->sCmn.pitchEstimationThreshold_Q16,
-                (opus_int)thrhld_Q13, psEnc->sCmn.fs_kHz, psEnc->sCmn.pitchEstimationComplexity, psEnc->sCmn.nb_subfr,
+                (oac_int)thrhld_Q13, psEnc->sCmn.fs_kHz, psEnc->sCmn.pitchEstimationComplexity, psEnc->sCmn.nb_subfr,
                 psEnc->sCmn.arch) == 0 )
         {
             psEnc->sCmn.indices.signalType = TYPE_VOICED;

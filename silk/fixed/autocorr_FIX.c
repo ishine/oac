@@ -34,15 +34,15 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Compute autocorrelation */
 void silk_autocorr(
-    opus_int32                  *results,           /* O    Result (length correlationCount)                            */
-    opus_int                    *scale,             /* O    Scaling of the correlation vector                           */
-    const opus_int16            *inputData,         /* I    Input data to correlate                                     */
-    const opus_int              inputDataSize,      /* I    Length of input                                             */
-    const opus_int              correlationCount,   /* I    Number of correlation taps to compute                       */
+    oac_int32                  *results,           /* O    Result (length correlationCount)                            */
+    oac_int                    *scale,             /* O    Scaling of the correlation vector                           */
+    const oac_int16            *inputData,         /* I    Input data to correlate                                     */
+    const oac_int              inputDataSize,      /* I    Length of input                                             */
+    const oac_int              correlationCount,   /* I    Number of correlation taps to compute                       */
     int                         arch                /* I    Run-time architecture                                       */
 )
 {
-    opus_int   corrCount;
+    oac_int   corrCount;
     corrCount = silk_min_int( inputDataSize, correlationCount );
     *scale = _celt_autocorr(inputData, results, NULL, 0, corrCount-1, inputDataSize, arch);
 }

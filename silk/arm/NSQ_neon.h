@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #undef silk_short_prediction_create_arch_coef
 /* For vectorized calc, reverse a_Q12 coefs, convert to 32-bit, and shift for vqdmulhq_s32. */
-static OPUS_INLINE void silk_short_prediction_create_arch_coef_neon(opus_int32 *out, const opus_int16 *in, opus_int order)
+static OAC_INLINE void silk_short_prediction_create_arch_coef_neon(oac_int32 *out, const oac_int16 *in, oac_int order)
 {
     out[15] = silk_LSHIFT32(in[0], 15);
     out[14] = silk_LSHIFT32(in[1], 15);
@@ -65,23 +65,23 @@ static OPUS_INLINE void silk_short_prediction_create_arch_coef_neon(opus_int32 *
     }
 }
 
-#if defined(OPUS_ARM_PRESUME_NEON_INTR)
+#if defined(OAC_ARM_PRESUME_NEON_INTR)
 
 #define silk_short_prediction_create_arch_coef(out, in, order) \
     (silk_short_prediction_create_arch_coef_neon(out, in, order))
 
-#elif defined(OPUS_HAVE_RTCD) && defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+#elif defined(OAC_HAVE_RTCD) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
 #define silk_short_prediction_create_arch_coef(out, in, order) \
-    do { if (arch >= OPUS_ARCH_ARM_NEON) { silk_short_prediction_create_arch_coef_neon(out, in, order); } } while (0)
+    do { if (arch >= OAC_ARCH_ARM_NEON) { silk_short_prediction_create_arch_coef_neon(out, in, order); } } while (0)
 
 #endif
 
-opus_int32 silk_noise_shape_quantizer_short_prediction_neon(const opus_int32 *buf32, const opus_int32 *coef32, opus_int order);
+oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf32, const oac_int32 *coef32, oac_int order);
 
-opus_int32 silk_NSQ_noise_shape_feedback_loop_neon(const opus_int32 *data0, opus_int32 *data1, const opus_int16 *coef, opus_int order);
+oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef, oac_int order);
 
-#if defined(OPUS_ARM_PRESUME_NEON_INTR)
+#if defined(OAC_ARM_PRESUME_NEON_INTR)
 #undef silk_noise_shape_quantizer_short_prediction
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch) \
     ((void)arch,silk_noise_shape_quantizer_short_prediction_neon(in, coefRev, order))
@@ -89,24 +89,24 @@ opus_int32 silk_NSQ_noise_shape_feedback_loop_neon(const opus_int32 *data0, opus
 #undef silk_NSQ_noise_shape_feedback_loop
 #define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch)  ((void)arch,silk_NSQ_noise_shape_feedback_loop_neon(data0, data1, coef, order))
 
-#elif defined(OPUS_HAVE_RTCD) && defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+#elif defined(OAC_HAVE_RTCD) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
 /* silk_noise_shape_quantizer_short_prediction implementations take different parameters based on arch
    (coef vs. coefRev) so can't use the usual IMPL table implementation */
 #undef silk_noise_shape_quantizer_short_prediction
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  \
-    (arch >= OPUS_ARCH_ARM_NEON ? \
+    (arch >= OAC_ARCH_ARM_NEON ? \
         silk_noise_shape_quantizer_short_prediction_neon(in, coefRev, order) : \
         silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
-extern opus_int32
- (*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OPUS_ARCHMASK+1])(
- const opus_int32 *data0, opus_int32 *data1, const opus_int16 *coef,
- opus_int order);
+extern oac_int32
+ (*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK+1])(
+ const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
+ oac_int order);
 
 #undef silk_NSQ_noise_shape_feedback_loop
 #define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch) \
- (SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[(arch)&OPUS_ARCHMASK](data0, data1, \
+ (SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[(arch)&OAC_ARCHMASK](data0, data1, \
  coef, order))
 
 #endif

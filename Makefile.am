@@ -5,7 +5,7 @@ export VERBOSE = yes
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
-lib_LTLIBRARIES = libopus.la
+lib_LTLIBRARIES = liboac.la
 
 DIST_SUBDIRS = doc
 
@@ -16,7 +16,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/celt -I$(top_srcdir)/silk 
 include celt_sources.mk
 include lpcnet_sources.mk
 include silk_sources.mk
-include opus_sources.mk
+include oac_sources.mk
 
 LPCNET_SOURCES =
 if ENABLE_DEEP_PLC
@@ -49,7 +49,7 @@ endif
 
 if DISABLE_FLOAT_API
 else
-OPUS_SOURCES += $(OPUS_SOURCES_FLOAT)
+OAC_SOURCES += $(OAC_SOURCES_FLOAT)
 endif
 
 if CPU_X86
@@ -111,7 +111,7 @@ if HAVE_ARM_NE10
 CELT_SOURCES += $(CELT_SOURCES_ARM_NE10)
 endif
 
-if OPUS_ARM_EXTERNAL_ASM
+if OAC_ARM_EXTERNAL_ASM
 noinst_LTLIBRARIES = libarmasm.la
 libarmasm_la_SOURCES = $(CELT_SOURCES_ARM_ASM:.s=-gnu.S)
 BUILT_SOURCES = $(CELT_SOURCES_ARM_ASM:.s=-gnu.S) \
@@ -126,7 +126,7 @@ CLEANFILES = $(CELT_SOURCES_ARM_ASM:.s=-gnu.S) \
 include celt_headers.mk
 include lpcnet_headers.mk
 include silk_headers.mk
-include opus_headers.mk
+include oac_headers.mk
 
 LPCNET_HEAD =
 if ENABLE_DEEP_PLC
@@ -142,16 +142,16 @@ if ENABLE_LOSSGEN
 LPCNET_HEAD += $(LOSSGEN_HEAD)
 endif
 
-libopus_la_SOURCES = $(CELT_SOURCES) $(SILK_SOURCES) $(LPCNET_SOURCES) $(OPUS_SOURCES)
-libopus_la_LDFLAGS = -no-undefined -version-info @OPUS_LT_CURRENT@:@OPUS_LT_REVISION@:@OPUS_LT_AGE@
-libopus_la_LIBADD = $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
-libopus_la_LIBADD += libarmasm.la
+liboac_la_SOURCES = $(CELT_SOURCES) $(SILK_SOURCES) $(LPCNET_SOURCES) $(OAC_SOURCES)
+liboac_la_LDFLAGS = -no-undefined -version-info @OAC_LT_CURRENT@:@OAC_LT_REVISION@:@OAC_LT_AGE@
+liboac_la_LIBADD = $(NE10_LIBS) $(LIBM)
+if OAC_ARM_EXTERNAL_ASM
+liboac_la_LIBADD += libarmasm.la
 endif
 
-pkginclude_HEADERS = include/opus.h include/opus_multistream.h include/opus_types.h include/opus_defines.h include/opus_projection.h
+pkginclude_HEADERS = include/oac.h include/oac_multistream.h include/oac_types.h include/oac_defines.h include/oac_projection.h
 
-noinst_HEADERS = $(OPUS_HEAD) $(SILK_HEAD) $(CELT_HEAD) $(LPCNET_HEAD)
+noinst_HEADERS = $(OAC_HEAD) $(SILK_HEAD) $(CELT_HEAD) $(LPCNET_HEAD)
 
 if EXTRA_PROGRAMS
 noinst_PROGRAMS = celt/tests/test_unit_cwrs32 \
@@ -163,17 +163,17 @@ noinst_PROGRAMS = celt/tests/test_unit_cwrs32 \
                   celt/tests/test_unit_mdct \
                   celt/tests/test_unit_rotation \
                   celt/tests/test_unit_types \
-                  opus_compare \
-                  opus_demo \
+                  oac_compare \
+                  oac_demo \
                   repacketizer_demo \
                   silk/tests/test_unit_LPC_inv_pred_gain \
-                  tests/test_opus_api \
-                  tests/test_opus_decode \
-                  tests/test_opus_dred \
-                  tests/test_opus_encode \
-                  tests/test_opus_extensions \
-                  tests/test_opus_padding \
-                  tests/test_opus_projection \
+                  tests/test_oac_api \
+                  tests/test_oac_decode \
+                  tests/test_oac_dred \
+                  tests/test_oac_encode \
+                  tests/test_oac_extensions \
+                  tests/test_oac_padding \
+                  tests/test_oac_projection \
                   trivial_example
 
 TESTS = celt/tests/test_unit_cwrs32 \
@@ -186,70 +186,70 @@ TESTS = celt/tests/test_unit_cwrs32 \
         celt/tests/test_unit_rotation \
         celt/tests/test_unit_types \
         silk/tests/test_unit_LPC_inv_pred_gain \
-        tests/test_opus_api \
-        tests/test_opus_decode \
-        tests/test_opus_encode \
-        tests/test_opus_extensions \
-        tests/test_opus_padding \
-        tests/test_opus_projection
+        tests/test_oac_api \
+        tests/test_oac_decode \
+        tests/test_oac_encode \
+        tests/test_oac_extensions \
+        tests/test_oac_padding \
+        tests/test_oac_projection
 
-opus_demo_SOURCES = src/opus_demo.c
+oac_demo_SOURCES = src/oac_demo.c
 if ENABLE_LOSSGEN
-opus_demo_SOURCES += $(LOSSGEN_SOURCES)
+oac_demo_SOURCES += $(LOSSGEN_SOURCES)
 endif
 
-opus_demo_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+oac_demo_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
 repacketizer_demo_SOURCES = src/repacketizer_demo.c
 
-repacketizer_demo_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+repacketizer_demo_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
-opus_compare_SOURCES = src/opus_compare.c
-opus_compare_LDADD = $(LIBM)
+oac_compare_SOURCES = src/oac_compare.c
+oac_compare_LDADD = $(LIBM)
 
 trivial_example_SOURCES = doc/trivial_example.c
-trivial_example_LDADD = libopus.la $(LIBM)
+trivial_example_LDADD = liboac.la $(LIBM)
 
-tests_test_opus_api_SOURCES = tests/test_opus_api.c tests/test_opus_common.h
-tests_test_opus_api_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+tests_test_oac_api_SOURCES = tests/test_oac_api.c tests/test_oac_common.h
+tests_test_oac_api_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
-tests_test_opus_encode_SOURCES = tests/test_opus_encode.c tests/opus_encode_regressions.c tests/test_opus_common.h
-tests_test_opus_encode_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+tests_test_oac_encode_SOURCES = tests/test_oac_encode.c tests/oac_encode_regressions.c tests/test_oac_common.h
+tests_test_oac_encode_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
-tests_test_opus_decode_SOURCES = tests/test_opus_decode.c tests/test_opus_common.h
-tests_test_opus_decode_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+tests_test_oac_decode_SOURCES = tests/test_oac_decode.c tests/test_oac_common.h
+tests_test_oac_decode_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
-tests_test_opus_padding_SOURCES = tests/test_opus_padding.c tests/test_opus_common.h
-tests_test_opus_padding_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+tests_test_oac_padding_SOURCES = tests/test_oac_padding.c tests/test_oac_common.h
+tests_test_oac_padding_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
-tests_test_opus_dred_SOURCES = tests/test_opus_dred.c tests/test_opus_common.h
-tests_test_opus_dred_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+tests_test_oac_dred_SOURCES = tests/test_oac_dred.c tests/test_oac_common.h
+tests_test_oac_dred_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 
 if CUSTOM_MODES
-tests_test_opus_custom_SOURCES = tests/test_opus_custom.c tests/test_opus_common.h
-tests_test_opus_custom_LDADD = libopus.la $(NE10_LIBS) $(LIBM)
+tests_test_oac_custom_SOURCES = tests/test_oac_custom.c tests/test_oac_common.h
+tests_test_oac_custom_LDADD = liboac.la $(NE10_LIBS) $(LIBM)
 endif
 
 CELT_OBJ = $(CELT_SOURCES:.c=.lo)
 SILK_OBJ = $(SILK_SOURCES:.c=.lo)
 LPCNET_OBJ = $(LPCNET_SOURCES:.c=.lo)
-OPUS_OBJ = $(OPUS_SOURCES:.c=.lo)
+OAC_OBJ = $(OAC_SOURCES:.c=.lo)
 
-tests_test_opus_extensions_SOURCES = tests/test_opus_extensions.c tests/test_opus_common.h
-tests_test_opus_extensions_LDADD = $(OPUS_OBJ) $(SILK_OBJ) $(LPCNET_OBJ) $(CELT_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
-tests_test_opus_extensions_LDADD += libarmasm.la
+tests_test_oac_extensions_SOURCES = tests/test_oac_extensions.c tests/test_oac_common.h
+tests_test_oac_extensions_LDADD = $(OAC_OBJ) $(SILK_OBJ) $(LPCNET_OBJ) $(CELT_OBJ) $(NE10_LIBS) $(LIBM)
+if OAC_ARM_EXTERNAL_ASM
+tests_test_oac_extensions_LDADD += libarmasm.la
 endif
 
-tests_test_opus_projection_SOURCES = tests/test_opus_projection.c tests/test_opus_common.h
-tests_test_opus_projection_LDADD = $(OPUS_OBJ) $(SILK_OBJ) $(LPCNET_OBJ) $(CELT_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
-tests_test_opus_projection_LDADD += libarmasm.la
+tests_test_oac_projection_SOURCES = tests/test_oac_projection.c tests/test_oac_common.h
+tests_test_oac_projection_LDADD = $(OAC_OBJ) $(SILK_OBJ) $(LPCNET_OBJ) $(CELT_OBJ) $(NE10_LIBS) $(LIBM)
+if OAC_ARM_EXTERNAL_ASM
+tests_test_oac_projection_LDADD += libarmasm.la
 endif
 
 silk_tests_test_unit_LPC_inv_pred_gain_SOURCES = silk/tests/test_unit_LPC_inv_pred_gain.c
 silk_tests_test_unit_LPC_inv_pred_gain_LDADD = $(SILK_OBJ) $(LPCNET_OBJ) $(CELT_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
+if OAC_ARM_EXTERNAL_ASM
 silk_tests_test_unit_LPC_inv_pred_gain_LDADD += libarmasm.la
 endif
 
@@ -258,7 +258,7 @@ celt_tests_test_unit_cwrs32_LDADD = $(LIBM)
 
 celt_tests_test_unit_dft_SOURCES = celt/tests/test_unit_dft.c
 celt_tests_test_unit_dft_LDADD = $(CELT_OBJ) $(LPCNET_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
+if OAC_ARM_EXTERNAL_ASM
 celt_tests_test_unit_dft_LDADD += libarmasm.la
 endif
 
@@ -273,19 +273,19 @@ celt_tests_test_unit_laplace_LDADD = $(LIBM)
 
 celt_tests_test_unit_mathops_SOURCES = celt/tests/test_unit_mathops.c
 celt_tests_test_unit_mathops_LDADD = $(CELT_OBJ) $(LPCNET_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
+if OAC_ARM_EXTERNAL_ASM
 celt_tests_test_unit_mathops_LDADD += libarmasm.la
 endif
 
 celt_tests_test_unit_mdct_SOURCES = celt/tests/test_unit_mdct.c
 celt_tests_test_unit_mdct_LDADD = $(CELT_OBJ) $(LPCNET_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
+if OAC_ARM_EXTERNAL_ASM
 celt_tests_test_unit_mdct_LDADD += libarmasm.la
 endif
 
 celt_tests_test_unit_rotation_SOURCES = celt/tests/test_unit_rotation.c
 celt_tests_test_unit_rotation_LDADD = $(CELT_OBJ) $(LPCNET_OBJ) $(NE10_LIBS) $(LIBM)
-if OPUS_ARM_EXTERNAL_ASM
+if OAC_ARM_EXTERNAL_ASM
 celt_tests_test_unit_rotation_LDADD += libarmasm.la
 endif
 
@@ -294,14 +294,14 @@ celt_tests_test_unit_types_LDADD = $(LIBM)
 endif
 
 if CUSTOM_MODES
-pkginclude_HEADERS += include/opus_custom.h
+pkginclude_HEADERS += include/oac_custom.h
 if EXTRA_PROGRAMS
-noinst_PROGRAMS += opus_custom_demo
-opus_custom_demo_SOURCES = celt/opus_custom_demo.c
-opus_custom_demo_LDADD = libopus.la $(LIBM)
+noinst_PROGRAMS += oac_custom_demo
+oac_custom_demo_SOURCES = celt/oac_custom_demo.c
+oac_custom_demo_LDADD = liboac.la $(LIBM)
 
-TESTS += tests/test_opus_custom
-noinst_PROGRAMS += tests/test_opus_custom
+TESTS += tests/test_oac_custom
+noinst_PROGRAMS += tests/test_oac_custom
 endif
 endif
 
@@ -322,7 +322,7 @@ dump_weights_blob_LDADD = $(LIBM)
 dump_weights_blob_CFLAGS = $(AM_CFLAGS) -DDUMP_BINARY_WEIGHTS
 endif
 if ENABLE_DRED
-TESTS += tests/test_opus_dred
+TESTS += tests/test_oac_dred
 endif
 
 if ENABLE_LOSSGEN
@@ -340,24 +340,24 @@ endif
 if ENABLE_QEXT
 noinst_PROGRAMS += qext_compare
 qext_compare_SOURCES = src/qext_compare.c
-qext_compare_LDADD = libopus.la $(LIBM)
+qext_compare_LDADD = liboac.la $(LIBM)
 endif
 
 endif
 
 
-EXTRA_DIST = opus.pc.in \
-             opus-uninstalled.pc.in \
-             opus.m4 \
+EXTRA_DIST = oac.pc.in \
+             oac-uninstalled.pc.in \
+             oac.m4 \
              Makefile.unix \
              CMakeLists.txt \
              cmake/CFeatureCheck.cmake \
-             cmake/OpusBuildtype.cmake \
-             cmake/OpusConfig.cmake \
-             cmake/OpusConfig.cmake.in \
-             cmake/OpusFunctions.cmake \
-             cmake/OpusPackageVersion.cmake \
-             cmake/OpusSources.cmake \
+             cmake/OacBuildtype.cmake \
+             cmake/OacConfig.cmake \
+             cmake/OacConfig.cmake.in \
+             cmake/OacFunctions.cmake \
+             cmake/OacPackageVersion.cmake \
+             cmake/OacSources.cmake \
              cmake/README.md \
              cmake/RunTest.cmake \
              cmake/config.h.cmake.in \
@@ -386,17 +386,17 @@ EXTRA_DIST = opus.pc.in \
              celt/arm/celt_pitch_xcorr_arm.s
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = opus.pc
+pkgconfig_DATA = oac.pc
 
 m4datadir = $(datadir)/aclocal
-m4data_DATA = opus.m4
+m4data_DATA = oac.m4
 
 # Targets to build and install just the library without the docs
-opus check-opus install-opus: export NO_DOXYGEN = 1
+oac check-oac install-oac: export NO_DOXYGEN = 1
 
-opus: all
-check-opus: check
-install-opus: install
+oac: all
+check-oac: check
+install-oac: install
 
 
 # Or just the docs
@@ -457,7 +457,7 @@ dist-hook:
 	echo 'PACKAGE_VERSION="$(PACKAGE_VERSION)"' > $(top_distdir)/package_version
 
 
-.PHONY: opus check-opus install-opus docs install-docs
+.PHONY: oac check-oac install-oac docs install-docs
 
 # automake doesn't do dependency tracking for asm files, that I can tell
 $(CELT_SOURCES_ARM_ASM:%.s=%-gnu.S): celt/arm/armopts-gnu.S
@@ -478,13 +478,13 @@ OPT_UNIT_TEST_OBJ = $(celt_tests_test_unit_mathops_SOURCES:.c=.o) \
 
 if HAVE_SSE
 SSE_OBJ = $(CELT_SOURCES_SSE:.c=.lo)
-$(SSE_OBJ): CFLAGS += $(OPUS_X86_SSE_CFLAGS)
+$(SSE_OBJ): CFLAGS += $(OAC_X86_SSE_CFLAGS)
 endif
 
 if HAVE_SSE2
 SSE2_OBJ = $(CELT_SOURCES_SSE2:.c=.lo) \
            $(DNN_SOURCES_SSE2:.c=.lo)
-$(SSE2_OBJ): CFLAGS += $(OPUS_X86_SSE2_CFLAGS)
+$(SSE2_OBJ): CFLAGS += $(OAC_X86_SSE2_CFLAGS)
 endif
 
 if HAVE_SSE4_1
@@ -492,7 +492,7 @@ SSE4_1_OBJ = $(CELT_SOURCES_SSE4_1:.c=.lo) \
              $(DNN_SOURCES_SSE4_1:.c=.lo) \
              $(SILK_SOURCES_SSE4_1:.c=.lo) \
              $(SILK_SOURCES_FIXED_SSE4_1:.c=.lo)
-$(SSE4_1_OBJ): CFLAGS += $(OPUS_X86_SSE4_1_CFLAGS)
+$(SSE4_1_OBJ): CFLAGS += $(OAC_X86_SSE4_1_CFLAGS)
 endif
 
 if HAVE_AVX2
@@ -500,7 +500,7 @@ AVX2_OBJ = $(CELT_SOURCES_AVX2:.c=.lo) \
            $(SILK_SOURCES_AVX2:.c=.lo) \
            $(SILK_SOURCES_FLOAT_AVX2:.c=.lo) \
            $(DNN_SOURCES_AVX2:.c=.lo)
-$(AVX2_OBJ): CFLAGS += $(OPUS_X86_AVX2_CFLAGS)
+$(AVX2_OBJ): CFLAGS += $(OAC_X86_AVX2_CFLAGS)
 endif
 
 if HAVE_ARM_NEON_INTR
@@ -509,7 +509,7 @@ ARM_NEON_INTR_OBJ = $(CELT_SOURCES_ARM_NEON_INTR:.c=.lo) \
                     $(DNN_SOURCES_NEON:.c=.lo) \
                     $(SILK_SOURCES_FIXED_ARM_NEON_INTR:.c=.lo)
 $(ARM_NEON_INTR_OBJ): CFLAGS += \
- $(OPUS_ARM_NEON_INTR_CFLAGS)  $(NE10_CFLAGS)
+ $(OAC_ARM_NEON_INTR_CFLAGS)  $(NE10_CFLAGS)
 endif
 
 if HAVE_ARM_DOTPROD

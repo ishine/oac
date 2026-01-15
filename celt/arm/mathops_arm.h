@@ -29,9 +29,9 @@
 
 #include "armcpu.h"
 #include "cpu_support.h"
-#include "opus_defines.h"
+#include "oac_defines.h"
 
-# if !defined(DISABLE_FLOAT_API) && defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+# if !defined(DISABLE_FLOAT_API) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
 #include <arm_neon.h>
 
@@ -70,33 +70,33 @@ static inline float vmaxvf(float32x4_t a)
 #endif
 }
 
-void celt_float2int16_neon(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT out, int cnt);
-#  if defined(OPUS_HAVE_RTCD) && \
-    (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR))
+void celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
+#  if defined(OAC_HAVE_RTCD) && \
+    (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
 extern void
-(*const CELT_FLOAT2INT16_IMPL[OPUS_ARCHMASK+1])(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT out, int cnt);
+(*const CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK+1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
 
 #   define OVERRIDE_FLOAT2INT16 (1)
 #   define celt_float2int16(in, out, cnt, arch) \
-      ((*CELT_FLOAT2INT16_IMPL[(arch)&OPUS_ARCHMASK])(in, out, cnt))
+      ((*CELT_FLOAT2INT16_IMPL[(arch)&OAC_ARCHMASK])(in, out, cnt))
 
-#  elif defined(OPUS_ARM_PRESUME_NEON_INTR)
+#  elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #   define OVERRIDE_FLOAT2INT16 (1)
 #   define celt_float2int16(in, out, cnt, arch) ((void)(arch), celt_float2int16_neon(in, out, cnt))
 #  endif
 
-int opus_limit2_checkwithin1_neon(float * samples, int cnt);
-#  if defined(OPUS_HAVE_RTCD) && \
-      (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR))
-extern int (*const OPUS_LIMIT2_CHECKWITHIN1_IMPL[OPUS_ARCHMASK+1])(float * samples, int cnt);
+int oac_limit2_checkwithin1_neon(float * samples, int cnt);
+#  if defined(OAC_HAVE_RTCD) && \
+      (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
+extern int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK+1])(float * samples, int cnt);
 
 #   define OVERRIDE_LIMIT2_CHECKWITHIN1 (1)
-#   define opus_limit2_checkwithin1(samples, cnt, arch) \
-   ((*OPUS_LIMIT2_CHECKWITHIN1_IMPL[(arch)&OPUS_ARCHMASK])(samples, cnt))
+#   define oac_limit2_checkwithin1(samples, cnt, arch) \
+   ((*OAC_LIMIT2_CHECKWITHIN1_IMPL[(arch)&OAC_ARCHMASK])(samples, cnt))
 
-#  elif defined(OPUS_ARM_PRESUME_NEON_INTR)
+#  elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #   define OVERRIDE_LIMIT2_CHECKWITHIN1 (1)
-#   define opus_limit2_checkwithin1(samples, cnt, arch) ((void)(arch), opus_limit2_checkwithin1_neon(samples, cnt))
+#   define oac_limit2_checkwithin1(samples, cnt, arch) ((void)(arch), oac_limit2_checkwithin1_neon(samples, cnt))
 #  endif
 # endif
 

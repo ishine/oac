@@ -38,14 +38,14 @@
 #include "pitch.h"
 #include "celt/x86/x86cpu.h"
 
-opus_int64 silk_inner_prod16_sse4_1(
-    const opus_int16            *inVec1,            /*    I input vector 1                                              */
-    const opus_int16            *inVec2,            /*    I input vector 2                                              */
-    const opus_int              len                 /*    I vector lengths                                              */
+oac_int64 silk_inner_prod16_sse4_1(
+    const oac_int16            *inVec1,            /*    I input vector 1                                              */
+    const oac_int16            *inVec2,            /*    I input vector 2                                              */
+    const oac_int              len                 /*    I vector lengths                                              */
 )
 {
-    opus_int  i, dataSize4;
-    opus_int64 sum;
+    oac_int  i, dataSize4;
+    oac_int64 sum;
 
     __m128i xmm_prod_20, xmm_prod_31;
     __m128i inVec1_3210, acc1;
@@ -82,9 +82,9 @@ opus_int64 silk_inner_prod16_sse4_1(
         sum = silk_SMLALBB( sum, inVec1[ i ], inVec2[ i ] );
     }
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     {
-        opus_int64 sum_c = silk_inner_prod16_c( inVec1, inVec2, len );
+        oac_int64 sum_c = silk_inner_prod16_c( inVec1, inVec2, len );
         silk_assert( sum == sum_c );
     }
 #endif

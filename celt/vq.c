@@ -54,27 +54,27 @@ void norm_scaledown(celt_norm *X, int N, int shift) {
    for (i=0;i<N;i++) X[i] = PSHR32(X[i], shift);
 }
 
-opus_val32 celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch) {
+oac_val32 celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch) {
    int i;
-   opus_val32 sum = 0;
+   oac_val32 sum = 0;
    (void)arch;
    for (i=0;i<len;i++) sum += x[i]*y[i];
    return sum;
 }
-opus_val32 celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch) {
+oac_val32 celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch) {
    int i;
-   opus_val64 sum = 0;
+   oac_val64 sum = 0;
    (void)arch;
-   for (i=0;i<len;i++) sum += x[i]*(opus_val64)y[i];
+   for (i=0;i<len;i++) sum += x[i]*(oac_val64)y[i];
    return sum>>2*(NORM_SHIFT-14);
 }
 #endif
 
 #ifndef OVERRIDE_vq_exp_rotation1
-static void exp_rotation1(celt_norm *X, int len, int stride, opus_val16 c, opus_val16 s)
+static void exp_rotation1(celt_norm *X, int len, int stride, oac_val16 c, oac_val16 s)
 {
    int i;
-   opus_val16 ms;
+   oac_val16 ms;
    celt_norm *Xptr;
    Xptr = X;
    ms = NEG16(s);
@@ -104,8 +104,8 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
 {
    static const int SPREAD_FACTOR[3]={15,10,5};
    int i;
-   opus_val16 c, s;
-   opus_val16 gain, theta;
+   oac_val16 c, s;
+   oac_val16 gain, theta;
    int stride2=0;
    int factor;
 
@@ -113,7 +113,7 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
       return;
    factor = SPREAD_FACTOR[spread-1];
 
-   gain = celt_div((opus_val32)MULT16_16(Q15_ONE,len),(opus_val32)(len+factor*K));
+   gain = celt_div((oac_val32)MULT16_16(Q15_ONE,len),(oac_val32)(len+factor*K));
    theta = HALF16(MULT16_16_Q15(gain,gain));
 
    c = celt_cos_norm(EXTEND32(theta));
@@ -146,15 +146,15 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
 }
 
 /** Normalizes the decoded integer pvq codeword to unit norm. */
-static void normalise_residual(int * OPUS_RESTRICT iy, celt_norm * OPUS_RESTRICT X,
-      int N, opus_val32 Ryy, opus_val32 gain, int shift)
+static void normalise_residual(int * OAC_RESTRICT iy, celt_norm * OAC_RESTRICT X,
+      int N, oac_val32 Ryy, oac_val32 gain, int shift)
 {
    int i;
 #ifdef FIXED_POINT
    int k;
 #endif
-   opus_val32 t;
-   opus_val32 g;
+   oac_val32 t;
+   oac_val32 g;
 
 #ifdef FIXED_POINT
    k = celt_ilog2(Ryy)>>1;
@@ -201,15 +201,15 @@ static unsigned extract_collapse_mask(int *iy, int N, int B)
    return collapse_mask;
 }
 
-opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
+oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
 {
    VARDECL(celt_norm, y);
    VARDECL(int, signx);
    int i, j;
    int pulsesLeft;
-   opus_val32 sum;
-   opus_val32 xy;
-   opus_val16 yy;
+   oac_val32 sum;
+   oac_val32 xy;
+   oac_val16 yy;
    SAVE_STACK;
 
    (void)arch;
@@ -239,7 +239,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
    /* Do a pre-search by projecting on the pyramid */
    if (K > (N>>1))
    {
-      opus_val16 rcp;
+      oac_val16 rcp;
       j=0; do {
          sum += X[j];
       }  while (++j<N);
@@ -288,7 +288,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
 #endif
    if (pulsesLeft > N+3)
    {
-      opus_val16 tmp = (opus_val16)pulsesLeft;
+      oac_val16 tmp = (oac_val16)pulsesLeft;
       yy = MAC16_16(yy, tmp, tmp);
       yy = MAC16_16(yy, tmp, y[0]);
       iy[0] += pulsesLeft;
@@ -297,10 +297,10 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
 
    for (i=0;i<pulsesLeft;i++)
    {
-      opus_val16 Rxy, Ryy;
+      oac_val16 Rxy, Ryy;
       int best_id;
-      opus_val32 best_num;
-      opus_val16 best_den;
+      oac_val32 best_num;
+      oac_val16 best_den;
 #ifdef FIXED_POINT
       int rshift;
 #endif
@@ -341,7 +341,7 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
             since the condition is more often false than true and using
             a cmov introduces data dependencies across iterations. The optimal
             choice may be architecture-dependent. */
-         if (opus_unlikely(MULT16_16(best_den, Rxy) > MULT16_16(Ryy, best_num)))
+         if (oac_unlikely(MULT16_16(best_den, Rxy) > MULT16_16(Ryy, best_num)))
          {
             best_den = Ryy;
             best_num = Rxy;
@@ -376,10 +376,10 @@ opus_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch)
    RESTORE_STACK;
    RESTORE_STACK;
 unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
-      opus_val32 gain, int resynth, int arch)
+      oac_val32 gain, int resynth, int arch)
 {
    VARDECL(int, iy);
-   opus_val32 yy;
+   oac_val32 yy;
    unsigned collapse_mask;
    SAVE_STACK;
 
@@ -406,9 +406,9 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
 /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
 unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
-      ec_dec *dec, opus_val32 gain)
+      ec_dec *dec, oac_val32 gain)
 {
-   opus_val32 Ryy;
+   oac_val32 Ryy;
    unsigned collapse_mask;
    VARDECL(int, iy);
    int yy_shift=0;
@@ -426,15 +426,15 @@ unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
 }
 
 #ifndef OVERRIDE_renormalise_vector
-void renormalise_vector(celt_norm *X, int N, opus_val32 gain, int arch)
+void renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch)
 {
    int i;
 #ifdef FIXED_POINT
    int k;
 #endif
-   opus_val32 E;
-   opus_val16 g;
-   opus_val32 t;
+   oac_val32 E;
+   oac_val16 g;
+   oac_val32 t;
    celt_norm *xptr;
    norm_scaledown(X, N, NORM_SHIFT-14);
    E = EPSILON + celt_inner_prod_norm(X, X, N, arch);
@@ -455,12 +455,12 @@ void renormalise_vector(celt_norm *X, int N, opus_val32 gain, int arch)
 }
 #endif /* OVERRIDE_renormalise_vector */
 
-opus_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch)
+oac_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch)
 {
    int i;
    int itheta;
-   opus_val32 mid, side;
-   opus_val32 Emid, Eside;
+   oac_val32 mid, side;
+   oac_val32 Emid, Eside;
 
    Emid = Eside = 0;
    if (stereo)
@@ -488,10 +488,10 @@ opus_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int
    return itheta;
 }
 
-static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int sign, opus_val32 gain) {
+static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int sign, oac_val32 gain) {
    int i;
-   opus_val32 sum=0;
-   opus_val32 mag;
+   oac_val32 sum=0;
+   oac_val32 mag;
 #ifdef FIXED_POINT
    int sum_shift;
    int shift = IMAX(celt_ilog2(K) + celt_ilog2(N)/2 - 13, 0);
@@ -517,13 +517,13 @@ static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int s
 #endif
 }
 
-unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, opus_val32 gain, int resynth) {
+unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_val32 gain, int resynth) {
    int i;
    int face=0;
    int K;
    VARDECL(int, iy);
    celt_norm faceval=-1;
-   opus_val32 norm;
+   oac_val32 norm;
    int sign;
    SAVE_STACK;
    ALLOC(iy, N, int);
@@ -531,7 +531,7 @@ unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, opus_val3
    /* Using odd K on transients to avoid adding pre-echo. */
    if (B!=1) K=IMAX(1, K-1);
    if (K==1) {
-      if (resynth) OPUS_CLEAR(X, N);
+      if (resynth) OAC_CLEAR(X, N);
       RESTORE_STACK;
       return 0;
    }
@@ -554,7 +554,7 @@ unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, opus_val3
          iy[i] = IMIN(K-1, (MULT32_32_Q31(SHL32(X[i]+faceval, face_shift-1), norm)) >> 15);
       }
    } else {
-      OPUS_CLEAR(iy, N);
+      OAC_CLEAR(iy, N);
    }
 #else
    norm = .5f*K/(faceval+EPSILON);
@@ -572,7 +572,7 @@ unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, opus_val3
    return (1<<B)-1;
 }
 
-unsigned cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, opus_val32 gain) {
+unsigned cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, oac_val32 gain) {
    int i;
    int face;
    int sign;
@@ -584,7 +584,7 @@ unsigned cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, opus_va
    /* Using odd K on transients to avoid adding pre-echo. */
    if (B!=1) K=IMAX(1, K-1);
    if (K==1) {
-      OPUS_CLEAR(X, N);
+      OAC_CLEAR(X, N);
       RESTORE_STACK;
       return 0;
    }

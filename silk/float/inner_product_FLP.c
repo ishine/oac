@@ -35,10 +35,10 @@ POSSIBILITY OF SUCH DAMAGE.
 double silk_inner_product_FLP_c(
     const silk_float    *data1,
     const silk_float    *data2,
-    opus_int            dataSize
+    oac_int            dataSize
 )
 {
-    opus_int i;
+    oac_int i;
     double   result;
 
     /* 4x unrolled loop */

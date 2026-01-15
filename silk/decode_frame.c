@@ -40,13 +40,13 @@ POSSIBILITY OF SUCH DAMAGE.
 /****************/
 /* Decode frame */
 /****************/
-opus_int silk_decode_frame(
+oac_int silk_decode_frame(
     silk_decoder_state          *psDec,                         /* I/O  Pointer to Silk decoder state               */
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
-    opus_int16                  pOut[],                         /* O    Pointer to output speech frame              */
-    opus_int32                  *pN,                            /* O    Pointer to size of output frame             */
-    opus_int                    lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
-    opus_int                    condCoding,                     /* I    The type of conditional coding to use       */
+    oac_int16                  pOut[],                         /* O    Pointer to output speech frame              */
+    oac_int32                  *pN,                            /* O    Pointer to size of output frame             */
+    oac_int                    lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
+    oac_int                    condCoding,                     /* I    The type of conditional coding to use       */
 #ifdef ENABLE_DEEP_PLC
     LPCNetPLCState              *lpcnet,
 #endif
@@ -57,7 +57,7 @@ opus_int silk_decode_frame(
 )
 {
     VARDECL( silk_decoder_control, psDecCtrl );
-    opus_int         L, mv_len, ret = 0;
+    oac_int         L, mv_len, ret = 0;
     SAVE_STACK;
 
     L = psDec->frame_length;
@@ -70,13 +70,13 @@ opus_int silk_decode_frame(
     if(   lostFlag == FLAG_DECODE_NORMAL ||
         ( lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[ psDec->nFramesDecoded ] == 1 ) )
     {
-        VARDECL( opus_int16, pulses );
+        VARDECL( oac_int16, pulses );
 #ifdef ENABLE_OSCE
-        opus_int32  ec_start;
+        oac_int32  ec_start;
         ec_start = ec_tell(psRangeDec);
 #endif
         ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1) &
-                       ~(SHELL_CODEC_FRAME_LENGTH - 1), opus_int16 );
+                       ~(SHELL_CODEC_FRAME_LENGTH - 1), oac_int16 );
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
@@ -103,8 +103,8 @@ opus_int silk_decode_frame(
         /*************************/
         celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
         mv_len = psDec->ltp_mem_length - psDec->frame_length;
-        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
-        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );
+        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(oac_int16) );
+        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( oac_int16 ) );
 
 #ifdef ENABLE_OSCE
         /********************************************************/
@@ -144,8 +144,8 @@ opus_int silk_decode_frame(
         /*************************/
         celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
         mv_len = psDec->ltp_mem_length - psDec->frame_length;
-        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
-        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );
+        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(oac_int16) );
+        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( oac_int16 ) );
     }
 
     /************************************************/

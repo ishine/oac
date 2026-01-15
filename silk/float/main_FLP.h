@@ -53,32 +53,32 @@ void silk_HP_variable_cutoff(
 /* Encoder main function */
 void silk_encode_do_VAD_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
-    opus_int                        activity                            /* I    Decision of Opus voice activity detector    */
+    oac_int                        activity                            /* I    Decision of Oac voice activity detector    */
 );
 
 /* Encoder main function */
-opus_int silk_encode_frame_FLP(
+oac_int silk_encode_frame_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
-    opus_int32                      *pnBytesOut,                        /* O    Number of payload bytes;                    */
+    oac_int32                      *pnBytesOut,                        /* O    Number of payload bytes;                    */
     ec_enc                          *psRangeEnc,                        /* I/O  compressor data structure                   */
-    opus_int                        condCoding,                         /* I    The type of conditional coding to use       */
-    opus_int                        maxBits,                            /* I    If > 0: maximum number of output bits       */
-    opus_int                        useCBR                              /* I    Flag to force constant-bitrate operation    */
+    oac_int                        condCoding,                         /* I    The type of conditional coding to use       */
+    oac_int                        maxBits,                            /* I    If > 0: maximum number of output bits       */
+    oac_int                        useCBR                              /* I    Flag to force constant-bitrate operation    */
 );
 
 /* Initializes the Silk encoder state */
-opus_int silk_init_encoder(
+oac_int silk_init_encoder(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     int                              arch                               /* I    Run-tim architecture                        */
 );
 
 /* Control the Silk encoder */
-opus_int silk_control_encoder(
+oac_int silk_control_encoder(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Pointer to Silk encoder state FLP           */
     silk_EncControlStruct           *encControl,                        /* I    Control structure                           */
-    const opus_int                  allow_bw_switch,                    /* I    Flag to allow switching audio bandwidth     */
-    const opus_int                  channelNb,                          /* I    Channel number                              */
-    const opus_int                  force_fs_kHz
+    const oac_int                  allow_bw_switch,                    /* I    Flag to allow switching audio bandwidth     */
+    const oac_int                  channelNb,                          /* I    Channel number                              */
+    const oac_int                  force_fs_kHz
 );
 
 /**************************/
@@ -97,15 +97,15 @@ void silk_warped_autocorrelation_FLP(
     silk_float                      *corr,                              /* O    Result [order + 1]                          */
     const silk_float                *input,                             /* I    Input data to correlate                     */
     const silk_float                warping,                            /* I    Warping coefficient                         */
-    const opus_int                  length,                             /* I    Length of input                             */
-    const opus_int                  order                               /* I    Correlation order (even)                    */
+    const oac_int                  length,                             /* I    Length of input                             */
+    const oac_int                  order                               /* I    Correlation order (even)                    */
 );
 
 /* Calculation of LTP state scaling */
 void silk_LTP_scale_ctrl_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
-    opus_int                        condCoding                          /* I    The type of conditional coding to use       */
+    oac_int                        condCoding                          /* I    The type of conditional coding to use       */
 );
 
 /**********************************************/
@@ -126,13 +126,13 @@ void silk_find_pred_coefs_FLP(
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     const silk_float                res_pitch[],                        /* I    Residual from pitch analysis                */
     const silk_float                x[],                                /* I    Speech signal                               */
-    opus_int                        condCoding                          /* I    The type of conditional coding to use       */
+    oac_int                        condCoding                          /* I    The type of conditional coding to use       */
 );
 
 /* LPC analysis */
 void silk_find_LPC_FLP(
     silk_encoder_state              *psEncC,                            /* I/O  Encoder state                               */
-    opus_int16                      NLSF_Q15[],                         /* O    NLSFs                                       */
+    oac_int16                      NLSF_Q15[],                         /* O    NLSFs                                       */
     const silk_float                x[],                                /* I    Input signal                                */
     const silk_float                minInvGain,                         /* I    Prediction gain from LTP (dB)               */
     int                             arch
@@ -143,9 +143,9 @@ void silk_find_LTP_FLP(
     silk_float                      XX[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ], /* O    Weight for LTP quantization         */
     silk_float                      xX[ MAX_NB_SUBFR * LTP_ORDER ],     /* O    Weight for LTP quantization                 */
     const silk_float                r_ptr[],                            /* I    LPC residual                                */
-    const opus_int                  lag[  MAX_NB_SUBFR ],               /* I    LTP lags                                    */
-    const opus_int                  subfr_length,                       /* I    Subframe length                             */
-    const opus_int                  nb_subfr,                           /* I    number of subframes                         */
+    const oac_int                  lag[  MAX_NB_SUBFR ],               /* I    LTP lags                                    */
+    const oac_int                  subfr_length,                       /* I    Subframe length                             */
+    const oac_int                  nb_subfr,                           /* I    number of subframes                         */
     int                             arch
 );
 
@@ -153,11 +153,11 @@ void silk_LTP_analysis_filter_FLP(
     silk_float                      *LTP_res,                           /* O    LTP res MAX_NB_SUBFR*(pre_lgth+subfr_lngth) */
     const silk_float                *x,                                 /* I    Input signal, with preceding samples        */
     const silk_float                B[ LTP_ORDER * MAX_NB_SUBFR ],      /* I    LTP coefficients for each subframe          */
-    const opus_int                  pitchL[   MAX_NB_SUBFR ],           /* I    Pitch lags                                  */
+    const oac_int                  pitchL[   MAX_NB_SUBFR ],           /* I    Pitch lags                                  */
     const silk_float                invGains[ MAX_NB_SUBFR ],           /* I    Inverse quantization gains                  */
-    const opus_int                  subfr_length,                       /* I    Length of each subframe                     */
-    const opus_int                  nb_subfr,                           /* I    number of subframes                         */
-    const opus_int                  pre_length                          /* I    Preceding samples for each subframe         */
+    const oac_int                  subfr_length,                       /* I    Length of each subframe                     */
+    const oac_int                  nb_subfr,                           /* I    number of subframes                         */
+    const oac_int                  pre_length                          /* I    Preceding samples for each subframe         */
 );
 
 /* Calculates residual energies of input subframes where all subframes have LPC_order   */
@@ -167,9 +167,9 @@ void silk_residual_energy_FLP(
     const silk_float                x[],                                /* I    Input signal                                */
     silk_float                      a[ 2 ][ MAX_LPC_ORDER ],            /* I    AR coefs for each frame half                */
     const silk_float                gains[],                            /* I    Quantization gains                          */
-    const opus_int                  subfr_length,                       /* I    Subframe length                             */
-    const opus_int                  nb_subfr,                           /* I    number of subframes                         */
-    const opus_int                  LPC_order                           /* I    LPC order                                   */
+    const oac_int                  subfr_length,                       /* I    Subframe length                             */
+    const oac_int                  nb_subfr,                           /* I    number of subframes                         */
+    const oac_int                  LPC_order                           /* I    LPC order                                   */
 );
 
 /* 16th order LPC analysis filter */
@@ -177,21 +177,21 @@ void silk_LPC_analysis_filter_FLP(
     silk_float                      r_LPC[],                            /* O    LPC residual signal                         */
     const silk_float                PredCoef[],                         /* I    LPC coefficients                            */
     const silk_float                s[],                                /* I    Input signal                                */
-    const opus_int                  length,                             /* I    Length of input signal                      */
-    const opus_int                  Order                               /* I    LPC order                                   */
+    const oac_int                  length,                             /* I    Length of input signal                      */
+    const oac_int                  Order                               /* I    LPC order                                   */
 );
 
 /* LTP tap quantizer */
 void silk_quant_LTP_gains_FLP(
     silk_float                      B[ MAX_NB_SUBFR * LTP_ORDER ],      /* O    Quantized LTP gains                         */
-    opus_int8                       cbk_index[ MAX_NB_SUBFR ],          /* O    Codebook index                              */
-    opus_int8                       *periodicity_index,                 /* O    Periodicity index                           */
-    opus_int32                      *sum_log_gain_Q7,                   /* I/O  Cumulative max prediction gain  */
+    oac_int8                       cbk_index[ MAX_NB_SUBFR ],          /* O    Codebook index                              */
+    oac_int8                       *periodicity_index,                 /* O    Periodicity index                           */
+    oac_int32                      *sum_log_gain_Q7,                   /* I/O  Cumulative max prediction gain  */
     silk_float                      *pred_gain_dB,                      /* O    LTP prediction gain                         */
     const silk_float                XX[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ], /* I    Correlation matrix                  */
     const silk_float                xX[ MAX_NB_SUBFR * LTP_ORDER ],     /* I    Correlation vector                          */
-    const opus_int                  subfr_len,                          /* I    Number of samples per subframe              */
-    const opus_int                  nb_subfr,                           /* I    Number of subframes                         */
+    const oac_int                  subfr_len,                          /* I    Number of samples per subframe              */
+    const oac_int                  nb_subfr,                           /* I    Number of subframes                         */
     int                             arch                                /* I    Run-time architecture                       */
 );
 
@@ -201,14 +201,14 @@ silk_float silk_residual_energy_covar_FLP(                              /* O    
     silk_float                      *wXX,                               /* I/O  Weighted correlation matrix, reg. out       */
     const silk_float                *wXx,                               /* I    Weighted correlation vector                 */
     const silk_float                wxx,                                /* I    Weighted correlation value                  */
-    const opus_int                  D                                   /* I    Dimension                                   */
+    const oac_int                  D                                   /* I    Dimension                                   */
 );
 
 /* Processing of gains */
 void silk_process_gains_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
-    opus_int                        condCoding                          /* I    The type of conditional coding to use       */
+    oac_int                        condCoding                          /* I    The type of conditional coding to use       */
 );
 
 /******************/
@@ -217,8 +217,8 @@ void silk_process_gains_FLP(
 /* Calculates correlation matrix X'*X */
 void silk_corrMatrix_FLP(
     const silk_float                *x,                                 /* I    x vector [ L+order-1 ] used to create X     */
-    const opus_int                  L,                                  /* I    Length of vectors                           */
-    const opus_int                  Order,                              /* I    Max lag for correlation                     */
+    const oac_int                  L,                                  /* I    Length of vectors                           */
+    const oac_int                  Order,                              /* I    Max lag for correlation                     */
     silk_float                      *XX,                                /* O    X'*X correlation matrix [order x order]     */
     int                             arch
 );
@@ -227,8 +227,8 @@ void silk_corrMatrix_FLP(
 void silk_corrVector_FLP(
     const silk_float                *x,                                 /* I    x vector [L+order-1] used to create X       */
     const silk_float                *t,                                 /* I    Target vector [L]                           */
-    const opus_int                  L,                                  /* I    Length of vecors                            */
-    const opus_int                  Order,                              /* I    Max lag for correlation                     */
+    const oac_int                  L,                                  /* I    Length of vecors                            */
+    const oac_int                  Order,                              /* I    Max lag for correlation                     */
     silk_float                      *Xt,                                /* O    X'*t correlation vector [order]             */
     int                             arch
 );
@@ -240,24 +240,24 @@ void silk_corrVector_FLP(
 void silk_apply_sine_window_FLP(
     silk_float                      px_win[],                           /* O    Pointer to windowed signal                  */
     const silk_float                px[],                               /* I    Pointer to input signal                     */
-    const opus_int                  win_type,                           /* I    Selects a window type                       */
-    const opus_int                  length                              /* I    Window length, multiple of 4                */
+    const oac_int                  win_type,                           /* I    Selects a window type                       */
+    const oac_int                  length                              /* I    Window length, multiple of 4                */
 );
 
 /* Wrapper functions. Call flp / fix code */
 
 /* Convert AR filter coefficients to NLSF parameters */
 void silk_A2NLSF_FLP(
-    opus_int16                      *NLSF_Q15,                          /* O    NLSF vector      [ LPC_order ]              */
+    oac_int16                      *NLSF_Q15,                          /* O    NLSF vector      [ LPC_order ]              */
     const silk_float                *pAR,                               /* I    LPC coefficients [ LPC_order ]              */
-    const opus_int                  LPC_order                           /* I    LPC order                                   */
+    const oac_int                  LPC_order                           /* I    LPC order                                   */
 );
 
 /* Convert NLSF parameters to AR prediction filter coefficients */
 void silk_NLSF2A_FLP(
     silk_float                      *pAR,                               /* O    LPC coefficients [ LPC_order ]              */
-    const opus_int16                *NLSF_Q15,                          /* I    NLSF vector      [ LPC_order ]              */
-    const opus_int                  LPC_order,                          /* I    LPC order                                   */
+    const oac_int16                *NLSF_Q15,                          /* I    NLSF vector      [ LPC_order ]              */
+    const oac_int                  LPC_order,                          /* I    LPC order                                   */
     int                             arch                                /* I    Run-time architecture                       */
 );
 
@@ -265,8 +265,8 @@ void silk_NLSF2A_FLP(
 void silk_process_NLSFs_FLP(
     silk_encoder_state              *psEncC,                            /* I/O  Encoder state                               */
     silk_float                      PredCoef[ 2 ][ MAX_LPC_ORDER ],     /* O    Prediction coefficients                     */
-    opus_int16                      NLSF_Q15[      MAX_LPC_ORDER ],     /* I/O  Normalized LSFs (quant out) (0 - (2^15-1))  */
-    const opus_int16                prev_NLSF_Q15[ MAX_LPC_ORDER ]      /* I    Previous Normalized LSFs (0 - (2^15-1))     */
+    oac_int16                      NLSF_Q15[      MAX_LPC_ORDER ],     /* I/O  Normalized LSFs (quant out) (0 - (2^15-1))  */
+    const oac_int16                prev_NLSF_Q15[ MAX_LPC_ORDER ]      /* I    Previous Normalized LSFs (0 - (2^15-1))     */
 );
 
 /* Floating-point Silk NSQ wrapper      */
@@ -275,7 +275,7 @@ void silk_NSQ_wrapper_FLP(
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     SideInfoIndices                 *psIndices,                         /* I/O  Quantization indices                        */
     silk_nsq_state                  *psNSQ,                             /* I/O  Noise Shaping Quantzation state             */
-    opus_int8                       pulses[],                           /* O    Quantized pulse signal                      */
+    oac_int8                       pulses[],                           /* O    Quantized pulse signal                      */
     const silk_float                x[]                                 /* I    Prefiltered input signal                    */
 );
 

@@ -38,14 +38,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "SigProc_FIX.h"
 
 void silk_insertion_sort_increasing(
-    opus_int32           *a,             /* I/O   Unsorted / Sorted vector               */
-    opus_int             *idx,           /* O     Index vector for the sorted elements   */
-    const opus_int       L,              /* I     Vector length                          */
-    const opus_int       K               /* I     Number of correctly sorted positions   */
+    oac_int32           *a,             /* I/O   Unsorted / Sorted vector               */
+    oac_int             *idx,           /* O     Index vector for the sorted elements   */
+    const oac_int       L,              /* I     Vector length                          */
+    const oac_int       K               /* I     Number of correctly sorted positions   */
 )
 {
-    opus_int32    value;
-    opus_int        i, j;
+    oac_int32    value;
+    oac_int        i, j;
 
     /* Safety checks */
     celt_assert( K >  0 );
@@ -86,14 +86,14 @@ void silk_insertion_sort_increasing(
 #ifdef FIXED_POINT
 /* This function is only used by the fixed-point build */
 void silk_insertion_sort_decreasing_int16(
-    opus_int16                  *a,                 /* I/O   Unsorted / Sorted vector                                   */
-    opus_int                    *idx,               /* O     Index vector for the sorted elements                       */
-    const opus_int              L,                  /* I     Vector length                                              */
-    const opus_int              K                   /* I     Number of correctly sorted positions                       */
+    oac_int16                  *a,                 /* I/O   Unsorted / Sorted vector                                   */
+    oac_int                    *idx,               /* O     Index vector for the sorted elements                       */
+    const oac_int              L,                  /* I     Vector length                                              */
+    const oac_int              K                   /* I     Number of correctly sorted positions                       */
 )
 {
-    opus_int i, j;
-    opus_int value;
+    oac_int i, j;
+    oac_int value;
 
     /* Safety checks */
     celt_assert( K >  0 );
@@ -133,12 +133,12 @@ void silk_insertion_sort_decreasing_int16(
 #endif
 
 void silk_insertion_sort_increasing_all_values_int16(
-     opus_int16                 *a,                 /* I/O   Unsorted / Sorted vector                                   */
-     const opus_int             L                   /* I     Vector length                                              */
+     oac_int16                 *a,                 /* I/O   Unsorted / Sorted vector                                   */
+     const oac_int             L                   /* I     Vector length                                              */
 )
 {
-    opus_int    value;
-    opus_int    i, j;
+    oac_int    value;
+    oac_int    i, j;
 
     /* Safety checks */
     celt_assert( L >  0 );

@@ -93,34 +93,34 @@ static inline long long MIPS_MADD(long long acc, int a, int b) {
     return acc;
 }
 
-static inline opus_val32 MIPS_EXTR(long long acc, int shift) {
-    return (opus_val32)(acc >> shift);
+static inline oac_val32 MIPS_EXTR(long long acc, int shift) {
+    return (oac_val32)(acc >> shift);
 }
 
 #endif
 
 #if defined (OVERRIDE_comb_filter)
-void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
-      opus_val16 g0, opus_val16 g1, int tapset0, int tapset1,
-      const opus_val16 *window, int overlap, int arch)
+void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
+      oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
+      const oac_val16 *window, int overlap, int arch)
 {
    int i;
-   opus_val32 x0, x1, x2, x3, x4;
+   oac_val32 x0, x1, x2, x3, x4;
 
    (void)arch;
 
    /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
-   opus_val16 g00, g01, g02, g10, g11, g12;
-   static const opus_val16 gains[3][3] = {
+   oac_val16 g00, g01, g02, g10, g11, g12;
+   static const oac_val16 gains[3][3] = {
          {QCONST16(0.3066406250f, 15), QCONST16(0.2170410156f, 15), QCONST16(0.1296386719f, 15)},
          {QCONST16(0.4638671875f, 15), QCONST16(0.2680664062f, 15), QCONST16(0.f, 15)},
          {QCONST16(0.7998046875f, 15), QCONST16(0.1000976562f, 15), QCONST16(0.f, 15)}};
 
    if (g0==0 && g1==0)
    {
-      /* OPT: Happens to work without the OPUS_MOVE(), but only because the current encoder already copies x to y */
+      /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
       if (x!=y)
-         OPUS_MOVE(y, x, N);
+         OAC_MOVE(y, x, N);
       return;
    }
 
@@ -140,8 +140,8 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
 
    for (i=0;i<overlap;i++)
    {
-      opus_val16 f;
-      opus_val32 res;
+      oac_val16 f;
+      oac_val32 res;
       long long acc;
       f = MULT16_16_Q15(window[i],window[i]);
       x0= x[i-T1+2];
@@ -169,15 +169,15 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
 
    if (g1==0)
    {
-      /* OPT: Happens to work without the OPUS_MOVE(), but only because the current encoder already copies x to y */
+      /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
       if (x!=y)
-         OPUS_MOVE(y+overlap, x+overlap, N-overlap);
+         OAC_MOVE(y+overlap, x+overlap, N-overlap);
       return;
    }
 
    for (i=overlap;i<N;i++)
    {
-      opus_val32 res;
+      oac_val32 res;
       long long acc;
       x0=x[i-T1+2];
 

@@ -29,7 +29,7 @@
 #define NNET_H_
 
 #include <stddef.h>
-#include "opus_types.h"
+#include "oac_types.h"
 
 #define ACTIVATION_LINEAR  0
 #define ACTIVATION_SIGMOID 1
@@ -66,7 +66,7 @@ typedef struct {
 typedef struct {
   const float *bias;
   const float *subias;
-  const opus_int8 *weights;
+  const oac_int8 *weights;
   const float *float_weights;
   const int *weights_idx;
   const float *diag;
@@ -134,11 +134,11 @@ void compute_activation_c(float *output, const float *input, int N, int activati
 void compute_conv2d_c(const Conv2dLayer *conv, float *out, float *mem, const float *in, int height, int hstride, int activation);
 
 
-#if defined(OPUS_ARM_MAY_HAVE_DOTPROD) || defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+#if defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 #include "arm/dnn_arm.h"
 #endif
 
-#if defined(OPUS_X86_MAY_HAVE_SSE2)
+#if defined(OAC_X86_MAY_HAVE_SSE2)
 #include "x86/dnn_x86.h"
 #endif
 
@@ -154,7 +154,7 @@ void compute_conv2d_c(const Conv2dLayer *conv, float *out, float *mem, const flo
 #define compute_conv2d(conv, out, mem, in, height, hstride, activation, arch) ((void)(arch),compute_conv2d_c(conv, out, mem, in, height, hstride, activation))
 #endif
 
-#if defined(__x86_64__) && !defined(OPUS_X86_MAY_HAVE_SSE4_1) && !defined(OPUS_X86_MAY_HAVE_AVX2) &&!defined(SUPPRESS_PERF_WARNINGS)
+#if defined(__x86_64__) && !defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_MAY_HAVE_AVX2) &&!defined(SUPPRESS_PERF_WARNINGS)
 #if defined(_MSC_VER)
 #pragma message ("Only SSE and SSE2 are available. On newer machines, enable SSSE3/AVX/AVX2 to get better performance")
 #else

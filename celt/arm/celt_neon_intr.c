@@ -40,13 +40,13 @@
 #include "../mathops.h"
 #include "../pitch.h"
 #include <stddef.h>
-#if defined(OPUS_CHECK_ASM)
+#if defined(OAC_CHECK_ASM)
 #include <stdlib.h>
 #endif
 
-#if !defined(DISABLE_FLOAT_API) && defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+#if !defined(DISABLE_FLOAT_API) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
-void celt_float2int16_neon(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT out, int cnt)
+void celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt)
 {
    int i = 0;
 
@@ -70,7 +70,7 @@ void celt_float2int16_neon(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT
       vst1_s16(&out[i +  4], asShort_b);
       vst1_s16(&out[i +  8], asShort_c);
       vst1_s16(&out[i + 12], asShort_d);
-# if defined(OPUS_CHECK_ASM)
+# if defined(OAC_CHECK_ASM)
       short out_c[BLOCK_SIZE];
       int j;
       for(j = 0; j < BLOCK_SIZE; j++)
@@ -88,7 +88,7 @@ void celt_float2int16_neon(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT
    }
 }
 
-int opus_limit2_checkwithin1_neon(float *samples, int cnt)
+int oac_limit2_checkwithin1_neon(float *samples, int cnt)
 {
    const float hardclipMin = -2.0f;
    const float hardclipMax = 2.0f;
@@ -169,7 +169,7 @@ int opus_limit2_checkwithin1_neon(float *samples, int cnt)
 #if defined(FIXED_POINT)
 #include <string.h>
 
-void xcorr_kernel_neon_fixed(const opus_val16 * x, const opus_val16 * y, opus_val32 sum[4], int len)
+void xcorr_kernel_neon_fixed(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[4], int len)
 {
    int j;
    int32x4_t a = vld1q_s32(sum);
@@ -381,8 +381,8 @@ static void xcorr_kernel_neon_float(const float32_t *x, const float32_t *y,
    vst1q_f32(sum, SUMM);
 }
 
-void celt_pitch_xcorr_float_neon(const opus_val16 *_x, const opus_val16 *_y,
-                        opus_val32 *xcorr, int len, int max_pitch, int arch) {
+void celt_pitch_xcorr_float_neon(const oac_val16 *_x, const oac_val16 *_y,
+                        oac_val32 *xcorr, int len, int max_pitch, int arch) {
    int i;
    (void)arch;
    celt_assert(max_pitch > 0);

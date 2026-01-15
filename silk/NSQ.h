@@ -32,9 +32,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #undef silk_short_prediction_create_arch_coef
 
-static OPUS_INLINE opus_int32 silk_noise_shape_quantizer_short_prediction_c(const opus_int32 *buf32, const opus_int16 *coef16, opus_int order)
+static OAC_INLINE oac_int32 silk_noise_shape_quantizer_short_prediction_c(const oac_int32 *buf32, const oac_int16 *coef16, oac_int order)
 {
-    opus_int32 out;
+    oac_int32 out;
     silk_assert( order == 10 || order == 16 );
 
     /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
@@ -64,11 +64,11 @@ static OPUS_INLINE opus_int32 silk_noise_shape_quantizer_short_prediction_c(cons
 
 #define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  ((void)arch,silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
-static OPUS_INLINE opus_int32 silk_NSQ_noise_shape_feedback_loop_c(const opus_int32 *data0, opus_int32 *data1, const opus_int16 *coef, opus_int order)
+static OAC_INLINE oac_int32 silk_NSQ_noise_shape_feedback_loop_c(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef, oac_int order)
 {
-    opus_int32 out;
-    opus_int32 tmp1, tmp2;
-    opus_int j;
+    oac_int32 out;
+    oac_int32 tmp1, tmp2;
+    oac_int j;
 
     tmp2 = data0[0];
     tmp1 = data1[0];
@@ -94,7 +94,7 @@ static OPUS_INLINE opus_int32 silk_NSQ_noise_shape_feedback_loop_c(const opus_in
 
 #define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch)  ((void)arch,silk_NSQ_noise_shape_feedback_loop_c(data0, data1, coef, order))
 
-#if defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+#if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 #include "arm/NSQ_neon.h"
 #endif
 

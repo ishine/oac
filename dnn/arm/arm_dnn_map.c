@@ -32,11 +32,11 @@
 #include "arm/armcpu.h"
 #include "nnet.h"
 
-#if defined(OPUS_HAVE_RTCD)
+#if defined(OAC_HAVE_RTCD)
 
-#if (defined(OPUS_ARM_MAY_HAVE_DOTPROD) && !defined(OPUS_ARM_PRESUME_DOTPROD))
+#if (defined(OAC_ARM_MAY_HAVE_DOTPROD) && !defined(OAC_ARM_PRESUME_DOTPROD))
 
-void (*const DNN_COMPUTE_LINEAR_IMPL[OPUS_ARCHMASK + 1])(
+void (*const DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
          const LinearLayer *linear,
          float *out,
          const float *in
@@ -50,9 +50,9 @@ void (*const DNN_COMPUTE_LINEAR_IMPL[OPUS_ARCHMASK + 1])(
 
 #endif
 
-#if (defined(OPUS_ARM_MAY_HAVE_DOTPROD) || defined(OPUS_ARM_MAY_HAVE_NEON)) && !defined(OPUS_ARM_PRESUME_NEON)
+#if (defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON)) && !defined(OAC_ARM_PRESUME_NEON)
 
-void (*const DNN_COMPUTE_ACTIVATION_IMPL[OPUS_ARCHMASK + 1])(
+void (*const DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
          float *output,
          const float *input,
          int N,
@@ -65,7 +65,7 @@ void (*const DNN_COMPUTE_ACTIVATION_IMPL[OPUS_ARCHMASK + 1])(
     MAY_HAVE_DOTPROD(compute_activation) /* dotprod  */
 };
 
-void (*const DNN_COMPUTE_CONV2D_IMPL[OPUS_ARCHMASK + 1])(
+void (*const DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
          const Conv2dLayer *conv,
          float *out,
          float *mem,

@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include <arm_neon.h>
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
 # include <string.h>
 #endif
 #include "main.h"
@@ -42,90 +42,90 @@ POSSIBILITY OF SUCH DAMAGE.
 #define NEON_MAX_DEL_DEC_STATES 4
 
 typedef struct {
-    opus_int32 sLPC_Q14[ MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH ][ NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 RandState[ DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Q_Q10[     DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Xq_Q14[    DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Pred_Q15[  DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Shape_Q14[ DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 sAR2_Q14[ MAX_SHAPE_LPC_ORDER ][ NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 LF_AR_Q14[ NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Diff_Q14[  NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Seed[      NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 SeedInit[  NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 RD_Q10[    NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 sLPC_Q14[ MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH ][ NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 RandState[ DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Q_Q10[     DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Xq_Q14[    DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Pred_Q15[  DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Shape_Q14[ DECISION_DELAY ][     NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 sAR2_Q14[ MAX_SHAPE_LPC_ORDER ][ NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 LF_AR_Q14[ NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Diff_Q14[  NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Seed[      NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 SeedInit[  NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 RD_Q10[    NEON_MAX_DEL_DEC_STATES ];
 } NSQ_del_decs_struct;
 
 typedef struct {
-    opus_int32 Q_Q10[        NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 RD_Q10[       NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 xq_Q14[       NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 LF_AR_Q14[    NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 Diff_Q14[     NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 sLTP_shp_Q14[ NEON_MAX_DEL_DEC_STATES ];
-    opus_int32 LPC_exc_Q14[  NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Q_Q10[        NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 RD_Q10[       NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 xq_Q14[       NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 LF_AR_Q14[    NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 Diff_Q14[     NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 sLTP_shp_Q14[ NEON_MAX_DEL_DEC_STATES ];
+    oac_int32 LPC_exc_Q14[  NEON_MAX_DEL_DEC_STATES ];
 } NSQ_samples_struct;
 
-static OPUS_INLINE void silk_nsq_del_dec_scale_states_neon(
+static OAC_INLINE void silk_nsq_del_dec_scale_states_neon(
     const silk_encoder_state *psEncC,               /* I    Encoder State                       */
     silk_nsq_state      *NSQ,                       /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],                 /* I/O  Delayed decision states             */
-    const opus_int16    x16[],                      /* I    Input                               */
-    opus_int32          x_sc_Q10[],                 /* O    Input scaled with 1/Gain in Q10     */
-    const opus_int16    sLTP[],                     /* I    Re-whitened LTP state in Q0         */
-    opus_int32          sLTP_Q15[],                 /* O    LTP state matching scaled input     */
-    opus_int            subfr,                      /* I    Subframe number                     */
-    const opus_int      LTP_scale_Q14,              /* I    LTP state scaling                   */
-    const opus_int32    Gains_Q16[ MAX_NB_SUBFR ],  /* I                                        */
-    const opus_int      pitchL[ MAX_NB_SUBFR ],     /* I    Pitch lag                           */
-    const opus_int      signal_type,                /* I    Signal type                         */
-    const opus_int      decisionDelay               /* I    Decision delay                      */
+    const oac_int16    x16[],                      /* I    Input                               */
+    oac_int32          x_sc_Q10[],                 /* O    Input scaled with 1/Gain in Q10     */
+    const oac_int16    sLTP[],                     /* I    Re-whitened LTP state in Q0         */
+    oac_int32          sLTP_Q15[],                 /* O    LTP state matching scaled input     */
+    oac_int            subfr,                      /* I    Subframe number                     */
+    const oac_int      LTP_scale_Q14,              /* I    LTP state scaling                   */
+    const oac_int32    Gains_Q16[ MAX_NB_SUBFR ],  /* I                                        */
+    const oac_int      pitchL[ MAX_NB_SUBFR ],     /* I    Pitch lag                           */
+    const oac_int      signal_type,                /* I    Signal type                         */
+    const oac_int      decisionDelay               /* I    Decision delay                      */
 );
 
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
+static OAC_INLINE void silk_noise_shape_quantizer_del_dec_neon(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],             /* I/O  Delayed decision states             */
-    opus_int            signalType,             /* I    Signal type                         */
-    const opus_int32    x_Q10[],                /* I                                        */
-    opus_int8           pulses[],               /* O                                        */
-    opus_int16          xq[],                   /* O                                        */
-    opus_int32          sLTP_Q15[],             /* I/O  LTP filter state                    */
-    opus_int32          delayedGain_Q10[],      /* I/O  Gain delay buffer                   */
-    const opus_int16    a_Q12[],                /* I    Short term prediction coefs         */
-    const opus_int16    b_Q14[],                /* I    Long term prediction coefs          */
-    const opus_int16    AR_shp_Q13[],           /* I    Noise shaping coefs                 */
-    opus_int            lag,                    /* I    Pitch lag                           */
-    opus_int32          HarmShapeFIRPacked_Q14, /* I                                        */
-    opus_int            Tilt_Q14,               /* I    Spectral tilt                       */
-    opus_int32          LF_shp_Q14,             /* I                                        */
-    opus_int32          Gain_Q16,               /* I                                        */
-    opus_int            Lambda_Q10,             /* I                                        */
-    opus_int            offset_Q10,             /* I                                        */
-    opus_int            length,                 /* I    Input length                        */
-    opus_int            subfr,                  /* I    Subframe number                     */
-    opus_int            shapingLPCOrder,        /* I    Shaping LPC filter order            */
-    opus_int            predictLPCOrder,        /* I    Prediction filter order             */
-    opus_int            warping_Q16,            /* I                                        */
-    opus_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
-    opus_int            *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
-    opus_int            decisionDelay           /* I                                        */
+    oac_int            signalType,             /* I    Signal type                         */
+    const oac_int32    x_Q10[],                /* I                                        */
+    oac_int8           pulses[],               /* O                                        */
+    oac_int16          xq[],                   /* O                                        */
+    oac_int32          sLTP_Q15[],             /* I/O  LTP filter state                    */
+    oac_int32          delayedGain_Q10[],      /* I/O  Gain delay buffer                   */
+    const oac_int16    a_Q12[],                /* I    Short term prediction coefs         */
+    const oac_int16    b_Q14[],                /* I    Long term prediction coefs          */
+    const oac_int16    AR_shp_Q13[],           /* I    Noise shaping coefs                 */
+    oac_int            lag,                    /* I    Pitch lag                           */
+    oac_int32          HarmShapeFIRPacked_Q14, /* I                                        */
+    oac_int            Tilt_Q14,               /* I    Spectral tilt                       */
+    oac_int32          LF_shp_Q14,             /* I                                        */
+    oac_int32          Gain_Q16,               /* I                                        */
+    oac_int            Lambda_Q10,             /* I                                        */
+    oac_int            offset_Q10,             /* I                                        */
+    oac_int            length,                 /* I    Input length                        */
+    oac_int            subfr,                  /* I    Subframe number                     */
+    oac_int            shapingLPCOrder,        /* I    Shaping LPC filter order            */
+    oac_int            predictLPCOrder,        /* I    Prediction filter order             */
+    oac_int            warping_Q16,            /* I                                        */
+    oac_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
+    oac_int            *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
+    oac_int            decisionDelay           /* I                                        */
 );
 
-static OPUS_INLINE void copy_winner_state_kernel(
+static OAC_INLINE void copy_winner_state_kernel(
     const NSQ_del_decs_struct *psDelDec,
-    const opus_int            offset,
-    const opus_int            last_smple_idx,
-    const opus_int            Winner_ind,
+    const oac_int            offset,
+    const oac_int            last_smple_idx,
+    const oac_int            Winner_ind,
     const int32x2_t           gain_lo_s32x2,
     const int32x2_t           gain_hi_s32x2,
     const int32x4_t           shift_s32x4,
     int32x4_t                 t0_s32x4,
     int32x4_t                 t1_s32x4,
-    opus_int8 *const          pulses,
-    opus_int16                *pxq,
+    oac_int8 *const          pulses,
+    oac_int16                *pxq,
     silk_nsq_state            *NSQ
 )
 {
@@ -172,19 +172,19 @@ static OPUS_INLINE void copy_winner_state_kernel(
     vst1q_s32( &NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx + offset + 4 ], t1_s32x4 );
 }
 
-static OPUS_INLINE void copy_winner_state(
+static OAC_INLINE void copy_winner_state(
     const NSQ_del_decs_struct *psDelDec,
-    const opus_int            decisionDelay,
-    const opus_int            smpl_buf_idx,
-    const opus_int            Winner_ind,
-    const opus_int32          gain,
-    const opus_int32          shift,
-    opus_int8 *const          pulses,
-    opus_int16                *pxq,
+    const oac_int            decisionDelay,
+    const oac_int            smpl_buf_idx,
+    const oac_int            Winner_ind,
+    const oac_int32          gain,
+    const oac_int32          shift,
+    oac_int8 *const          pulses,
+    oac_int16                *pxq,
     silk_nsq_state            *NSQ
 )
 {
-    opus_int        i, last_smple_idx;
+    oac_int        i, last_smple_idx;
     const int32x2_t gain_lo_s32x2 = vdup_n_s32( silk_LSHIFT32( gain & 0x0000FFFF, 15 ) );
     const int32x2_t gain_hi_s32x2 = vdup_n_s32( gain >> 16 );
     const int32x4_t shift_s32x4 = vdupq_n_s32( -shift );
@@ -199,8 +199,8 @@ static OPUS_INLINE void copy_winner_state(
         copy_winner_state_kernel( psDelDec, i - decisionDelay, last_smple_idx, Winner_ind, gain_lo_s32x2, gain_hi_s32x2, shift_s32x4, t0_s32x4, t1_s32x4, pulses, pxq, NSQ );
     }
     for( ; ( i < decisionDelay ) && ( last_smple_idx >= 0 ); i++, last_smple_idx-- ) {
-        pulses[ i - decisionDelay ] = (opus_int8)silk_RSHIFT_ROUND( psDelDec->Q_Q10[ last_smple_idx ][ Winner_ind ], 10 );
-        pxq[ i - decisionDelay ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( psDelDec->Xq_Q14[ last_smple_idx ][ Winner_ind ], gain ), shift ) );
+        pulses[ i - decisionDelay ] = (oac_int8)silk_RSHIFT_ROUND( psDelDec->Q_Q10[ last_smple_idx ][ Winner_ind ], 10 );
+        pxq[ i - decisionDelay ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( psDelDec->Xq_Q14[ last_smple_idx ][ Winner_ind ], gain ), shift ) );
         NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - decisionDelay + i ] = psDelDec->Shape_Q14[ last_smple_idx ][ Winner_ind ];
     }
 
@@ -209,8 +209,8 @@ static OPUS_INLINE void copy_winner_state(
         copy_winner_state_kernel( psDelDec, i - decisionDelay, last_smple_idx, Winner_ind, gain_lo_s32x2, gain_hi_s32x2, shift_s32x4, t0_s32x4, t1_s32x4, pulses, pxq, NSQ );
     }
     for( ; i < decisionDelay; i++, last_smple_idx-- ) {
-        pulses[ i - decisionDelay ] = (opus_int8)silk_RSHIFT_ROUND( psDelDec->Q_Q10[ last_smple_idx ][ Winner_ind ], 10 );
-        pxq[ i - decisionDelay ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( psDelDec->Xq_Q14[ last_smple_idx ][ Winner_ind ], gain ), shift ) );
+        pulses[ i - decisionDelay ] = (oac_int8)silk_RSHIFT_ROUND( psDelDec->Q_Q10[ last_smple_idx ][ Winner_ind ], 10 );
+        pxq[ i - decisionDelay ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( psDelDec->Xq_Q14[ last_smple_idx ][ Winner_ind ], gain ), shift ) );
         NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - decisionDelay + i ] = psDelDec->Shape_Q14[ last_smple_idx ][ Winner_ind ];
     }
 }
@@ -219,25 +219,25 @@ void silk_NSQ_del_dec_neon(
     const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
-    const opus_int16            x16[],                                      /* I    Input                           */
-    opus_int8                   pulses[],                                   /* O    Quantized pulse signal          */
-    const opus_int16            *PredCoef_Q12,                              /* I    Short term prediction coefs     */
-    const opus_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],    /* I    Long term prediction coefs      */
-    const opus_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I Noise shaping coefs              */
-    const opus_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],          /* I    Long term shaping coefs         */
-    const opus_int              Tilt_Q14[ MAX_NB_SUBFR ],                   /* I    Spectral tilt                   */
-    const opus_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                 /* I    Low frequency shaping coefs     */
-    const opus_int32            Gains_Q16[ MAX_NB_SUBFR ],                  /* I    Quantization step sizes         */
-    const opus_int              pitchL[ MAX_NB_SUBFR ],                     /* I    Pitch lags                      */
-    const opus_int              Lambda_Q10,                                 /* I    Rate/distortion tradeoff        */
-    const opus_int              LTP_scale_Q14                               /* I    LTP state scaling               */
+    const oac_int16            x16[],                                      /* I    Input                           */
+    oac_int8                   pulses[],                                   /* O    Quantized pulse signal          */
+    const oac_int16            *PredCoef_Q12,                              /* I    Short term prediction coefs     */
+    const oac_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],    /* I    Long term prediction coefs      */
+    const oac_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I Noise shaping coefs              */
+    const oac_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],          /* I    Long term shaping coefs         */
+    const oac_int              Tilt_Q14[ MAX_NB_SUBFR ],                   /* I    Spectral tilt                   */
+    const oac_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                 /* I    Low frequency shaping coefs     */
+    const oac_int32            Gains_Q16[ MAX_NB_SUBFR ],                  /* I    Quantization step sizes         */
+    const oac_int              pitchL[ MAX_NB_SUBFR ],                     /* I    Pitch lags                      */
+    const oac_int              Lambda_Q10,                                 /* I    Rate/distortion tradeoff        */
+    const oac_int              LTP_scale_Q14                               /* I    LTP state scaling               */
 )
 {
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     silk_nsq_state NSQ_c;
     SideInfoIndices psIndices_c;
-    opus_int8 pulses_c[ MAX_FRAME_LENGTH ];
-    const opus_int8 *const pulses_a = pulses;
+    oac_int8 pulses_c[ MAX_FRAME_LENGTH ];
+    const oac_int8 *const pulses_a = pulses;
 
     ( void )pulses_a;
     silk_memcpy( &NSQ_c, NSQ, sizeof( NSQ_c ) );
@@ -258,17 +258,17 @@ void silk_NSQ_del_dec_neon(
         silk_NSQ_del_dec_c( psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,
             Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14 );
     } else {
-        opus_int            i, k, lag, start_idx, LSF_interpolation_flag, Winner_ind, subfr;
-        opus_int            smpl_buf_idx, decisionDelay;
-        const opus_int16    *A_Q12, *B_Q14, *AR_shp_Q13;
-        opus_int16          *pxq;
-        VARDECL( opus_int32, sLTP_Q15 );
-        VARDECL( opus_int16, sLTP );
-        opus_int32          HarmShapeFIRPacked_Q14;
-        opus_int            offset_Q10;
-        opus_int32          RDmin_Q10, Gain_Q10;
-        VARDECL( opus_int32, x_sc_Q10 );
-        VARDECL( opus_int32, delayedGain_Q10 );
+        oac_int            i, k, lag, start_idx, LSF_interpolation_flag, Winner_ind, subfr;
+        oac_int            smpl_buf_idx, decisionDelay;
+        const oac_int16    *A_Q12, *B_Q14, *AR_shp_Q13;
+        oac_int16          *pxq;
+        VARDECL( oac_int32, sLTP_Q15 );
+        VARDECL( oac_int16, sLTP );
+        oac_int32          HarmShapeFIRPacked_Q14;
+        oac_int            offset_Q10;
+        oac_int32          RDmin_Q10, Gain_Q10;
+        VARDECL( oac_int32, x_sc_Q10 );
+        VARDECL( oac_int32, delayedGain_Q10 );
         VARDECL( NSQ_del_decs_struct, psDelDec );
         int32x4_t           t_s32x4;
         SAVE_STACK;
@@ -280,7 +280,7 @@ void silk_NSQ_del_dec_neon(
 
         /* Initialize delayed decision states */
         ALLOC( psDelDec, 1, NSQ_del_decs_struct );
-        OPUS_CLEAR(psDelDec, 1);
+        OAC_CLEAR(psDelDec, 1);
         /* Only RandState and RD_Q10 need to be initialized to 0. */
         silk_memset( psDelDec->RandState, 0, sizeof( psDelDec->RandState ) );
         vst1q_s32( psDelDec->RD_Q10, vdupq_n_s32( 0 ) );
@@ -294,7 +294,7 @@ void silk_NSQ_del_dec_neon(
         for( i = 0; i < NSQ_LPC_BUF_LENGTH; i++ ) {
             vst1q_s32( psDelDec->sLPC_Q14[ i ], vld1q_dup_s32( &NSQ->sLPC_Q14[ i ] ) );
         }
-        for( i = 0; i < (opus_int)( sizeof( NSQ->sAR2_Q14 ) / sizeof( NSQ->sAR2_Q14[ 0 ] ) ); i++ ) {
+        for( i = 0; i < (oac_int)( sizeof( NSQ->sAR2_Q14 ) / sizeof( NSQ->sAR2_Q14[ 0 ] ) ); i++ ) {
             vst1q_s32( psDelDec->sAR2_Q14[ i ], vld1q_dup_s32( &NSQ->sAR2_Q14[ i ] ) );
         }
 
@@ -305,7 +305,7 @@ void silk_NSQ_del_dec_neon(
 
         /* For voiced frames limit the decision delay to lower than the pitch lag */
         if( psIndices->signalType == TYPE_VOICED ) {
-            opus_int pitch_min = pitchL[ 0 ];
+            oac_int pitch_min = pitchL[ 0 ];
             for( k = 1; k < psEncC->nb_subfr; k++ ) {
                 pitch_min = silk_min_int( pitch_min, pitchL[ k ] );
             }
@@ -322,10 +322,10 @@ void silk_NSQ_del_dec_neon(
             LSF_interpolation_flag = 1;
         }
 
-        ALLOC( sLTP_Q15, psEncC->ltp_mem_length + psEncC->frame_length, opus_int32 );
-        ALLOC( sLTP, psEncC->ltp_mem_length + psEncC->frame_length, opus_int16 );
-        ALLOC( x_sc_Q10, psEncC->subfr_length, opus_int32 );
-        ALLOC( delayedGain_Q10, DECISION_DELAY, opus_int32 );
+        ALLOC( sLTP_Q15, psEncC->ltp_mem_length + psEncC->frame_length, oac_int32 );
+        ALLOC( sLTP, psEncC->ltp_mem_length + psEncC->frame_length, oac_int16 );
+        ALLOC( x_sc_Q10, psEncC->subfr_length, oac_int32 );
+        ALLOC( delayedGain_Q10, DECISION_DELAY, oac_int32 );
         /* Set up pointers to start of sub frame */
         pxq                   = &NSQ->xq[ psEncC->ltp_mem_length ];
         NSQ->sLTP_shp_buf_idx = psEncC->ltp_mem_length;
@@ -339,7 +339,7 @@ void silk_NSQ_del_dec_neon(
             /* Noise shape parameters */
             silk_assert( HarmShapeGain_Q14[ k ] >= 0 );
             HarmShapeFIRPacked_Q14  =                          silk_RSHIFT( HarmShapeGain_Q14[ k ], 2 );
-            HarmShapeFIRPacked_Q14 |= silk_LSHIFT( (opus_int32)silk_RSHIFT( HarmShapeGain_Q14[ k ], 1 ), 16 );
+            HarmShapeFIRPacked_Q14 |= silk_LSHIFT( (oac_int32)silk_RSHIFT( HarmShapeGain_Q14[ k ], 1 ), 16 );
 
             NSQ->rewhite_flag = 0;
             if( psIndices->signalType == TYPE_VOICED ) {
@@ -424,7 +424,7 @@ void silk_NSQ_del_dec_neon(
           NSQ->sLPC_Q14[ i ] = psDelDec->sLPC_Q14[ i ][ Winner_ind ];
         }
 
-        for( i = 0; i < (opus_int)( sizeof( NSQ->sAR2_Q14 ) / sizeof( NSQ->sAR2_Q14[ 0 ] ) - 3 ); i += 4 ) {
+        for( i = 0; i < (oac_int)( sizeof( NSQ->sAR2_Q14 ) / sizeof( NSQ->sAR2_Q14[ 0 ] ) - 3 ); i += 4 ) {
             t_s32x4 = vld1q_lane_s32( &psDelDec->sAR2_Q14[ i + 0 ][ Winner_ind ], t_s32x4, 0 );
             t_s32x4 = vld1q_lane_s32( &psDelDec->sAR2_Q14[ i + 1 ][ Winner_ind ], t_s32x4, 1 );
             t_s32x4 = vld1q_lane_s32( &psDelDec->sAR2_Q14[ i + 2 ][ Winner_ind ], t_s32x4, 2 );
@@ -432,7 +432,7 @@ void silk_NSQ_del_dec_neon(
             vst1q_s32( &NSQ->sAR2_Q14[ i ], t_s32x4 );
         }
 
-        for( ; i < (opus_int)( sizeof( NSQ->sAR2_Q14 ) / sizeof( NSQ->sAR2_Q14[ 0 ] ) ); i++ ) {
+        for( ; i < (oac_int)( sizeof( NSQ->sAR2_Q14 ) / sizeof( NSQ->sAR2_Q14[ 0 ] ) ); i++ ) {
           NSQ->sAR2_Q14[ i ] = psDelDec->sAR2_Q14[ i ][ Winner_ind ];
         }
 
@@ -442,12 +442,12 @@ void silk_NSQ_del_dec_neon(
         NSQ->lagPrev        = pitchL[ psEncC->nb_subfr - 1 ];
 
         /* Save quantized speech signal */
-        silk_memmove( NSQ->xq,           &NSQ->xq[           psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( opus_int16 ) );
-        silk_memmove( NSQ->sLTP_shp_Q14, &NSQ->sLTP_shp_Q14[ psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( opus_int32 ) );
+        silk_memmove( NSQ->xq,           &NSQ->xq[           psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( oac_int16 ) );
+        silk_memmove( NSQ->sLTP_shp_Q14, &NSQ->sLTP_shp_Q14[ psEncC->frame_length ], psEncC->ltp_mem_length * sizeof( oac_int32 ) );
         RESTORE_STACK;
     }
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     silk_assert( !memcmp( &NSQ_c, NSQ, sizeof( NSQ_c ) ) );
     silk_assert( !memcmp( &psIndices_c, psIndices, sizeof( psIndices_c ) ) );
     silk_assert( !memcmp( pulses_c, pulses_a, sizeof( pulses_c ) ) );
@@ -459,7 +459,7 @@ void silk_NSQ_del_dec_neon(
 /******************************************/
 /* Note: Function silk_short_prediction_create_arch_coef_neon() defined in NSQ_neon.h is actually a hacking C function. */
 /*       Therefore here we append "_local" to the NEON function name to avoid confusion.                                */
-static OPUS_INLINE void silk_short_prediction_create_arch_coef_neon_local(opus_int32 *out, const opus_int16 *in, opus_int order)
+static OAC_INLINE void silk_short_prediction_create_arch_coef_neon_local(oac_int32 *out, const oac_int16 *in, oac_int order)
 {
   int16x8_t t_s16x8;
   int32x4_t t0_s32x4, t1_s32x4, t2_s32x4, t3_s32x4;
@@ -490,7 +490,7 @@ static OPUS_INLINE void silk_short_prediction_create_arch_coef_neon_local(opus_i
   vst1q_s32( out + 12, t3_s32x4 );
 }
 
-static OPUS_INLINE int32x4_t silk_SMLAWB_lane0_neon(
+static OAC_INLINE int32x4_t silk_SMLAWB_lane0_neon(
     const int32x4_t out_s32x4,
     const int32x4_t in_s32x4,
     const int32x2_t coef_s32x2
@@ -499,7 +499,7 @@ static OPUS_INLINE int32x4_t silk_SMLAWB_lane0_neon(
     return vaddq_s32( out_s32x4, vqdmulhq_lane_s32( in_s32x4, coef_s32x2, 0 ) );
 }
 
-static OPUS_INLINE int32x4_t silk_SMLAWB_lane1_neon(
+static OAC_INLINE int32x4_t silk_SMLAWB_lane1_neon(
     const int32x4_t out_s32x4,
     const int32x4_t in_s32x4,
     const int32x2_t coef_s32x2
@@ -510,7 +510,7 @@ static OPUS_INLINE int32x4_t silk_SMLAWB_lane1_neon(
 
 /* Note: This function has different return value than silk_noise_shape_quantizer_short_prediction_neon(). */
 /*       Therefore here we append "_local" to the function name to avoid confusion.                        */
-static OPUS_INLINE int32x4_t silk_noise_shape_quantizer_short_prediction_neon_local(const opus_int32 *buf32, const opus_int32 *a_Q12_arch, opus_int order)
+static OAC_INLINE int32x4_t silk_noise_shape_quantizer_short_prediction_neon_local(const oac_int32 *buf32, const oac_int32 *a_Q12_arch, oac_int order)
 {
     const int32x4_t a_Q12_arch0_s32x4 = vld1q_s32( a_Q12_arch + 0 );
     const int32x4_t a_Q12_arch1_s32x4 = vld1q_s32( a_Q12_arch + 4 );
@@ -541,45 +541,45 @@ static OPUS_INLINE int32x4_t silk_noise_shape_quantizer_short_prediction_neon_lo
     return LPC_pred_Q14_s32x4;
 }
 
-static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
+static OAC_INLINE void silk_noise_shape_quantizer_del_dec_neon(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],             /* I/O  Delayed decision states             */
-    opus_int            signalType,             /* I    Signal type                         */
-    const opus_int32    x_Q10[],                /* I                                        */
-    opus_int8           pulses[],               /* O                                        */
-    opus_int16          xq[],                   /* O                                        */
-    opus_int32          sLTP_Q15[],             /* I/O  LTP filter state                    */
-    opus_int32          delayedGain_Q10[],      /* I/O  Gain delay buffer                   */
-    const opus_int16    a_Q12[],                /* I    Short term prediction coefs         */
-    const opus_int16    b_Q14[],                /* I    Long term prediction coefs          */
-    const opus_int16    AR_shp_Q13[],           /* I    Noise shaping coefs                 */
-    opus_int            lag,                    /* I    Pitch lag                           */
-    opus_int32          HarmShapeFIRPacked_Q14, /* I                                        */
-    opus_int            Tilt_Q14,               /* I    Spectral tilt                       */
-    opus_int32          LF_shp_Q14,             /* I                                        */
-    opus_int32          Gain_Q16,               /* I                                        */
-    opus_int            Lambda_Q10,             /* I                                        */
-    opus_int            offset_Q10,             /* I                                        */
-    opus_int            length,                 /* I    Input length                        */
-    opus_int            subfr,                  /* I    Subframe number                     */
-    opus_int            shapingLPCOrder,        /* I    Shaping LPC filter order            */
-    opus_int            predictLPCOrder,        /* I    Prediction filter order             */
-    opus_int            warping_Q16,            /* I                                        */
-    opus_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
-    opus_int            *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
-    opus_int            decisionDelay           /* I                                        */
+    oac_int            signalType,             /* I    Signal type                         */
+    const oac_int32    x_Q10[],                /* I                                        */
+    oac_int8           pulses[],               /* O                                        */
+    oac_int16          xq[],                   /* O                                        */
+    oac_int32          sLTP_Q15[],             /* I/O  LTP filter state                    */
+    oac_int32          delayedGain_Q10[],      /* I/O  Gain delay buffer                   */
+    const oac_int16    a_Q12[],                /* I    Short term prediction coefs         */
+    const oac_int16    b_Q14[],                /* I    Long term prediction coefs          */
+    const oac_int16    AR_shp_Q13[],           /* I    Noise shaping coefs                 */
+    oac_int            lag,                    /* I    Pitch lag                           */
+    oac_int32          HarmShapeFIRPacked_Q14, /* I                                        */
+    oac_int            Tilt_Q14,               /* I    Spectral tilt                       */
+    oac_int32          LF_shp_Q14,             /* I                                        */
+    oac_int32          Gain_Q16,               /* I                                        */
+    oac_int            Lambda_Q10,             /* I                                        */
+    oac_int            offset_Q10,             /* I                                        */
+    oac_int            length,                 /* I    Input length                        */
+    oac_int            subfr,                  /* I    Subframe number                     */
+    oac_int            shapingLPCOrder,        /* I    Shaping LPC filter order            */
+    oac_int            predictLPCOrder,        /* I    Prediction filter order             */
+    oac_int            warping_Q16,            /* I                                        */
+    oac_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
+    oac_int            *smpl_buf_idx,          /* I/O  Index to newest samples in buffers  */
+    oac_int            decisionDelay           /* I                                        */
 )
 {
-    opus_int     i, j, k, Winner_ind, RDmin_ind, RDmax_ind, last_smple_idx;
-    opus_int32   Winner_rand_state;
-    opus_int32   LTP_pred_Q14, n_LTP_Q14;
-    opus_int32   RDmin_Q10, RDmax_Q10;
-    opus_int32   Gain_Q10;
-    opus_int32   *pred_lag_ptr, *shp_lag_ptr;
-    opus_int32   a_Q12_arch[MAX_LPC_ORDER];
+    oac_int     i, j, k, Winner_ind, RDmin_ind, RDmax_ind, last_smple_idx;
+    oac_int32   Winner_rand_state;
+    oac_int32   LTP_pred_Q14, n_LTP_Q14;
+    oac_int32   RDmin_Q10, RDmax_Q10;
+    oac_int32   Gain_Q10;
+    oac_int32   *pred_lag_ptr, *shp_lag_ptr;
+    oac_int32   a_Q12_arch[MAX_LPC_ORDER];
     const int32x2_t warping_Q16_s32x2 = vdup_n_s32( silk_LSHIFT32( warping_Q16, 16 ) >> 1 );
-    const opus_int32 LF_shp_Q29 = silk_LSHIFT32( LF_shp_Q14, 16 ) >> 1;
-    opus_int32 AR_shp_Q28[ MAX_SHAPE_LPC_ORDER ];
+    const oac_int32 LF_shp_Q29 = silk_LSHIFT32( LF_shp_Q14, 16 ) >> 1;
+    oac_int32 AR_shp_Q28[ MAX_SHAPE_LPC_ORDER ];
     const uint32x4_t rand_multiplier_u32x4 = vdupq_n_u32( RAND_MULTIPLIER );
     const uint32x4_t rand_increment_u32x4 = vdupq_n_u32( RAND_INCREMENT );
 
@@ -589,7 +589,7 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
     silk_assert( nStatesDelayedDecision > 0 );
     silk_assert( ( shapingLPCOrder & 1 ) == 0 );   /* check that order is even */
     ALLOC( psSampleState, 2, NSQ_samples_struct );
-    OPUS_CLEAR(psSampleState, 2);
+    OAC_CLEAR(psSampleState, 2);
 
     shp_lag_ptr  = &NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - lag + HARM_SHAPE_FIR_TAPS / 2 ];
     pred_lag_ptr = &sLTP_Q15[ NSQ->sLTP_buf_idx - lag + LTP_ORDER / 2 ];
@@ -827,8 +827,8 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
         /* clear unused part of RD_Q10 to avoid overflows */
         if( nStatesDelayedDecision < NEON_MAX_DEL_DEC_STATES )
         {
-            OPUS_CLEAR(psSampleState[0].RD_Q10 + nStatesDelayedDecision, NEON_MAX_DEL_DEC_STATES - nStatesDelayedDecision);
-            OPUS_CLEAR(psSampleState[1].RD_Q10 + nStatesDelayedDecision, NEON_MAX_DEL_DEC_STATES - nStatesDelayedDecision);
+            OAC_CLEAR(psSampleState[0].RD_Q10 + nStatesDelayedDecision, NEON_MAX_DEL_DEC_STATES - nStatesDelayedDecision);
+            OAC_CLEAR(psSampleState[1].RD_Q10 + nStatesDelayedDecision, NEON_MAX_DEL_DEC_STATES - nStatesDelayedDecision);
         }
 
         /* Increase RD values of expired states */
@@ -866,9 +866,9 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
 
         /* Replace a state if best from second set outperforms worst in first set */
         if( RDmin_Q10 < RDmax_Q10 ) {
-            opus_int32 (*ptr)[NEON_MAX_DEL_DEC_STATES] = psDelDec->RandState;
+            oac_int32 (*ptr)[NEON_MAX_DEL_DEC_STATES] = psDelDec->RandState;
             const int numOthers = (int)( ( sizeof( NSQ_del_decs_struct ) - sizeof( ( (NSQ_del_decs_struct *)0 )->sLPC_Q14 ) )
-                / ( NEON_MAX_DEL_DEC_STATES * sizeof( opus_int32 ) ) );
+                / ( NEON_MAX_DEL_DEC_STATES * sizeof( oac_int32 ) ) );
             /* Only ( predictLPCOrder - 1 ) of sLPC_Q14 buffer need to be updated, though the first several     */
             /* useless sLPC_Q14[] will be different comparing with C when predictLPCOrder < NSQ_LPC_BUF_LENGTH. */
             /* Here just update constant ( NSQ_LPC_BUF_LENGTH - 1 ) for simplicity.                             */
@@ -890,8 +890,8 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
 
         /* Write samples from winner to output and long-term filter states */
         if( subfr > 0 || i >= decisionDelay ) {
-            pulses[  i - decisionDelay ] = (opus_int8)silk_RSHIFT_ROUND( psDelDec->Q_Q10[ last_smple_idx ][ Winner_ind ], 10 );
-            xq[ i - decisionDelay ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND(
+            pulses[  i - decisionDelay ] = (oac_int8)silk_RSHIFT_ROUND( psDelDec->Q_Q10[ last_smple_idx ][ Winner_ind ], 10 );
+            xq[ i - decisionDelay ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND(
                 silk_SMULWW( psDelDec->Xq_Q14[ last_smple_idx ][ Winner_ind ], delayedGain_Q10[ last_smple_idx ] ), 8 ) );
             NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - decisionDelay ] = psDelDec->Shape_Q14[ last_smple_idx ][ Winner_ind ];
             sLTP_Q15[          NSQ->sLTP_buf_idx     - decisionDelay ] = psDelDec->Pred_Q15[  last_smple_idx ][ Winner_ind ];
@@ -917,15 +917,15 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec_neon(
         delayedGain_Q10[ *smpl_buf_idx ] = Gain_Q10;
     }
     /* Update LPC states */
-    silk_memcpy( psDelDec->sLPC_Q14[ 0 ], psDelDec->sLPC_Q14[ length ], NEON_MAX_DEL_DEC_STATES * NSQ_LPC_BUF_LENGTH * sizeof( opus_int32 ) );
+    silk_memcpy( psDelDec->sLPC_Q14[ 0 ], psDelDec->sLPC_Q14[ length ], NEON_MAX_DEL_DEC_STATES * NSQ_LPC_BUF_LENGTH * sizeof( oac_int32 ) );
 
     RESTORE_STACK;
 }
 
-static OPUS_INLINE void silk_SMULWB_8_neon(
-    const opus_int16 *a,
+static OAC_INLINE void silk_SMULWB_8_neon(
+    const oac_int16 *a,
     const int32x2_t  b,
-    opus_int32       *o
+    oac_int32       *o
 )
 {
     const int16x8_t a_s16x8 = vld1q_s16( a );
@@ -940,8 +940,8 @@ static OPUS_INLINE void silk_SMULWB_8_neon(
 }
 
 /* Only works when ( b >= -65536 ) && ( b < 65536 ). */
-static OPUS_INLINE void silk_SMULWW_small_b_4_neon(
-    opus_int32       *a,
+static OAC_INLINE void silk_SMULWW_small_b_4_neon(
+    oac_int32       *a,
     const int32x2_t  b_s32x2)
 {
     int32x4_t o_s32x4;
@@ -952,8 +952,8 @@ static OPUS_INLINE void silk_SMULWW_small_b_4_neon(
 }
 
 /* Only works when ( b >= -65536 ) && ( b < 65536 ). */
-static OPUS_INLINE void silk_SMULWW_small_b_8_neon(
-    opus_int32       *a,
+static OAC_INLINE void silk_SMULWW_small_b_8_neon(
+    oac_int32       *a,
     const int32x2_t  b_s32x2
 )
 {
@@ -967,8 +967,8 @@ static OPUS_INLINE void silk_SMULWW_small_b_8_neon(
     vst1q_s32( a + 4, o1_s32x4 );
 }
 
-static OPUS_INLINE void silk_SMULWW_4_neon(
-    opus_int32       *a,
+static OAC_INLINE void silk_SMULWW_4_neon(
+    oac_int32       *a,
     const int32x2_t  b_s32x2)
 {
     int32x4_t a_s32x4, o_s32x4;
@@ -979,8 +979,8 @@ static OPUS_INLINE void silk_SMULWW_4_neon(
     vst1q_s32( a, o_s32x4 );
 }
 
-static OPUS_INLINE void silk_SMULWW_8_neon(
-    opus_int32       *a,
+static OAC_INLINE void silk_SMULWW_8_neon(
+    oac_int32       *a,
     const int32x2_t  b_s32x2
 )
 {
@@ -996,14 +996,14 @@ static OPUS_INLINE void silk_SMULWW_8_neon(
     vst1q_s32( a + 4, o1_s32x4 );
 }
 
-static OPUS_INLINE void silk_SMULWW_loop_neon(
-    const opus_int16 *a,
-    const opus_int32 b,
-    opus_int32       *o,
-    const opus_int   loop_num
+static OAC_INLINE void silk_SMULWW_loop_neon(
+    const oac_int16 *a,
+    const oac_int32 b,
+    oac_int32       *o,
+    const oac_int   loop_num
 )
 {
-    opus_int i;
+    oac_int i;
     int32x2_t b_s32x2;
 
     b_s32x2 = vdup_n_s32( b );
@@ -1015,24 +1015,24 @@ static OPUS_INLINE void silk_SMULWW_loop_neon(
     }
 }
 
-static OPUS_INLINE void silk_nsq_del_dec_scale_states_neon(
+static OAC_INLINE void silk_nsq_del_dec_scale_states_neon(
     const silk_encoder_state *psEncC,               /* I    Encoder State                       */
     silk_nsq_state      *NSQ,                       /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],                 /* I/O  Delayed decision states             */
-    const opus_int16    x16[],                      /* I    Input                               */
-    opus_int32          x_sc_Q10[],                 /* O    Input scaled with 1/Gain in Q10     */
-    const opus_int16    sLTP[],                     /* I    Re-whitened LTP state in Q0         */
-    opus_int32          sLTP_Q15[],                 /* O    LTP state matching scaled input     */
-    opus_int            subfr,                      /* I    Subframe number                     */
-    const opus_int      LTP_scale_Q14,              /* I    LTP state scaling                   */
-    const opus_int32    Gains_Q16[ MAX_NB_SUBFR ],  /* I                                        */
-    const opus_int      pitchL[ MAX_NB_SUBFR ],     /* I    Pitch lag                           */
-    const opus_int      signal_type,                /* I    Signal type                         */
-    const opus_int      decisionDelay               /* I    Decision delay                      */
+    const oac_int16    x16[],                      /* I    Input                               */
+    oac_int32          x_sc_Q10[],                 /* O    Input scaled with 1/Gain in Q10     */
+    const oac_int16    sLTP[],                     /* I    Re-whitened LTP state in Q0         */
+    oac_int32          sLTP_Q15[],                 /* O    LTP state matching scaled input     */
+    oac_int            subfr,                      /* I    Subframe number                     */
+    const oac_int      LTP_scale_Q14,              /* I    LTP state scaling                   */
+    const oac_int32    Gains_Q16[ MAX_NB_SUBFR ],  /* I                                        */
+    const oac_int      pitchL[ MAX_NB_SUBFR ],     /* I    Pitch lag                           */
+    const oac_int      signal_type,                /* I    Signal type                         */
+    const oac_int      decisionDelay               /* I    Decision delay                      */
 )
 {
-    opus_int            i, lag;
-    opus_int32          gain_adj_Q16, inv_gain_Q31, inv_gain_Q26;
+    oac_int            i, lag;
+    oac_int32          gain_adj_Q16, inv_gain_Q31, inv_gain_Q26;
 
     lag          = pitchL[ subfr ];
     inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );

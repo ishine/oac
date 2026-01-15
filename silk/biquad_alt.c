@@ -40,17 +40,17 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Second order ARMA filter, alternative implementation */
 void silk_biquad_alt_stride1(
-    const opus_int16            *in,                /* I     input signal                                               */
-    const opus_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
-    const opus_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
-    opus_int32                  *S,                 /* I/O   State vector [2]                                           */
-    opus_int16                  *out,               /* O     output signal                                              */
-    const opus_int32            len                 /* I     signal length (must be even)                               */
+    const oac_int16            *in,                /* I     input signal                                               */
+    const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
+    const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
+    oac_int32                  *S,                 /* I/O   State vector [2]                                           */
+    oac_int16                  *out,               /* O     output signal                                              */
+    const oac_int32            len                 /* I     signal length (must be even)                               */
 )
 {
     /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-    opus_int   k;
-    opus_int32 inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
+    oac_int   k;
+    oac_int32 inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
 
     /* Negate A_Q28 values and split in two parts */
     A0_L_Q28 = ( -A_Q28[ 0 ] ) & 0x00003FFF;        /* lower part */
@@ -72,22 +72,22 @@ void silk_biquad_alt_stride1(
         S[ 1 ] = silk_SMLAWB( S[ 1 ], B_Q28[ 2 ], inval );
 
         /* Scale back to Q0 and saturate */
-        out[ k ] = (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14 + (1<<14) - 1, 14 ) );
+        out[ k ] = (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14 + (1<<14) - 1, 14 ) );
     }
 }
 
 void silk_biquad_alt_stride2_c(
-    const opus_int16            *in,                /* I     input signal                                               */
-    const opus_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
-    const opus_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
-    opus_int32                  *S,                 /* I/O   State vector [4]                                           */
-    opus_int16                  *out,               /* O     output signal                                              */
-    const opus_int32            len                 /* I     signal length (must be even)                               */
+    const oac_int16            *in,                /* I     input signal                                               */
+    const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
+    const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
+    oac_int32                  *S,                 /* I/O   State vector [4]                                           */
+    oac_int16                  *out,               /* O     output signal                                              */
+    const oac_int32            len                 /* I     signal length (must be even)                               */
 )
 {
     /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-    opus_int   k;
-    opus_int32 A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14[ 2 ];
+    oac_int   k;
+    oac_int32 A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14[ 2 ];
 
     /* Negate A_Q28 values and split in two parts */
     A0_L_Q28 = ( -A_Q28[ 0 ] ) & 0x00003FFF;        /* lower part */
@@ -115,7 +115,7 @@ void silk_biquad_alt_stride2_c(
         S[ 3 ] = silk_SMLAWB( S[ 3 ], B_Q28[ 2 ], in[ 2 * k + 1 ] );
 
         /* Scale back to Q0 and saturate */
-        out[ 2 * k + 0 ] = (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14[ 0 ] + (1<<14) - 1, 14 ) );
-        out[ 2 * k + 1 ] = (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14[ 1 ] + (1<<14) - 1, 14 ) );
+        out[ 2 * k + 0 ] = (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14[ 0 ] + (1<<14) - 1, 14 ) );
+        out[ 2 * k + 1 ] = (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14[ 1 ] + (1<<14) - 1, 14 ) );
     }
 }

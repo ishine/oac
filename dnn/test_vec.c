@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include "opus_types.h"
+#include "oac_types.h"
 #include "arch.h"
 #include "common.h"
 #include "tansig_table.h"

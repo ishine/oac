@@ -35,10 +35,10 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_scale_vector_FLP(
     silk_float          *data1,
     silk_float          gain,
-    opus_int            dataSize
+    oac_int            dataSize
 )
 {
-    opus_int  i, dataSize4;
+    oac_int  i, dataSize4;
 
     /* 4x unrolled loop */
     dataSize4 = dataSize & 0xFFFC;

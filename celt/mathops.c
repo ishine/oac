@@ -42,7 +42,7 @@
 /*Compute floor(sqrt(_val)) with exact arithmetic.
   _val must be greater than 0.
   This has been tested on all possible 32-bit inputs greater than 0.*/
-unsigned isqrt32(opus_uint32 _val){
+unsigned isqrt32(oac_uint32 _val){
   unsigned b;
   unsigned g;
   int      bshift;
@@ -54,8 +54,8 @@ unsigned isqrt32(opus_uint32 _val){
   bshift=(EC_ILOG(_val)-1)>>1;
   b=1U<<bshift;
   do{
-    opus_uint32 t;
-    t=(((opus_uint32)g<<1)+b)<<bshift;
+    oac_uint32 t;
+    t=(((oac_uint32)g<<1)+b)<<bshift;
     if(t<=_val){
       g+=b;
       _val-=t;
@@ -69,10 +69,10 @@ unsigned isqrt32(opus_uint32 _val){
 
 #ifdef FIXED_POINT
 
-opus_val32 frac_div32_q29(opus_val32 a, opus_val32 b)
+oac_val32 frac_div32_q29(oac_val32 a, oac_val32 b)
 {
-   opus_val16 rcp;
-   opus_val32 result, rem;
+   oac_val16 rcp;
+   oac_val32 result, rem;
    int shift = celt_ilog2(b)-29;
    a = VSHR32(a,shift);
    b = VSHR32(b,shift);
@@ -84,8 +84,8 @@ opus_val32 frac_div32_q29(opus_val32 a, opus_val32 b)
    return result;
 }
 
-opus_val32 frac_div32(opus_val32 a, opus_val32 b) {
-   opus_val32 result = frac_div32_q29(a,b);
+oac_val32 frac_div32(oac_val32 a, oac_val32 b) {
+   oac_val32 result = frac_div32_q29(a,b);
    if (result >= 536870912)       /*  2^29 */
       return 2147483647;          /*  2^31 - 1 */
    else if (result <= -536870912) /* -2^29 */
@@ -95,12 +95,12 @@ opus_val32 frac_div32(opus_val32 a, opus_val32 b) {
 }
 
 /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
-opus_val16 celt_rsqrt_norm(opus_val32 x)
+oac_val16 celt_rsqrt_norm(oac_val32 x)
 {
-   opus_val16 n;
-   opus_val16 r;
-   opus_val16 r2;
-   opus_val16 y;
+   oac_val16 n;
+   oac_val16 r;
+   oac_val16 r2;
+   oac_val16 y;
    /* Range of n is [-16384,32767] ([-0.5,1) in Q15). */
    n = x-32768;
    /* Get a rough initial guess for the root.
@@ -123,12 +123,12 @@ opus_val16 celt_rsqrt_norm(opus_val32 x)
 }
 
 /** Reciprocal sqrt approximation in the range [0.25,1) (Q31 in, Q29 out) */
-opus_val32 celt_rsqrt_norm32(opus_val32 x)
+oac_val32 celt_rsqrt_norm32(oac_val32 x)
 {
-   opus_int32 tmp;
+   oac_int32 tmp;
    /* Use the first-order Newton-Raphson method to refine the root estimate.
     * r = r * (1.5 - 0.5*x*r*r) */
-   opus_int32 r_q29 = SHL32(celt_rsqrt_norm(SHR32(x, 31-16)), 15);
+   oac_int32 r_q29 = SHL32(celt_rsqrt_norm(SHR32(x, 31-16)), 15);
    /* Split evaluation in steps to avoid exploding macro expansion. */
    tmp = MULT32_32_Q31(r_q29, r_q29);
    tmp = MULT32_32_Q31(1073741824 /* Q31 */, tmp);
@@ -137,15 +137,15 @@ opus_val32 celt_rsqrt_norm32(opus_val32 x)
 }
 
 /** Sqrt approximation (QX input, QX/2 output) */
-opus_val32 celt_sqrt(opus_val32 x)
+oac_val32 celt_sqrt(oac_val32 x)
 {
    int k;
-   opus_val16 n;
-   opus_val32 rt;
+   oac_val16 n;
+   oac_val32 rt;
    /* These coeffs are optimized in fixed-point to minimize both RMS and max error
       of sqrt(x) over .25<x<1 without exceeding 32767.
       The RMS error is 3.4e-5 and the max is 8.2e-5. */
-   static const opus_val16 C[6] = {23171, 11574, -2901, 1592, -1002, 336};
+   static const oac_val16 C[6] = {23171, 11574, -2901, 1592, -1002, 336};
    if (x==0)
       return 0;
    else if (x>=1073741824)
@@ -161,10 +161,10 @@ opus_val32 celt_sqrt(opus_val32 x)
 
 /* Perform fixed-point arithmetic to approximate the square root. When the input
  * is in Qx format, the output will be in Q(x/2 + 16) format. */
-opus_val32 celt_sqrt32(opus_val32 x)
+oac_val32 celt_sqrt32(oac_val32 x)
 {
    int k;
-   opus_int32 x_frac;
+   oac_int32 x_frac;
    if (x==0)
       return 0;
    else if (x>=1073741824)
@@ -181,9 +181,9 @@ opus_val32 celt_sqrt32(opus_val32 x)
 #define L3 8277
 #define L4 -626
 
-static OPUS_INLINE opus_val16 _celt_cos_pi_2(opus_val16 x)
+static OAC_INLINE oac_val16 _celt_cos_pi_2(oac_val16 x)
 {
-   opus_val16 x2;
+   oac_val16 x2;
 
    x2 = MULT16_16_P15(x,x);
    return ADD16(1,MIN16(32766,ADD32(SUB16(L1,x2), MULT16_16_P15(x2, ADD32(L2, MULT16_16_P15(x2, ADD32(L3, MULT16_16_P15(L4, x2
@@ -195,7 +195,7 @@ static OPUS_INLINE opus_val16 _celt_cos_pi_2(opus_val16 x)
 #undef L3
 #undef L4
 
-opus_val16 celt_cos_norm(opus_val32 x)
+oac_val16 celt_cos_norm(oac_val32 x)
 {
    x = x&0x0001ffff;
    if (x>SHL32(EXTEND32(1), 16))
@@ -220,14 +220,14 @@ opus_val16 celt_cos_norm(opus_val32 x)
 
 /* Calculates the cosine of (PI*0.5*x) where the input x ranges from -1 to 1 and
  * is in Q30 format. The output will also be in Q31 format. */
-opus_val32 celt_cos_norm32(opus_val32 x)
+oac_val32 celt_cos_norm32(oac_val32 x)
 {
-   static const opus_val32 COS_NORM_COEFF_A0 = 134217720;   /* Q27 */
-   static const opus_val32 COS_NORM_COEFF_A1 = -662336704;  /* Q29 */
-   static const opus_val32 COS_NORM_COEFF_A2 = 544710848;   /* Q31 */
-   static const opus_val32 COS_NORM_COEFF_A3 = -178761936;  /* Q33 */
-   static const opus_val32 COS_NORM_COEFF_A4 = 29487206;    /* Q35 */
-   opus_int32 x_sq_q29, tmp;
+   static const oac_val32 COS_NORM_COEFF_A0 = 134217720;   /* Q27 */
+   static const oac_val32 COS_NORM_COEFF_A1 = -662336704;  /* Q29 */
+   static const oac_val32 COS_NORM_COEFF_A2 = 544710848;   /* Q31 */
+   static const oac_val32 COS_NORM_COEFF_A3 = -178761936;  /* Q33 */
+   static const oac_val32 COS_NORM_COEFF_A4 = 29487206;    /* Q35 */
+   oac_int32 x_sq_q29, tmp;
    /* The expected x is in the range of [-1.0f, 1.0f] */
    celt_sig_assert((x >= -1073741824) && (x <= 1073741824));
    /* Make cos(+/- pi/2) exactly zero. */
@@ -242,9 +242,9 @@ opus_val32 celt_cos_norm32(opus_val32 x)
 
 /* Computes a 16 bit approximate reciprocal (1/x) for a normalized Q15 input,
  * resulting in a Q15 output. */
-opus_val16 celt_rcp_norm16(opus_val16 x)
+oac_val16 celt_rcp_norm16(oac_val16 x)
 {
-   opus_val16 r;
+   oac_val16 r;
    /* Start with a linear approximation:
       r = 1.8823529411764706-0.9411764705882353*n.
       The coefficients and the result are Q14 in the range [15420,30840].*/
@@ -263,9 +263,9 @@ opus_val16 celt_rcp_norm16(opus_val16 x)
 /* Computes a 32 bit approximated reciprocal (1/x) for a normalized Q31 input,
  * resulting in a Q30 output. The expected input range is [0.5f, 1.0f) in Q31
  * and the expected output range is [1.0f, 2.0f) in Q30. */
-opus_val32 celt_rcp_norm32(opus_val32 x)
+oac_val32 celt_rcp_norm32(oac_val32 x)
 {
-   opus_val32 r_q30;
+   oac_val32 r_q30;
    celt_sig_assert(x >= 1073741824);
    r_q30 = SHL32(EXTEND32(celt_rcp_norm16(SHR32(x, 15)-32768)), 16);
    /* Solving f(y) = a - 1/y using the Newton Method
@@ -284,10 +284,10 @@ opus_val32 celt_rcp_norm32(opus_val32 x)
 }
 
 /** Reciprocal approximation (Q15 input, Q16 output) */
-opus_val32 celt_rcp(opus_val32 x)
+oac_val32 celt_rcp(oac_val32 x)
 {
    int i;
-   opus_val16 r;
+   oac_val16 r;
    celt_sig_assert(x>0);
    i = celt_ilog2(x);
 
@@ -304,7 +304,7 @@ opus_val32 celt_rcp(opus_val32 x)
 
 #ifndef DISABLE_FLOAT_API
 
-void celt_float2int16_c(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT out, int cnt)
+void celt_float2int16_c(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt)
 {
    int i;
    for (i = 0; i < cnt; i++)
@@ -313,7 +313,7 @@ void celt_float2int16_c(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT ou
    }
 }
 
-int opus_limit2_checkwithin1_c(float * samples, int cnt)
+int oac_limit2_checkwithin1_c(float * samples, int cnt)
 {
    int i;
    if (cnt <= 0)

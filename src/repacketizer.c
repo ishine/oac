@@ -29,61 +29,61 @@
 #include "config.h"
 #endif
 
-#include "opus.h"
-#include "opus_private.h"
+#include "oac.h"
+#include "oac_private.h"
 #include "os_support.h"
 #include "stack_alloc.h"
 
 
-int opus_repacketizer_get_size(void)
+int oac_repacketizer_get_size(void)
 {
-   return sizeof(OpusRepacketizer);
+   return sizeof(OacRepacketizer);
 }
 
-OpusRepacketizer *opus_repacketizer_init(OpusRepacketizer *rp)
+OacRepacketizer *oac_repacketizer_init(OacRepacketizer *rp)
 {
    rp->nb_frames = 0;
    return rp;
 }
 
-OpusRepacketizer *opus_repacketizer_create(void)
+OacRepacketizer *oac_repacketizer_create(void)
 {
-   OpusRepacketizer *rp;
-   rp=(OpusRepacketizer *)opus_alloc(opus_repacketizer_get_size());
+   OacRepacketizer *rp;
+   rp=(OacRepacketizer *)oac_alloc(oac_repacketizer_get_size());
    if(rp==NULL)return NULL;
-   return opus_repacketizer_init(rp);
+   return oac_repacketizer_init(rp);
 }
 
-void opus_repacketizer_destroy(OpusRepacketizer *rp)
+void oac_repacketizer_destroy(OacRepacketizer *rp)
 {
-   opus_free(rp);
+   oac_free(rp);
 }
 
-static int opus_repacketizer_cat_impl(OpusRepacketizer *rp, const unsigned char *data, opus_int32 len, int self_delimited)
+static int oac_repacketizer_cat_impl(OacRepacketizer *rp, const unsigned char *data, oac_int32 len, int self_delimited)
 {
    unsigned char tmp_toc;
    int curr_nb_frames,ret;
    /* Set of check ToC */
-   if (len<1) return OPUS_INVALID_PACKET;
+   if (len<1) return OAC_INVALID_PACKET;
    if (rp->nb_frames == 0)
    {
       rp->toc = data[0];
-      rp->framesize = opus_packet_get_samples_per_frame(data, 8000);
+      rp->framesize = oac_packet_get_samples_per_frame(data, 8000);
    } else if ((rp->toc&0xFC) != (data[0]&0xFC))
    {
       /*fprintf(stderr, "toc mismatch: 0x%x vs 0x%x\n", rp->toc, data[0]);*/
-      return OPUS_INVALID_PACKET;
+      return OAC_INVALID_PACKET;
    }
-   curr_nb_frames = opus_packet_get_nb_frames(data, len);
-   if(curr_nb_frames<1) return OPUS_INVALID_PACKET;
+   curr_nb_frames = oac_packet_get_nb_frames(data, len);
+   if(curr_nb_frames<1) return OAC_INVALID_PACKET;
 
    /* Check the 120 ms maximum packet size */
    if ((curr_nb_frames+rp->nb_frames)*rp->framesize > 960)
    {
-      return OPUS_INVALID_PACKET;
+      return OAC_INVALID_PACKET;
    }
 
-   ret=opus_packet_parse_impl(data, len, self_delimited, &tmp_toc, &rp->frames[rp->nb_frames], &rp->len[rp->nb_frames],
+   ret=oac_packet_parse_impl(data, len, self_delimited, &tmp_toc, &rp->frames[rp->nb_frames], &rp->len[rp->nb_frames],
        NULL, NULL, &rp->paddings[rp->nb_frames], &rp->padding_len[rp->nb_frames]);
    if(ret<1)return ret;
    rp->padding_nb_frames[rp->nb_frames]=ret;
@@ -98,38 +98,38 @@ static int opus_repacketizer_cat_impl(OpusRepacketizer *rp, const unsigned char 
       curr_nb_frames--;
    }
    rp->nb_frames++;
-   return OPUS_OK;
+   return OAC_OK;
 }
 
-int opus_repacketizer_cat(OpusRepacketizer *rp, const unsigned char *data, opus_int32 len)
+int oac_repacketizer_cat(OacRepacketizer *rp, const unsigned char *data, oac_int32 len)
 {
-   return opus_repacketizer_cat_impl(rp, data, len, 0);
+   return oac_repacketizer_cat_impl(rp, data, len, 0);
 }
 
-int opus_repacketizer_get_nb_frames(OpusRepacketizer *rp)
+int oac_repacketizer_get_nb_frames(OacRepacketizer *rp)
 {
    return rp->nb_frames;
 }
 
-opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int end,
-      unsigned char *data, opus_int32 maxlen, int self_delimited, int pad, const opus_extension_data *extensions, int nb_extensions)
+oac_int32 oac_repacketizer_out_range_impl(OacRepacketizer *rp, int begin, int end,
+      unsigned char *data, oac_int32 maxlen, int self_delimited, int pad, const oac_extension_data *extensions, int nb_extensions)
 {
    int i, count;
-   opus_int32 tot_size;
-   opus_int16 *len;
+   oac_int32 tot_size;
+   oac_int16 *len;
    const unsigned char **frames;
    unsigned char * ptr;
    int ones_begin=0, ones_end=0;
    int ext_begin=0, ext_len=0;
    int ext_count, total_ext_count;
-   VARDECL(opus_extension_data, all_extensions);
+   VARDECL(oac_extension_data, all_extensions);
    SAVE_STACK;
 
    if (begin<0 || begin>=end || end>rp->nb_frames)
    {
       /*fprintf(stderr, "%d %d %d\n", begin, end, rp->nb_frames);*/
       RESTORE_STACK;
-      return OPUS_BAD_ARG;
+      return OAC_BAD_ARG;
    }
    count = end-begin;
 
@@ -144,11 +144,11 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
    total_ext_count = nb_extensions;
    for (i=begin;i<end;i++)
    {
-      int n = opus_packet_extensions_count(rp->paddings[i], rp->padding_len[i],
+      int n = oac_packet_extensions_count(rp->paddings[i], rp->padding_len[i],
        rp->padding_nb_frames[i]);
       if (n > 0) total_ext_count += n;
    }
-   ALLOC(all_extensions, total_ext_count ? total_ext_count : ALLOC_NONE, opus_extension_data);
+   ALLOC(all_extensions, total_ext_count ? total_ext_count : ALLOC_NONE, oac_extension_data);
    /* copy over any extensions that were passed in */
    for (ext_count=0;ext_count<nb_extensions;ext_count++)
    {
@@ -159,14 +159,14 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
    for (i=begin;i<end;i++)
    {
       int j, ret;
-      opus_int32 frame_ext_count;
+      oac_int32 frame_ext_count;
       frame_ext_count = total_ext_count - ext_count;
-      ret = opus_packet_extensions_parse(rp->paddings[i], rp->padding_len[i],
+      ret = oac_packet_extensions_parse(rp->paddings[i], rp->padding_len[i],
          &all_extensions[ext_count], &frame_ext_count, rp->padding_nb_frames[i]);
       if (ret<0)
       {
          RESTORE_STACK;
-         return OPUS_INTERNAL_ERROR;
+         return OAC_INTERNAL_ERROR;
       }
       /* renumber the extension frame numbers */
       for (j=0;j<frame_ext_count;j++)
@@ -184,7 +184,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
       if (tot_size > maxlen)
       {
          RESTORE_STACK;
-         return OPUS_BUFFER_TOO_SMALL;
+         return OAC_BUFFER_TOO_SMALL;
       }
       *ptr++ = rp->toc&0xFC;
    } else if (count==2)
@@ -196,7 +196,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
          if (tot_size > maxlen)
          {
             RESTORE_STACK;
-            return OPUS_BUFFER_TOO_SMALL;
+            return OAC_BUFFER_TOO_SMALL;
          }
          *ptr++ = (rp->toc&0xFC) | 0x1;
       } else {
@@ -205,7 +205,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
          if (tot_size > maxlen)
          {
             RESTORE_STACK;
-            return OPUS_BUFFER_TOO_SMALL;
+            return OAC_BUFFER_TOO_SMALL;
          }
          *ptr++ = (rp->toc&0xFC) | 0x2;
          ptr += encode_size(len[0], ptr);
@@ -242,7 +242,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
          if (tot_size > maxlen)
          {
             RESTORE_STACK;
-            return OPUS_BUFFER_TOO_SMALL;
+            return OAC_BUFFER_TOO_SMALL;
          }
          *ptr++ = (rp->toc&0xFC) | 0x3;
          *ptr++ = count | 0x80;
@@ -251,7 +251,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
          if (tot_size > maxlen)
          {
             RESTORE_STACK;
-            return OPUS_BUFFER_TOO_SMALL;
+            return OAC_BUFFER_TOO_SMALL;
          }
          *ptr++ = (rp->toc&0xFC) | 0x3;
          *ptr++ = count;
@@ -260,7 +260,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
       if (ext_count>0)
       {
          /* figure out how much space we need for the extensions */
-         ext_len = opus_packet_extensions_generate(NULL, maxlen-tot_size,
+         ext_len = oac_packet_extensions_generate(NULL, maxlen-tot_size,
           all_extensions, ext_count, count, 0);
          if (ext_len < 0) return ext_len;
          if (!pad)
@@ -274,7 +274,7 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
          if (tot_size + ext_len + nb_255s + 1 > maxlen)
          {
             RESTORE_STACK;
-            return OPUS_BUFFER_TOO_SMALL;
+            return OAC_BUFFER_TOO_SMALL;
          }
          ext_begin = tot_size+pad_amount-ext_len;
          /* Prepend 0x01 padding */
@@ -298,15 +298,15 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
    /* Copy the actual data */
    for (i=0;i<count;i++)
    {
-      /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
-         padding from opus_packet_pad or opus_packet_unpad(). */
+      /* Using OAC_MOVE() instead of OAC_COPY() in case we're doing in-place
+         padding from oac_packet_pad or oac_packet_unpad(). */
       /* assert disabled because it's not valid in C. */
       /* celt_assert(frames[i] + len[i] <= data || ptr <= frames[i]); */
-      OPUS_MOVE(ptr, frames[i], len[i]);
+      OAC_MOVE(ptr, frames[i], len[i]);
       ptr += len[i];
    }
    if (ext_len > 0) {
-      int ret = opus_packet_extensions_generate(&data[ext_begin], ext_len,
+      int ret = oac_packet_extensions_generate(&data[ext_begin], ext_len,
        all_extensions, ext_count, count, 0);
       celt_assert(ret == ext_len);
    }
@@ -322,61 +322,61 @@ opus_int32 opus_repacketizer_out_range_impl(OpusRepacketizer *rp, int begin, int
    return tot_size;
 }
 
-opus_int32 opus_repacketizer_out_range(OpusRepacketizer *rp, int begin, int end, unsigned char *data, opus_int32 maxlen)
+oac_int32 oac_repacketizer_out_range(OacRepacketizer *rp, int begin, int end, unsigned char *data, oac_int32 maxlen)
 {
-   return opus_repacketizer_out_range_impl(rp, begin, end, data, maxlen, 0, 0, NULL, 0);
+   return oac_repacketizer_out_range_impl(rp, begin, end, data, maxlen, 0, 0, NULL, 0);
 }
 
-opus_int32 opus_repacketizer_out(OpusRepacketizer *rp, unsigned char *data, opus_int32 maxlen)
+oac_int32 oac_repacketizer_out(OacRepacketizer *rp, unsigned char *data, oac_int32 maxlen)
 {
-   return opus_repacketizer_out_range_impl(rp, 0, rp->nb_frames, data, maxlen, 0, 0, NULL, 0);
+   return oac_repacketizer_out_range_impl(rp, 0, rp->nb_frames, data, maxlen, 0, 0, NULL, 0);
 }
 
-opus_int32 opus_packet_pad_impl(unsigned char *data, opus_int32 len, opus_int32 new_len, int pad, const opus_extension_data  *extensions, int nb_extensions)
+oac_int32 oac_packet_pad_impl(unsigned char *data, oac_int32 len, oac_int32 new_len, int pad, const oac_extension_data  *extensions, int nb_extensions)
 {
-   OpusRepacketizer rp;
-   opus_int32 ret;
+   OacRepacketizer rp;
+   oac_int32 ret;
    VARDECL(unsigned char, copy);
    SAVE_STACK;
    if (len < 1)
-      return OPUS_BAD_ARG;
+      return OAC_BAD_ARG;
    if (len==new_len)
-      return OPUS_OK;
+      return OAC_OK;
    else if (len > new_len)
-      return OPUS_BAD_ARG;
+      return OAC_BAD_ARG;
    ALLOC(copy, len, unsigned char);
-   opus_repacketizer_init(&rp);
+   oac_repacketizer_init(&rp);
    /* Moving payload to the end of the packet so we can do in-place padding */
-   OPUS_COPY(copy, data, len);
-   ret = opus_repacketizer_cat(&rp, copy, len);
-   if (ret != OPUS_OK)
+   OAC_COPY(copy, data, len);
+   ret = oac_repacketizer_cat(&rp, copy, len);
+   if (ret != OAC_OK)
       return ret;
-   ret = opus_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, data, new_len, 0, pad, extensions, nb_extensions);
+   ret = oac_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, data, new_len, 0, pad, extensions, nb_extensions);
    RESTORE_STACK;
    return ret;
 }
 
-int opus_packet_pad(unsigned char *data, opus_int32 len, opus_int32 new_len)
+int oac_packet_pad(unsigned char *data, oac_int32 len, oac_int32 new_len)
 {
-   opus_int32 ret;
+   oac_int32 ret;
    ALLOC_STACK;
-   ret = opus_packet_pad_impl(data, len, new_len, 1, NULL, 0);
+   ret = oac_packet_pad_impl(data, len, new_len, 1, NULL, 0);
    RESTORE_STACK;
    if (ret > 0)
-      return OPUS_OK;
+      return OAC_OK;
    else
       return ret;
 }
 
-opus_int32 opus_packet_unpad(unsigned char *data, opus_int32 len)
+oac_int32 oac_packet_unpad(unsigned char *data, oac_int32 len)
 {
-   OpusRepacketizer rp;
-   opus_int32 ret;
+   OacRepacketizer rp;
+   oac_int32 ret;
    int i;
    if (len < 1)
-      return OPUS_BAD_ARG;
-   opus_repacketizer_init(&rp);
-   ret = opus_repacketizer_cat(&rp, data, len);
+      return OAC_BAD_ARG;
+   oac_repacketizer_init(&rp);
+   ret = oac_repacketizer_cat(&rp, data, len);
    if (ret < 0)
       return ret;
    /* Discard all padding and extensions. */
@@ -384,70 +384,70 @@ opus_int32 opus_packet_unpad(unsigned char *data, opus_int32 len)
       rp.padding_len[i] = 0;
       rp.paddings[i] = NULL;
    }
-   ret = opus_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, data, len, 0, 0, NULL, 0);
+   ret = oac_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, data, len, 0, 0, NULL, 0);
    celt_assert(ret > 0 && ret <= len);
    return ret;
 }
 
-int opus_multistream_packet_pad(unsigned char *data, opus_int32 len, opus_int32 new_len, int nb_streams)
+int oac_multistream_packet_pad(unsigned char *data, oac_int32 len, oac_int32 new_len, int nb_streams)
 {
    int s;
    int count;
    unsigned char toc;
-   opus_int16 size[48];
-   opus_int32 packet_offset;
-   opus_int32 amount;
+   oac_int16 size[48];
+   oac_int32 packet_offset;
+   oac_int32 amount;
 
    if (len < 1)
-      return OPUS_BAD_ARG;
+      return OAC_BAD_ARG;
    if (len==new_len)
-      return OPUS_OK;
+      return OAC_OK;
    else if (len > new_len)
-      return OPUS_BAD_ARG;
+      return OAC_BAD_ARG;
    amount = new_len - len;
    /* Seek to last stream */
    for (s=0;s<nb_streams-1;s++)
    {
       if (len<=0)
-         return OPUS_INVALID_PACKET;
-      count = opus_packet_parse_impl(data, len, 1, &toc, NULL,
+         return OAC_INVALID_PACKET;
+      count = oac_packet_parse_impl(data, len, 1, &toc, NULL,
                                      size, NULL, &packet_offset, NULL, NULL);
       if (count<0)
          return count;
       data += packet_offset;
       len -= packet_offset;
    }
-   return opus_packet_pad(data, len, len+amount);
+   return oac_packet_pad(data, len, len+amount);
 }
 
-opus_int32 opus_multistream_packet_unpad(unsigned char *data, opus_int32 len, int nb_streams)
+oac_int32 oac_multistream_packet_unpad(unsigned char *data, oac_int32 len, int nb_streams)
 {
    int s;
    unsigned char toc;
-   opus_int16 size[48];
-   opus_int32 packet_offset;
-   OpusRepacketizer rp;
+   oac_int16 size[48];
+   oac_int32 packet_offset;
+   OacRepacketizer rp;
    unsigned char *dst;
-   opus_int32 dst_len;
+   oac_int32 dst_len;
 
    if (len < 1)
-      return OPUS_BAD_ARG;
+      return OAC_BAD_ARG;
    dst = data;
    dst_len = 0;
    /* Unpad all frames */
    for (s=0;s<nb_streams;s++)
    {
-      opus_int32 ret;
+      oac_int32 ret;
       int i;
       int self_delimited = s!=nb_streams-1;
       if (len<=0)
-         return OPUS_INVALID_PACKET;
-      opus_repacketizer_init(&rp);
-      ret = opus_packet_parse_impl(data, len, self_delimited, &toc, NULL,
+         return OAC_INVALID_PACKET;
+      oac_repacketizer_init(&rp);
+      ret = oac_packet_parse_impl(data, len, self_delimited, &toc, NULL,
                                      size, NULL, &packet_offset, NULL, NULL);
       if (ret<0)
          return ret;
-      ret = opus_repacketizer_cat_impl(&rp, data, packet_offset, self_delimited);
+      ret = oac_repacketizer_cat_impl(&rp, data, packet_offset, self_delimited);
       if (ret < 0)
          return ret;
       /* Discard all padding and extensions. */
@@ -455,7 +455,7 @@ opus_int32 opus_multistream_packet_unpad(unsigned char *data, opus_int32 len, in
          rp.padding_len[i] = 0;
          rp.paddings[i] = NULL;
       }
-      ret = opus_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, dst, len, self_delimited, 0, NULL, 0);
+      ret = oac_repacketizer_out_range_impl(&rp, 0, rp.nb_frames, dst, len, self_delimited, 0, NULL, 0);
       if (ret < 0)
          return ret;
       else

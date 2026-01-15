@@ -56,8 +56,8 @@ static inline long long MIPS_MADD(long long acc, int a, int b) {
     return acc + (long long)a * b;
 }
 
-static inline opus_val32 MIPS_EXTR_R(long long acc, int shift) {
-    return (opus_val32)((acc + (1 << shift) / 2) >> shift);
+static inline oac_val32 MIPS_EXTR_R(long long acc, int shift) {
+    return (oac_val32)((acc + (1 << shift) / 2) >> shift);
 }
 
 #define OVERRIDE_silk_noise_shape_quantizer_short_prediction
@@ -67,9 +67,9 @@ static inline opus_val32 MIPS_EXTR_R(long long acc, int shift) {
 
 #if defined(OVERRIDE_silk_noise_shape_quantizer_short_prediction)
 
-static OPUS_INLINE opus_int32 silk_noise_shape_quantizer_short_prediction_mips(const opus_int32 *buf32, const opus_int16 *coef16, opus_int order)
+static OAC_INLINE oac_int32 silk_noise_shape_quantizer_short_prediction_mips(const oac_int32 *buf32, const oac_int16 *coef16, oac_int order)
 {
-    opus_int64 out;
+    oac_int64 out;
     silk_assert( order == 10 || order == 16 );
 
     out = MIPS_MULT(      buf32[  0 ], coef16[ 0 ] );
@@ -103,11 +103,11 @@ static OPUS_INLINE opus_int32 silk_noise_shape_quantizer_short_prediction_mips(c
 
 #if defined(OVERRIDE_silk_NSQ_noise_shape_feedback_loop)
 
-static OPUS_INLINE opus_int32 silk_NSQ_noise_shape_feedback_loop_mips(const opus_int32 *data0, opus_int32 *data1, const opus_int16 *coef, opus_int order)
+static OAC_INLINE oac_int32 silk_NSQ_noise_shape_feedback_loop_mips(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef, oac_int order)
 {
-    opus_int32 out;
-    opus_int32 tmp1, tmp2;
-    opus_int j;
+    oac_int32 out;
+    oac_int32 tmp1, tmp2;
+    oac_int j;
 
     tmp2 = data0[0];
     tmp1 = data1[0];

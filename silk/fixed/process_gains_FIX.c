@@ -36,12 +36,12 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_process_gains_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Encoder state                                                               */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Encoder control                                                             */
-    opus_int                        condCoding                              /* I    The type of conditional coding to use                                       */
+    oac_int                        condCoding                              /* I    The type of conditional coding to use                                       */
 )
 {
     silk_shape_state_FIX *psShapeSt = &psEnc->sShape;
-    opus_int     k;
-    opus_int32   s_Q16, InvMaxSqrVal_Q16, gain, gain_squared, ResNrg, ResNrgPart, quant_offset_Q10;
+    oac_int     k;
+    oac_int32   s_Q16, InvMaxSqrVal_Q16, gain, gain_squared, ResNrg, ResNrgPart, quant_offset_Q10;
 
     /* Gain reduction when LTP coding gain is high */
     if( psEnc->sCmn.indices.signalType == TYPE_VOICED ) {
@@ -87,7 +87,7 @@ void silk_process_gains_FIX(
     }
 
     /* Save unquantized gains and gain Index */
-    silk_memcpy( psEncCtrl->GainsUnq_Q16, psEncCtrl->Gains_Q16, psEnc->sCmn.nb_subfr * sizeof( opus_int32 ) );
+    silk_memcpy( psEncCtrl->GainsUnq_Q16, psEncCtrl->Gains_Q16, psEnc->sCmn.nb_subfr * sizeof( oac_int32 ) );
     psEncCtrl->lastGainIndexPrev = psShapeSt->LastGainIndex;
 
     /* Quantize gains */

@@ -226,7 +226,7 @@ static void mag_spec_320_onesided(float *out, float *in)
 }
 
 
-static void calculate_log_spectrum_from_lpc(float *spec, opus_int16 *a_q12, int lpc_order)
+static void calculate_log_spectrum_from_lpc(float *spec, oac_int16 *a_q12, int lpc_order)
 {
     float buffer[OSCE_SPEC_WINDOW_SIZE] = {0};
     int i;
@@ -371,8 +371,8 @@ void osce_calculate_features(
     float                       *features,                      /* O    input features                              */
     float                       *numbits,                       /* O    numbits and smoothed numbits                */
     int                         *periods,                       /* O    pitch lags on subframe basis                */
-    const opus_int16            xq[],                           /* I    Decoded speech                              */
-    opus_int32                  num_bits                        /* I    Size of SILK payload in bits                */
+    const oac_int16            xq[],                           /* I    Decoded speech                              */
+    oac_int32                  num_bits                        /* I    Size of SILK payload in bits                */
 )
 {
     int num_subframes, num_samples;
@@ -388,7 +388,7 @@ void osce_calculate_features(
     }
 #endif
 
-    /*OPUS_CLEAR(buffer, 1);*/
+    /*OAC_CLEAR(buffer, 1);*/
     memset(buffer, 0, sizeof(buffer));
 
     num_subframes = psDec->nb_subfr;
@@ -404,7 +404,7 @@ void osce_calculate_features(
     {
         buffer[OSCE_FEATURES_MAX_HISTORY + n] = (float) xq[n] / (1U<<15);
     }
-    OPUS_COPY(buffer, psFeatures->signal_history, OSCE_FEATURES_MAX_HISTORY);
+    OAC_COPY(buffer, psFeatures->signal_history, OSCE_FEATURES_MAX_HISTORY);
 
     for (k = 0; k < num_subframes; k++)
     {
@@ -419,7 +419,7 @@ void osce_calculate_features(
         }
         else
         {
-            OPUS_COPY(pfeatures + OSCE_CLEAN_SPEC_START, pfeatures + OSCE_CLEAN_SPEC_START - OSCE_FEATURE_DIM, OSCE_CLEAN_SPEC_LENGTH);
+            OAC_COPY(pfeatures + OSCE_CLEAN_SPEC_START, pfeatures + OSCE_CLEAN_SPEC_START - OSCE_FEATURE_DIM, OSCE_CLEAN_SPEC_LENGTH);
         }
 
         /* noisy cepstrum from signal (update every other frame) */
@@ -429,7 +429,7 @@ void osce_calculate_features(
         }
         else
         {
-            OPUS_COPY(pfeatures + OSCE_NOISY_CEPSTRUM_START, pfeatures + OSCE_NOISY_CEPSTRUM_START - OSCE_FEATURE_DIM, OSCE_NOISY_CEPSTRUM_LENGTH);
+            OAC_COPY(pfeatures + OSCE_NOISY_CEPSTRUM_START, pfeatures + OSCE_NOISY_CEPSTRUM_START - OSCE_FEATURE_DIM, OSCE_NOISY_CEPSTRUM_LENGTH);
         }
 
         /* pitch hangover and zero value replacement */
@@ -454,7 +454,7 @@ void osce_calculate_features(
     }
 
     /* buffer update */
-    OPUS_COPY(psFeatures->signal_history, &buffer[num_samples], OSCE_FEATURES_MAX_HISTORY);
+    OAC_COPY(psFeatures->signal_history, &buffer[num_samples], OSCE_FEATURES_MAX_HISTORY);
 }
 
 
@@ -462,7 +462,7 @@ void osce_calculate_features(
 void osce_bwe_calculate_features(
     OSCEBWEFeatureState         *psFeatures,                    /* I/O  BWE feature state                          */
     float                       *features,                      /* O    input features                              */
-    const opus_int16            xq[],                           /* I    Decoded speech                              */
+    const oac_int16            xq[],                           /* I    Decoded speech                              */
     int                         num_samples                     /* I    number of input samples                     */
  )
  {
@@ -481,20 +481,20 @@ void osce_bwe_calculate_features(
     for (frame = 0; frame < num_frames; frame++)
     {
         /* clear features */
-        OPUS_CLEAR(features + frame * OSCE_BWE_FEATURE_DIM, OSCE_BWE_FEATURE_DIM);
+        OAC_CLEAR(features + frame * OSCE_BWE_FEATURE_DIM, OSCE_BWE_FEATURE_DIM);
 
         lmspec = features + frame * OSCE_BWE_FEATURE_DIM;
         instafreq = lmspec + OSCE_BWE_NUM_BANDS;
-        const opus_int16 *x = xq + frame * OSCE_BWE_HALF_WINDOW_SIZE;
+        const oac_int16 *x = xq + frame * OSCE_BWE_HALF_WINDOW_SIZE;
 
-        OPUS_COPY(buffer, psFeatures->signal_history, OSCE_BWE_HALF_WINDOW_SIZE);
+        OAC_COPY(buffer, psFeatures->signal_history, OSCE_BWE_HALF_WINDOW_SIZE);
         for (n = 0; n < OSCE_BWE_HALF_WINDOW_SIZE; n++)
         {
             buffer[n + OSCE_BWE_HALF_WINDOW_SIZE] = (float) x[n] / (1U<<15);
         }
 
         /* update signal history buffer */
-        OPUS_COPY(psFeatures->signal_history, buffer + OSCE_BWE_HALF_WINDOW_SIZE, OSCE_BWE_HALF_WINDOW_SIZE);
+        OAC_COPY(psFeatures->signal_history, buffer + OSCE_BWE_HALF_WINDOW_SIZE, OSCE_BWE_HALF_WINDOW_SIZE);
 
         /* apply window */
         for (n = 0; n < OSCE_BWE_WINDOW_SIZE; n ++)
@@ -537,7 +537,7 @@ void osce_bwe_calculate_features(
         }
 
         /* update instafreq buffer */
-        OPUS_COPY(psFeatures->last_spec, spec, 2 * OSCE_BWE_MAX_INSTAFREQ_BIN + 2);
+        OAC_COPY(psFeatures->last_spec, spec, 2 * OSCE_BWE_MAX_INSTAFREQ_BIN + 2);
     }
 }
 #endif /* ENABLE_OSCE_BWE */
@@ -554,7 +554,7 @@ void osce_cross_fade_10ms(float *x_enhanced, float *x_in, int length)
 }
 
 
-void osce_bwe_cross_fade_10ms(opus_int16 *x_fadein, opus_int16 *x_fadeout, int length)
+void osce_bwe_cross_fade_10ms(oac_int16 *x_fadein, oac_int16 *x_fadeout, int length)
 {
     int i;
     celt_assert(length >= 480);
