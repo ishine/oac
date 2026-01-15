@@ -22,7 +22,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef MLP_H_
 #define MLP_H_
@@ -34,19 +34,19 @@
 #define MAX_NEURONS 32
 
 typedef struct {
-  const oac_int8 *bias;
-  const oac_int8 *input_weights;
-  int nb_inputs;
-  int nb_neurons;
-  int sigmoid;
+    const oac_int8 *bias;
+    const oac_int8 *input_weights;
+    int nb_inputs;
+    int nb_neurons;
+    int sigmoid;
 } AnalysisDenseLayer;
 
 typedef struct {
-  const oac_int8 *bias;
-  const oac_int8 *input_weights;
-  const oac_int8 *recurrent_weights;
-  int nb_inputs;
-  int nb_neurons;
+    const oac_int8 *bias;
+    const oac_int8 *input_weights;
+    const oac_int8 *recurrent_weights;
+    int nb_inputs;
+    int nb_neurons;
 } AnalysisGRULayer;
 
 extern const AnalysisDenseLayer layer0;

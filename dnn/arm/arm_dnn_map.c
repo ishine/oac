@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "arm/armcpu.h"
@@ -34,30 +34,30 @@
 
 #if defined(OAC_HAVE_RTCD)
 
-#if (defined(OAC_ARM_MAY_HAVE_DOTPROD) && !defined(OAC_ARM_PRESUME_DOTPROD))
+# if (defined(OAC_ARM_MAY_HAVE_DOTPROD) && !defined(OAC_ARM_PRESUME_DOTPROD))
 
 void (*const DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
          const LinearLayer *linear,
          float *out,
          const float *in
-) = {
-  compute_linear_c,                /* default */
-  compute_linear_c,
-  compute_linear_c,
-  MAY_HAVE_NEON(compute_linear),   /* neon  */
-  MAY_HAVE_DOTPROD(compute_linear) /* dotprod  */
+    ) = {
+    compute_linear_c,              /* default */
+    compute_linear_c,
+    compute_linear_c,
+    MAY_HAVE_NEON(compute_linear), /* neon  */
+    MAY_HAVE_DOTPROD(compute_linear) /* dotprod  */
 };
 
-#endif
+# endif
 
-#if (defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON)) && !defined(OAC_ARM_PRESUME_NEON)
+# if (defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON)) && !defined(OAC_ARM_PRESUME_NEON)
 
 void (*const DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
          float *output,
          const float *input,
          int N,
          int activation
-) = {
+    ) = {
     compute_activation_c,                /* default */
     compute_activation_c,
     compute_activation_c,
@@ -73,7 +73,7 @@ void (*const DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
          int height,
          int hstride,
          int activation
-) = {
+    ) = {
     compute_conv2d_c,                /* default */
     compute_conv2d_c,
     compute_conv2d_c,
@@ -82,7 +82,7 @@ void (*const DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
 };
 
 
-#endif
+# endif
 
 
 #endif

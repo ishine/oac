@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef DRED_DECODER_H
 #define DRED_DECODER_H
@@ -35,12 +35,12 @@
 #include "dred_rdovae_constants.h"
 
 struct OacDRED {
-    float        fec_features[2*DRED_NUM_REDUNDANCY_FRAMES*DRED_NUM_FEATURES];
-    float        state[DRED_STATE_DIM];
-    float        latents[(DRED_NUM_REDUNDANCY_FRAMES/2)*(DRED_LATENT_DIM+1)];
-    int          nb_latents;
-    int          process_stage;
-    int          dred_offset;
+    float fec_features[2*DRED_NUM_REDUNDANCY_FRAMES*DRED_NUM_FEATURES];
+    float state[DRED_STATE_DIM];
+    float latents[(DRED_NUM_REDUNDANCY_FRAMES/2)*(DRED_LATENT_DIM + 1)];
+    int nb_latents;
+    int process_stage;
+    int dred_offset;
 };
 
 

@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "cpu_support.h"
@@ -36,53 +36,51 @@
 #include "x86cpu.h"
 
 #if defined(OAC_HAVE_RTCD) && \
-  ((defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)) || \
-  (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2)) || \
-  (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) || \
-  (defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)))
+    ((defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)) || \
+    (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2)) || \
+    (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) || \
+    (defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)))
 
-#if defined(_MSC_VER)
+# if defined(_MSC_VER)
 
-#include <intrin.h>
-static _inline void cpuid(unsigned int CPUInfo[4], unsigned int InfoType)
-{
+#  include <intrin.h>
+static _inline void cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
     __cpuid((int*)CPUInfo, InfoType);
 }
 
-#else
+# else
 
-#if defined(CPU_INFO_BY_C)
-#include <cpuid.h>
-#endif
+#  if defined(CPU_INFO_BY_C)
+#   include <cpuid.h>
+#  endif
 
-static void cpuid(unsigned int CPUInfo[4], unsigned int InfoType)
-{
-#if defined(CPU_INFO_BY_ASM)
-#if defined(__i386__) && defined(__PIC__)
+static void cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
+#  if defined(CPU_INFO_BY_ASM)
+#   if defined(__i386__) && defined(__PIC__)
 /* %ebx is PIC register in 32-bit, so mustn't clobber it. */
     __asm__ __volatile__ (
         "xchg %%ebx, %1\n"
         "cpuid\n"
-        "xchg %%ebx, %1\n":
+        "xchg %%ebx, %1\n" :
         "=a" (CPUInfo[0]),
         "=r" (CPUInfo[1]),
         "=c" (CPUInfo[2]),
         "=d" (CPUInfo[3]) :
         /* We clear ECX to avoid a valgrind false-positive prior to v3.17.0. */
         "0" (InfoType), "2" (0)
-    );
-#else
+        );
+#   else
     __asm__ __volatile__ (
-        "cpuid":
+        "cpuid" :
         "=a" (CPUInfo[0]),
         "=b" (CPUInfo[1]),
         "=c" (CPUInfo[2]),
         "=d" (CPUInfo[3]) :
         /* We clear ECX to avoid a valgrind false-positive prior to v3.17.0. */
         "0" (InfoType), "2" (0)
-    );
-#endif
-#elif defined(CPU_INFO_BY_C)
+        );
+#   endif
+#  elif defined(CPU_INFO_BY_C)
     /* We use __get_cpuid_count to clear ECX to avoid a valgrind false-positive
         prior to v3.17.0.*/
     if (!__get_cpuid_count(InfoType, 0, &(CPUInfo[0]), &(CPUInfo[1]), &(CPUInfo[2]), &(CPUInfo[3]))) {
@@ -91,15 +89,15 @@ static void cpuid(unsigned int CPUInfo[4], unsigned int InfoType)
             what we want on CPUs that don't support CPUID. */
         CPUInfo[3] = CPUInfo[2] = CPUInfo[1] = CPUInfo[0] = 0;
     }
-#else
-# error "Configured to use x86 RTCD, but no CPU detection method available. " \
- "Reconfigure with --disable-rtcd (or send patches)."
-#endif
+#  else
+#   error "Configured to use x86 RTCD, but no CPU detection method available. " \
+    "Reconfigure with --disable-rtcd (or send patches)."
+#  endif
 }
 
-#endif
+# endif
 
-typedef struct CPU_Feature{
+typedef struct CPU_Feature {
     /*  SIMD: 128-bit */
     int HW_SSE;
     int HW_SSE2;
@@ -108,28 +106,26 @@ typedef struct CPU_Feature{
     int HW_AVX2;
 } CPU_Feature;
 
-static void oac_cpu_feature_check(CPU_Feature *cpu_feature)
-{
+static void oac_cpu_feature_check(CPU_Feature *cpu_feature) {
     unsigned int info[4];
     unsigned int nIds = 0;
 
     cpuid(info, 0);
     nIds = info[0];
 
-    if (nIds >= 1){
+    if (nIds >= 1) {
         cpuid(info, 1);
-        cpu_feature->HW_SSE = (info[3] & (1 << 25)) != 0;
-        cpu_feature->HW_SSE2 = (info[3] & (1 << 26)) != 0;
-        cpu_feature->HW_SSE41 = (info[2] & (1 << 19)) != 0;
-        cpu_feature->HW_AVX2 = (info[2] & (1 << 28)) != 0 && (info[2] & (1 << 12)) != 0;
+        cpu_feature->HW_SSE = (info[3]&(1<<25)) != 0;
+        cpu_feature->HW_SSE2 = (info[3]&(1<<26)) != 0;
+        cpu_feature->HW_SSE41 = (info[2]&(1<<19)) != 0;
+        cpu_feature->HW_AVX2 = (info[2]&(1<<28)) != 0 && (info[2]&(1<<12)) != 0;
         if (cpu_feature->HW_AVX2 && nIds >= 7) {
             cpuid(info, 7);
-            cpu_feature->HW_AVX2 = cpu_feature->HW_AVX2 && (info[1] & (1 << 5)) != 0;
+            cpu_feature->HW_AVX2 = cpu_feature->HW_AVX2 && (info[1]&(1<<5)) != 0;
         } else {
             cpu_feature->HW_AVX2 = 0;
         }
-    }
-    else {
+    } else   {
         cpu_feature->HW_SSE = 0;
         cpu_feature->HW_SSE2 = 0;
         cpu_feature->HW_SSE41 = 0;
@@ -137,34 +133,29 @@ static void oac_cpu_feature_check(CPU_Feature *cpu_feature)
     }
 }
 
-static int oac_select_arch_impl(void)
-{
+static int oac_select_arch_impl(void) {
     CPU_Feature cpu_feature;
     int arch;
 
     oac_cpu_feature_check(&cpu_feature);
 
     arch = 0;
-    if (!cpu_feature.HW_SSE)
-    {
-       return arch;
-    }
-    arch++;
-
-    if (!cpu_feature.HW_SSE2)
-    {
-       return arch;
-    }
-    arch++;
-
-    if (!cpu_feature.HW_SSE41)
-    {
+    if (!cpu_feature.HW_SSE) {
         return arch;
     }
     arch++;
 
-    if (!cpu_feature.HW_AVX2)
-    {
+    if (!cpu_feature.HW_SSE2) {
+        return arch;
+    }
+    arch++;
+
+    if (!cpu_feature.HW_SSE41) {
+        return arch;
+    }
+    arch++;
+
+    if (!cpu_feature.HW_AVX2) {
         return arch;
     }
     arch++;
@@ -174,10 +165,10 @@ static int oac_select_arch_impl(void)
 
 int oac_select_arch(void) {
     int arch = oac_select_arch_impl();
-#ifdef FUZZING
+# ifdef FUZZING
     /* Randomly downgrade the architecture. */
-    arch = rand()%(arch+1);
-#endif
+    arch = rand()%(arch + 1);
+# endif
     return arch;
 }
 

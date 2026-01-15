@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef OSCE_FEATURES_H
 #define OSCE_FEATURES_H
@@ -40,17 +40,17 @@ void osce_calculate_features(
     float                       *features,                      /* O    input features                              */
     float                       *numbits,                       /* O    numbits and smoothed numbits                */
     int                         *periods,                       /* O    pitch lags on subframe basis                */
-    const oac_int16            xq[],                           /* I    Decoded speech                              */
-    oac_int32                  num_bits                        /* I    Size of SILK payload in bits                */
-);
+    const oac_int16 xq[],                                      /* I    Decoded speech                              */
+    oac_int32 num_bits                                         /* I    Size of SILK payload in bits                */
+    );
 
 #ifdef ENABLE_OSCE_BWE
 void osce_bwe_calculate_features(
-   OSCEBWEFeatureState         *psFeatures,                    /* I/O  BWE feature state                           */
-   float                       *features,                      /* O    input features                              */
-   const oac_int16            xq[],                           /* I    Decoded speech                              */
-   int                         num_samples                     /* I    number of input samples                     */
-);
+    OSCEBWEFeatureState         *psFeatures,                   /* I/O  BWE feature state                           */
+    float                       *features,                     /* O    input features                              */
+    const oac_int16 xq[],                                     /* I    Decoded speech                              */
+    int num_samples                                            /* I    number of input samples                     */
+    );
 #endif
 
 void osce_cross_fade_10ms(float *x_enhanced, float *x_in, int length);

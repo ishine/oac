@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef NNDSP_H
 #define NNDSP_H
@@ -49,15 +49,15 @@
 
 /*#define DEBUG_NNDSP*/
 #ifdef DEBUG_NNDSP
-#include <stdio.h>
+# include <stdio.h>
 #endif
 
 
 void print_float_vector(const char* name, const float *vec, int length);
 
 typedef struct {
-    float history[ADACONV_MAX_KERNEL_SIZE * ADACONV_MAX_INPUT_CHANNELS];
-    float last_kernel[ADACONV_MAX_KERNEL_SIZE * ADACONV_MAX_INPUT_CHANNELS * ADACONV_MAX_OUTPUT_CHANNELS];
+    float history[ADACONV_MAX_KERNEL_SIZE*ADACONV_MAX_INPUT_CHANNELS];
+    float last_kernel[ADACONV_MAX_KERNEL_SIZE*ADACONV_MAX_INPUT_CHANNELS*ADACONV_MAX_OUTPUT_CHANNELS];
     float last_gain;
 } AdaConvState;
 
@@ -103,8 +103,7 @@ void adaconv_process_frame(
     float filter_gain_b,
     float shape_gain,
     float *window,
-    int arch
-);
+    int arch);
 
 void adacomb_process_frame(
     AdaCombState* hAdaComb,
@@ -124,8 +123,7 @@ void adacomb_process_frame(
     float filter_gain_b,
     float log_gain_limit,
     float *window,
-    int arch
-);
+    int arch);
 
 void adashape_process_frame(
     AdaShapeState *hAdaShape,
@@ -139,7 +137,6 @@ void adashape_process_frame(
     int frame_size,
     int avg_pool_k,
     int interpolate_k,
-    int arch
-);
+    int arch);
 
 #endif

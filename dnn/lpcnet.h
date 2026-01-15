@@ -22,7 +22,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef LPCNET_H_
 #define LPCNET_H_
@@ -45,123 +45,125 @@ typedef struct LPCNetPLCState LPCNetPLCState;
 
 
 /** Gets the size of an <code>LPCNetDecState</code> structure.
-  * @returns The size in bytes.
-  */
+ * @returns The size in bytes.
+ */
 int lpcnet_decoder_get_size(void);
 
 /** Initializes a previously allocated decoder state
-  * The memory pointed to by st must be at least the size returned by lpcnet_decoder_get_size().
-  * This is intended for applications which use their own allocator instead of malloc.
-  * @see lpcnet_decoder_create(),lpcnet_decoder_get_size()
-  * @param [in] st <tt>LPCNetDecState*</tt>: Decoder state
-  * @retval 0 Success
-  */
+ * The memory pointed to by st must be at least the size returned by lpcnet_decoder_get_size().
+ * This is intended for applications which use their own allocator instead of malloc.
+ * @see lpcnet_decoder_create(),lpcnet_decoder_get_size()
+ * @param [in] st <tt>LPCNetDecState*</tt>: Decoder state
+ * @retval 0 Success
+ */
 int lpcnet_decoder_init(LPCNetDecState *st);
 
 void lpcnet_reset(LPCNetState *lpcnet);
 
 /** Allocates and initializes a decoder state.
-  *  @returns The newly created state
-  */
+ *  @returns The newly created state
+ */
 LPCNetDecState *lpcnet_decoder_create(void);
 
 /** Frees an <code>LPCNetDecState</code> allocated by lpcnet_decoder_create().
-  * @param[in] st <tt>LPCNetDecState*</tt>: State to be freed.
-  */
+ * @param[in] st <tt>LPCNetDecState*</tt>: State to be freed.
+ */
 void lpcnet_decoder_destroy(LPCNetDecState *st);
 
 /** Decodes a packet of LPCNET_COMPRESSED_SIZE bytes (currently 8) into LPCNET_PACKET_SAMPLES samples (currently 640).
-  * @param [in] st <tt>LPCNetDecState*</tt>: Decoder state
-  * @param [in] buf <tt>const unsigned char *</tt>: Compressed packet
-  * @param [out] pcm <tt>oac_int16 *</tt>: Decoded audio
-  * @retval 0 Success
-  */
+ * @param [in] st <tt>LPCNetDecState*</tt>: Decoder state
+ * @param [in] buf <tt>const unsigned char *</tt>: Compressed packet
+ * @param [out] pcm <tt>oac_int16 *</tt>: Decoded audio
+ * @retval 0 Success
+ */
 int lpcnet_decode(LPCNetDecState *st, const unsigned char *buf, oac_int16 *pcm);
 
 
 
 /** Gets the size of an <code>LPCNetEncState</code> structure.
-  * @returns The size in bytes.
-  */
+ * @returns The size in bytes.
+ */
 int lpcnet_encoder_get_size(void);
 
 /** Initializes a previously allocated encoder state
-  * The memory pointed to by st must be at least the size returned by lpcnet_encoder_get_size().
-  * This is intended for applications which use their own allocator instead of malloc.
-  * @see lpcnet_encoder_create(),lpcnet_encoder_get_size()
-  * @param [in] st <tt>LPCNetEncState*</tt>: Encoder state
-  * @retval 0 Success
-  */
+ * The memory pointed to by st must be at least the size returned by lpcnet_encoder_get_size().
+ * This is intended for applications which use their own allocator instead of malloc.
+ * @see lpcnet_encoder_create(),lpcnet_encoder_get_size()
+ * @param [in] st <tt>LPCNetEncState*</tt>: Encoder state
+ * @retval 0 Success
+ */
 int lpcnet_encoder_init(LPCNetEncState *st);
 
 int lpcnet_encoder_load_model(LPCNetEncState *st, const void *data, int len);
 
 /** Allocates and initializes an encoder state.
-  *  @returns The newly created state
-  */
+ *  @returns The newly created state
+ */
 LPCNetEncState *lpcnet_encoder_create(void);
 
 /** Frees an <code>LPCNetEncState</code> allocated by lpcnet_encoder_create().
-  * @param[in] st <tt>LPCNetEncState*</tt>: State to be freed.
-  */
+ * @param[in] st <tt>LPCNetEncState*</tt>: State to be freed.
+ */
 void lpcnet_encoder_destroy(LPCNetEncState *st);
 
 /** Encodes LPCNET_PACKET_SAMPLES speech samples (currently 640) into a packet of LPCNET_COMPRESSED_SIZE bytes (currently 8).
-  * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
-  * @param [in] pcm <tt>oac_int16 *</tt>: Input speech to be encoded
-  * @param [out] buf <tt>const unsigned char *</tt>: Compressed packet
-  * @retval 0 Success
-  */
+ * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
+ * @param [in] pcm <tt>oac_int16 *</tt>: Input speech to be encoded
+ * @param [out] buf <tt>const unsigned char *</tt>: Compressed packet
+ * @retval 0 Success
+ */
 int lpcnet_encode(LPCNetEncState *st, const oac_int16 *pcm, unsigned char *buf);
 
 /** Compute features on LPCNET_FRAME_SIZE speech samples (currently 160) and output features for one 10-ms frame.
-  * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
-  * @param [in] pcm <tt>oac_int16 *</tt>: Input speech to be analyzed
-  * @param [out] features <tt>float[NB_TOTAL_FEATURES]</tt>: Four feature vectors
-  * @retval 0 Success
-  */
-int lpcnet_compute_single_frame_features(LPCNetEncState *st, const oac_int16 *pcm, float features[NB_TOTAL_FEATURES], int arch);
+ * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
+ * @param [in] pcm <tt>oac_int16 *</tt>: Input speech to be analyzed
+ * @param [out] features <tt>float[NB_TOTAL_FEATURES]</tt>: Four feature vectors
+ * @retval 0 Success
+ */
+int lpcnet_compute_single_frame_features(LPCNetEncState *st, const oac_int16 *pcm, float features[NB_TOTAL_FEATURES],
+    int arch);
 
 
 /** Compute features on LPCNET_FRAME_SIZE speech samples (currently 160) and output features for one 10-ms frame.
-  * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
-  * @param [in] pcm <tt>float *</tt>: Input speech to be analyzed
-  * @param [out] features <tt>float[NB_TOTAL_FEATURES]</tt>: Four feature vectors
-  * @retval 0 Success
-  */
-int lpcnet_compute_single_frame_features_float(LPCNetEncState *st, const float *pcm, float features[NB_TOTAL_FEATURES], int arch);
+ * @param [in] st <tt>LPCNetDecState*</tt>: Encoder state
+ * @param [in] pcm <tt>float *</tt>: Input speech to be analyzed
+ * @param [out] features <tt>float[NB_TOTAL_FEATURES]</tt>: Four feature vectors
+ * @retval 0 Success
+ */
+int lpcnet_compute_single_frame_features_float(LPCNetEncState *st, const float *pcm, float features[NB_TOTAL_FEATURES],
+    int arch);
 
 /** Gets the size of an <code>LPCNetState</code> structure.
-  * @returns The size in bytes.
-  */
+ * @returns The size in bytes.
+ */
 int lpcnet_get_size(void);
 
 /** Initializes a previously allocated synthesis state
-  * The memory pointed to by st must be at least the size returned by lpcnet_get_size().
-  * This is intended for applications which use their own allocator instead of malloc.
-  * @see lpcnet_create(),lpcnet_get_size()
-  * @param [in] st <tt>LPCNetState*</tt>: Synthesis state
-  * @retval 0 Success
-  */
+ * The memory pointed to by st must be at least the size returned by lpcnet_get_size().
+ * This is intended for applications which use their own allocator instead of malloc.
+ * @see lpcnet_create(),lpcnet_get_size()
+ * @param [in] st <tt>LPCNetState*</tt>: Synthesis state
+ * @retval 0 Success
+ */
 int lpcnet_init(LPCNetState *st);
 
 /** Allocates and initializes a synthesis state.
-  *  @returns The newly created state
-  */
+ *  @returns The newly created state
+ */
 LPCNetState *lpcnet_create(void);
 
 /** Frees an <code>LPCNetState</code> allocated by lpcnet_create().
-  * @param[in] st <tt>LPCNetState*</tt>: State to be freed.
-  */
+ * @param[in] st <tt>LPCNetState*</tt>: State to be freed.
+ */
 void lpcnet_destroy(LPCNetState *st);
 
 /** Synthesizes speech from an LPCNet feature vector.
-  * @param [in] st <tt>LPCNetState*</tt>: Synthesis state
-  * @param [in] features <tt>const float *</tt>: Compressed packet
-  * @param [out] output <tt>oac_int16 **</tt>: Synthesized speech
-  * @param [in] N <tt>int</tt>: Number of samples to generate
-  * @retval 0 Success
-  */
+ * @param [in] st <tt>LPCNetState*</tt>: Synthesis state
+ * @param [in] features <tt>const float *</tt>: Compressed packet
+ * @param [out] output <tt>oac_int16 **</tt>: Synthesized speech
+ * @param [in] N <tt>int</tt>: Number of samples to generate
+ * @retval 0 Success
+ */
 void lpcnet_synthesize(LPCNetState *st, const float *features, oac_int16 *output, int N);
 
 

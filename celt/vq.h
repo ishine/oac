@@ -28,7 +28,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef VQ_H
 #define VQ_H
@@ -38,7 +38,7 @@
 #include "modes.h"
 
 #if (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT))
-#include "x86/vq_sse.h"
+# include "x86/vq_sse.h"
 #endif
 
 #if defined(FIXED_POINT)
@@ -49,10 +49,10 @@ void norm_scaleup(celt_norm *X, int N, int shift);
 void norm_scaledown(celt_norm *X, int N, int shift);
 
 #else
-#define celt_inner_prod_norm celt_inner_prod
-#define celt_inner_prod_norm_shift celt_inner_prod
-#define norm_scaleup(X, N, shift)
-#define norm_scaledown(X, N, shift)
+# define celt_inner_prod_norm celt_inner_prod
+# define celt_inner_prod_norm_shift celt_inner_prod
+# define norm_scaleup(X, N, shift)
+# define norm_scaledown(X, N, shift)
 #endif
 
 void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
@@ -60,21 +60,21 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
 oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
 
 #if !defined(OVERRIDE_OP_PVQ_SEARCH)
-#define op_pvq_search(x, iy, K, N, arch) \
-    (op_pvq_search_c(x, iy, K, N, arch))
+# define op_pvq_search(x, iy, K, N, arch) \
+        (op_pvq_search_c(x, iy, K, N, arch))
 #endif
 
 /** Algebraic pulse-vector quantiser. The signal x is replaced by the sum of
-  * the pitch and a combination of pulses such that its norm is still equal
-  * to 1. This is the function that will typically require the most CPU.
+ * the pitch and a combination of pulses such that its norm is still equal
+ * to 1. This is the function that will typically require the most CPU.
  * @param X Residual signal to quantise/encode (returns quantised version)
  * @param N Number of samples to encode
  * @param K Number of pulses to use
  * @param enc Entropy encoder state
  * @ret A mask indicating which blocks in the band received pulses
-*/
+ */
 unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
-      oac_val32 gain, int resynth, int arch);
+    oac_val32 gain, int resynth, int arch);
 
 /** Algebraic pulse decoder
  * @param X Decoded normalised spectrum (returned)
@@ -84,7 +84,7 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
  * @ret A mask indicating which blocks in the band received pulses
  */
 unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
-      ec_dec *dec, oac_val32 gain);
+    ec_dec *dec, oac_val32 gain);
 
 void renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch);
 

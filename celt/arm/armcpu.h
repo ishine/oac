@@ -23,68 +23,68 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #if !defined(ARMCPU_H)
-# define ARMCPU_H
+#define ARMCPU_H
 
-# if defined(OAC_ARM_MAY_HAVE_EDSP)
-#  define MAY_HAVE_EDSP(name) name ## _edsp
-# else
-#  define MAY_HAVE_EDSP(name) name ## _c
-# endif
+#if defined(OAC_ARM_MAY_HAVE_EDSP)
+# define MAY_HAVE_EDSP(name) name ## _edsp
+#else
+# define MAY_HAVE_EDSP(name) name ## _c
+#endif
 
-# if defined(OAC_ARM_MAY_HAVE_MEDIA)
-#  define MAY_HAVE_MEDIA(name) name ## _media
-# else
-#  define MAY_HAVE_MEDIA(name) MAY_HAVE_EDSP(name)
-# endif
+#if defined(OAC_ARM_MAY_HAVE_MEDIA)
+# define MAY_HAVE_MEDIA(name) name ## _media
+#else
+# define MAY_HAVE_MEDIA(name) MAY_HAVE_EDSP(name)
+#endif
 
-# if defined(OAC_ARM_MAY_HAVE_NEON)
-#  define MAY_HAVE_NEON(name) name ## _neon
-# else
-#  define MAY_HAVE_NEON(name) MAY_HAVE_MEDIA(name)
-# endif
+#if defined(OAC_ARM_MAY_HAVE_NEON)
+# define MAY_HAVE_NEON(name) name ## _neon
+#else
+# define MAY_HAVE_NEON(name) MAY_HAVE_MEDIA(name)
+#endif
 
-# if defined(OAC_ARM_MAY_HAVE_DOTPROD)
-#  define MAY_HAVE_DOTPROD(name) name ## _dotprod
-# else
-#  define MAY_HAVE_DOTPROD(name) MAY_HAVE_NEON(name)
-# endif
+#if defined(OAC_ARM_MAY_HAVE_DOTPROD)
+# define MAY_HAVE_DOTPROD(name) name ## _dotprod
+#else
+# define MAY_HAVE_DOTPROD(name) MAY_HAVE_NEON(name)
+#endif
 
-# if defined(OAC_ARM_PRESUME_EDSP)
-#  define PRESUME_EDSP(name) name ## _edsp
-# else
-#  define PRESUME_EDSP(name) name ## _c
-# endif
+#if defined(OAC_ARM_PRESUME_EDSP)
+# define PRESUME_EDSP(name) name ## _edsp
+#else
+# define PRESUME_EDSP(name) name ## _c
+#endif
 
-# if defined(OAC_ARM_PRESUME_MEDIA)
-#  define PRESUME_MEDIA(name) name ## _media
-# else
-#  define PRESUME_MEDIA(name) PRESUME_EDSP(name)
-# endif
+#if defined(OAC_ARM_PRESUME_MEDIA)
+# define PRESUME_MEDIA(name) name ## _media
+#else
+# define PRESUME_MEDIA(name) PRESUME_EDSP(name)
+#endif
 
-# if defined(OAC_ARM_PRESUME_NEON)
-#  define PRESUME_NEON(name) name ## _neon
-# else
-#  define PRESUME_NEON(name) PRESUME_MEDIA(name)
-# endif
+#if defined(OAC_ARM_PRESUME_NEON)
+# define PRESUME_NEON(name) name ## _neon
+#else
+# define PRESUME_NEON(name) PRESUME_MEDIA(name)
+#endif
 
-# if defined(OAC_ARM_PRESUME_DOTPROD)
-#  define PRESUME_DOTPROD(name) name ## _dotprod
-# else
-#  define PRESUME_DOTPROD(name) PRESUME_NEON(name)
-# endif
+#if defined(OAC_ARM_PRESUME_DOTPROD)
+# define PRESUME_DOTPROD(name) name ## _dotprod
+#else
+# define PRESUME_DOTPROD(name) PRESUME_NEON(name)
+#endif
 
-# if defined(OAC_HAVE_RTCD)
+#if defined(OAC_HAVE_RTCD)
 int oac_select_arch(void);
 
-#define OAC_ARCH_ARM_V4    (0)
-#define OAC_ARCH_ARM_EDSP  (1)
-#define OAC_ARCH_ARM_MEDIA (2)
-#define OAC_ARCH_ARM_NEON  (3)
-#define OAC_ARCH_ARM_DOTPROD  (4)
+# define OAC_ARCH_ARM_V4    (0)
+# define OAC_ARCH_ARM_EDSP  (1)
+# define OAC_ARCH_ARM_MEDIA (2)
+# define OAC_ARCH_ARM_NEON  (3)
+# define OAC_ARCH_ARM_DOTPROD  (4)
 
-# endif
+#endif
 
 #endif

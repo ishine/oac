@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #if defined(HAVE_CONFIG_H)
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "x86/x86cpu.h"
@@ -39,58 +39,58 @@
 
 # if defined(FIXED_POINT)
 
-#if defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)
+#  if defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)
 
 void (*const CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *num,
          oac_val16       *y,
-         int              N,
-         int              ord,
-         int              arch
-) = {
-  celt_fir_c,                /* non-sse */
-  celt_fir_c,
-  celt_fir_c,
-  MAY_HAVE_SSE4_1(celt_fir), /* sse4.1  */
-  MAY_HAVE_SSE4_1(celt_fir)  /* avx  */
+         int N,
+         int ord,
+         int arch
+    ) = {
+    celt_fir_c,              /* non-sse */
+    celt_fir_c,
+    celt_fir_c,
+    MAY_HAVE_SSE4_1(celt_fir), /* sse4.1  */
+    MAY_HAVE_SSE4_1(celt_fir) /* avx  */
 };
 
 void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
-         oac_val32       sum[4],
-         int              len
-) = {
-  xcorr_kernel_c,                /* non-sse */
-  xcorr_kernel_c,
-  xcorr_kernel_c,
-  MAY_HAVE_SSE4_1(xcorr_kernel), /* sse4.1  */
-  MAY_HAVE_SSE4_1(xcorr_kernel)  /* avx  */
+         oac_val32 sum[4],
+         int len
+    ) = {
+    xcorr_kernel_c,              /* non-sse */
+    xcorr_kernel_c,
+    xcorr_kernel_c,
+    MAY_HAVE_SSE4_1(xcorr_kernel), /* sse4.1  */
+    MAY_HAVE_SSE4_1(xcorr_kernel) /* avx  */
 };
 
-#endif
+#  endif
 
-#if (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) ||  \
- (!defined(OAC_X86_MAY_HAVE_SSE_4_1) && defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2))
+#  if (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) ||  \
+    (!defined(OAC_X86_MAY_HAVE_SSE_4_1) && defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2))
 
 oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
-         int              N
-) = {
-  celt_inner_prod_c,                /* non-sse */
-  celt_inner_prod_c,
-  MAY_HAVE_SSE2(celt_inner_prod),
-  MAY_HAVE_SSE4_1(celt_inner_prod), /* sse4.1  */
-  MAY_HAVE_SSE4_1(celt_inner_prod)  /* avx  */
+         int N
+    ) = {
+    celt_inner_prod_c,              /* non-sse */
+    celt_inner_prod_c,
+    MAY_HAVE_SSE2(celt_inner_prod),
+    MAY_HAVE_SSE4_1(celt_inner_prod), /* sse4.1  */
+    MAY_HAVE_SSE4_1(celt_inner_prod) /* avx  */
 };
 
-#endif
+#  endif
 
 # else
 
-#if defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)
+#  if defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)
 
 void (*const PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
          const float *_x,
@@ -99,89 +99,89 @@ void (*const PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
          int len,
          int max_pitch,
          int arch
-) = {
-  celt_pitch_xcorr_c,                /* non-sse */
-  celt_pitch_xcorr_c,
-  celt_pitch_xcorr_c,
-  celt_pitch_xcorr_c,
-  MAY_HAVE_AVX2(celt_pitch_xcorr)
+    ) = {
+    celt_pitch_xcorr_c,              /* non-sse */
+    celt_pitch_xcorr_c,
+    celt_pitch_xcorr_c,
+    celt_pitch_xcorr_c,
+    MAY_HAVE_AVX2(celt_pitch_xcorr)
 };
 
-#endif
+#  endif
 
 
-#if defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)
+#  if defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)
 
 void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
-         oac_val32       sum[4],
-         int              len
-) = {
-  xcorr_kernel_c,                /* non-sse */
-  MAY_HAVE_SSE(xcorr_kernel),
-  MAY_HAVE_SSE(xcorr_kernel),
-  MAY_HAVE_SSE(xcorr_kernel),
-  MAY_HAVE_SSE(xcorr_kernel)
+         oac_val32 sum[4],
+         int len
+    ) = {
+    xcorr_kernel_c,              /* non-sse */
+    MAY_HAVE_SSE(xcorr_kernel),
+    MAY_HAVE_SSE(xcorr_kernel),
+    MAY_HAVE_SSE(xcorr_kernel),
+    MAY_HAVE_SSE(xcorr_kernel)
 };
 
 oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
-         int              N
-) = {
-  celt_inner_prod_c,                /* non-sse */
-  MAY_HAVE_SSE(celt_inner_prod),
-  MAY_HAVE_SSE(celt_inner_prod),
-  MAY_HAVE_SSE(celt_inner_prod),
-  MAY_HAVE_SSE(celt_inner_prod)
+         int N
+    ) = {
+    celt_inner_prod_c,              /* non-sse */
+    MAY_HAVE_SSE(celt_inner_prod),
+    MAY_HAVE_SSE(celt_inner_prod),
+    MAY_HAVE_SSE(celt_inner_prod),
+    MAY_HAVE_SSE(celt_inner_prod)
 };
 
 void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y01,
                     const oac_val16 *y02,
-                    int               N,
+                    int N,
                     oac_val32       *xy1,
                     oac_val32       *xy2
-) = {
-  dual_inner_prod_c,                /* non-sse */
-  MAY_HAVE_SSE(dual_inner_prod),
-  MAY_HAVE_SSE(dual_inner_prod),
-  MAY_HAVE_SSE(dual_inner_prod),
-  MAY_HAVE_SSE(dual_inner_prod)
+    ) = {
+    dual_inner_prod_c,              /* non-sse */
+    MAY_HAVE_SSE(dual_inner_prod),
+    MAY_HAVE_SSE(dual_inner_prod),
+    MAY_HAVE_SSE(dual_inner_prod),
+    MAY_HAVE_SSE(dual_inner_prod)
 };
 
 void (*const COMB_FILTER_CONST_IMPL[OAC_ARCHMASK + 1])(
               oac_val32 *y,
               oac_val32 *x,
-              int         T,
-              int         N,
-              oac_val16  g10,
-              oac_val16  g11,
-              oac_val16  g12
-) = {
-  comb_filter_const_c,                /* non-sse */
-  MAY_HAVE_SSE(comb_filter_const),
-  MAY_HAVE_SSE(comb_filter_const),
-  MAY_HAVE_SSE(comb_filter_const),
-  MAY_HAVE_SSE(comb_filter_const)
+              int T,
+              int N,
+              oac_val16 g10,
+              oac_val16 g11,
+              oac_val16 g12
+    ) = {
+    comb_filter_const_c,              /* non-sse */
+    MAY_HAVE_SSE(comb_filter_const),
+    MAY_HAVE_SSE(comb_filter_const),
+    MAY_HAVE_SSE(comb_filter_const),
+    MAY_HAVE_SSE(comb_filter_const)
 };
 
 
-#endif
+#  endif
 
-#if defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2)
+#  if defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2)
 oac_val16 (*const OP_PVQ_SEARCH_IMPL[OAC_ARCHMASK + 1])(
       celt_norm *_X, int *iy, int K, int N, int arch
-) = {
-  op_pvq_search_c,                /* non-sse */
-  op_pvq_search_c,
-  MAY_HAVE_SSE2(op_pvq_search),
-  MAY_HAVE_SSE2(op_pvq_search),
-  MAY_HAVE_SSE2(op_pvq_search)
+    ) = {
+    op_pvq_search_c,              /* non-sse */
+    op_pvq_search_c,
+    MAY_HAVE_SSE2(op_pvq_search),
+    MAY_HAVE_SSE2(op_pvq_search),
+    MAY_HAVE_SSE2(op_pvq_search)
 };
-#endif
+#  endif
 
-#endif
+# endif
 #endif

@@ -22,26 +22,26 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef _MSC_VER
 
-# ifdef OAC_X86_MAY_HAVE_SSE
-#  ifndef __SSE__
-#   define __SSE__
-#  endif
+#ifdef OAC_X86_MAY_HAVE_SSE
+# ifndef __SSE__
+#  define __SSE__
 # endif
+#endif
 
-# ifdef OAC_X86_MAY_HAVE_SSE2
-#  ifndef __SSE2__
-#   define __SSE2__
-#  endif
+#ifdef OAC_X86_MAY_HAVE_SSE2
+# ifndef __SSE2__
+#  define __SSE2__
 # endif
+#endif
 
-# ifdef OAC_X86_MAY_HAVE_SSE4_1
-#  ifndef __SSE4_1__
-#   define __SSE4_1__
-#  endif
+#ifdef OAC_X86_MAY_HAVE_SSE4_1
+# ifndef __SSE4_1__
+#  define __SSE4_1__
 # endif
+#endif
 
 #endif

@@ -23,16 +23,16 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef MAIN_SSE_H
-# define MAIN_SSE_H
+#define MAIN_SSE_H
 
-# ifdef HAVE_CONFIG_H
-#  include "config.h"
-# endif
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
-# if defined(OAC_X86_MAY_HAVE_SSE4_1)
+#if defined(OAC_X86_MAY_HAVE_SSE4_1)
 
 void silk_VQ_WMat_EC_sse4_1(
     oac_int8                   *ind,                           /* O    index of best codebook vector               */
@@ -44,20 +44,21 @@ void silk_VQ_WMat_EC_sse4_1(
     const oac_int8             *cb_Q7,                         /* I    codebook                                    */
     const oac_uint8            *cb_gain_Q7,                    /* I    codebook effective gain                     */
     const oac_uint8            *cl_Q5,                         /* I    code length for each codebook vector        */
-    const oac_int              subfr_len,                      /* I    number of samples per subframe              */
-    const oac_int32            max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
-    const oac_int              L                               /* I    number of vectors in codebook               */
-);
+    const oac_int subfr_len,                                   /* I    number of samples per subframe              */
+    const oac_int32 max_gain_Q7,                               /* I    maximum sum of absolute LTP coefficients    */
+    const oac_int L                                            /* I    number of vectors in codebook               */
+    );
 
-#  if defined OAC_X86_PRESUME_SSE4_1
+# if defined OAC_X86_PRESUME_SSE4_1
 
-#   define OVERRIDE_silk_VQ_WMat_EC
-#   define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
-                           subfr_len, max_gain_Q7, L, arch) \
-    ((void)(arch),silk_VQ_WMat_EC_sse4_1(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
+#  define OVERRIDE_silk_VQ_WMat_EC
+#  define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
+                          subfr_len, max_gain_Q7, L, arch) \
+        ((void)(arch), \
+         silk_VQ_WMat_EC_sse4_1(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
                           subfr_len, max_gain_Q7, L))
 
-#  elif defined(OAC_HAVE_RTCD)
+# elif defined(OAC_HAVE_RTCD)
 
 extern void (*const SILK_VQ_WMAT_EC_IMPL[OAC_ARCHMASK + 1])(
     oac_int8                   *ind,                           /* O    index of best codebook vector               */
@@ -69,90 +70,92 @@ extern void (*const SILK_VQ_WMAT_EC_IMPL[OAC_ARCHMASK + 1])(
     const oac_int8             *cb_Q7,                         /* I    codebook                                    */
     const oac_uint8            *cb_gain_Q7,                    /* I    codebook effective gain                     */
     const oac_uint8            *cl_Q5,                         /* I    code length for each codebook vector        */
-    const oac_int              subfr_len,                      /* I    number of samples per subframe              */
-    const oac_int32            max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
-    const oac_int              L                               /* I    number of vectors in codebook               */
-);
+    const oac_int subfr_len,                                   /* I    number of samples per subframe              */
+    const oac_int32 max_gain_Q7,                               /* I    maximum sum of absolute LTP coefficients    */
+    const oac_int L                                            /* I    number of vectors in codebook               */
+    );
 
-#   define OVERRIDE_silk_VQ_WMat_EC
-#   define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
-                           subfr_len, max_gain_Q7, L, arch) \
-    ((*SILK_VQ_WMAT_EC_IMPL[(arch) & OAC_ARCHMASK])(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
-                          subfr_len, max_gain_Q7, L))
+#  define OVERRIDE_silk_VQ_WMat_EC
+#  define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
+                          subfr_len, max_gain_Q7, L, arch) \
+        ((*SILK_VQ_WMAT_EC_IMPL[(arch)&OAC_ARCHMASK])(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, \
+                                                      cb_gain_Q7, cl_Q5, \
+                                                      subfr_len, max_gain_Q7, L))
 
-#  endif
+# endif
 
 void silk_NSQ_sse4_1(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
-    const oac_int16            x16[],                                        /* I    Input                           */
-    oac_int8                   pulses[],                                     /* O    Quantized pulse signal          */
+    const oac_int16 x16[],                                                   /* I    Input                           */
+    oac_int8 pulses[],                                                       /* O    Quantized pulse signal          */
     const oac_int16            *PredCoef_Q12,                                /* I    Short term prediction coefs     */
-    const oac_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],      /* I    Long term prediction coefs      */
-    const oac_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I    Noise shaping coefs             */
-    const oac_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],            /* I    Long term shaping coefs         */
-    const oac_int              Tilt_Q14[ MAX_NB_SUBFR ],                     /* I    Spectral tilt                   */
-    const oac_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                   /* I    Low frequency shaping coefs     */
-    const oac_int32            Gains_Q16[ MAX_NB_SUBFR ],                    /* I    Quantization step sizes         */
-    const oac_int              pitchL[ MAX_NB_SUBFR ],                       /* I    Pitch lags                      */
-    const oac_int              Lambda_Q10,                                   /* I    Rate/distortion tradeoff        */
-    const oac_int              LTP_scale_Q14                                 /* I    LTP state scaling               */
-);
+    const oac_int16 LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],                 /* I    Long term prediction coefs      */
+    const oac_int16 AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ],            /* I    Noise shaping coefs             */
+    const oac_int HarmShapeGain_Q14[ MAX_NB_SUBFR ],                         /* I    Long term shaping coefs         */
+    const oac_int Tilt_Q14[ MAX_NB_SUBFR ],                                  /* I    Spectral tilt                   */
+    const oac_int32 LF_shp_Q14[ MAX_NB_SUBFR ],                              /* I    Low frequency shaping coefs     */
+    const oac_int32 Gains_Q16[ MAX_NB_SUBFR ],                               /* I    Quantization step sizes         */
+    const oac_int pitchL[ MAX_NB_SUBFR ],                                    /* I    Pitch lags                      */
+    const oac_int Lambda_Q10,                                                /* I    Rate/distortion tradeoff        */
+    const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
+    );
 
-#  if defined OAC_X86_PRESUME_SSE4_1
+# if defined OAC_X86_PRESUME_SSE4_1
 
-#   define OVERRIDE_silk_NSQ
-#   define silk_NSQ(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
-                    HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-    ((void)(arch),silk_NSQ_sse4_1(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
+#  define OVERRIDE_silk_NSQ
+#  define silk_NSQ(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
+                   HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
+        ((void)(arch), silk_NSQ_sse4_1(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
                    HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
-#  elif defined(OAC_HAVE_RTCD)
+# elif defined(OAC_HAVE_RTCD)
 
 extern void (*const SILK_NSQ_IMPL[OAC_ARCHMASK + 1])(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
-    const oac_int16            x16[],                                        /* I    Input                           */
-    oac_int8                   pulses[],                                     /* O    Quantized pulse signal          */
+    const oac_int16 x16[],                                                   /* I    Input                           */
+    oac_int8 pulses[],                                                       /* O    Quantized pulse signal          */
     const oac_int16            *PredCoef_Q12,                                /* I    Short term prediction coefs     */
-    const oac_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],      /* I    Long term prediction coefs      */
-    const oac_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I    Noise shaping coefs             */
-    const oac_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],            /* I    Long term shaping coefs         */
-    const oac_int              Tilt_Q14[ MAX_NB_SUBFR ],                     /* I    Spectral tilt                   */
-    const oac_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                   /* I    Low frequency shaping coefs     */
-    const oac_int32            Gains_Q16[ MAX_NB_SUBFR ],                    /* I    Quantization step sizes         */
-    const oac_int              pitchL[ MAX_NB_SUBFR ],                       /* I    Pitch lags                      */
-    const oac_int              Lambda_Q10,                                   /* I    Rate/distortion tradeoff        */
-    const oac_int              LTP_scale_Q14                                 /* I    LTP state scaling               */
-);
+    const oac_int16 LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],                 /* I    Long term prediction coefs      */
+    const oac_int16 AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ],            /* I    Noise shaping coefs             */
+    const oac_int HarmShapeGain_Q14[ MAX_NB_SUBFR ],                         /* I    Long term shaping coefs         */
+    const oac_int Tilt_Q14[ MAX_NB_SUBFR ],                                  /* I    Spectral tilt                   */
+    const oac_int32 LF_shp_Q14[ MAX_NB_SUBFR ],                              /* I    Low frequency shaping coefs     */
+    const oac_int32 Gains_Q16[ MAX_NB_SUBFR ],                               /* I    Quantization step sizes         */
+    const oac_int pitchL[ MAX_NB_SUBFR ],                                    /* I    Pitch lags                      */
+    const oac_int Lambda_Q10,                                                /* I    Rate/distortion tradeoff        */
+    const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
+    );
 
-#   define OVERRIDE_silk_NSQ
-#   define silk_NSQ(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
-                    HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-    ((*SILK_NSQ_IMPL[(arch) & OAC_ARCHMASK])(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
-                   HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
+#  define OVERRIDE_silk_NSQ
+#  define silk_NSQ(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
+                   HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
+        ((*SILK_NSQ_IMPL[(arch)&OAC_ARCHMASK])(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
+                                               HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, \
+                                               LTP_scale_Q14))
 
-#  endif
+# endif
 
 void silk_NSQ_del_dec_sse4_1(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
-    const oac_int16            x16[],                                        /* I    Input                           */
-    oac_int8                   pulses[],                                     /* O    Quantized pulse signal          */
+    const oac_int16 x16[],                                                   /* I    Input                           */
+    oac_int8 pulses[],                                                       /* O    Quantized pulse signal          */
     const oac_int16            *PredCoef_Q12,                                /* I    Short term prediction coefs     */
-    const oac_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],      /* I    Long term prediction coefs      */
-    const oac_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I    Noise shaping coefs             */
-    const oac_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],            /* I    Long term shaping coefs         */
-    const oac_int              Tilt_Q14[ MAX_NB_SUBFR ],                     /* I    Spectral tilt                   */
-    const oac_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                   /* I    Low frequency shaping coefs     */
-    const oac_int32            Gains_Q16[ MAX_NB_SUBFR ],                    /* I    Quantization step sizes         */
-    const oac_int              pitchL[ MAX_NB_SUBFR ],                       /* I    Pitch lags                      */
-    const oac_int              Lambda_Q10,                                   /* I    Rate/distortion tradeoff        */
-    const oac_int              LTP_scale_Q14                                 /* I    LTP state scaling               */
-);
+    const oac_int16 LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],                 /* I    Long term prediction coefs      */
+    const oac_int16 AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ],            /* I    Noise shaping coefs             */
+    const oac_int HarmShapeGain_Q14[ MAX_NB_SUBFR ],                         /* I    Long term shaping coefs         */
+    const oac_int Tilt_Q14[ MAX_NB_SUBFR ],                                  /* I    Spectral tilt                   */
+    const oac_int32 LF_shp_Q14[ MAX_NB_SUBFR ],                              /* I    Low frequency shaping coefs     */
+    const oac_int32 Gains_Q16[ MAX_NB_SUBFR ],                               /* I    Quantization step sizes         */
+    const oac_int pitchL[ MAX_NB_SUBFR ],                                    /* I    Pitch lags                      */
+    const oac_int Lambda_Q10,                                                /* I    Rate/distortion tradeoff        */
+    const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
+    );
 
 void silk_NSQ_del_dec_avx2(
     const silk_encoder_state *psEncC,                            /* I    Encoder State               */
@@ -170,130 +173,135 @@ void silk_NSQ_del_dec_avx2(
     const oac_int32 pitchL[MAX_NB_SUBFR],                       /* I    Pitch lags                  */
     const oac_int Lambda_Q10,                                   /* I    Rate/distortion tradeoff    */
     const oac_int LTP_scale_Q14                                 /* I    LTP state scaling           */
-);
+    );
 
-#  if defined (OAC_X86_PRESUME_AVX2)
+# if defined (OAC_X86_PRESUME_AVX2)
 
-#   define OVERRIDE_silk_NSQ_del_dec
-#   define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
-                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-    ((void)(arch),silk_NSQ_del_dec_avx2(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+#  define OVERRIDE_silk_NSQ_del_dec
+#  define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+                           HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
+        ((void)(arch), silk_NSQ_del_dec_avx2(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
-#  elif defined (OAC_X86_PRESUME_SSE4_1) && !defined(OAC_X86_MAY_HAVE_AVX2)
+# elif defined (OAC_X86_PRESUME_SSE4_1) && !defined(OAC_X86_MAY_HAVE_AVX2)
 
-#   define OVERRIDE_silk_NSQ_del_dec
-#   define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
-                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-    ((void)(arch),silk_NSQ_del_dec_sse4_1(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+#  define OVERRIDE_silk_NSQ_del_dec
+#  define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+                           HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
+        ((void)(arch), silk_NSQ_del_dec_sse4_1(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 
-#  elif defined(OAC_HAVE_RTCD)
+# elif defined(OAC_HAVE_RTCD)
 
 extern void (*const SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
-    const oac_int16            x16[],                                        /* I    Input                           */
-    oac_int8                   pulses[],                                     /* O    Quantized pulse signal          */
+    const oac_int16 x16[],                                                   /* I    Input                           */
+    oac_int8 pulses[],                                                       /* O    Quantized pulse signal          */
     const oac_int16            *PredCoef_Q12,                                /* I    Short term prediction coefs     */
-    const oac_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],      /* I    Long term prediction coefs      */
-    const oac_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I    Noise shaping coefs             */
-    const oac_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],            /* I    Long term shaping coefs         */
-    const oac_int              Tilt_Q14[ MAX_NB_SUBFR ],                     /* I    Spectral tilt                   */
-    const oac_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                   /* I    Low frequency shaping coefs     */
-    const oac_int32            Gains_Q16[ MAX_NB_SUBFR ],                    /* I    Quantization step sizes         */
-    const oac_int              pitchL[ MAX_NB_SUBFR ],                       /* I    Pitch lags                      */
-    const oac_int              Lambda_Q10,                                   /* I    Rate/distortion tradeoff        */
-    const oac_int              LTP_scale_Q14                                 /* I    LTP state scaling               */
-);
+    const oac_int16 LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],                 /* I    Long term prediction coefs      */
+    const oac_int16 AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ],            /* I    Noise shaping coefs             */
+    const oac_int HarmShapeGain_Q14[ MAX_NB_SUBFR ],                         /* I    Long term shaping coefs         */
+    const oac_int Tilt_Q14[ MAX_NB_SUBFR ],                                  /* I    Spectral tilt                   */
+    const oac_int32 LF_shp_Q14[ MAX_NB_SUBFR ],                              /* I    Low frequency shaping coefs     */
+    const oac_int32 Gains_Q16[ MAX_NB_SUBFR ],                               /* I    Quantization step sizes         */
+    const oac_int pitchL[ MAX_NB_SUBFR ],                                    /* I    Pitch lags                      */
+    const oac_int Lambda_Q10,                                                /* I    Rate/distortion tradeoff        */
+    const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
+    );
 
-#   define OVERRIDE_silk_NSQ_del_dec
-#   define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
-                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-    ((*SILK_NSQ_DEL_DEC_IMPL[(arch) & OAC_ARCHMASK])(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
-                           HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
+#  define OVERRIDE_silk_NSQ_del_dec
+#  define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+                           HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
+        ((*SILK_NSQ_DEL_DEC_IMPL[(arch)&OAC_ARCHMASK])(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, \
+                                                       AR_Q13, \
+                                                       HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, \
+                                                       Lambda_Q10, LTP_scale_Q14))
 
-#  endif
+# endif
 
 void silk_noise_shape_quantizer(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
-    oac_int            signalType,             /* I    Signal type                     */
-    const oac_int32    x_sc_Q10[],             /* I                                    */
-    oac_int8           pulses[],               /* O                                    */
-    oac_int16          xq[],                   /* O                                    */
-    oac_int32          sLTP_Q15[],             /* I/O  LTP state                       */
-    const oac_int16    a_Q12[],                /* I    Short term prediction coefs     */
-    const oac_int16    b_Q14[],                /* I    Long term prediction coefs      */
-    const oac_int16    AR_shp_Q13[],           /* I    Noise shaping AR coefs          */
-    oac_int            lag,                    /* I    Pitch lag                       */
-    oac_int32          HarmShapeFIRPacked_Q14, /* I                                    */
-    oac_int            Tilt_Q14,               /* I    Spectral tilt                   */
-    oac_int32          LF_shp_Q14,             /* I                                    */
-    oac_int32          Gain_Q16,               /* I                                    */
-    oac_int            Lambda_Q10,             /* I                                    */
-    oac_int            offset_Q10,             /* I                                    */
-    oac_int            length,                 /* I    Input length                    */
-    oac_int            shapingLPCOrder,        /* I    Noise shaping AR filter order   */
-    oac_int            predictLPCOrder,        /* I    Prediction filter order         */
-    int                 arch                    /* I    Architecture                    */
-);
+    oac_int signalType,                        /* I    Signal type                     */
+    const oac_int32 x_sc_Q10[],                /* I                                    */
+    oac_int8 pulses[],                         /* O                                    */
+    oac_int16 xq[],                            /* O                                    */
+    oac_int32 sLTP_Q15[],                      /* I/O  LTP state                       */
+    const oac_int16 a_Q12[],                   /* I    Short term prediction coefs     */
+    const oac_int16 b_Q14[],                   /* I    Long term prediction coefs      */
+    const oac_int16 AR_shp_Q13[],              /* I    Noise shaping AR coefs          */
+    oac_int lag,                               /* I    Pitch lag                       */
+    oac_int32 HarmShapeFIRPacked_Q14,          /* I                                    */
+    oac_int Tilt_Q14,                          /* I    Spectral tilt                   */
+    oac_int32 LF_shp_Q14,                      /* I                                    */
+    oac_int32 Gain_Q16,                        /* I                                    */
+    oac_int Lambda_Q10,                        /* I                                    */
+    oac_int offset_Q10,                        /* I                                    */
+    oac_int length,                            /* I    Input length                    */
+    oac_int shapingLPCOrder,                   /* I    Noise shaping AR filter order   */
+    oac_int predictLPCOrder,                   /* I    Prediction filter order         */
+    int arch                                    /* I    Architecture                    */
+    );
 
 /**************************/
 /* Noise level estimation */
 /**************************/
 void silk_VAD_GetNoiseLevels(
-    const oac_int32            pX[ VAD_N_BANDS ],  /* I    subband energies                            */
+    const oac_int32 pX[ VAD_N_BANDS ],             /* I    subband energies                            */
     silk_VAD_state              *psSilk_VAD         /* I/O  Pointer to Silk VAD state                   */
-);
+    );
 
 oac_int silk_VAD_GetSA_Q8_sse4_1(
     silk_encoder_state *psEnC,
-    const oac_int16   pIn[]
-);
+    const oac_int16 pIn[]);
 
-#  if defined(OAC_X86_PRESUME_SSE4_1)
+# if defined(OAC_X86_PRESUME_SSE4_1)
 
-#   define OVERRIDE_silk_VAD_GetSA_Q8
-#   define silk_VAD_GetSA_Q8(psEnC, pIn, arch) ((void)(arch),silk_VAD_GetSA_Q8_sse4_1(psEnC, pIn))
+#  define OVERRIDE_silk_VAD_GetSA_Q8
+#  define silk_VAD_GetSA_Q8(psEnC, pIn, arch) ((void)(arch), silk_VAD_GetSA_Q8_sse4_1(psEnC, pIn))
 
-#  elif defined(OAC_HAVE_RTCD)
+# elif defined(OAC_HAVE_RTCD)
 
 extern oac_int (*const SILK_VAD_GETSA_Q8_IMPL[OAC_ARCHMASK + 1])(
      silk_encoder_state *psEnC,
-     const oac_int16   pIn[]);
+     const oac_int16 pIn[]);
 
-#   define OVERRIDE_silk_VAD_GetSA_Q8
-#   define silk_VAD_GetSA_Q8(psEnC, pIn, arch) \
-      ((*SILK_VAD_GETSA_Q8_IMPL[(arch) & OAC_ARCHMASK])(psEnC, pIn))
+#  define OVERRIDE_silk_VAD_GetSA_Q8
+#  define silk_VAD_GetSA_Q8(psEnC, pIn, arch) \
+        ((*SILK_VAD_GETSA_Q8_IMPL[(arch)&OAC_ARCHMASK])(psEnC, pIn))
 
-#  endif
+# endif
 
-#ifndef FIXED_POINT
+# ifndef FIXED_POINT
 double silk_inner_product_FLP_avx2(
     const silk_float    *data1,
     const silk_float    *data2,
-    oac_int            dataSize
-);
+    oac_int dataSize);
 
-#if defined (OAC_X86_PRESUME_AVX2)
+#  if defined (OAC_X86_PRESUME_AVX2)
 
-#define OVERRIDE_inner_product_FLP
-#define silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch,silk_inner_product_FLP_avx2(data1, data2, dataSize))
+#   define OVERRIDE_inner_product_FLP
+#   define silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch, \
+                                                                 silk_inner_product_FLP_avx2(data1, data2, dataSize))
 
-#elif defined(OAC_HAVE_RTCD) && defined(OAC_X86_MAY_HAVE_AVX2)
+#  elif defined(OAC_HAVE_RTCD) && defined(OAC_X86_MAY_HAVE_AVX2)
 
-#define OVERRIDE_inner_product_FLP
+#   define OVERRIDE_inner_product_FLP
 extern double (*const SILK_INNER_PRODUCT_FLP_IMPL[OAC_ARCHMASK + 1])(
     const silk_float    *data1,
     const silk_float    *data2,
-    oac_int            dataSize
-);
+    oac_int dataSize
+    );
 
-#define silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch,(*SILK_INNER_PRODUCT_FLP_IMPL[(arch) & OAC_ARCHMASK])(data1, data2, dataSize))
+#   define silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch, \
+                                                                 (*SILK_INNER_PRODUCT_FLP_IMPL[(arch) \
+                                                                                               &OAC_ARCHMASK])(data1, \
+                                                                                                               data2, \
+                                                                                                               dataSize))
 
-#endif
-#endif
-
+#  endif
 # endif
+
+#endif
 #endif

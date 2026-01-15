@@ -3,8 +3,8 @@
    Copyright (c) 2008 Gregory Maxwell
    Written by Jean-Marc Valin and Gregory Maxwell */
 /**
-  @file celt.h
-  @brief Contains all the functions for encoding and decoding audio
+   @file celt.h
+   @brief Contains all the functions for encoding and decoding audio
  */
 
 /*
@@ -30,7 +30,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef CELT_H
 #define CELT_H
@@ -44,7 +44,7 @@
 #include "kiss_fft.h"
 
 #ifdef ENABLE_DEEP_PLC
-#include "lpcnet.h"
+# include "lpcnet.h"
 #endif
 
 #define CELTEncoder OacCustomEncoder
@@ -54,24 +54,24 @@
 #define LEAK_BANDS 19
 
 typedef struct {
-   int valid;
-   float tonality;
-   float tonality_slope;
-   float noisiness;
-   float activity;
-   float music_prob;
-   float music_prob_min;
-   float music_prob_max;
-   int   bandwidth;
-   float activity_probability;
-   float max_pitch_ratio;
-   /* Store as Q6 char to save space. */
-   unsigned char leak_boost[LEAK_BANDS];
+    int valid;
+    float tonality;
+    float tonality_slope;
+    float noisiness;
+    float activity;
+    float music_prob;
+    float music_prob_min;
+    float music_prob_max;
+    int bandwidth;
+    float activity_probability;
+    float max_pitch_ratio;
+    /* Store as Q6 char to save space. */
+    unsigned char leak_boost[LEAK_BANDS];
 } AnalysisInfo;
 
 typedef struct {
-   int signalType;
-   int offset;
+    int signalType;
+    int offset;
 } SILKInfo;
 
 #define celt_check_mode_ptr_ptr(ptr) ((ptr) + ((ptr) - (const CELTMode**)(ptr)))
@@ -136,21 +136,22 @@ typedef struct {
 
 
 static OAC_INLINE oac_int32 bits_to_bitrate(oac_int32 bits, oac_int32 Fs, oac_int32 frame_size) {
-   return bits*(6*Fs/frame_size)/6;
+    return bits*(6*Fs/frame_size)/6;
 }
 
 static OAC_INLINE oac_int32 bitrate_to_bits(oac_int32 bitrate, oac_int32 Fs, oac_int32 frame_size) {
-   return bitrate*6/(6*Fs/frame_size);
+    return bitrate*6/(6*Fs/frame_size);
 }
 
 /* Encoder stuff */
 
 int celt_encoder_get_size(int channels);
 
-int celt_encode_with_ec(OacCustomEncoder * OAC_RESTRICT st, const oac_res * pcm, int frame_size, unsigned char *compressed, int nbCompressedBytes, ec_enc *enc);
+int celt_encode_with_ec(OacCustomEncoder * OAC_RESTRICT st, const oac_res * pcm, int frame_size,
+    unsigned char *compressed, int nbCompressedBytes, ec_enc *enc);
 
 int celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
-                      int arch);
+    int arch);
 
 
 
@@ -162,64 +163,62 @@ int celt_decoder_get_size(int channels);
 int celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channels);
 
 int celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned char *data,
-      int len, oac_res * OAC_RESTRICT pcm, int frame_size, ec_dec *dec, int accum
+    int len, oac_res * OAC_RESTRICT pcm, int frame_size, ec_dec *dec, int accum
 #ifdef ENABLE_DEEP_PLC
-      ,LPCNetPLCState *lpcnet
+    , LPCNetPLCState *lpcnet
 #endif
-      );
+    );
 
 int celt_decode_with_ec(OacCustomDecoder * OAC_RESTRICT st, const unsigned char *data,
-      int len, oac_res * OAC_RESTRICT pcm, int frame_size, ec_dec *dec, int accum);
+    int len, oac_res * OAC_RESTRICT pcm, int frame_size, ec_dec *dec, int accum);
 
 #define celt_encoder_ctl oac_custom_encoder_ctl
 #define celt_decoder_ctl oac_custom_decoder_ctl
 
 
 #if defined(CUSTOM_MODES) || defined(ENABLE_OAC_CUSTOM_API)
-#define OAC_CUSTOM_NOSTATIC
+# define OAC_CUSTOM_NOSTATIC
 #else
-#define OAC_CUSTOM_NOSTATIC static OAC_INLINE
+# define OAC_CUSTOM_NOSTATIC static OAC_INLINE
 #endif
 
 static const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
 /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
 static const unsigned char spread_icdf[4] = {25, 23, 2, 0};
 
-static const unsigned char tapset_icdf[3]={2,1,0};
+static const unsigned char tapset_icdf[3] = {2, 1, 0};
 
 #if defined(CUSTOM_MODES) || defined(ENABLE_OAC_CUSTOM_API)
 static const unsigned char toOacTable[20] = {
-      0xE0, 0xE8, 0xF0, 0xF8,
-      0xC0, 0xC8, 0xD0, 0xD8,
-      0xA0, 0xA8, 0xB0, 0xB8,
-      0x00, 0x00, 0x00, 0x00,
-      0x80, 0x88, 0x90, 0x98,
+    0xE0, 0xE8, 0xF0, 0xF8,
+    0xC0, 0xC8, 0xD0, 0xD8,
+    0xA0, 0xA8, 0xB0, 0xB8,
+    0x00, 0x00, 0x00, 0x00,
+    0x80, 0x88, 0x90, 0x98,
 };
 
 static const unsigned char fromOacTable[16] = {
-      0x80, 0x88, 0x90, 0x98,
-      0x40, 0x48, 0x50, 0x58,
-      0x20, 0x28, 0x30, 0x38,
-      0x00, 0x08, 0x10, 0x18
+    0x80, 0x88, 0x90, 0x98,
+    0x40, 0x48, 0x50, 0x58,
+    0x20, 0x28, 0x30, 0x38,
+    0x00, 0x08, 0x10, 0x18
 };
 
-static OAC_INLINE int toOac(unsigned char c)
-{
-   int ret=0;
-   if (c<0xA0)
-      ret = toOacTable[c>>3];
-   if (ret == 0)
-      return -1;
-   else
-      return ret|(c&0x7);
+static OAC_INLINE int toOac(unsigned char c) {
+    int ret = 0;
+    if (c < 0xA0)
+        ret = toOacTable[c>>3];
+    if (ret == 0)
+        return -1;
+    else
+        return ret|(c&0x7);
 }
 
-static OAC_INLINE int fromOac(unsigned char c)
-{
-   if (c<0x80)
-      return -1;
-   else
-      return fromOacTable[(c>>3)-16] | (c&0x7);
+static OAC_INLINE int fromOac(unsigned char c) {
+    if (c < 0x80)
+        return -1;
+    else
+        return fromOacTable[(c>>3) - 16]|(c&0x7);
 }
 #endif /* CUSTOM_MODES */
 
@@ -230,35 +229,36 @@ extern const signed char tf_select_table[4][8];
 
 #if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
 void validate_celt_decoder(CELTDecoder *st);
-#define VALIDATE_CELT_DECODER(st) validate_celt_decoder(st)
+# define VALIDATE_CELT_DECODER(st) validate_celt_decoder(st)
 #else
-#define VALIDATE_CELT_DECODER(st)
+# define VALIDATE_CELT_DECODER(st)
 #endif
 
 int resampling_factor(oac_int32 rate);
 
 void celt_preemphasis(const oac_res * OAC_RESTRICT pcmp, celt_sig * OAC_RESTRICT inp,
-                        int N, int CC, int upsample, const oac_val16 *coef, celt_sig *mem, int clip);
+    int N, int CC, int upsample, const oac_val16 *coef, celt_sig *mem, int clip);
 
 void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
-      oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
-      const celt_coef *window, int overlap, int arch);
+    oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
+    const celt_coef *window, int overlap, int arch);
 
-void init_caps(const CELTMode *m,int *cap,int LM,int C);
+void init_caps(const CELTMode *m, int *cap, int LM, int C);
 
 #ifdef RESYNTH
-void deemphasis(celt_sig *in[], oac_res *pcm, int N, int C, int downsample, const oac_val16 *coef, celt_sig *mem, int accum);
+void deemphasis(celt_sig *in[], oac_res *pcm, int N, int C, int downsample, const oac_val16 *coef, celt_sig *mem,
+    int accum);
 void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
-      celt_glog *oldBandE, int start, int effEnd, int C, int CC, int isTransient,
-      int LM, int downsample, int silence, int arch);
+    celt_glog *oldBandE, int start, int effEnd, int C, int CC, int isTransient,
+    int LM, int downsample, int silence, int arch);
 #endif
 
 #ifdef ENABLE_QEXT
-#define QEXT_SCALE(x) ((qext_scale)*(x))
-#define QEXT_SCALE2(x, qext_scale) ((qext_scale)*(x))
+# define QEXT_SCALE(x) ((qext_scale)*(x))
+# define QEXT_SCALE2(x, qext_scale) ((qext_scale)*(x))
 #else
-#define QEXT_SCALE(x) (x)
-#define QEXT_SCALE2(x, qext_scale) (x)
+# define QEXT_SCALE(x) (x)
+# define QEXT_SCALE2(x, qext_scale) (x)
 #endif
 
 #endif /* CELT_H */

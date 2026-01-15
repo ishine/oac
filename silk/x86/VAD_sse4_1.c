@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <xmmintrin.h>
@@ -44,21 +44,20 @@ static const oac_int32 tiltWeights[ VAD_N_BANDS ] = { 30000, 6000, -12000, -1200
 /***************************************/
 oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if success                  */
     silk_encoder_state          *psEncC,            /* I/O  Encoder state                               */
-    const oac_int16            pIn[]               /* I    PCM input                                   */
-)
-{
-    oac_int   SA_Q15, pSNR_dB_Q7, input_tilt;
-    oac_int   decimated_framelength1, decimated_framelength2;
-    oac_int   decimated_framelength;
-    oac_int   dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
+    const oac_int16 pIn[]                          /* I    PCM input                                   */
+    ) {
+    oac_int SA_Q15, pSNR_dB_Q7, input_tilt;
+    oac_int decimated_framelength1, decimated_framelength2;
+    oac_int decimated_framelength;
+    oac_int dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
     oac_int32 sumSquared, smooth_coef_Q16;
     oac_int16 HPstateTmp;
     VARDECL( oac_int16, X );
     oac_int32 Xnrg[ VAD_N_BANDS ];
     oac_int32 NrgToNoiseRatio_Q8[ VAD_N_BANDS ];
     oac_int32 speech_nrg, x_tmp;
-    oac_int   X_offset[ VAD_N_BANDS ];
-    oac_int   ret = 0;
+    oac_int X_offset[ VAD_N_BANDS ];
+    oac_int ret = 0;
     silk_VAD_state *psSilk_VAD = &psEncC->sVAD;
 
     SAVE_STACK;
@@ -67,7 +66,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     silk_encoder_state psEncC_c;
     oac_int ret_c;
 
-    silk_memcpy( &psEncC_c, psEncC, sizeof( psEncC_c ) );
+    silk_memcpy( &psEncC_c, psEncC, sizeof(psEncC_c));
     ret_c = silk_VAD_GetSA_Q8_c( &psEncC_c, pIn );
 #endif
 
@@ -75,7 +74,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     silk_assert( VAD_N_BANDS == 4 );
     celt_assert( MAX_FRAME_LENGTH >= psEncC->frame_length );
     celt_assert( psEncC->frame_length <= 512 );
-    celt_assert( psEncC->frame_length == 8 * silk_RSHIFT( psEncC->frame_length, 3 ) );
+    celt_assert( psEncC->frame_length == 8*silk_RSHIFT( psEncC->frame_length, 3 ));
 
     /***********************/
     /* Filter and Decimate */
@@ -115,7 +114,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /*********************************************/
     X[ decimated_framelength - 1 ] = silk_RSHIFT( X[ decimated_framelength - 1 ], 1 );
     HPstateTmp = X[ decimated_framelength - 1 ];
-    for( i = decimated_framelength - 1; i > 0; i-- ) {
+    for (i = decimated_framelength - 1; i > 0; i--) {
         X[ i - 1 ]  = silk_RSHIFT( X[ i - 1 ], 1 );
         X[ i ]     -= X[ i - 1 ];
     }
@@ -125,9 +124,9 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /*************************************/
     /* Calculate the energy in each band */
     /*************************************/
-    for( b = 0; b < VAD_N_BANDS; b++ ) {
+    for (b = 0; b < VAD_N_BANDS; b++) {
         /* Find the decimated framelength in the non-uniformly divided bands */
-        decimated_framelength = silk_RSHIFT( psEncC->frame_length, silk_min_int( VAD_N_BANDS - b, VAD_N_BANDS - 1 ) );
+        decimated_framelength = silk_RSHIFT( psEncC->frame_length, silk_min_int( VAD_N_BANDS - b, VAD_N_BANDS - 1 ));
 
         /* Split length into subframe lengths */
         dec_subframe_length = silk_RSHIFT( decimated_framelength, VAD_INTERNAL_SUBFRAMES_LOG2 );
@@ -136,26 +135,25 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
         /* Compute energy per sub-frame */
         /* initialize with summed energy of last subframe */
         Xnrg[ b ] = psSilk_VAD->XnrgSubfr[ b ];
-        for( s = 0; s < VAD_INTERNAL_SUBFRAMES; s++ ) {
+        for (s = 0; s < VAD_INTERNAL_SUBFRAMES; s++) {
             __m128i xmm_X, xmm_acc;
             sumSquared = 0;
 
             xmm_acc = _mm_setzero_si128();
 
-            for( i = 0; i < dec_subframe_length - 7; i += 8 )
-            {
-                xmm_X   = _mm_loadu_si128( (__m128i *)(void*)&(X[ X_offset[ b ] + i + dec_subframe_offset ] ) );
+            for (i = 0; i < dec_subframe_length - 7; i += 8) {
+                xmm_X   = _mm_loadu_si128((__m128i *)(void*)&(X[ X_offset[ b ] + i + dec_subframe_offset ]));
                 xmm_X   = _mm_srai_epi16( xmm_X, 3 );
                 xmm_X   = _mm_madd_epi16( xmm_X, xmm_X );
                 xmm_acc = _mm_add_epi32( xmm_acc, xmm_X );
             }
 
-            xmm_acc = _mm_add_epi32( xmm_acc, _mm_unpackhi_epi64( xmm_acc, xmm_acc ) );
-            xmm_acc = _mm_add_epi32( xmm_acc, _mm_shufflelo_epi16( xmm_acc, 0x0E ) );
+            xmm_acc = _mm_add_epi32( xmm_acc, _mm_unpackhi_epi64( xmm_acc, xmm_acc ));
+            xmm_acc = _mm_add_epi32( xmm_acc, _mm_shufflelo_epi16( xmm_acc, 0x0E ));
 
             sumSquared += _mm_cvtsi128_si32( xmm_acc );
 
-            for( ; i < dec_subframe_length; i++ ) {
+            for ( ; i < dec_subframe_length; i++) {
                 /* The energy will be less than dec_subframe_length * ( silk_int16_MIN / 8 ) ^ 2.            */
                 /* Therefore we can accumulate with no risk of overflow (unless dec_subframe_length > 128)  */
                 x_tmp = silk_RSHIFT(
@@ -167,11 +165,11 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
             }
 
             /* Add/saturate summed energy of current subframe */
-            if( s < VAD_INTERNAL_SUBFRAMES - 1 ) {
+            if (s < VAD_INTERNAL_SUBFRAMES - 1) {
                 Xnrg[ b ] = silk_ADD_POS_SAT32( Xnrg[ b ], sumSquared );
             } else {
                 /* Look-ahead subframe */
-                Xnrg[ b ] = silk_ADD_POS_SAT32( Xnrg[ b ], silk_RSHIFT( sumSquared, 1 ) );
+                Xnrg[ b ] = silk_ADD_POS_SAT32( Xnrg[ b ], silk_RSHIFT( sumSquared, 1 ));
             }
 
             dec_subframe_offset += dec_subframe_length;
@@ -189,24 +187,24 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /***********************************************/
     sumSquared = 0;
     input_tilt = 0;
-    for( b = 0; b < VAD_N_BANDS; b++ ) {
+    for (b = 0; b < VAD_N_BANDS; b++) {
         speech_nrg = Xnrg[ b ] - psSilk_VAD->NL[ b ];
-        if( speech_nrg > 0 ) {
+        if (speech_nrg > 0) {
             /* Divide, with sufficient resolution */
-            if( ( Xnrg[ b ] & 0xFF800000 ) == 0 ) {
+            if ((Xnrg[ b ]&0xFF800000) == 0) {
                 NrgToNoiseRatio_Q8[ b ] = silk_DIV32( silk_LSHIFT( Xnrg[ b ], 8 ), psSilk_VAD->NL[ b ] + 1 );
             } else {
                 NrgToNoiseRatio_Q8[ b ] = silk_DIV32( Xnrg[ b ], silk_RSHIFT( psSilk_VAD->NL[ b ], 8 ) + 1 );
             }
 
             /* Convert to log domain */
-            SNR_Q7 = silk_lin2log( NrgToNoiseRatio_Q8[ b ] ) - 8 * 128;
+            SNR_Q7 = silk_lin2log( NrgToNoiseRatio_Q8[ b ] ) - 8*128;
 
             /* Sum-of-squares */
             sumSquared = silk_SMLABB( sumSquared, SNR_Q7, SNR_Q7 );          /* Q14 */
 
             /* Tilt measure */
-            if( speech_nrg < ( (oac_int32)1 << 20 ) ) {
+            if (speech_nrg < ((oac_int32)1<<20)) {
                 /* Scale down SNR value for small subband speech energies */
                 SNR_Q7 = silk_SMULWB( silk_LSHIFT( silk_SQRT_APPROX( speech_nrg ), 6 ), SNR_Q7 );
             }
@@ -220,7 +218,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     sumSquared = silk_DIV32_16( sumSquared, VAD_N_BANDS ); /* Q14 */
 
     /* Root-mean-square approximation, scale to dBs, and write to output pointer */
-    pSNR_dB_Q7 = (oac_int16)( 3 * silk_SQRT_APPROX( sumSquared ) ); /* Q7 */
+    pSNR_dB_Q7 = (oac_int16)(3*silk_SQRT_APPROX( sumSquared ));     /* Q7 */
 
     /*********************************/
     /* Speech Probability Estimation */
@@ -236,18 +234,18 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /* Scale the sigmoid output based on power levels */
     /**************************************************/
     speech_nrg = 0;
-    for( b = 0; b < VAD_N_BANDS; b++ ) {
+    for (b = 0; b < VAD_N_BANDS; b++) {
         /* Accumulate signal-without-noise energies, higher frequency bands have more weight */
-        speech_nrg += ( b + 1 ) * silk_RSHIFT( Xnrg[ b ] - psSilk_VAD->NL[ b ], 4 );
+        speech_nrg += (b + 1)*silk_RSHIFT( Xnrg[ b ] - psSilk_VAD->NL[ b ], 4 );
     }
 
-    if( psEncC->frame_length == 20 * psEncC->fs_kHz ) {
+    if (psEncC->frame_length == 20*psEncC->fs_kHz) {
         speech_nrg = silk_RSHIFT32( speech_nrg, 1 );
     }
     /* Power scaling */
-    if( speech_nrg <= 0 ) {
+    if (speech_nrg <= 0) {
         SA_Q15 = silk_RSHIFT( SA_Q15, 1 );
-    } else if( speech_nrg < 16384 ) {
+    } else if (speech_nrg < 16384) {
         speech_nrg = silk_LSHIFT32( speech_nrg, 16 );
 
         /* square-root */
@@ -262,28 +260,28 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /* Energy Level and SNR estimation */
     /***********************************/
     /* Smoothing coefficient */
-    smooth_coef_Q16 = silk_SMULWB( VAD_SNR_SMOOTH_COEF_Q18, silk_SMULWB( (oac_int32)SA_Q15, SA_Q15 ) );
+    smooth_coef_Q16 = silk_SMULWB( VAD_SNR_SMOOTH_COEF_Q18, silk_SMULWB((oac_int32)SA_Q15, SA_Q15 ));
 
-    if( psEncC->frame_length == 10 * psEncC->fs_kHz ) {
+    if (psEncC->frame_length == 10*psEncC->fs_kHz) {
         smooth_coef_Q16 >>= 1;
     }
 
-    for( b = 0; b < VAD_N_BANDS; b++ ) {
+    for (b = 0; b < VAD_N_BANDS; b++) {
         /* compute smoothed energy-to-noise ratio per band */
         psSilk_VAD->NrgRatioSmth_Q8[ b ] = silk_SMLAWB( psSilk_VAD->NrgRatioSmth_Q8[ b ],
             NrgToNoiseRatio_Q8[ b ] - psSilk_VAD->NrgRatioSmth_Q8[ b ], smooth_coef_Q16 );
 
         /* signal to noise ratio in dB per band */
-        SNR_Q7 = 3 * ( silk_lin2log( psSilk_VAD->NrgRatioSmth_Q8[b] ) - 8 * 128 );
+        SNR_Q7 = 3*(silk_lin2log( psSilk_VAD->NrgRatioSmth_Q8[b] ) - 8*128);
         /* quality = sigmoid( 0.25 * ( SNR_dB - 16 ) ); */
-        psEncC->input_quality_bands_Q15[ b ] = silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16 * 128, 4 ) );
+        psEncC->input_quality_bands_Q15[ b ] = silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16*128, 4 ));
     }
 
 #ifdef OAC_CHECK_ASM
     silk_assert( ret == ret_c );
-    silk_assert( !memcmp( &psEncC_c, psEncC, sizeof( psEncC_c ) ) );
+    silk_assert( !memcmp( &psEncC_c, psEncC, sizeof(psEncC_c)));
 #endif
 
     RESTORE_STACK;
-    return( ret );
+    return ret;
 }

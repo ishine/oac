@@ -28,12 +28,12 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef SKIP_CONFIG_H
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+# ifdef HAVE_CONFIG_H
+#  include "config.h"
+# endif
 #endif
 
 #include <NE10_dsp.h>
@@ -63,111 +63,104 @@
 /* nfft lengths in NE10 that support scaled fft */
 # define NE10_FFTSCALED_SUPPORT_MAX 4
 static const int ne10_fft_scaled_support[NE10_FFTSCALED_SUPPORT_MAX] = {
-   480, 240, 120, 60
+    480, 240, 120, 60
 };
 
-int oac_fft_alloc_arm_neon(kiss_fft_state *st)
-{
-   int i;
-   size_t memneeded = sizeof(struct arch_fft_state);
+int oac_fft_alloc_arm_neon(kiss_fft_state *st) {
+    int i;
+    size_t memneeded = sizeof(struct arch_fft_state);
 
-   st->arch_fft = (arch_fft_state *)oac_alloc(memneeded);
-   if (!st->arch_fft)
-      return -1;
+    st->arch_fft = (arch_fft_state *)oac_alloc(memneeded);
+    if (!st->arch_fft)
+        return -1;
 
-   for (i = 0; i < NE10_FFTSCALED_SUPPORT_MAX; i++) {
-      if(st->nfft == ne10_fft_scaled_support[i])
-         break;
-   }
-   if (i == NE10_FFTSCALED_SUPPORT_MAX) {
-      /* This nfft length (scaled fft) is not supported in NE10 */
-      st->arch_fft->is_supported = 0;
-      st->arch_fft->priv = NULL;
-   }
-   else {
-      st->arch_fft->is_supported = 1;
-      st->arch_fft->priv = (void *)NE10_FFT_ALLOC_C2C_TYPE_NEON(st->nfft);
-      if (st->arch_fft->priv == NULL) {
-         return -1;
-      }
-   }
-   return 0;
+    for (i = 0; i < NE10_FFTSCALED_SUPPORT_MAX; i++) {
+        if (st->nfft == ne10_fft_scaled_support[i])
+            break;
+    }
+    if (i == NE10_FFTSCALED_SUPPORT_MAX) {
+        /* This nfft length (scaled fft) is not supported in NE10 */
+        st->arch_fft->is_supported = 0;
+        st->arch_fft->priv = NULL;
+    } else   {
+        st->arch_fft->is_supported = 1;
+        st->arch_fft->priv = (void *)NE10_FFT_ALLOC_C2C_TYPE_NEON(st->nfft);
+        if (st->arch_fft->priv == NULL) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
-void oac_fft_free_arm_neon(kiss_fft_state *st)
-{
-   NE10_FFT_CFG_TYPE_T cfg;
+void oac_fft_free_arm_neon(kiss_fft_state *st) {
+    NE10_FFT_CFG_TYPE_T cfg;
 
-   if (!st->arch_fft)
-      return;
+    if (!st->arch_fft)
+        return;
 
-   cfg = (NE10_FFT_CFG_TYPE_T)st->arch_fft->priv;
-   if (cfg)
-      NE10_FFT_DESTROY_C2C_TYPE(cfg);
-   oac_free(st->arch_fft);
+    cfg = (NE10_FFT_CFG_TYPE_T)st->arch_fft->priv;
+    if (cfg)
+        NE10_FFT_DESTROY_C2C_TYPE(cfg);
+    oac_free(st->arch_fft);
 }
 #endif
 
 void oac_fft_neon(const kiss_fft_state *st,
-                   const kiss_fft_cpx *fin,
-                   kiss_fft_cpx *fout)
-{
-   NE10_FFT_STATE_TYPE_T state;
-   NE10_FFT_CFG_TYPE_T cfg = &state;
-   VARDECL(NE10_FFT_CPX_TYPE_T, buffer);
-   SAVE_STACK;
-   ALLOC(buffer, st->nfft, NE10_FFT_CPX_TYPE_T);
+                  const kiss_fft_cpx *fin,
+                  kiss_fft_cpx *fout) {
+    NE10_FFT_STATE_TYPE_T state;
+    NE10_FFT_CFG_TYPE_T cfg = &state;
+    VARDECL(NE10_FFT_CPX_TYPE_T, buffer);
+    SAVE_STACK;
+    ALLOC(buffer, st->nfft, NE10_FFT_CPX_TYPE_T);
 
-   if (!st->arch_fft->is_supported) {
-      /* This nfft length (scaled fft) not supported in NE10 */
-      oac_fft_c(st, fin, fout);
-   }
-   else {
-      memcpy((void *)cfg, st->arch_fft->priv, sizeof(NE10_FFT_STATE_TYPE_T));
-      state.buffer = (NE10_FFT_CPX_TYPE_T *)&buffer[0];
+    if (!st->arch_fft->is_supported) {
+        /* This nfft length (scaled fft) not supported in NE10 */
+        oac_fft_c(st, fin, fout);
+    } else   {
+        memcpy((void *)cfg, st->arch_fft->priv, sizeof(NE10_FFT_STATE_TYPE_T));
+        state.buffer = (NE10_FFT_CPX_TYPE_T *)&buffer[0];
 #if !defined(FIXED_POINT)
-      state.is_forward_scaled = 1;
+        state.is_forward_scaled = 1;
 
-      NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
-                                (NE10_FFT_CPX_TYPE_T *)fin,
+        NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
+            (NE10_FFT_CPX_TYPE_T *)fin,
                                 cfg, 0);
 #else
-      NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
-                                (NE10_FFT_CPX_TYPE_T *)fin,
+        NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
+            (NE10_FFT_CPX_TYPE_T *)fin,
                                 cfg, 0, 1);
 #endif
-   }
-   RESTORE_STACK;
+    }
+    RESTORE_STACK;
 }
 
 void oac_ifft_neon(const kiss_fft_state *st,
-                    const kiss_fft_cpx *fin,
-                    kiss_fft_cpx *fout)
-{
-   NE10_FFT_STATE_TYPE_T state;
-   NE10_FFT_CFG_TYPE_T cfg = &state;
-   VARDECL(NE10_FFT_CPX_TYPE_T, buffer);
-   SAVE_STACK;
-   ALLOC(buffer, st->nfft, NE10_FFT_CPX_TYPE_T);
+                   const kiss_fft_cpx *fin,
+                   kiss_fft_cpx *fout) {
+    NE10_FFT_STATE_TYPE_T state;
+    NE10_FFT_CFG_TYPE_T cfg = &state;
+    VARDECL(NE10_FFT_CPX_TYPE_T, buffer);
+    SAVE_STACK;
+    ALLOC(buffer, st->nfft, NE10_FFT_CPX_TYPE_T);
 
-   if (!st->arch_fft->is_supported) {
-      /* This nfft length (scaled fft) not supported in NE10 */
-      oac_ifft_c(st, fin, fout);
-   }
-   else {
-      memcpy((void *)cfg, st->arch_fft->priv, sizeof(NE10_FFT_STATE_TYPE_T));
-      state.buffer = (NE10_FFT_CPX_TYPE_T *)&buffer[0];
+    if (!st->arch_fft->is_supported) {
+        /* This nfft length (scaled fft) not supported in NE10 */
+        oac_ifft_c(st, fin, fout);
+    } else   {
+        memcpy((void *)cfg, st->arch_fft->priv, sizeof(NE10_FFT_STATE_TYPE_T));
+        state.buffer = (NE10_FFT_CPX_TYPE_T *)&buffer[0];
 #if !defined(FIXED_POINT)
-      state.is_backward_scaled = 0;
+        state.is_backward_scaled = 0;
 
-      NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
-                                (NE10_FFT_CPX_TYPE_T *)fin,
+        NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
+            (NE10_FFT_CPX_TYPE_T *)fin,
                                 cfg, 1);
 #else
-      NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
-                                (NE10_FFT_CPX_TYPE_T *)fin,
+        NE10_FFT_C2C_1D_TYPE_NEON((NE10_FFT_CPX_TYPE_T *)fout,
+            (NE10_FFT_CPX_TYPE_T *)fin,
                                 cfg, 1, 0);
 #endif
-   }
-   RESTORE_STACK;
+    }
+    RESTORE_STACK;
 }

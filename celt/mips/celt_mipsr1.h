@@ -25,25 +25,25 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef CELT_MIPSR1_H__
 #define CELT_MIPSR1_H__
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #define CELT_C
 
 #if defined (__mips_dsp) && __mips == 32
 
-#define OVERRIDE_COMB_FILTER_CONST
-#define OVERRIDE_comb_filter
+# define OVERRIDE_COMB_FILTER_CONST
+# define OVERRIDE_comb_filter
 #elif defined(__mips_isa_rev) && __mips_isa_rev < 6
 
-#define OVERRIDE_COMB_FILTER_CONST
-#define OVERRIDE_comb_filter
+# define OVERRIDE_COMB_FILTER_CONST
+# define OVERRIDE_comb_filter
 #endif
 
 #include "os_support.h"
@@ -65,9 +65,9 @@
 
 #if defined (__mips_dsp) && __mips == 32
 
-#define MIPS_MULT __builtin_mips_mult
-#define MIPS_MADD __builtin_mips_madd
-#define MIPS_EXTR __builtin_mips_extr_w
+# define MIPS_MULT __builtin_mips_mult
+# define MIPS_MADD __builtin_mips_madd
+# define MIPS_EXTR __builtin_mips_extr_w
 
 #elif defined(__mips_isa_rev) && __mips_isa_rev < 6
 
@@ -75,123 +75,118 @@ static inline long long MIPS_MULT(int a, int b) {
     long long acc;
 
     asm volatile (
-            "mult %[a], %[b]  \n"
-        : [acc] "=x"(acc)
-        : [a] "r"(a), [b] "r"(b)
+        "mult %[a], %[b]  \n"
+        : [acc] "=x" (acc)
+        : [a] "r" (a), [b] "r" (b)
         :
-    );
+        );
     return acc;
 }
 
 static inline long long MIPS_MADD(long long acc, int a, int b) {
     asm volatile (
-            "madd %[a], %[b]  \n"
-        : [acc] "+x"(acc)
-        : [a] "r"(a), [b] "r"(b)
+        "madd %[a], %[b]  \n"
+        : [acc] "+x" (acc)
+        : [a] "r" (a), [b] "r" (b)
         :
-    );
+        );
     return acc;
 }
 
 static inline oac_val32 MIPS_EXTR(long long acc, int shift) {
-    return (oac_val32)(acc >> shift);
+    return (oac_val32)(acc>>shift);
 }
 
 #endif
 
 #if defined (OVERRIDE_comb_filter)
 void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
-      oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
-      const oac_val16 *window, int overlap, int arch)
-{
-   int i;
-   oac_val32 x0, x1, x2, x3, x4;
+                 oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
+                 const oac_val16 *window, int overlap, int arch) {
+    int i;
+    oac_val32 x0, x1, x2, x3, x4;
 
-   (void)arch;
+    (void)arch;
 
-   /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
-   oac_val16 g00, g01, g02, g10, g11, g12;
-   static const oac_val16 gains[3][3] = {
-         {QCONST16(0.3066406250f, 15), QCONST16(0.2170410156f, 15), QCONST16(0.1296386719f, 15)},
-         {QCONST16(0.4638671875f, 15), QCONST16(0.2680664062f, 15), QCONST16(0.f, 15)},
-         {QCONST16(0.7998046875f, 15), QCONST16(0.1000976562f, 15), QCONST16(0.f, 15)}};
+    /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
+    oac_val16 g00, g01, g02, g10, g11, g12;
+    static const oac_val16 gains[3][3] = {
+        {QCONST16(0.3066406250f, 15), QCONST16(0.2170410156f, 15), QCONST16(0.1296386719f, 15)},
+        {QCONST16(0.4638671875f, 15), QCONST16(0.2680664062f, 15), QCONST16(0.f, 15)},
+        {QCONST16(0.7998046875f, 15), QCONST16(0.1000976562f, 15), QCONST16(0.f, 15)}};
 
-   if (g0==0 && g1==0)
-   {
-      /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
-      if (x!=y)
-         OAC_MOVE(y, x, N);
-      return;
-   }
+    if (g0 == 0 && g1 == 0) {
+        /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
+        if (x != y)
+            OAC_MOVE(y, x, N);
+        return;
+    }
 
-   g00 = MULT16_16_P15(g0, gains[tapset0][0]);
-   g01 = MULT16_16_P15(g0, gains[tapset0][1]);
-   g02 = MULT16_16_P15(g0, gains[tapset0][2]);
-   g10 = MULT16_16_P15(g1, gains[tapset1][0]);
-   g11 = MULT16_16_P15(g1, gains[tapset1][1]);
-   g12 = MULT16_16_P15(g1, gains[tapset1][2]);
-   x1 = x[-T1+1];
-   x2 = x[-T1  ];
-   x3 = x[-T1-1];
-   x4 = x[-T1-2];
-   /* If the filter didn't change, we don't need the overlap */
-   if (g0==g1 && T0==T1 && tapset0==tapset1)
-      overlap=0;
+    g00 = MULT16_16_P15(g0, gains[tapset0][0]);
+    g01 = MULT16_16_P15(g0, gains[tapset0][1]);
+    g02 = MULT16_16_P15(g0, gains[tapset0][2]);
+    g10 = MULT16_16_P15(g1, gains[tapset1][0]);
+    g11 = MULT16_16_P15(g1, gains[tapset1][1]);
+    g12 = MULT16_16_P15(g1, gains[tapset1][2]);
+    x1 = x[-T1 + 1];
+    x2 = x[-T1  ];
+    x3 = x[-T1 - 1];
+    x4 = x[-T1 - 2];
+    /* If the filter didn't change, we don't need the overlap */
+    if (g0 == g1 && T0 == T1 && tapset0 == tapset1)
+        overlap = 0;
 
-   for (i=0;i<overlap;i++)
-   {
-      oac_val16 f;
-      oac_val32 res;
-      long long acc;
-      f = MULT16_16_Q15(window[i],window[i]);
-      x0= x[i-T1+2];
+    for (i = 0; i < overlap; i++) {
+        oac_val16 f;
+        oac_val32 res;
+        long long acc;
+        f = MULT16_16_Q15(window[i], window[i]);
+        x0 = x[i - T1 + 2];
 
-      acc = MIPS_MULT((int)MULT16_16_Q15((Q15ONE-f),g00), (int)x[i-T0]);
-      acc = MIPS_MADD(acc, (int)MULT16_16_Q15((Q15ONE-f),g01), (int)ADD32(x[i-T0-1],x[i-T0+1]));
-      acc = MIPS_MADD(acc, (int)MULT16_16_Q15((Q15ONE-f),g02), (int)ADD32(x[i-T0-2],x[i-T0+2]));
-      acc = MIPS_MADD(acc, (int)MULT16_16_Q15(f,g10), (int)x2);
-      acc = MIPS_MADD(acc, (int)MULT16_16_Q15(f,g11), (int)ADD32(x3,x1));
-      acc = MIPS_MADD(acc, (int)MULT16_16_Q15(f,g12), (int)ADD32(x4,x0));
-      res = MIPS_EXTR(acc, 15);
+        acc = MIPS_MULT((int)MULT16_16_Q15((Q15ONE - f), g00), (int)x[i - T0]);
+        acc = MIPS_MADD(acc, (int)MULT16_16_Q15((Q15ONE - f), g01), (int)ADD32(x[i - T0 - 1], x[i - T0 + 1]));
+        acc = MIPS_MADD(acc, (int)MULT16_16_Q15((Q15ONE - f), g02), (int)ADD32(x[i - T0 - 2], x[i - T0 + 2]));
+        acc = MIPS_MADD(acc, (int)MULT16_16_Q15(f, g10), (int)x2);
+        acc = MIPS_MADD(acc, (int)MULT16_16_Q15(f, g11), (int)ADD32(x3, x1));
+        acc = MIPS_MADD(acc, (int)MULT16_16_Q15(f, g12), (int)ADD32(x4, x0));
+        res = MIPS_EXTR(acc, 15);
 
-      y[i] = x[i] + res;
+        y[i] = x[i] + res;
 
-      x4=x3;
-      x3=x2;
-      x2=x1;
-      x1=x0;
-   }
+        x4 = x3;
+        x3 = x2;
+        x2 = x1;
+        x1 = x0;
+    }
 
-   x4 = x[i-T1-2];
-   x3 = x[i-T1-1];
-   x2 = x[i-T1];
-   x1 = x[i-T1+1];
+    x4 = x[i - T1 - 2];
+    x3 = x[i - T1 - 1];
+    x2 = x[i - T1];
+    x1 = x[i - T1 + 1];
 
-   if (g1==0)
-   {
-      /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
-      if (x!=y)
-         OAC_MOVE(y+overlap, x+overlap, N-overlap);
-      return;
-   }
+    if (g1 == 0) {
+        /* OPT: Happens to work without the OAC_MOVE(), but only because the current encoder already copies x to y */
+        if (x != y)
+            OAC_MOVE(y + overlap, x + overlap, N - overlap);
+        return;
+    }
 
-   for (i=overlap;i<N;i++)
-   {
-      oac_val32 res;
-      long long acc;
-      x0=x[i-T1+2];
+    for (i = overlap; i < N; i++) {
+        oac_val32 res;
+        long long acc;
+        x0 = x[i - T1 + 2];
 
-      acc = MIPS_MULT((int)g10, (int)x2);
-      acc = MIPS_MADD(acc, (int)g11, (int)ADD32(x3,x1));
-      acc = MIPS_MADD(acc, (int)g12, (int)ADD32(x4,x0));
-      res = MIPS_EXTR(acc, 15);
+        acc = MIPS_MULT((int)g10, (int)x2);
+        acc = MIPS_MADD(acc, (int)g11, (int)ADD32(x3, x1));
+        acc = MIPS_MADD(acc, (int)g12, (int)ADD32(x4, x0));
+        res = MIPS_EXTR(acc, 15);
 
-      y[i] = x[i] + res;
-      x4=x3;
-      x3=x2;
-      x2=x1;
-      x1=x0;
-   }
+        y[i] = x[i] + res;
+        x4 = x3;
+        x3 = x2;
+        x2 = x1;
+        x1 = x0;
+    }
 }
 #endif /* OVERRIDE_comb_filter */
 

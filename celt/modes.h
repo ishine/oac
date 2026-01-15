@@ -25,7 +25,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef MODES_H
 #define MODES_H
@@ -42,35 +42,35 @@
 #define DEC_PITCH_BUF_SIZE 2048
 
 typedef struct {
-   int size;
-   const oac_int16 *index;
-   const unsigned char *bits;
-   const unsigned char *caps;
+    int size;
+    const oac_int16 *index;
+    const unsigned char *bits;
+    const unsigned char *caps;
 } PulseCache;
 
 /** Mode definition (opaque)
- @brief Mode definition
+   @brief Mode definition
  */
 struct OacCustomMode {
-   oac_int32 Fs;
-   int          overlap;
+    oac_int32 Fs;
+    int overlap;
 
-   int          nbEBands;
-   int          effEBands;
-   oac_val16    preemph[4];
-   const oac_int16   *eBands;   /**< Definition for each "pseudo-critical band" */
+    int nbEBands;
+    int effEBands;
+    oac_val16 preemph[4];
+    const oac_int16   *eBands;  /**< Definition for each "pseudo-critical band" */
 
-   int         maxLM;
-   int         nbShortMdcts;
-   int         shortMdctSize;
+    int maxLM;
+    int nbShortMdcts;
+    int shortMdctSize;
 
-   int          nbAllocVectors; /**< Number of lines in the matrix below */
-   const unsigned char   *allocVectors;   /**< Number of bits in each band for several rates */
-   const oac_int16 *logN;
+    int nbAllocVectors;         /**< Number of lines in the matrix below */
+    const unsigned char   *allocVectors;  /**< Number of bits in each band for several rates */
+    const oac_int16 *logN;
 
-   const celt_coef *window;
-   mdct_lookup mdct;
-   PulseCache cache;
+    const celt_coef *window;
+    mdct_lookup mdct;
+    PulseCache cache;
 };
 
 

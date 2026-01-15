@@ -23,38 +23,36 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "dred_rdovae_dec.h"
 #include "dred_rdovae_constants.h"
 #include "os_support.h"
 
-static void conv1_cond_init(float *mem, int len, int dilation, int *init)
-{
+static void conv1_cond_init(float *mem, int len, int dilation, int *init) {
     if (!*init) {
         int i;
-        for (i=0;i<dilation;i++) OAC_CLEAR(&mem[i*len], len);
+        for (i = 0; i < dilation; i++)OAC_CLEAR(&mem[i*len], len);
     }
     *init = 1;
 }
 
-void DRED_rdovae_decode_all(const RDOVAEDec *model, float *features, const float *state, const float *latents, int nb_latents, int arch)
-{
+void DRED_rdovae_decode_all(const RDOVAEDec *model, float *features, const float *state, const float *latents,
+                            int nb_latents, int arch) {
     int i;
     RDOVAEDecState dec;
     memset(&dec, 0, sizeof(dec));
     dred_rdovae_dec_init_states(&dec, model, state, arch);
-    for (i = 0; i < 2*nb_latents; i += 2)
-    {
+    for (i = 0; i < 2*nb_latents; i += 2) {
         dred_rdovae_decode_qframe(
             &dec,
             model,
             &features[2*i*DRED_NUM_FEATURES],
-            &latents[(i/2)*(DRED_LATENT_DIM+1)],
+            &latents[(i/2)*(DRED_LATENT_DIM + 1)],
             arch);
     }
 }
@@ -63,12 +61,11 @@ void dred_rdovae_dec_init_states(
     RDOVAEDecState *h,            /* io: state buffer handle */
     const RDOVAEDec *model,
     const float *initial_state,  /* i: initial state */
-    int arch
-    )
-{
+    int arch) {
     float hidden[DEC_HIDDEN_INIT_OUT_SIZE];
-    float state_init[DEC_GRU1_STATE_SIZE+DEC_GRU2_STATE_SIZE+DEC_GRU3_STATE_SIZE+DEC_GRU4_STATE_SIZE+DEC_GRU5_STATE_SIZE];
-    int counter=0;
+    float state_init[DEC_GRU1_STATE_SIZE + DEC_GRU2_STATE_SIZE + DEC_GRU3_STATE_SIZE + DEC_GRU4_STATE_SIZE
+                     + DEC_GRU5_STATE_SIZE];
+    int counter = 0;
     compute_generic_dense(&model->dec_hidden_init, hidden, initial_state, ACTIVATION_TANH, arch);
     compute_generic_dense(&model->dec_gru_init, state_init, hidden, ACTIVATION_TANH, arch);
     OAC_COPY(h->gru1_state, state_init, DEC_GRU1_STATE_SIZE);
@@ -89,11 +86,11 @@ void dred_rdovae_decode_qframe(
     const RDOVAEDec *model,
     float *qframe,              /* o: quadruple feature frame (four concatenated frames in reverse order) */
     const float *input,          /* i: latent vector */
-    int arch
-    )
-{
-    float buffer[DEC_DENSE1_OUT_SIZE + DEC_GRU1_OUT_SIZE + DEC_GRU2_OUT_SIZE + DEC_GRU3_OUT_SIZE + DEC_GRU4_OUT_SIZE + DEC_GRU5_OUT_SIZE
-                 + DEC_CONV1_OUT_SIZE + DEC_CONV2_OUT_SIZE + DEC_CONV3_OUT_SIZE + DEC_CONV4_OUT_SIZE + DEC_CONV5_OUT_SIZE];
+    int arch) {
+    float buffer[DEC_DENSE1_OUT_SIZE + DEC_GRU1_OUT_SIZE + DEC_GRU2_OUT_SIZE + DEC_GRU3_OUT_SIZE + DEC_GRU4_OUT_SIZE
+                 + DEC_GRU5_OUT_SIZE
+                 + DEC_CONV1_OUT_SIZE + DEC_CONV2_OUT_SIZE + DEC_CONV3_OUT_SIZE + DEC_CONV4_OUT_SIZE
+                 + DEC_CONV5_OUT_SIZE];
     float conv_tmp[DRED_MAX_CONV_INPUTS];
     int output_index = 0;
 
@@ -106,7 +103,8 @@ void dred_rdovae_decode_qframe(
     output_index += DEC_GRU1_OUT_SIZE;
     conv1_cond_init(dec_state->conv1_state, DEC_CONV1_IN_SIZE, 1, &dec_state->initialized);
     compute_generic_dense(&model->dec_conv_dense1, conv_tmp, buffer, ACTIVATION_TANH, arch);
-    compute_generic_conv1d(&model->dec_conv1, &buffer[output_index], dec_state->conv1_state, conv_tmp, DEC_CONV1_OUT_SIZE, ACTIVATION_TANH, arch);
+    compute_generic_conv1d(&model->dec_conv1, &buffer[output_index], dec_state->conv1_state, conv_tmp,
+    DEC_CONV1_OUT_SIZE, ACTIVATION_TANH, arch);
     output_index += DEC_CONV1_OUT_SIZE;
 
     compute_generic_gru(&model->dec_gru2_input, &model->dec_gru2_recurrent, dec_state->gru2_state, buffer, arch);
@@ -114,7 +112,8 @@ void dred_rdovae_decode_qframe(
     output_index += DEC_GRU2_OUT_SIZE;
     conv1_cond_init(dec_state->conv2_state, DEC_CONV2_IN_SIZE, 1, &dec_state->initialized);
     compute_generic_dense(&model->dec_conv_dense2, conv_tmp, buffer, ACTIVATION_TANH, arch);
-    compute_generic_conv1d(&model->dec_conv2, &buffer[output_index], dec_state->conv2_state, conv_tmp, DEC_CONV2_OUT_SIZE, ACTIVATION_TANH, arch);
+    compute_generic_conv1d(&model->dec_conv2, &buffer[output_index], dec_state->conv2_state, conv_tmp,
+    DEC_CONV2_OUT_SIZE, ACTIVATION_TANH, arch);
     output_index += DEC_CONV2_OUT_SIZE;
 
     compute_generic_gru(&model->dec_gru3_input, &model->dec_gru3_recurrent, dec_state->gru3_state, buffer, arch);
@@ -122,7 +121,8 @@ void dred_rdovae_decode_qframe(
     output_index += DEC_GRU3_OUT_SIZE;
     conv1_cond_init(dec_state->conv3_state, DEC_CONV3_IN_SIZE, 1, &dec_state->initialized);
     compute_generic_dense(&model->dec_conv_dense3, conv_tmp, buffer, ACTIVATION_TANH, arch);
-    compute_generic_conv1d(&model->dec_conv3, &buffer[output_index], dec_state->conv3_state, conv_tmp, DEC_CONV3_OUT_SIZE, ACTIVATION_TANH, arch);
+    compute_generic_conv1d(&model->dec_conv3, &buffer[output_index], dec_state->conv3_state, conv_tmp,
+    DEC_CONV3_OUT_SIZE, ACTIVATION_TANH, arch);
     output_index += DEC_CONV3_OUT_SIZE;
 
     compute_generic_gru(&model->dec_gru4_input, &model->dec_gru4_recurrent, dec_state->gru4_state, buffer, arch);
@@ -130,7 +130,8 @@ void dred_rdovae_decode_qframe(
     output_index += DEC_GRU4_OUT_SIZE;
     conv1_cond_init(dec_state->conv4_state, DEC_CONV4_IN_SIZE, 1, &dec_state->initialized);
     compute_generic_dense(&model->dec_conv_dense4, conv_tmp, buffer, ACTIVATION_TANH, arch);
-    compute_generic_conv1d(&model->dec_conv4, &buffer[output_index], dec_state->conv4_state, conv_tmp, DEC_CONV4_OUT_SIZE, ACTIVATION_TANH, arch);
+    compute_generic_conv1d(&model->dec_conv4, &buffer[output_index], dec_state->conv4_state, conv_tmp,
+    DEC_CONV4_OUT_SIZE, ACTIVATION_TANH, arch);
     output_index += DEC_CONV4_OUT_SIZE;
 
     compute_generic_gru(&model->dec_gru5_input, &model->dec_gru5_recurrent, dec_state->gru5_state, buffer, arch);
@@ -138,7 +139,8 @@ void dred_rdovae_decode_qframe(
     output_index += DEC_GRU5_OUT_SIZE;
     conv1_cond_init(dec_state->conv5_state, DEC_CONV5_IN_SIZE, 1, &dec_state->initialized);
     compute_generic_dense(&model->dec_conv_dense5, conv_tmp, buffer, ACTIVATION_TANH, arch);
-    compute_generic_conv1d(&model->dec_conv5, &buffer[output_index], dec_state->conv5_state, conv_tmp, DEC_CONV5_OUT_SIZE, ACTIVATION_TANH, arch);
+    compute_generic_conv1d(&model->dec_conv5, &buffer[output_index], dec_state->conv5_state, conv_tmp,
+    DEC_CONV5_OUT_SIZE, ACTIVATION_TANH, arch);
     output_index += DEC_CONV5_OUT_SIZE;
 
     compute_generic_dense(&model->dec_output, qframe, buffer, ACTIVATION_LINEAR, arch);

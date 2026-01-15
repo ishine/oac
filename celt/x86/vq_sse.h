@@ -22,7 +22,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef VQ_SSE_H
 #define VQ_SSE_H
@@ -31,22 +31,22 @@
 
 oac_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
 
-#if defined(OAC_X86_PRESUME_SSE2)
+# if defined(OAC_X86_PRESUME_SSE2)
 
-#define OVERRIDE_OP_PVQ_SEARCH
-#define op_pvq_search(x, iy, K, N, arch) \
-    (op_pvq_search_sse2(x, iy, K, N, arch))
+#  define OVERRIDE_OP_PVQ_SEARCH
+#  define op_pvq_search(x, iy, K, N, arch) \
+        (op_pvq_search_sse2(x, iy, K, N, arch))
 
-#elif defined(OAC_HAVE_RTCD)
+# elif defined(OAC_HAVE_RTCD)
 
-#define OVERRIDE_OP_PVQ_SEARCH
+#  define OVERRIDE_OP_PVQ_SEARCH
 extern oac_val16 (*const OP_PVQ_SEARCH_IMPL[OAC_ARCHMASK + 1])(
       celt_norm *_X, int *iy, int K, int N, int arch);
 
 #  define op_pvq_search(X, iy, K, N, arch) \
-    ((*OP_PVQ_SEARCH_IMPL[(arch) & OAC_ARCHMASK])(X, iy, K, N, arch))
+        ((*OP_PVQ_SEARCH_IMPL[(arch)&OAC_ARCHMASK])(X, iy, K, N, arch))
 
-#endif
+# endif
 #endif
 
 #endif

@@ -23,14 +23,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #if !(defined(__ARM_NEON__) || defined(__ARM_NEON))
-#error nnet_neon.c is being compiled without Neon enabled
+# error nnet_neon.c is being compiled without Neon enabled
 #endif
 
 #define RTCD_ARCH neon

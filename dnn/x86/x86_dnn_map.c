@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "x86/x86cpu.h"
@@ -34,18 +34,18 @@
 
 #if defined(OAC_HAVE_RTCD)
 
-#if (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_AVX2))
+# if (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_AVX2))
 
 void (*const DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
          const LinearLayer *linear,
          float *out,
          const float *in
-) = {
-  compute_linear_c,                /* non-sse */
-  compute_linear_c,
-  MAY_HAVE_SSE2(compute_linear),
-  MAY_HAVE_SSE4_1(compute_linear), /* sse4.1  */
-  MAY_HAVE_AVX2(compute_linear)  /* avx  */
+    ) = {
+    compute_linear_c,              /* non-sse */
+    compute_linear_c,
+    MAY_HAVE_SSE2(compute_linear),
+    MAY_HAVE_SSE4_1(compute_linear), /* sse4.1  */
+    MAY_HAVE_AVX2(compute_linear) /* avx  */
 };
 
 void (*const DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
@@ -53,12 +53,12 @@ void (*const DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
          const float *input,
          int N,
          int activation
-) = {
-  compute_activation_c,                /* non-sse */
-  compute_activation_c,
-  MAY_HAVE_SSE2(compute_activation),
-  MAY_HAVE_SSE4_1(compute_activation), /* sse4.1  */
-  MAY_HAVE_AVX2(compute_activation)  /* avx  */
+    ) = {
+    compute_activation_c,              /* non-sse */
+    compute_activation_c,
+    MAY_HAVE_SSE2(compute_activation),
+    MAY_HAVE_SSE4_1(compute_activation), /* sse4.1  */
+    MAY_HAVE_AVX2(compute_activation) /* avx  */
 };
 
 void (*const DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
@@ -69,15 +69,15 @@ void (*const DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
          int height,
          int hstride,
          int activation
-) = {
-  compute_conv2d_c,                /* non-sse */
-  compute_conv2d_c,
-  MAY_HAVE_SSE2(compute_conv2d),
-  MAY_HAVE_SSE4_1(compute_conv2d), /* sse4.1  */
-  MAY_HAVE_AVX2(compute_conv2d)  /* avx  */
+    ) = {
+    compute_conv2d_c,              /* non-sse */
+    compute_conv2d_c,
+    MAY_HAVE_SSE2(compute_conv2d),
+    MAY_HAVE_SSE4_1(compute_conv2d), /* sse4.1  */
+    MAY_HAVE_AVX2(compute_conv2d) /* avx  */
 };
 
-#endif
+# endif
 
 
 #endif

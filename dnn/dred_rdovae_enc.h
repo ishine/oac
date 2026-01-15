@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef DRED_RDOVAE_ENC_H
 #define DRED_RDOVAE_ENC_H
@@ -46,7 +46,8 @@ struct RDOVAEEncStruct {
     float conv5_state[2*ENC_CONV5_STATE_SIZE];
 };
 
-void dred_rdovae_encode_dframe(RDOVAEEncState *enc_state, const RDOVAEEnc *model, float *latents, float *initial_state, const float *input, int arch);
+void dred_rdovae_encode_dframe(RDOVAEEncState *enc_state, const RDOVAEEnc *model, float *latents, float *initial_state,
+    const float *input, int arch);
 
 
 #endif

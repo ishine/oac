@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef OSCE_H
 #define OSCE_H
@@ -32,10 +32,10 @@
 #include "oac_types.h"
 /*#include "osce_config.h"*/
 #ifndef DISABLE_LACE
-#include "lace_data.h"
+# include "lace_data.h"
 #endif
 #ifndef DISABLE_NOLACE
-#include "nolace_data.h"
+# include "nolace_data.h"
 #endif
 #include "nndsp.h"
 #include "nnet.h"
@@ -50,25 +50,25 @@
 
 #define OSCE_METHOD_NONE 0
 #ifndef DISABLE_LACE
-#define OSCE_METHOD_LACE 1
+# define OSCE_METHOD_LACE 1
 #endif
 #ifndef DISABLE_NOLACE
-#define OSCE_METHOD_NOLACE 2
+# define OSCE_METHOD_NOLACE 2
 #endif
 
 #if !defined(DISABLE_NOLACE)
-#define OSCE_DEFAULT_METHOD OSCE_METHOD_NOLACE
-#define OSCE_MAX_RNN_NEURONS NOLACE_FNET_GRU_STATE_SIZE
+# define OSCE_DEFAULT_METHOD OSCE_METHOD_NOLACE
+# define OSCE_MAX_RNN_NEURONS NOLACE_FNET_GRU_STATE_SIZE
 #elif !defined(DISABLE_LACE)
-#define OSCE_DEFAULT_METHOD OSCE_METHOD_LACE
-#define OSCE_MAX_RNN_NEURONS LACE_FNET_GRU_STATE_SIZE
+# define OSCE_DEFAULT_METHOD OSCE_METHOD_LACE
+# define OSCE_MAX_RNN_NEURONS LACE_FNET_GRU_STATE_SIZE
 #else
-#define OSCE_DEFAULT_METHOD OSCE_METHOD_NONE
-#define OSCE_MAX_RNN_NEURONS 0
+# define OSCE_DEFAULT_METHOD OSCE_METHOD_NONE
+# define OSCE_MAX_RNN_NEURONS 0
 #endif
 
 #ifdef ENABLE_OSCE_BWE
-#define OSCE_BWE_MAX_RNN_NEURONS BBWENET_FNET_GRU_STATE_SIZE
+# define OSCE_BWE_MAX_RNN_NEURONS BBWENET_FNET_GRU_STATE_SIZE
 
 #endif
 
@@ -80,10 +80,10 @@ void osce_enhance_frame(
     OSCEModel                   *model,                         /* I    OSCE model struct                           */
     silk_decoder_state          *psDec,                         /* I/O  Decoder state                               */
     silk_decoder_control        *psDecCtrl,                     /* I    Decoder control                             */
-    oac_int16                  xq[],                           /* I/O  Decoded speech                              */
-    oac_int32                  num_bits,                       /* I    Size of SILK payload in bits                */
-    int                         arch                            /* I    Run-time architecture                       */
-);
+    oac_int16 xq[],                                            /* I/O  Decoded speech                              */
+    oac_int32 num_bits,                                        /* I    Size of SILK payload in bits                */
+    int arch                                                    /* I    Run-time architecture                       */
+    );
 
 
 int osce_load_models(OSCEModel *hModel, const void *data, int len);
@@ -91,13 +91,13 @@ void osce_reset(silk_OSCE_struct *hOSCE, int method);
 
 #ifdef ENABLE_OSCE_BWE
 void osce_bwe(
-   OSCEModel                   *model,                         /* I    OSCE model struct                           */
-   silk_OSCE_BWE_struct        *psOSCEBWE,                     /* I/O  OSCE BWE state                              */
-   oac_int16                  xq48[],                         /* O    bandwidth-extended speech                   */
-   oac_int16                  xq16[],                         /* I    Decoded speech                              */
-   oac_int32                  xq16_len,                       /* I    Length of xq16 in samples                   */
-   int                         arch                            /* I    Run-time architecture                       */
-);
+    OSCEModel                   *model,                        /* I    OSCE model struct                           */
+    silk_OSCE_BWE_struct        *psOSCEBWE,                    /* I/O  OSCE BWE state                              */
+    oac_int16 xq48[],                                         /* O    bandwidth-extended speech                   */
+    oac_int16 xq16[],                                         /* I    Decoded speech                              */
+    oac_int32 xq16_len,                                       /* I    Length of xq16 in samples                   */
+    int arch                                                   /* I    Run-time architecture                       */
+    );
 
 void osce_bwe_reset(silk_OSCE_BWE_struct *hOSCEBWE);
 #endif /* ENABLE_OSCE_BWE */

@@ -23,28 +23,25 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "oac_types.h"
 #include <stdio.h>
 
-int main(void)
-{
-   oac_int16 i = 1;
-   i <<= 14;
-   if (i>>14 != 1)
-   {
-      fprintf(stderr, "oac_int16 isn't 16 bits\n");
-      return 1;
-   }
-   if (sizeof(oac_int16)*2 != sizeof(oac_int32))
-   {
-      fprintf(stderr, "16*2 != 32\n");
-      return 1;
-   }
-   return 0;
+int main(void) {
+    oac_int16 i = 1;
+    i <<= 14;
+    if (i>>14 != 1) {
+        fprintf(stderr, "oac_int16 isn't 16 bits\n");
+        return 1;
+    }
+    if (sizeof(oac_int16)*2 != sizeof(oac_int32)) {
+        fprintf(stderr, "16*2 != 32\n");
+        return 1;
+    }
+    return 0;
 }

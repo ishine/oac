@@ -26,13 +26,13 @@
    STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef OS_SUPPORT_H
 #define OS_SUPPORT_H
 
 #ifdef CUSTOM_SUPPORT
-#  include "custom_support.h"
+# include "custom_support.h"
 #endif
 
 #include "oac_types.h"
@@ -43,56 +43,52 @@
 
 /** Oac wrapper for malloc(). To do your own dynamic allocation replace this function, oac_realloc, and oac_free */
 #ifndef OVERRIDE_OAC_ALLOC
-static OAC_INLINE void *oac_alloc (size_t size)
-{
-   return malloc(size);
+static OAC_INLINE void *oac_alloc (size_t size) {
+    return malloc(size);
 }
 #endif
 
 #ifndef OVERRIDE_OAC_REALLOC
-static OAC_INLINE void *oac_realloc (void *ptr, size_t size)
-{
-   return realloc(ptr, size);
+static OAC_INLINE void *oac_realloc (void *ptr, size_t size) {
+    return realloc(ptr, size);
 }
 #endif
 
 /** Used only for non-threadsafe pseudostack.
     If desired, this can always return the same area of memory rather than allocating a new one every time. */
 #ifndef OVERRIDE_OAC_ALLOC_SCRATCH
-static OAC_INLINE void *oac_alloc_scratch (size_t size)
-{
-   /* Scratch space doesn't need to be cleared */
-   return oac_alloc(size);
+static OAC_INLINE void *oac_alloc_scratch (size_t size) {
+    /* Scratch space doesn't need to be cleared */
+    return oac_alloc(size);
 }
 #endif
 
 /** Oac wrapper for free(). To do your own dynamic allocation replace this function, oac_realloc, and oac_free */
 #ifndef OVERRIDE_OAC_FREE
-static OAC_INLINE void oac_free (void *ptr)
-{
-   free(ptr);
+static OAC_INLINE void oac_free (void *ptr) {
+    free(ptr);
 }
 #endif
 
 /** Copy n elements from src to dst. The 0* term provides compile-time type checking  */
 #ifndef OVERRIDE_OAC_COPY
-#define OAC_COPY(dst, src, n) (memcpy((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
+# define OAC_COPY(dst, src, n) (memcpy((dst), (src), (n)*sizeof(*(dst)) + 0*((dst) - (src))))
 #endif
 
 /** Copy n elements from src to dst, allowing overlapping regions. The 0* term
     provides compile-time type checking */
 #ifndef OVERRIDE_OAC_MOVE
-#define OAC_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
+# define OAC_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst) - (src))))
 #endif
 
 /** Set n elements of dst to zero */
 #ifndef OVERRIDE_OAC_CLEAR
-#define OAC_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
+# define OAC_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
 #endif
 
 /*#ifdef __GNUC__
-#pragma GCC poison printf sprintf
-#pragma GCC poison malloc free realloc calloc
-#endif*/
+ #pragma GCC poison printf sprintf
+ #pragma GCC poison malloc free realloc calloc
+ #endif*/
 
 #endif /* OS_SUPPORT_H */
