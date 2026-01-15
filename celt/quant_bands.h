@@ -24,7 +24,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef QUANT_BANDS
 #define QUANT_BANDS
@@ -42,25 +42,30 @@ extern const oac_val16 eMeans[25];
 #endif
 
 void amp2Log2(const CELTMode *m, int effEnd, int end,
-      celt_ener *bandE, celt_glog *bandLogE, int C);
+    celt_ener *bandE, celt_glog *bandLogE, int C);
 
 void log2Amp(const CELTMode *m, int start, int end,
-      celt_ener *eBands, const celt_glog *oldEBands, int C);
+    celt_ener *eBands, const celt_glog *oldEBands, int C);
 
 void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
-      const celt_glog *eBands, celt_glog *oldEBands, oac_uint32 budget,
-      celt_glog *error, ec_enc *enc, int C, int LM,
-      int nbAvailableBytes, int force_intra, oac_val32 *delayedIntra,
-      int two_pass, int loss_rate, int lfe);
+    const celt_glog *eBands, celt_glog *oldEBands, oac_uint32 budget,
+    celt_glog *error, ec_enc *enc, int C, int LM,
+    int nbAvailableBytes, int force_intra, oac_val32 *delayedIntra,
+    int two_pass, int loss_rate, int lfe);
 
-void quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error, int *fine_quant, int *extra_quant, ec_enc *enc, int C);
+void quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error, int *fine_quant,
+    int *extra_quant, ec_enc *enc, int C);
 
-void quant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error, int *fine_quant, int *fine_priority, int bits_left, ec_enc *enc, int C);
+void quant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error,
+    int *fine_quant, int *fine_priority, int bits_left, ec_enc *enc, int C);
 
-void unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int intra, ec_dec *dec, int C, int LM);
+void unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int intra, ec_dec *dec, int C,
+    int LM);
 
-void unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *fine_quant, int *extra_quant, ec_dec *dec, int C);
+void unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *fine_quant, int *extra_quant,
+    ec_dec *dec, int C);
 
-void unquant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *fine_quant, int *fine_priority, int bits_left, ec_dec *dec, int C);
+void unquant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *fine_quant,
+    int *fine_priority, int bits_left, ec_dec *dec, int C);
 
 #endif /* QUANT_BANDS */

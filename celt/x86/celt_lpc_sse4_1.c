@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <xmmintrin.h>
@@ -41,56 +41,53 @@
 #if defined(FIXED_POINT)
 
 void celt_fir_sse4_1(const oac_val16 *x,
-         const oac_val16 *num,
-         oac_val16 *y,
-         int N,
-         int ord,
-         int arch)
-{
-    int i,j;
+                     const oac_val16 *num,
+                     oac_val16 *y,
+                     int N,
+                     int ord,
+                     int arch) {
+    int i, j;
     VARDECL(oac_val16, rnum);
 
     __m128i vecNoA;
-    oac_int32 noA ;
+    oac_int32 noA;
     SAVE_STACK;
 
-   ALLOC(rnum, ord, oac_val16);
-   for(i=0;i<ord;i++)
-      rnum[i] = num[ord-i-1];
-   noA = EXTEND32(1) << SIG_SHIFT >> 1;
-   vecNoA = _mm_set_epi32(noA, noA, noA, noA);
+    ALLOC(rnum, ord, oac_val16);
+    for (i = 0; i < ord; i++)
+        rnum[i] = num[ord - i - 1];
+    noA = EXTEND32(1)<<SIG_SHIFT>>1;
+    vecNoA = _mm_set_epi32(noA, noA, noA, noA);
 
-   for (i=0;i<N-3;i+=4)
-   {
-      oac_val32 sums[4] = {0};
-      __m128i vecSum, vecX;
-#if defined(OAC_CHECK_ASM)
-      {
-         oac_val32 sums_c[4] = {0};
-         xcorr_kernel_c(rnum, x+i-ord, sums_c, ord);
-#endif
-         xcorr_kernel(rnum, x+i-ord, sums, ord, arch);
-#if defined(OAC_CHECK_ASM)
-         celt_assert(memcmp(sums, sums_c, sizeof(sums)) == 0);
-      }
-#endif
-      vecSum = _mm_loadu_si128((__m128i *)(void*)sums);
-      vecSum = _mm_add_epi32(vecSum, vecNoA);
-      vecSum = _mm_srai_epi32(vecSum, SIG_SHIFT);
-      vecX = OP_CVTEPI16_EPI32_M64(x + i);
-      vecSum = _mm_add_epi32(vecSum, vecX);
-      vecSum = _mm_packs_epi32(vecSum, vecSum);
-      _mm_storel_epi64((__m128i *)(void *)(y + i), vecSum);
-   }
-   for (;i<N;i++)
-   {
-      oac_val32 sum = 0;
-      for (j=0;j<ord;j++)
-         sum = MAC16_16(sum, rnum[j], x[i+j-ord]);
-      y[i] = SATURATE16(ADD32(EXTEND32(x[i]), PSHR32(sum, SIG_SHIFT)));
-   }
+    for (i = 0; i < N - 3; i += 4) {
+        oac_val32 sums[4] = {0};
+        __m128i vecSum, vecX;
+# if defined(OAC_CHECK_ASM)
+        {
+            oac_val32 sums_c[4] = {0};
+            xcorr_kernel_c(rnum, x + i - ord, sums_c, ord);
+# endif
+        xcorr_kernel(rnum, x + i - ord, sums, ord, arch);
+# if defined(OAC_CHECK_ASM)
+        celt_assert(memcmp(sums, sums_c, sizeof(sums)) == 0);
+    }
+# endif
+        vecSum = _mm_loadu_si128((__m128i *)(void*)sums);
+        vecSum = _mm_add_epi32(vecSum, vecNoA);
+        vecSum = _mm_srai_epi32(vecSum, SIG_SHIFT);
+        vecX = OP_CVTEPI16_EPI32_M64(x + i);
+        vecSum = _mm_add_epi32(vecSum, vecX);
+        vecSum = _mm_packs_epi32(vecSum, vecSum);
+        _mm_storel_epi64((__m128i *)(void *)(y + i), vecSum);
+    }
+    for (; i < N; i++) {
+        oac_val32 sum = 0;
+        for (j = 0; j < ord; j++)
+            sum = MAC16_16(sum, rnum[j], x[i + j - ord]);
+        y[i] = SATURATE16(ADD32(EXTEND32(x[i]), PSHR32(sum, SIG_SHIFT)));
+    }
 
-   RESTORE_STACK;
+    RESTORE_STACK;
 }
 
 #endif

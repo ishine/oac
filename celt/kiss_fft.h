@@ -1,30 +1,30 @@
 /*Copyright (c) 2003-2004, Mark Borgerding
-  Lots of modifications by Jean-Marc Valin
-  Copyright (c) 2005-2007, Xiph.Org Foundation
-  Copyright (c) 2008,      Xiph.Org Foundation, CSIRO
+   Lots of modifications by Jean-Marc Valin
+   Copyright (c) 2005-2007, Xiph.Org Foundation
+   Copyright (c) 2008,      Xiph.Org Foundation, CSIRO
 
-  All rights reserved.
+   All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without
+   Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
        this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
        this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
 
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-  POSSIBILITY OF SUCH DAMAGE.*/
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.*/
 
 #ifndef KISS_FFT_H
 #define KISS_FFT_H
@@ -37,38 +37,38 @@
 #ifdef USE_SIMD
 # include <xmmintrin.h>
 # define kiss_fft_scalar __m128
-#define KISS_FFT_MALLOC(nbytes) memalign(16,nbytes)
+# define KISS_FFT_MALLOC(nbytes) memalign(16, nbytes)
 #else
-#define KISS_FFT_MALLOC oac_alloc
+# define KISS_FFT_MALLOC oac_alloc
 #endif
 
 #ifdef FIXED_POINT
-#include "arch.h"
+# include "arch.h"
 
-#  define kiss_fft_scalar oac_int32
-#  define COEF_SHIFT 32
+# define kiss_fft_scalar oac_int32
+# define COEF_SHIFT 32
 
-#  define kiss_twiddle_scalar celt_coef
+# define kiss_twiddle_scalar celt_coef
 
 /* Some 32-bit CPUs would load/store a kiss_twiddle_cpx with a single memory
  * access, and could benefit from additional alignment.
  */
-#  define KISS_TWIDDLE_CPX_ALIGNMENT (sizeof(oac_int32))
+# define KISS_TWIDDLE_CPX_ALIGNMENT (sizeof(oac_int32))
 
 #else
 
 # ifndef kiss_fft_scalar
 /*  default is float */
-#   define kiss_fft_scalar float
-#   define kiss_twiddle_scalar float
-#   define KF_SUFFIX _celt_single
+#  define kiss_fft_scalar float
+#  define kiss_twiddle_scalar float
+#  define KF_SUFFIX _celt_single
 # endif
 #endif
 
 #if defined(__GNUC__) && defined(KISS_TWIDDLE_CPX_ALIGNMENT)
-#define KISS_TWIDDLE_CPX_ALIGNED __attribute__((aligned(KISS_TWIDDLE_CPX_ALIGNMENT)))
+# define KISS_TWIDDLE_CPX_ALIGNED __attribute__((aligned(KISS_TWIDDLE_CPX_ALIGNMENT)))
 #else
-#define KISS_TWIDDLE_CPX_ALIGNED
+# define KISS_TWIDDLE_CPX_ALIGNED
 #endif
 
 typedef struct {
@@ -77,22 +77,22 @@ typedef struct {
 }kiss_fft_cpx;
 
 typedef struct {
-   kiss_twiddle_scalar r;
-   kiss_twiddle_scalar i;
+    kiss_twiddle_scalar r;
+    kiss_twiddle_scalar i;
 } KISS_TWIDDLE_CPX_ALIGNED kiss_twiddle_cpx;
 
 #define MAXFACTORS 8
 /* e.g. an fft of length 128 has 4 factors
- as far as kissfft is concerned
- 4*4*4*2
+   as far as kissfft is concerned
+   4*4*4*2
  */
 
-typedef struct arch_fft_state{
-   int is_supported;
-   void *priv;
+typedef struct arch_fft_state {
+    int is_supported;
+    void *priv;
 } arch_fft_state;
 
-typedef struct kiss_fft_state{
+typedef struct kiss_fft_state {
     int nfft;
     celt_coef scale;
 #ifdef FIXED_POINT
@@ -106,7 +106,7 @@ typedef struct kiss_fft_state{
 } kiss_fft_state;
 
 #if defined(HAVE_ARM_NE10)
-#include "arm/fft_arm.h"
+# include "arm/fft_arm.h"
 #endif
 
 /*typedef struct kiss_fft_state* kiss_fft_cfg;*/
@@ -134,9 +134,9 @@ typedef struct kiss_fft_state{
  *      buffer size in *lenmem.
  * */
 
-kiss_fft_state *oac_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem, const kiss_fft_state *base, int arch);
+kiss_fft_state *oac_fft_alloc_twiddles(int nfft, void * mem, size_t * lenmem, const kiss_fft_state *base, int arch);
 
-kiss_fft_state *oac_fft_alloc(int nfft,void * mem,size_t * lenmem, int arch);
+kiss_fft_state *oac_fft_alloc(int nfft, void * mem, size_t * lenmem, int arch);
 
 /**
  * oac_fft(cfg,in_out_buf)
@@ -148,11 +148,11 @@ kiss_fft_state *oac_fft_alloc(int nfft,void * mem,size_t * lenmem, int arch);
  * Note that each element is complex and can be accessed like
     f[k].r and f[k].i
  * */
-void oac_fft_c(const kiss_fft_state *cfg,const kiss_fft_cpx *fin,kiss_fft_cpx *fout);
-void oac_ifft_c(const kiss_fft_state *cfg,const kiss_fft_cpx *fin,kiss_fft_cpx *fout);
+void oac_fft_c(const kiss_fft_state *cfg, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
+void oac_ifft_c(const kiss_fft_state *cfg, const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
 
-void oac_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout ARG_FIXED(int downshift));
-void oac_ifft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout);
+void oac_fft_impl(const kiss_fft_state*st, kiss_fft_cpx*fout ARG_FIXED(int downshift));
+void oac_ifft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout);
 
 void oac_fft_free(const kiss_fft_state *cfg, int arch);
 
@@ -162,44 +162,44 @@ int oac_fft_alloc_arch_c(kiss_fft_state *st);
 
 #if !defined(OVERRIDE_OAC_FFT)
 /* Is run-time CPU detection enabled on this platform? */
-#if defined(OAC_HAVE_RTCD) && (defined(HAVE_ARM_NE10))
+# if defined(OAC_HAVE_RTCD) && (defined(HAVE_ARM_NE10))
 
-extern int (*const OAC_FFT_ALLOC_ARCH_IMPL[OAC_ARCHMASK+1])(
+extern int (*const OAC_FFT_ALLOC_ARCH_IMPL[OAC_ARCHMASK + 1])(
  kiss_fft_state *st);
 
-#define oac_fft_alloc_arch(_st, arch) \
-         ((*OAC_FFT_ALLOC_ARCH_IMPL[(arch)&OAC_ARCHMASK])(_st))
+#  define oac_fft_alloc_arch(_st, arch) \
+        ((*OAC_FFT_ALLOC_ARCH_IMPL[(arch)&OAC_ARCHMASK])(_st))
 
-extern void (*const OAC_FFT_FREE_ARCH_IMPL[OAC_ARCHMASK+1])(
+extern void (*const OAC_FFT_FREE_ARCH_IMPL[OAC_ARCHMASK + 1])(
  kiss_fft_state *st);
-#define oac_fft_free_arch(_st, arch) \
-         ((*OAC_FFT_FREE_ARCH_IMPL[(arch)&OAC_ARCHMASK])(_st))
+#  define oac_fft_free_arch(_st, arch) \
+        ((*OAC_FFT_FREE_ARCH_IMPL[(arch)&OAC_ARCHMASK])(_st))
 
-extern void (*const OAC_FFT[OAC_ARCHMASK+1])(const kiss_fft_state *cfg,
+extern void (*const OAC_FFT[OAC_ARCHMASK + 1])(const kiss_fft_state *cfg,
  const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
-#define oac_fft(_cfg, _fin, _fout, arch) \
-   ((*OAC_FFT[(arch)&OAC_ARCHMASK])(_cfg, _fin, _fout))
+#  define oac_fft(_cfg, _fin, _fout, arch) \
+        ((*OAC_FFT[(arch)&OAC_ARCHMASK])(_cfg, _fin, _fout))
 
-extern void (*const OAC_IFFT[OAC_ARCHMASK+1])(const kiss_fft_state *cfg,
+extern void (*const OAC_IFFT[OAC_ARCHMASK + 1])(const kiss_fft_state *cfg,
  const kiss_fft_cpx *fin, kiss_fft_cpx *fout);
-#define oac_ifft(_cfg, _fin, _fout, arch) \
-   ((*OAC_IFFT[(arch)&OAC_ARCHMASK])(_cfg, _fin, _fout))
+#  define oac_ifft(_cfg, _fin, _fout, arch) \
+        ((*OAC_IFFT[(arch)&OAC_ARCHMASK])(_cfg, _fin, _fout))
 
-#else /* else for if defined(OAC_HAVE_RTCD) && (defined(HAVE_ARM_NE10)) */
+# else /* else for if defined(OAC_HAVE_RTCD) && (defined(HAVE_ARM_NE10)) */
 
-#define oac_fft_alloc_arch(_st, arch) \
-         ((void)(arch), oac_fft_alloc_arch_c(_st))
+#  define oac_fft_alloc_arch(_st, arch) \
+        ((void)(arch), oac_fft_alloc_arch_c(_st))
 
-#define oac_fft_free_arch(_st, arch) \
-         ((void)(arch), oac_fft_free_arch_c(_st))
+#  define oac_fft_free_arch(_st, arch) \
+        ((void)(arch), oac_fft_free_arch_c(_st))
 
-#define oac_fft(_cfg, _fin, _fout, arch) \
-         ((void)(arch), oac_fft_c(_cfg, _fin, _fout))
+#  define oac_fft(_cfg, _fin, _fout, arch) \
+        ((void)(arch), oac_fft_c(_cfg, _fin, _fout))
 
-#define oac_ifft(_cfg, _fin, _fout, arch) \
-         ((void)(arch), oac_ifft_c(_cfg, _fin, _fout))
+#  define oac_ifft(_cfg, _fin, _fout, arch) \
+        ((void)(arch), oac_ifft_c(_cfg, _fin, _fout))
 
-#endif /* end if defined(OAC_HAVE_RTCD) && (defined(HAVE_ARM_NE10)) */
+# endif /* end if defined(OAC_HAVE_RTCD) && (defined(HAVE_ARM_NE10)) */
 #endif /* end if !defined(OVERRIDE_OAC_FFT) */
 
 #endif

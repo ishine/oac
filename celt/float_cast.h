@@ -22,7 +22,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 /* Version 1.1 */
 
@@ -64,47 +64,46 @@
 /* With GCC, when SSE is available, the fastest conversion is cvtss2si. */
 #if defined(__GNUC__) && defined(__SSE__)
 
-#include <xmmintrin.h>
-static OAC_INLINE oac_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_ss(x));}
+# include <xmmintrin.h>
+static OAC_INLINE oac_int32 float2int(float x) {
+    return _mm_cvt_ss2si(_mm_set_ss(x));
+}
 
 #elif (defined(_MSC_VER) && _MSC_VER >= 1400) && (defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1))
 
-        #include <xmmintrin.h>
-        static OAC_INLINE oac_int32 float2int(float value)
-        {
-                /* _mm_load_ss will generate same code as _mm_set_ss
-                ** in _MSC_VER >= 1914 /02 so keep __mm_load__ss
-                ** for backward compatibility.
-                */
-                return _mm_cvtss_si32(_mm_load_ss(&value));
-        }
+# include <xmmintrin.h>
+static OAC_INLINE oac_int32 float2int(float value) {
+    /* _mm_load_ss will generate same code as _mm_set_ss
+    ** in _MSC_VER >= 1914 /02 so keep __mm_load__ss
+    ** for backward compatibility.
+    */
+    return _mm_cvtss_si32(_mm_load_ss(&value));
+}
 
 #elif (defined(_MSC_VER) && _MSC_VER >= 1400) && defined (_M_IX86)
 
-        #include <math.h>
+# include <math.h>
 
-        /*      Win32 doesn't seem to have these functions.
-        **      Therefore implement OAC_INLINE versions of these functions here.
-        */
+/*      Win32 doesn't seem to have these functions.
+**      Therefore implement OAC_INLINE versions of these functions here.
+*/
 
-        static OAC_INLINE oac_int32
-        float2int (float flt)
-        {       int intgr;
+static OAC_INLINE oac_int32 float2int (float flt)                             {
+    int intgr;
 
-                _asm
-                {       fld flt
-                        fistp intgr
-                } ;
+    _asm
+    {       fld flt
+            fistp intgr
+    };
 
-                return intgr ;
-        }
+    return intgr;
+}
 #elif defined(__aarch64__)
 
-        #include <arm_neon.h>
-        static OAC_INLINE oac_int32 float2int(float flt)
-        {
-                return vcvtns_s32_f32(flt);
-        }
+# include <arm_neon.h>
+static OAC_INLINE oac_int32 float2int(float flt) {
+    return vcvtns_s32_f32(flt);
+}
 
 #elif defined(HAVE_LRINTF) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 
@@ -115,62 +114,59 @@ static OAC_INLINE oac_int32 float2int(float x) {return _mm_cvt_ss2si(_mm_set_ss(
 **      maths library using -lm.
 */
 
-#define _ISOC9X_SOURCE 1
-#define _ISOC99_SOURCE 1
+# define _ISOC9X_SOURCE 1
+# define _ISOC99_SOURCE 1
 
-#define __USE_ISOC9X 1
-#define __USE_ISOC99 1
+# define __USE_ISOC9X 1
+# define __USE_ISOC99 1
 
-#include <math.h>
-#define float2int(x) lrintf(x)
+# include <math.h>
+# define float2int(x) lrintf(x)
 
 #elif defined(HAVE_LRINT) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 
-#define _ISOC9X_SOURCE 1
-#define _ISOC99_SOURCE 1
+# define _ISOC9X_SOURCE 1
+# define _ISOC99_SOURCE 1
 
-#define __USE_ISOC9X 1
-#define __USE_ISOC99 1
+# define __USE_ISOC9X 1
+# define __USE_ISOC99 1
 
-#include <math.h>
-#define float2int(x) lrint(x)
+# include <math.h>
+# define float2int(x) lrint(x)
 
 #else
 
-#if (defined(__GNUC__) && defined(__STDC__) && __STDC__ && __STDC_VERSION__ >= 199901L)
-        /* supported by gcc in C99 mode, but not by all other compilers */
-        #warning "Don't have the functions lrint() and lrintf ()."
-        #warning "Replacing these functions with a standard C cast."
-#endif /* __STDC_VERSION__ >= 199901L */
-        #include <math.h>
-        #define float2int(flt) ((int)(floor(.5+flt)))
+# if (defined(__GNUC__) && defined(__STDC__) && __STDC__ && __STDC_VERSION__ >= 199901L)
+/* supported by gcc in C99 mode, but not by all other compilers */
+#  warning "Don't have the functions lrint() and lrintf ()."
+#  warning "Replacing these functions with a standard C cast."
+# endif /* __STDC_VERSION__ >= 199901L */
+# include <math.h>
+# define float2int(flt) ((int)(floor(.5 + flt)))
 #endif
 
 #ifndef DISABLE_FLOAT_API
-static OAC_INLINE oac_int16 FLOAT2INT16(float x)
-{
-   x = x*CELT_SIG_SCALE;
-   x = MAX32(x, -32768);
-   x = MIN32(x, 32767);
-   return (oac_int16)float2int(x);
+static OAC_INLINE oac_int16 FLOAT2INT16(float x) {
+    x = x*CELT_SIG_SCALE;
+    x = MAX32(x, -32768);
+    x = MIN32(x, 32767);
+    return (oac_int16)float2int(x);
 }
 
-static OAC_INLINE oac_int32 FLOAT2INT24(float x)
-{
-   x = x*(CELT_SIG_SCALE*256.f);
-   x = MAX32(x, -16777216);
-   x = MIN32(x, 16777216);
-   return float2int(x);
+static OAC_INLINE oac_int32 FLOAT2INT24(float x) {
+    x = x*(CELT_SIG_SCALE*256.f);
+    x = MAX32(x, -16777216);
+    x = MIN32(x, 16777216);
+    return float2int(x);
 }
-#ifdef FIXED_POINT
-static OAC_INLINE oac_int32 FLOAT2SIG(float x)
-{
-   x = x*((oac_int32)32768<<SIG_SHIFT);
-   x = MAX32(x, -(65536<<SIG_SHIFT));
-   x = MIN32(x, 65536<<SIG_SHIFT);
-   return float2int(x);
+# ifdef FIXED_POINT
+static OAC_INLINE oac_int32 FLOAT2SIG(float x) {
+    x = x*((oac_int32)32768<<SIG_SHIFT);
+    x = MAX32(x, -(65536<<SIG_SHIFT));
+    x = MIN32(x, 65536<<SIG_SHIFT);
+    return float2int(x);
 }
-#endif
+# endif
 #endif /* DISABLE_FLOAT_API */
 
 #endif /* FLOAT_CAST_H */

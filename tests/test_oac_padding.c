@@ -23,14 +23,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 /* Check for overflow in reading the padding length.
  * http://lists.xiph.org/pipermail/oac/2012-November/001834.html
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <stdio.h>
@@ -43,52 +43,50 @@
 #define CHANNELS 2
 #define FRAMESIZE 5760
 
-void test_overflow(void)
-{
-  OacDecoder *decoder;
-  int result;
-  int error;
+void test_overflow(void) {
+    OacDecoder *decoder;
+    int result;
+    int error;
 
-  unsigned char *in = (unsigned char *)malloc(PACKETSIZE);
-  oac_int16 *out = (oac_int16 *)malloc(FRAMESIZE*CHANNELS*sizeof(*out));
+    unsigned char *in = (unsigned char *)malloc(PACKETSIZE);
+    oac_int16 *out = (oac_int16 *)malloc(FRAMESIZE*CHANNELS*sizeof(*out));
 
-  fprintf(stderr, "  Checking for padding overflow... ");
-  if (!in || !out) {
-    fprintf(stderr, "FAIL (out of memory)\n");
-    test_failed();
-  }
-  in[0] = 0xff;
-  in[1] = 0x41;
-  memset(in + 2, 0xff, PACKETSIZE - 3);
-  in[PACKETSIZE-1] = 0x0b;
+    fprintf(stderr, "  Checking for padding overflow... ");
+    if (!in || !out) {
+        fprintf(stderr, "FAIL (out of memory)\n");
+        test_failed();
+    }
+    in[0] = 0xff;
+    in[1] = 0x41;
+    memset(in + 2, 0xff, PACKETSIZE - 3);
+    in[PACKETSIZE - 1] = 0x0b;
 
-  decoder = oac_decoder_create(48000, CHANNELS, &error);
-  result = oac_decode(decoder, in, PACKETSIZE, out, FRAMESIZE, 0);
-  oac_decoder_destroy(decoder);
+    decoder = oac_decoder_create(48000, CHANNELS, &error);
+    result = oac_decode(decoder, in, PACKETSIZE, out, FRAMESIZE, 0);
+    oac_decoder_destroy(decoder);
 
-  free(in);
-  free(out);
+    free(in);
+    free(out);
 
-  if (result != OAC_INVALID_PACKET) {
-    fprintf(stderr, "FAIL!\n");
-    test_failed();
-  }
+    if (result != OAC_INVALID_PACKET) {
+        fprintf(stderr, "FAIL!\n");
+        test_failed();
+    }
 
-  fprintf(stderr, "OK.\n");
+    fprintf(stderr, "OK.\n");
 }
 
-int main(void)
-{
-  const char *oversion;
+int main(void) {
+    const char *oversion;
 
-  iseed = 0;
-  oversion = oac_get_version_string();
-  if (!oversion) test_failed();
-  fprintf(stderr, "Testing %s padding.\n", oversion);
+    iseed = 0;
+    oversion = oac_get_version_string();
+    if (!oversion) test_failed();
+    fprintf(stderr, "Testing %s padding.\n", oversion);
 
-  test_overflow();
+    test_overflow();
 
-  fprintf(stderr, "All padding tests passed.\n");
+    fprintf(stderr, "All padding tests passed.\n");
 
-  return 0;
+    return 0;
 }

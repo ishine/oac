@@ -22,10 +22,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <math.h>
@@ -76,10 +76,10 @@ int main(int argc, char **argv) {
     }
 
     int16_t x_in[BWE_FRAME_SIZE];
-    int16_t x_out[3 * BWE_FRAME_SIZE];
+    int16_t x_out[3*BWE_FRAME_SIZE];
 
 
-    while(fread(x_in, sizeof(x_in[0]), BWE_FRAME_SIZE, fin) == BWE_FRAME_SIZE) {
+    while (fread(x_in, sizeof(x_in[0]), BWE_FRAME_SIZE, fin) == BWE_FRAME_SIZE) {
         osce_bwe(
             osce,
             hOSCEBWE,
@@ -87,9 +87,9 @@ int main(int argc, char **argv) {
             x_in,
             BWE_FRAME_SIZE,
             arch
-        );
+            );
 
-        fwrite(x_out, sizeof(x_out[0]), 3 * BWE_FRAME_SIZE, fout);
+        fwrite(x_out, sizeof(x_out[0]), 3*BWE_FRAME_SIZE, fout);
     }
 
     free(hOSCEBWE);

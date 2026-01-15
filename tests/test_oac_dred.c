@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <stdio.h>
@@ -34,10 +34,10 @@
 #include <string.h>
 #include <time.h>
 #ifndef _WIN32
-#include <unistd.h>
+# include <unistd.h>
 #else
-#include <process.h>
-#define getpid _getpid
+# include <process.h>
+# define getpid _getpid
 #endif
 
 /* including sources directly to test internal APIs */
@@ -51,57 +51,51 @@
 #define MAX_EXTENSION_SIZE 200
 #define MAX_NB_EXTENSIONS 100
 
-void test_random_dred(void)
-{
-   int error;
-   int i;
-   OacDREDDecoder *dred_dec;
-   OacDRED *dred;
-   dred_dec = oac_dred_decoder_create(&error);
-   expect_true(error == OAC_OK, "oac_dred_decoder_create() failed");
-   dred = oac_dred_alloc(&error);
-   expect_true(error == OAC_OK, "oac_dred_create() failed");
-   for (i=0;i<NB_RANDOM_EXTENSIONS;i++)
-   {
-      unsigned char payload[MAX_EXTENSION_SIZE];
-      int len;
-      int j;
-      int res1, res2;
-      int dred_end;
-      len = fast_rand()%(MAX_EXTENSION_SIZE+1);
-      for (j=0;j<len;j++)
-         payload[j] = fast_rand()&0xFF;
-      res1 = oac_dred_parse(dred_dec, dred, payload, len, 48000, 48000, &dred_end, fast_rand()&0x1);
-      if (res1 > 0)
-      {
-         res2 = oac_dred_process(dred_dec, dred, dred);
-         expect_true(res2 == OAC_OK, "process should succeed if parse succeeds");
-         expect_true(res1 >= dred_end, "end before beginning");
-      }
-   }
-   oac_dred_free(dred);
-   oac_dred_decoder_destroy(dred_dec);
+void test_random_dred(void) {
+    int error;
+    int i;
+    OacDREDDecoder *dred_dec;
+    OacDRED *dred;
+    dred_dec = oac_dred_decoder_create(&error);
+    expect_true(error == OAC_OK, "oac_dred_decoder_create() failed");
+    dred = oac_dred_alloc(&error);
+    expect_true(error == OAC_OK, "oac_dred_create() failed");
+    for (i = 0; i < NB_RANDOM_EXTENSIONS; i++) {
+        unsigned char payload[MAX_EXTENSION_SIZE];
+        int len;
+        int j;
+        int res1, res2;
+        int dred_end;
+        len = fast_rand()%(MAX_EXTENSION_SIZE + 1);
+        for (j = 0; j < len; j++)
+            payload[j] = fast_rand()&0xFF;
+        res1 = oac_dred_parse(dred_dec, dred, payload, len, 48000, 48000, &dred_end, fast_rand()&0x1);
+        if (res1 > 0) {
+            res2 = oac_dred_process(dred_dec, dred, dred);
+            expect_true(res2 == OAC_OK, "process should succeed if parse succeeds");
+            expect_true(res1 >= dred_end, "end before beginning");
+        }
+    }
+    oac_dred_free(dred);
+    oac_dred_decoder_destroy(dred_dec);
 }
 
-int main(int argc, char **argv)
-{
-   int env_used;
-   char *env_seed;
-   env_used=0;
-   env_seed=getenv("SEED");
-   if(argc>1)iseed=atoi(argv[1]);
-   else if(env_seed)
-   {
-      iseed=atoi(env_seed);
-      env_used=1;
-   }
-   else iseed=(oac_uint32)time(NULL)^(((oac_uint32)getpid()&65535)<<16);
-   Rw=Rz=iseed;
+int main(int argc, char **argv) {
+    int env_used;
+    char *env_seed;
+    env_used = 0;
+    env_seed = getenv("SEED");
+    if (argc > 1) iseed = atoi(argv[1]);
+    else if (env_seed) {
+        iseed = atoi(env_seed);
+        env_used = 1;
+    } else iseed = (oac_uint32)time(NULL)^(((oac_uint32)getpid()&65535)<<16);
+    Rw = Rz = iseed;
 
-   fprintf(stderr,"Testing dred. Random seed: %u (%.4X)\n", iseed, fast_rand() % 65535);
-   if(env_used)fprintf(stderr,"  Random seed set from the environment (SEED=%s).\n", env_seed);
+    fprintf(stderr, "Testing dred. Random seed: %u (%.4X)\n", iseed, fast_rand()%65535);
+    if (env_used) fprintf(stderr, "  Random seed set from the environment (SEED=%s).\n", env_seed);
 
-   test_random_dred();
-   fprintf(stderr,"Tests completed successfully.\n");
-   return 0;
+    test_random_dred();
+    fprintf(stderr, "Tests completed successfully.\n");
+    return 0;
 }

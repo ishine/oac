@@ -23,301 +23,290 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 /* Original code from libtheora modified to suit to Oac */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #ifdef OAC_HAVE_RTCD
 
-#include "armcpu.h"
-#include "cpu_support.h"
-#include "os_support.h"
-#include "oac_types.h"
-#include "arch.h"
+# include "armcpu.h"
+# include "cpu_support.h"
+# include "os_support.h"
+# include "oac_types.h"
+# include "arch.h"
 
-#define OAC_CPU_ARM_V4_FLAG    (1<<OAC_ARCH_ARM_V4)
-#define OAC_CPU_ARM_EDSP_FLAG  (1<<OAC_ARCH_ARM_EDSP)
-#define OAC_CPU_ARM_MEDIA_FLAG (1<<OAC_ARCH_ARM_MEDIA)
-#define OAC_CPU_ARM_NEON_FLAG  (1<<OAC_ARCH_ARM_NEON)
-#define OAC_CPU_ARM_DOTPROD_FLAG  (1<<OAC_ARCH_ARM_DOTPROD)
+# define OAC_CPU_ARM_V4_FLAG    (1<<OAC_ARCH_ARM_V4)
+# define OAC_CPU_ARM_EDSP_FLAG  (1<<OAC_ARCH_ARM_EDSP)
+# define OAC_CPU_ARM_MEDIA_FLAG (1<<OAC_ARCH_ARM_MEDIA)
+# define OAC_CPU_ARM_NEON_FLAG  (1<<OAC_ARCH_ARM_NEON)
+# define OAC_CPU_ARM_DOTPROD_FLAG  (1<<OAC_ARCH_ARM_DOTPROD)
 
-#if defined(_MSC_VER)
+# if defined(_MSC_VER)
 /*For GetExceptionCode() and EXCEPTION_ILLEGAL_INSTRUCTION.*/
-# define WIN32_LEAN_AND_MEAN
-# define WIN32_EXTRA_LEAN
-# include <windows.h>
+#  define WIN32_LEAN_AND_MEAN
+#  define WIN32_EXTRA_LEAN
+#  include <windows.h>
 
-static OAC_INLINE oac_uint32 oac_cpu_capabilities(void){
-  oac_uint32 flags;
-  flags=0;
-  /* MSVC has no OAC_INLINE __asm support for ARM, but it does let you __emit
-   * instructions via their assembled hex code.
-   * All of these instructions should be essentially nops. */
-# if defined(OAC_ARM_MAY_HAVE_EDSP) || defined(OAC_ARM_MAY_HAVE_MEDIA) \
- || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-  __try{
-    /*PLD [r13]*/
-    __emit(0xF5DDF000);
-    flags|=OAC_CPU_ARM_EDSP_FLAG;
-  }
-  __except(GetExceptionCode()==EXCEPTION_ILLEGAL_INSTRUCTION){
-    /*Ignore exception.*/
-  }
-#  if defined(OAC_ARM_MAY_HAVE_MEDIA) \
- || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-  __try{
-    /*SHADD8 r3,r3,r3*/
-    __emit(0xE6333F93);
-    flags|=OAC_CPU_ARM_MEDIA_FLAG;
-  }
-  __except(GetExceptionCode()==EXCEPTION_ILLEGAL_INSTRUCTION){
-    /*Ignore exception.*/
-  }
-#   if defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-  __try{
-    /*VORR q0,q0,q0*/
-    __emit(0xF2200150);
-    flags|=OAC_CPU_ARM_NEON_FLAG;
-  }
-  __except(GetExceptionCode()==EXCEPTION_ILLEGAL_INSTRUCTION){
-    /*Ignore exception.*/
-  }
-#   endif
-#  endif
-# endif
-  return flags;
-}
-
-#elif defined(__linux__)
-/* Linux based */
-#include <stdio.h>
-
-static oac_uint32 oac_cpu_capabilities(void)
-{
-  oac_uint32 flags = 0;
-  FILE *cpuinfo;
-
-  /* Reading /proc/self/auxv would be easier, but that doesn't work reliably on
-   * Android */
-  cpuinfo = fopen("/proc/cpuinfo", "r");
-
-  if(cpuinfo != NULL)
-  {
-    /* 512 should be enough for anybody (it's even enough for all the flags that
-     * x86 has accumulated... so far). */
-    char buf[512];
-
-    while(fgets(buf, 512, cpuinfo) != NULL)
-    {
-# if defined(OAC_ARM_MAY_HAVE_EDSP) || defined(OAC_ARM_MAY_HAVE_MEDIA) \
- || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-      /* Search for edsp and neon flag */
-      if(memcmp(buf, "Features", 8) == 0)
-      {
-        char *p;
-        p = strstr(buf, " edsp");
-        if(p != NULL && (p[5] == ' ' || p[5] == '\n'))
-          flags |= OAC_CPU_ARM_EDSP_FLAG;
-
-#  if defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-        p = strstr(buf, " neon");
-        if(p != NULL && (p[5] == ' ' || p[5] == '\n'))
-          flags |= OAC_CPU_ARM_NEON_FLAG;
-        p = strstr(buf, " asimd");
-        if(p != NULL && (p[6] == ' ' || p[6] == '\n'))
-          flags |= OAC_CPU_ARM_NEON_FLAG | OAC_CPU_ARM_MEDIA_FLAG | OAC_CPU_ARM_EDSP_FLAG;
-#  endif
-#  if defined(OAC_ARM_MAY_HAVE_DOTPROD)
-        p = strstr(buf, " asimddp");
-        if(p != NULL && (p[8] == ' ' || p[8] == '\n'))
-          flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-#  endif
-      }
-# endif
-
-# if defined(OAC_ARM_MAY_HAVE_MEDIA) \
- || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-      /* Search for media capabilities (>= ARMv6) */
-      if(memcmp(buf, "CPU architecture:", 17) == 0)
-      {
-        int version;
-        version = atoi(buf+17);
-
-        if(version >= 6)
-          flags |= OAC_CPU_ARM_MEDIA_FLAG;
-      }
-# endif
+static OAC_INLINE oac_uint32 oac_cpu_capabilities(void) {
+    oac_uint32 flags;
+    flags = 0;
+    /* MSVC has no OAC_INLINE __asm support for ARM, but it does let you __emit
+     * instructions via their assembled hex code.
+     * All of these instructions should be essentially nops. */
+#  if defined(OAC_ARM_MAY_HAVE_EDSP) || defined(OAC_ARM_MAY_HAVE_MEDIA) \
+    || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+    __try{
+        /*PLD [r13]*/
+        __emit(0xF5DDF000);
+        flags |= OAC_CPU_ARM_EDSP_FLAG;
     }
-
-#if defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
-    flags |= OAC_CPU_ARM_EDSP_FLAG | OAC_CPU_ARM_MEDIA_FLAG | OAC_CPU_ARM_NEON_FLAG;
-# if defined(OAC_ARM_PRESUME_DOTPROD)
-    flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-# endif
-#endif
-
-    fclose(cpuinfo);
-  }
-  return flags;
-}
-
-#elif defined(__APPLE__)
-#include <sys/types.h>
-#include <sys/sysctl.h>
-
-static oac_uint32 oac_cpu_capabilities(void)
-{
-  oac_uint32 flags = 0;
-
-#if defined(OAC_ARM_MAY_HAVE_DOTPROD)
-  size_t size = sizeof(uint32_t);
-  uint32_t value = 0;
-  if (!sysctlbyname("hw.optional.arm.FEAT_DotProd", &value, &size, NULL, 0) && value)
-  {
-    flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-  }
-#endif
-
-#if defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
-  flags |= OAC_CPU_ARM_EDSP_FLAG | OAC_CPU_ARM_MEDIA_FLAG | OAC_CPU_ARM_NEON_FLAG;
-# if defined(OAC_ARM_PRESUME_DOTPROD)
-  flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-# endif
-#endif
-  return flags;
-}
-
-#elif defined(HAVE_ELF_AUX_INFO)
-#include <sys/auxv.h>
-
-static oac_uint32 oac_cpu_capabilities(void)
-{
-  long hwcap = 0;
-  oac_uint32 flags = 0;
-
-# if defined(OAC_ARM_MAY_HAVE_MEDIA) \
- || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-  /* FreeBSD requires armv6+, which always supports media instructions */
-  flags |= OAC_CPU_ARM_MEDIA_FLAG;
-# endif
-
-  elf_aux_info(AT_HWCAP, &hwcap, sizeof hwcap);
-
-# if defined(OAC_ARM_MAY_HAVE_EDSP) || defined(OAC_ARM_MAY_HAVE_MEDIA) \
- || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-#  ifdef HWCAP_EDSP
-  if (hwcap & HWCAP_EDSP)
-    flags |= OAC_CPU_ARM_EDSP_FLAG;
-#  endif
-
-#  if defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-#   ifdef HWCAP_NEON
-  if (hwcap & HWCAP_NEON)
-    flags |= OAC_CPU_ARM_NEON_FLAG;
-#   elif defined(HWCAP_ASIMD)
-  if (hwcap & HWCAP_ASIMD)
-    flags |= OAC_CPU_ARM_NEON_FLAG | OAC_CPU_ARM_MEDIA_FLAG | OAC_CPU_ARM_EDSP_FLAG;
+    __except (GetExceptionCode() == EXCEPTION_ILLEGAL_INSTRUCTION) {
+        /*Ignore exception.*/
+    }
+#   if defined(OAC_ARM_MAY_HAVE_MEDIA) \
+    || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+    __try{
+        /*SHADD8 r3,r3,r3*/
+        __emit(0xE6333F93);
+        flags |= OAC_CPU_ARM_MEDIA_FLAG;
+    }
+    __except (GetExceptionCode() == EXCEPTION_ILLEGAL_INSTRUCTION) {
+        /*Ignore exception.*/
+    }
+#    if defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+    __try{
+        /*VORR q0,q0,q0*/
+        __emit(0xF2200150);
+        flags |= OAC_CPU_ARM_NEON_FLAG;
+    }
+    __except (GetExceptionCode() == EXCEPTION_ILLEGAL_INSTRUCTION) {
+        /*Ignore exception.*/
+    }
+#    endif
 #   endif
 #  endif
-#  if defined(OAC_ARM_MAY_HAVE_DOTPROD) && defined(HWCAP_ASIMDDP)
-  if (hwcap & HWCAP_ASIMDDP)
-    flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+    return flags;
+}
+
+# elif defined(__linux__)
+/* Linux based */
+#  include <stdio.h>
+
+static oac_uint32 oac_cpu_capabilities(void) {
+    oac_uint32 flags = 0;
+    FILE *cpuinfo;
+
+    /* Reading /proc/self/auxv would be easier, but that doesn't work reliably on
+     * Android */
+    cpuinfo = fopen("/proc/cpuinfo", "r");
+
+    if (cpuinfo != NULL) {
+        /* 512 should be enough for anybody (it's even enough for all the flags that
+         * x86 has accumulated... so far). */
+        char buf[512];
+
+        while (fgets(buf, 512, cpuinfo) != NULL) {
+#  if defined(OAC_ARM_MAY_HAVE_EDSP) || defined(OAC_ARM_MAY_HAVE_MEDIA) \
+            || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+            /* Search for edsp and neon flag */
+            if (memcmp(buf, "Features", 8) == 0) {
+                char *p;
+                p = strstr(buf, " edsp");
+                if (p != NULL && (p[5] == ' ' || p[5] == '\n'))
+                    flags |= OAC_CPU_ARM_EDSP_FLAG;
+
+#   if defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+                p = strstr(buf, " neon");
+                if (p != NULL && (p[5] == ' ' || p[5] == '\n'))
+                    flags |= OAC_CPU_ARM_NEON_FLAG;
+                p = strstr(buf, " asimd");
+                if (p != NULL && (p[6] == ' ' || p[6] == '\n'))
+                    flags |= OAC_CPU_ARM_NEON_FLAG|OAC_CPU_ARM_MEDIA_FLAG|OAC_CPU_ARM_EDSP_FLAG;
+#   endif
+#   if defined(OAC_ARM_MAY_HAVE_DOTPROD)
+                p = strstr(buf, " asimddp");
+                if (p != NULL && (p[8] == ' ' || p[8] == '\n'))
+                    flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+#   endif
+            }
 #  endif
-# endif
 
-#if defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
-    flags |= OAC_CPU_ARM_EDSP_FLAG | OAC_CPU_ARM_MEDIA_FLAG | OAC_CPU_ARM_NEON_FLAG;
-# if defined(OAC_ARM_PRESUME_DOTPROD)
+#  if defined(OAC_ARM_MAY_HAVE_MEDIA) \
+            || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+            /* Search for media capabilities (>= ARMv6) */
+            if (memcmp(buf, "CPU architecture:", 17) == 0) {
+                int version;
+                version = atoi(buf + 17);
+
+                if (version >= 6)
+                    flags |= OAC_CPU_ARM_MEDIA_FLAG;
+            }
+#  endif
+        }
+
+#  if defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
+        flags |= OAC_CPU_ARM_EDSP_FLAG|OAC_CPU_ARM_MEDIA_FLAG|OAC_CPU_ARM_NEON_FLAG;
+#   if defined(OAC_ARM_PRESUME_DOTPROD)
+        flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+#   endif
+#  endif
+
+        fclose(cpuinfo);
+    }
+    return flags;
+}
+
+# elif defined(__APPLE__)
+#  include <sys/types.h>
+#  include <sys/sysctl.h>
+
+static oac_uint32 oac_cpu_capabilities(void) {
+    oac_uint32 flags = 0;
+
+#  if defined(OAC_ARM_MAY_HAVE_DOTPROD)
+    size_t size = sizeof(uint32_t);
+    uint32_t value = 0;
+    if (!sysctlbyname("hw.optional.arm.FEAT_DotProd", &value, &size, NULL, 0) && value) {
+        flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+    }
+#  endif
+
+#  if defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
+    flags |= OAC_CPU_ARM_EDSP_FLAG|OAC_CPU_ARM_MEDIA_FLAG|OAC_CPU_ARM_NEON_FLAG;
+#   if defined(OAC_ARM_PRESUME_DOTPROD)
     flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-# endif
-#endif
-
-  return (flags);
+#   endif
+#  endif
+    return flags;
 }
 
-#elif defined(__OpenBSD__)
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#include <machine/armreg.h>
-#include <machine/cpu.h>
+# elif defined(HAVE_ELF_AUX_INFO)
+#  include <sys/auxv.h>
 
-static oac_uint32 oac_cpu_capabilities(void)
-{
-  oac_uint32 flags = 0;
+static oac_uint32 oac_cpu_capabilities(void) {
+    long hwcap = 0;
+    oac_uint32 flags = 0;
 
-#if defined(OAC_ARM_MAY_HAVE_DOTPROD) && defined(CPU_ID_AA64ISAR0)
-  const int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
-  uint64_t isar0;
-  size_t len = sizeof(isar0);
+#  if defined(OAC_ARM_MAY_HAVE_MEDIA) \
+    || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+    /* FreeBSD requires armv6+, which always supports media instructions */
+    flags |= OAC_CPU_ARM_MEDIA_FLAG;
+#  endif
 
-  if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1)
-  {
-    if (ID_AA64ISAR0_DP(isar0) >= ID_AA64ISAR0_DP_IMPL)
-      flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-  }
-#endif
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof hwcap);
 
-#if defined(OAC_ARM_PRESUME_NEON_INTR) \
- || defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
-  flags |= OAC_CPU_ARM_EDSP_FLAG | OAC_CPU_ARM_MEDIA_FLAG | OAC_CPU_ARM_NEON_FLAG;
-# if defined(OAC_ARM_PRESUME_DOTPROD)
-  flags |= OAC_CPU_ARM_DOTPROD_FLAG;
-# endif
-#endif
-  return flags;
+#  if defined(OAC_ARM_MAY_HAVE_EDSP) || defined(OAC_ARM_MAY_HAVE_MEDIA) \
+    || defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+#   ifdef HWCAP_EDSP
+    if (hwcap&HWCAP_EDSP)
+        flags |= OAC_CPU_ARM_EDSP_FLAG;
+#   endif
+
+#   if defined(OAC_ARM_MAY_HAVE_NEON) || defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+#    ifdef HWCAP_NEON
+    if (hwcap&HWCAP_NEON)
+        flags |= OAC_CPU_ARM_NEON_FLAG;
+#    elif defined(HWCAP_ASIMD)
+    if (hwcap&HWCAP_ASIMD)
+        flags |= OAC_CPU_ARM_NEON_FLAG|OAC_CPU_ARM_MEDIA_FLAG|OAC_CPU_ARM_EDSP_FLAG;
+#    endif
+#   endif
+#   if defined(OAC_ARM_MAY_HAVE_DOTPROD) && defined(HWCAP_ASIMDDP)
+    if (hwcap&HWCAP_ASIMDDP)
+        flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+#   endif
+#  endif
+
+#  if defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
+    flags |= OAC_CPU_ARM_EDSP_FLAG|OAC_CPU_ARM_MEDIA_FLAG|OAC_CPU_ARM_NEON_FLAG;
+#   if defined(OAC_ARM_PRESUME_DOTPROD)
+    flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+#   endif
+#  endif
+
+    return flags;
 }
 
-#else
+# elif defined(__OpenBSD__)
+#  include <sys/types.h>
+#  include <sys/sysctl.h>
+#  include <machine/armreg.h>
+#  include <machine/cpu.h>
+
+static oac_uint32 oac_cpu_capabilities(void) {
+    oac_uint32 flags = 0;
+
+#  if defined(OAC_ARM_MAY_HAVE_DOTPROD) && defined(CPU_ID_AA64ISAR0)
+    const int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
+    uint64_t isar0;
+    size_t len = sizeof(isar0);
+
+    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
+        if (ID_AA64ISAR0_DP(isar0) >= ID_AA64ISAR0_DP_IMPL)
+            flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+    }
+#  endif
+
+#  if defined(OAC_ARM_PRESUME_NEON_INTR) \
+    || defined(OAC_ARM_PRESUME_AARCH64_NEON_INTR)
+    flags |= OAC_CPU_ARM_EDSP_FLAG|OAC_CPU_ARM_MEDIA_FLAG|OAC_CPU_ARM_NEON_FLAG;
+#   if defined(OAC_ARM_PRESUME_DOTPROD)
+    flags |= OAC_CPU_ARM_DOTPROD_FLAG;
+#   endif
+#  endif
+    return flags;
+}
+
+# else
 /* The feature registers which can tell us what the processor supports are
  * accessible in privileged modes only, so we can't have a general user-space
  * detection method like on x86.*/
-# error "Configured to use ARM asm but no CPU detection method available for " \
-   "your platform.  Reconfigure with --disable-rtcd (or send patches)."
-#endif
+#  error "Configured to use ARM asm but no CPU detection method available for " \
+    "your platform.  Reconfigure with --disable-rtcd (or send patches)."
+# endif
 
-static int oac_select_arch_impl(void)
-{
-  oac_uint32 flags = oac_cpu_capabilities();
-  int arch = 0;
+static int oac_select_arch_impl(void) {
+    oac_uint32 flags = oac_cpu_capabilities();
+    int arch = 0;
 
-  if(!(flags & OAC_CPU_ARM_EDSP_FLAG)) {
-    /* Asserts ensure arch values are sequential */
-    celt_assert(arch == OAC_ARCH_ARM_V4);
+    if (!(flags&OAC_CPU_ARM_EDSP_FLAG)) {
+        /* Asserts ensure arch values are sequential */
+        celt_assert(arch == OAC_ARCH_ARM_V4);
+        return arch;
+    }
+    arch++;
+
+    if (!(flags&OAC_CPU_ARM_MEDIA_FLAG)) {
+        celt_assert(arch == OAC_ARCH_ARM_EDSP);
+        return arch;
+    }
+    arch++;
+
+    if (!(flags&OAC_CPU_ARM_NEON_FLAG)) {
+        celt_assert(arch == OAC_ARCH_ARM_MEDIA);
+        return arch;
+    }
+    arch++;
+
+    if (!(flags&OAC_CPU_ARM_DOTPROD_FLAG)) {
+        celt_assert(arch == OAC_ARCH_ARM_NEON);
+        return arch;
+    }
+    arch++;
+
+    celt_assert(arch == OAC_ARCH_ARM_DOTPROD);
     return arch;
-  }
-  arch++;
-
-  if(!(flags & OAC_CPU_ARM_MEDIA_FLAG)) {
-    celt_assert(arch == OAC_ARCH_ARM_EDSP);
-    return arch;
-  }
-  arch++;
-
-  if(!(flags & OAC_CPU_ARM_NEON_FLAG)) {
-    celt_assert(arch == OAC_ARCH_ARM_MEDIA);
-    return arch;
-  }
-  arch++;
-
-  if(!(flags & OAC_CPU_ARM_DOTPROD_FLAG)) {
-    celt_assert(arch == OAC_ARCH_ARM_NEON);
-    return arch;
-  }
-  arch++;
-
-  celt_assert(arch == OAC_ARCH_ARM_DOTPROD);
-  return arch;
 }
 
 int oac_select_arch(void) {
-  int arch = oac_select_arch_impl();
-#ifdef FUZZING
-  arch = rand()%(arch+1);
-#endif
-  return arch;
+    int arch = oac_select_arch_impl();
+# ifdef FUZZING
+    arch = rand()%(arch + 1);
+# endif
+    return arch;
 }
 #endif

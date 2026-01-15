@@ -22,7 +22,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef FWGAN_H
 #define FWGAN_H
@@ -49,26 +49,26 @@
 #define FWC7_STATE_SIZE 80
 
 typedef struct {
-  FWGAN model;
-  int arch;
-  int cont_initialized;
-  float embed_phase[2];
-  float last_gain;
-  float last_lpc[LPC_ORDER];
-  float syn_mem[LPC_ORDER];
-  float preemph_mem;
-  float deemph_mem;
-  float pcm_buf[FWGAN_FRAME_SIZE];
-  float cont[CONT_NET_10_OUT_SIZE];
-  float cont_conv1_mem[FEAT_IN_CONV1_CONV_STATE_SIZE];
-  float rnn_state[RNN_GRU_STATE_SIZE];
-  float fwc1_state[FWC1_STATE_SIZE];
-  float fwc2_state[FWC2_STATE_SIZE];
-  float fwc3_state[FWC3_STATE_SIZE];
-  float fwc4_state[FWC4_STATE_SIZE];
-  float fwc5_state[FWC5_STATE_SIZE];
-  float fwc6_state[FWC6_STATE_SIZE];
-  float fwc7_state[FWC7_STATE_SIZE];
+    FWGAN model;
+    int arch;
+    int cont_initialized;
+    float embed_phase[2];
+    float last_gain;
+    float last_lpc[LPC_ORDER];
+    float syn_mem[LPC_ORDER];
+    float preemph_mem;
+    float deemph_mem;
+    float pcm_buf[FWGAN_FRAME_SIZE];
+    float cont[CONT_NET_10_OUT_SIZE];
+    float cont_conv1_mem[FEAT_IN_CONV1_CONV_STATE_SIZE];
+    float rnn_state[RNN_GRU_STATE_SIZE];
+    float fwc1_state[FWC1_STATE_SIZE];
+    float fwc2_state[FWC2_STATE_SIZE];
+    float fwc3_state[FWC3_STATE_SIZE];
+    float fwc4_state[FWC4_STATE_SIZE];
+    float fwc5_state[FWC5_STATE_SIZE];
+    float fwc6_state[FWC6_STATE_SIZE];
+    float fwc7_state[FWC7_STATE_SIZE];
 } FWGANState;
 
 void fwgan_init(FWGANState *st);

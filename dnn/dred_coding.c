@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <math.h>
@@ -37,8 +37,8 @@
 #include "dred_coding.h"
 
 int compute_quantizer(int q0, int dQ, int qmax, int i) {
-  int quant;
-  static const int dQ_table[8] = {0, 2, 3, 4, 6, 8, 12, 16};
-  quant = q0 + (dQ_table[dQ]*i + 8)/16;
-  return quant > qmax ? qmax : quant;
+    int quant;
+    static const int dQ_table[8] = {0, 2, 3, 4, 6, 8, 12, 16};
+    quant = q0 + (dQ_table[dQ]*i + 8)/16;
+    return quant > qmax ? qmax : quant;
 }

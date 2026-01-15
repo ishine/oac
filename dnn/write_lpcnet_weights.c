@@ -22,10 +22,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <stdio.h>
@@ -39,7 +39,7 @@
    but USE_WEIGHTS_FILE is defined in config.h. */
 #undef HAVE_CONFIG_H
 #ifdef USE_WEIGHTS_FILE
-#undef USE_WEIGHTS_FILE
+# undef USE_WEIGHTS_FILE
 #endif
 #include "pitchdnn_data.c"
 #include "fargan_data.c"
@@ -47,51 +47,49 @@
 #include "dred_rdovae_enc_data.c"
 #include "dred_rdovae_dec_data.c"
 #ifdef ENABLE_OSCE
-#include "lace_data.c"
-#include "nolace_data.c"
+# include "lace_data.c"
+# include "nolace_data.c"
 #endif
 
-void write_weights(const WeightArray *list, FILE *fout)
-{
-  int i=0;
-  unsigned char zeros[WEIGHT_BLOCK_SIZE] = {0};
-  while (list[i].name != NULL) {
-    WeightHead h;
-    if (strlen(list[i].name) >= sizeof(h.name) - 1) {
-      printf("[write_weights] warning: name %s too long\n", list[i].name);
+void write_weights(const WeightArray *list, FILE *fout) {
+    int i = 0;
+    unsigned char zeros[WEIGHT_BLOCK_SIZE] = {0};
+    while (list[i].name != NULL) {
+        WeightHead h;
+        if (strlen(list[i].name) >= sizeof(h.name) - 1) {
+            printf("[write_weights] warning: name %s too long\n", list[i].name);
+        }
+        memcpy(h.head, "DNNw", 4);
+        h.version = WEIGHT_BLOB_VERSION;
+        h.type = list[i].type;
+        h.size = list[i].size;
+        h.block_size = (h.size + WEIGHT_BLOCK_SIZE - 1)/WEIGHT_BLOCK_SIZE*WEIGHT_BLOCK_SIZE;
+        OAC_CLEAR(h.name, sizeof(h.name));
+        strncpy(h.name, list[i].name, sizeof(h.name));
+        h.name[sizeof(h.name) - 1] = 0;
+        celt_assert(sizeof(h) == WEIGHT_BLOCK_SIZE);
+        fwrite(&h, 1, WEIGHT_BLOCK_SIZE, fout);
+        fwrite(list[i].data, 1, h.size, fout);
+        fwrite(zeros, 1, h.block_size - h.size, fout);
+        i++;
     }
-    memcpy(h.head, "DNNw", 4);
-    h.version = WEIGHT_BLOB_VERSION;
-    h.type = list[i].type;
-    h.size = list[i].size;
-    h.block_size = (h.size+WEIGHT_BLOCK_SIZE-1)/WEIGHT_BLOCK_SIZE*WEIGHT_BLOCK_SIZE;
-    OAC_CLEAR(h.name, sizeof(h.name));
-    strncpy(h.name, list[i].name, sizeof(h.name));
-    h.name[sizeof(h.name)-1] = 0;
-    celt_assert(sizeof(h) == WEIGHT_BLOCK_SIZE);
-    fwrite(&h, 1, WEIGHT_BLOCK_SIZE, fout);
-    fwrite(list[i].data, 1, h.size, fout);
-    fwrite(zeros, 1, h.block_size-h.size, fout);
-    i++;
-  }
 }
 
-int main(void)
-{
-  FILE *fout = fopen("weights_blob.bin", "w");
-  write_weights(pitchdnn_arrays, fout);
-  write_weights(fargan_arrays, fout);
-  write_weights(plcmodel_arrays, fout);
-  write_weights(rdovaeenc_arrays, fout);
-  write_weights(rdovaedec_arrays, fout);
+int main(void) {
+    FILE *fout = fopen("weights_blob.bin", "w");
+    write_weights(pitchdnn_arrays, fout);
+    write_weights(fargan_arrays, fout);
+    write_weights(plcmodel_arrays, fout);
+    write_weights(rdovaeenc_arrays, fout);
+    write_weights(rdovaedec_arrays, fout);
 #ifdef ENABLE_OSCE
-#ifndef DISABLE_LACE
-  write_weights(lacelayers_arrays, fout);
+# ifndef DISABLE_LACE
+    write_weights(lacelayers_arrays, fout);
+# endif
+# ifndef DISABLE_NOLACE
+    write_weights(nolacelayers_arrays, fout);
+# endif
 #endif
-#ifndef DISABLE_NOLACE
-  write_weights(nolacelayers_arrays, fout);
-#endif
-#endif
-  fclose(fout);
-  return 0;
+    fclose(fout);
+    return 0;
 }

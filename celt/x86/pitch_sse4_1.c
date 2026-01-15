@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <xmmintrin.h>
@@ -39,25 +39,24 @@
 #include "pitch.h"
 
 #if defined(OAC_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)
-#include <smmintrin.h>
-#include "x86cpu.h"
+# include <smmintrin.h>
+# include "x86cpu.h"
 
 oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
-      int N)
-{
-    oac_int  i, dataSize16;
+                                 int N) {
+    oac_int i, dataSize16;
     oac_int32 sum;
     __m128i inVec1_76543210, inVec1_FEDCBA98, acc1;
     __m128i inVec2_76543210, inVec2_FEDCBA98, acc2;
     __m128i inVec1_3210, inVec2_3210;
 
     sum = 0;
-    dataSize16 = N & ~15;
+    dataSize16 = N&~15;
 
     acc1 = _mm_setzero_si128();
     acc2 = _mm_setzero_si128();
 
-    for (i=0;i<dataSize16;i+=16) {
+    for (i = 0; i < dataSize16; i += 16) {
         inVec1_76543210 = _mm_loadu_si128((__m128i *)(void*)(&x[i + 0]));
         inVec2_76543210 = _mm_loadu_si128((__m128i *)(void*)(&y[i + 0]));
 
@@ -73,8 +72,7 @@ oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
 
     acc1 = _mm_add_epi32(acc1, acc2);
 
-    if (N - i >= 8)
-    {
+    if (N - i >= 8) {
         inVec1_76543210 = _mm_loadu_si128((__m128i *)(void*)(&x[i + 0]));
         inVec2_76543210 = _mm_loadu_si128((__m128i *)(void*)(&y[i + 0]));
 
@@ -84,8 +82,7 @@ oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
         i += 8;
     }
 
-    if (N - i >= 4)
-    {
+    if (N - i >= 4) {
         inVec1_3210 = OP_CVTEPI16_EPI32_M64(&x[i + 0]);
         inVec2_3210 = OP_CVTEPI16_EPI32_M64(&y[i + 0]);
 
@@ -100,16 +97,14 @@ oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
 
     sum += _mm_cvtsi128_si32(acc1);
 
-    for (;i<N;i++)
-    {
+    for (; i < N; i++) {
         sum = silk_SMLABB(sum, x[i], y[i]);
     }
 
     return sum;
 }
 
-void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[ 4 ], int len)
-{
+void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[ 4 ], int len) {
     int j;
 
     __m128i vecX, vecX0, vecX1, vecX2, vecX3;
@@ -117,13 +112,13 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
     __m128i sum0, sum1, sum2, sum3, vecSum;
     __m128i initSum;
 
-#ifdef OAC_CHECK_ASM
+# ifdef OAC_CHECK_ASM
     oac_val32 sum_c[4];
-    for (j=0;j<4;j++) {
-      sum_c[j] = sum[j];
+    for (j = 0; j < 4; j++) {
+        sum_c[j] = sum[j];
     }
     xcorr_kernel_c(x, y, sum_c, len);
-#endif
+# endif
 
     celt_assert(len >= 3);
 
@@ -132,8 +127,7 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
     sum2 = _mm_setzero_si128();
     sum3 = _mm_setzero_si128();
 
-    for (j=0;j<(len-7);j+=8)
-    {
+    for (j = 0; j < (len - 7); j += 8) {
         vecX = _mm_loadu_si128((__m128i *)(void*)(&x[j + 0]));
         vecY0 = _mm_loadu_si128((__m128i *)(void*)(&y[j + 0]));
         vecY1 = _mm_loadu_si128((__m128i *)(void*)(&y[j + 1]));
@@ -161,8 +155,7 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
     vecSum = _mm_unpacklo_epi64(_mm_unpacklo_epi32(sum0, sum1),
           _mm_unpacklo_epi32(sum2, sum3));
 
-    for (;j<(len-3);j+=4)
-    {
+    for (; j < (len - 3); j += 4) {
         vecX = OP_CVTEPI16_EPI32_M64(&x[j + 0]);
         vecX0 = _mm_shuffle_epi32(vecX, 0x00);
         vecX1 = _mm_shuffle_epi32(vecX, 0x55);
@@ -186,8 +179,7 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
     }
 
     vecX = OP_CVTEPI16_EPI32_M64(&x[len - 4]);
-    if (len - j == 3)
-    {
+    if (len - j == 3) {
         vecX0 = _mm_shuffle_epi32(vecX, 0x55);
         vecX1 = _mm_shuffle_epi32(vecX, 0xaa);
         vecX2 = _mm_shuffle_epi32(vecX, 0xff);
@@ -203,9 +195,7 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
         vecSum = _mm_add_epi32(vecSum, sum0);
         vecSum = _mm_add_epi32(vecSum, sum1);
         vecSum = _mm_add_epi32(vecSum, sum2);
-    }
-    else if (len - j == 2)
-    {
+    } else if (len - j == 2)   {
         vecX0 = _mm_shuffle_epi32(vecX, 0xaa);
         vecX1 = _mm_shuffle_epi32(vecX, 0xff);
 
@@ -217,9 +207,7 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
 
         vecSum = _mm_add_epi32(vecSum, sum0);
         vecSum = _mm_add_epi32(vecSum, sum1);
-    }
-    else if (len - j == 1)
-    {
+    } else if (len - j == 1)   {
         vecX0 = _mm_shuffle_epi32(vecX, 0xff);
 
         vecY0 = OP_CVTEPI16_EPI32_M64(&y[j + 0]);
@@ -233,8 +221,8 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
     initSum = _mm_add_epi32(initSum, vecSum);
     _mm_storeu_si128((__m128i *)(void*)sum, initSum);
 
-#ifdef OAC_CHECK_ASM
+# ifdef OAC_CHECK_ASM
     celt_assert(!memcmp(sum_c, sum, sizeof(sum_c)));
-#endif
+# endif
 }
 #endif

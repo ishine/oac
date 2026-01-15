@@ -23,16 +23,16 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "x86/x86_arch_macros.h"
 
 #ifndef __AVX2__
-#error nnet_avx2.c is being compiled without AVX2 enabled
+# error nnet_avx2.c is being compiled without AVX2 enabled
 #endif
 
 #define RTCD_ARCH avx2

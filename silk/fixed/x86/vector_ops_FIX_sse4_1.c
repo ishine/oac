@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <xmmintrin.h>
@@ -41,10 +41,9 @@
 oac_int64 silk_inner_prod16_sse4_1(
     const oac_int16            *inVec1,            /*    I input vector 1                                              */
     const oac_int16            *inVec2,            /*    I input vector 2                                              */
-    const oac_int              len                 /*    I vector lengths                                              */
-)
-{
-    oac_int  i, dataSize4;
+    const oac_int len                              /*    I vector lengths                                              */
+    ) {
+    oac_int i, dataSize4;
     oac_int64 sum;
 
     __m128i xmm_prod_20, xmm_prod_31;
@@ -52,18 +51,18 @@ oac_int64 silk_inner_prod16_sse4_1(
     __m128i inVec2_3210, acc2;
 
     sum = 0;
-    dataSize4 = len & ~3;
+    dataSize4 = len&~3;
 
     acc1 = _mm_setzero_si128();
     acc2 = _mm_setzero_si128();
 
-    for( i = 0; i < dataSize4; i += 4 ) {
+    for (i = 0; i < dataSize4; i += 4) {
         inVec1_3210 = OP_CVTEPI16_EPI32_M64( &inVec1[i + 0] );
         inVec2_3210 = OP_CVTEPI16_EPI32_M64( &inVec2[i + 0] );
         xmm_prod_20 = _mm_mul_epi32( inVec1_3210, inVec2_3210 );
 
-        inVec1_3210 = _mm_shuffle_epi32( inVec1_3210, _MM_SHUFFLE( 0, 3, 2, 1 ) );
-        inVec2_3210 = _mm_shuffle_epi32( inVec2_3210, _MM_SHUFFLE( 0, 3, 2, 1 ) );
+        inVec1_3210 = _mm_shuffle_epi32( inVec1_3210, _MM_SHUFFLE( 0, 3, 2, 1 ));
+        inVec2_3210 = _mm_shuffle_epi32( inVec2_3210, _MM_SHUFFLE( 0, 3, 2, 1 ));
         xmm_prod_31 = _mm_mul_epi32( inVec1_3210, inVec2_3210 );
 
         acc1 = _mm_add_epi64( acc1, xmm_prod_20 );
@@ -73,12 +72,12 @@ oac_int64 silk_inner_prod16_sse4_1(
     acc1 = _mm_add_epi64( acc1, acc2 );
 
     /* equal shift right 8 bytes */
-    acc2 = _mm_shuffle_epi32( acc1, _MM_SHUFFLE( 0, 0, 3, 2 ) );
+    acc2 = _mm_shuffle_epi32( acc1, _MM_SHUFFLE( 0, 0, 3, 2 ));
     acc1 = _mm_add_epi64( acc1, acc2 );
 
-    _mm_storel_epi64( (__m128i *)(void *)&sum, acc1 );
+    _mm_storel_epi64((__m128i *)(void *)&sum, acc1 );
 
-    for( ; i < len; i++ ) {
+    for ( ; i < len; i++) {
         sum = silk_SMLALBB( sum, inVec1[ i ], inVec2[ i ] );
     }
 

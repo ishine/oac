@@ -22,82 +22,79 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #if !defined(MATHOPS_ARM_H)
-# define MATHOPS_ARM_H
+#define MATHOPS_ARM_H
 
 #include "armcpu.h"
 #include "cpu_support.h"
 #include "oac_defines.h"
 
-# if !defined(DISABLE_FLOAT_API) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+#if !defined(DISABLE_FLOAT_API) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
-#include <arm_neon.h>
+# include <arm_neon.h>
 
-static inline int32x4_t vroundf(float32x4_t x)
-{
-#  if defined(__aarch64__) || (defined(__ARM_ARCH) && __ARM_ARCH >= 8)
+static inline int32x4_t vroundf(float32x4_t x) {
+# if defined(__aarch64__) || (defined(__ARM_ARCH) && __ARM_ARCH >= 8)
     return vcvtaq_s32_f32(x);
-#  else
+# else
     uint32x4_t sign = vandq_u32(vreinterpretq_u32_f32(x), vdupq_n_u32(0x80000000));
     uint32x4_t bias = vdupq_n_u32(0x3F000000);
     return vcvtq_s32_f32(vaddq_f32(x, vreinterpretq_f32_u32(vorrq_u32(bias, sign))));
-#  endif
+# endif
 }
 
-static inline float vminvf(float32x4_t a)
-{
-#if defined(__aarch64__)
-   return vminvq_f32(a);
-#else
+static inline float vminvf(float32x4_t a) {
+# if defined(__aarch64__)
+    return vminvq_f32(a);
+# else
     float32x2_t xy = vmin_f32(vget_low_f32(a), vget_high_f32(a));
     float x = vget_lane_f32(xy, 0);
     float y = vget_lane_f32(xy, 1);
     return x < y ? x : y;
-#endif
+# endif
 }
 
-static inline float vmaxvf(float32x4_t a)
-{
-#if defined(__aarch64__)
-   return vmaxvq_f32(a);
-#else
+static inline float vmaxvf(float32x4_t a) {
+# if defined(__aarch64__)
+    return vmaxvq_f32(a);
+# else
     float32x2_t xy = vmax_f32(vget_low_f32(a), vget_high_f32(a));
     float x = vget_lane_f32(xy, 0);
     float y = vget_lane_f32(xy, 1);
     return x > y ? x : y;
-#endif
+# endif
 }
 
 void celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
-#  if defined(OAC_HAVE_RTCD) && \
+# if defined(OAC_HAVE_RTCD) && \
     (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
 extern void
-(*const CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK+1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
+(*const CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK + 1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
 
-#   define OVERRIDE_FLOAT2INT16 (1)
-#   define celt_float2int16(in, out, cnt, arch) \
-      ((*CELT_FLOAT2INT16_IMPL[(arch)&OAC_ARCHMASK])(in, out, cnt))
+#  define OVERRIDE_FLOAT2INT16 (1)
+#  define celt_float2int16(in, out, cnt, arch) \
+        ((*CELT_FLOAT2INT16_IMPL[(arch)&OAC_ARCHMASK])(in, out, cnt))
 
-#  elif defined(OAC_ARM_PRESUME_NEON_INTR)
-#   define OVERRIDE_FLOAT2INT16 (1)
-#   define celt_float2int16(in, out, cnt, arch) ((void)(arch), celt_float2int16_neon(in, out, cnt))
-#  endif
+# elif defined(OAC_ARM_PRESUME_NEON_INTR)
+#  define OVERRIDE_FLOAT2INT16 (1)
+#  define celt_float2int16(in, out, cnt, arch) ((void)(arch), celt_float2int16_neon(in, out, cnt))
+# endif
 
 int oac_limit2_checkwithin1_neon(float * samples, int cnt);
-#  if defined(OAC_HAVE_RTCD) && \
-      (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
-extern int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK+1])(float * samples, int cnt);
+# if defined(OAC_HAVE_RTCD) && \
+    (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
+extern int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK + 1])(float * samples, int cnt);
 
-#   define OVERRIDE_LIMIT2_CHECKWITHIN1 (1)
-#   define oac_limit2_checkwithin1(samples, cnt, arch) \
-   ((*OAC_LIMIT2_CHECKWITHIN1_IMPL[(arch)&OAC_ARCHMASK])(samples, cnt))
+#  define OVERRIDE_LIMIT2_CHECKWITHIN1 (1)
+#  define oac_limit2_checkwithin1(samples, cnt, arch) \
+        ((*OAC_LIMIT2_CHECKWITHIN1_IMPL[(arch)&OAC_ARCHMASK])(samples, cnt))
 
-#  elif defined(OAC_ARM_PRESUME_NEON_INTR)
-#   define OVERRIDE_LIMIT2_CHECKWITHIN1 (1)
-#   define oac_limit2_checkwithin1(samples, cnt, arch) ((void)(arch), oac_limit2_checkwithin1_neon(samples, cnt))
-#  endif
+# elif defined(OAC_ARM_PRESUME_NEON_INTR)
+#  define OVERRIDE_LIMIT2_CHECKWITHIN1 (1)
+#  define oac_limit2_checkwithin1(samples, cnt, arch) ((void)(arch), oac_limit2_checkwithin1_neon(samples, cnt))
 # endif
+#endif
 
 #endif /* MATHOPS_ARM_H */

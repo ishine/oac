@@ -22,7 +22,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef LOSSGEN_H
 #define LOSSGEN_H
@@ -34,15 +34,15 @@
 #define PITCH_MIN_PERIOD 32
 #define PITCH_MAX_PERIOD 256
 
-#define NB_XCORR_FEATURES (PITCH_MAX_PERIOD-PITCH_MIN_PERIOD)
+#define NB_XCORR_FEATURES (PITCH_MAX_PERIOD - PITCH_MIN_PERIOD)
 
 
 typedef struct {
-  LossGen model;
-  float gru1_state[LOSSGEN_GRU1_STATE_SIZE];
-  float gru2_state[LOSSGEN_GRU2_STATE_SIZE];
-  int last_loss;
-  int used;
+    LossGen model;
+    float gru1_state[LOSSGEN_GRU1_STATE_SIZE];
+    float gru2_state[LOSSGEN_GRU2_STATE_SIZE];
+    int last_loss;
+    int used;
 } LossGenState;
 
 

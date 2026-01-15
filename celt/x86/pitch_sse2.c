@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <xmmintrin.h>
@@ -40,22 +40,20 @@
 
 #if defined(OAC_X86_MAY_HAVE_SSE2) && defined(FIXED_POINT)
 oac_val32 celt_inner_prod_sse2(const oac_val16 *x, const oac_val16 *y,
-      int N)
-{
-    oac_int  i, dataSize16;
+                               int N) {
+    oac_int i, dataSize16;
     oac_int32 sum;
 
     __m128i inVec1_76543210, inVec1_FEDCBA98, acc1;
     __m128i inVec2_76543210, inVec2_FEDCBA98, acc2;
 
     sum = 0;
-    dataSize16 = N & ~15;
+    dataSize16 = N&~15;
 
     acc1 = _mm_setzero_si128();
     acc2 = _mm_setzero_si128();
 
-    for (i=0;i<dataSize16;i+=16)
-    {
+    for (i = 0; i < dataSize16; i += 16) {
         inVec1_76543210 = _mm_loadu_si128((__m128i *)(void*)(&x[i + 0]));
         inVec2_76543210 = _mm_loadu_si128((__m128i *)(void*)(&y[i + 0]));
 
@@ -71,8 +69,7 @@ oac_val32 celt_inner_prod_sse2(const oac_val16 *x, const oac_val16 *y,
 
     acc1 = _mm_add_epi32( acc1, acc2 );
 
-    if (N - i >= 8)
-    {
+    if (N - i >= 8) {
         inVec1_76543210 = _mm_loadu_si128((__m128i *)(void*)(&x[i + 0]));
         inVec2_76543210 = _mm_loadu_si128((__m128i *)(void*)(&y[i + 0]));
 
@@ -86,7 +83,7 @@ oac_val32 celt_inner_prod_sse2(const oac_val16 *x, const oac_val16 *y,
     acc1 = _mm_add_epi32(acc1, _mm_shufflelo_epi16( acc1, 0x0E));
     sum += _mm_cvtsi128_si32(acc1);
 
-    for (;i<N;i++) {
+    for (; i < N; i++) {
         sum = silk_SMLABB(sum, x[i], y[i]);
     }
 

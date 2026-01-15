@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 /**
  * @file mapping_matrix.h
@@ -36,8 +36,7 @@
 #include "oac_types.h"
 #include "oac_projection.h"
 
-typedef struct MappingMatrix
-{
+typedef struct MappingMatrix {
     int rows; /* number of channels outputted from matrix. */
     int cols; /* number of channels inputted to matrix. */
     int gain; /* in dB. S7.8-format. */
@@ -54,8 +53,7 @@ void mapping_matrix_init(
     int cols,
     int gain,
     const oac_int16 *data,
-    oac_int32 data_size
-);
+    oac_int32 data_size);
 
 #ifndef DISABLE_FLOAT_API
 void mapping_matrix_multiply_channel_in_float(
@@ -65,8 +63,7 @@ void mapping_matrix_multiply_channel_in_float(
     oac_res *output,
     int output_row,
     int output_rows,
-    int frame_size
-);
+    int frame_size);
 
 void mapping_matrix_multiply_channel_out_float(
     const MappingMatrix *matrix,
@@ -75,8 +72,7 @@ void mapping_matrix_multiply_channel_out_float(
     int input_rows,
     float *output,
     int output_rows,
-    int frame_size
-);
+    int frame_size);
 #endif /* DISABLE_FLOAT_API */
 
 void mapping_matrix_multiply_channel_in_short(
@@ -86,8 +82,7 @@ void mapping_matrix_multiply_channel_in_short(
     oac_res *output,
     int output_row,
     int output_rows,
-    int frame_size
-);
+    int frame_size);
 
 void mapping_matrix_multiply_channel_out_short(
     const MappingMatrix *matrix,
@@ -96,8 +91,7 @@ void mapping_matrix_multiply_channel_out_short(
     int input_rows,
     oac_int16 *output,
     int output_rows,
-    int frame_size
-);
+    int frame_size);
 
 
 void mapping_matrix_multiply_channel_in_int24(
@@ -107,8 +101,7 @@ void mapping_matrix_multiply_channel_in_int24(
     oac_res *output,
     int output_row,
     int output_rows,
-    int frame_size
-);
+    int frame_size);
 
 void mapping_matrix_multiply_channel_out_int24(
     const MappingMatrix *matrix,
@@ -117,8 +110,7 @@ void mapping_matrix_multiply_channel_out_int24(
     int input_rows,
     oac_int32 *output,
     int output_rows,
-    int frame_size
-);
+    int frame_size);
 /* Pre-computed mixing and demixing matrices for 1st to 3rd-order ambisonics.
  *   foa: first-order ambisonics
  *   soa: second-order ambisonics

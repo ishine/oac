@@ -22,10 +22,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <stdint.h>
@@ -83,22 +83,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
 
-    pcm = (oac_int16*) malloc(sizeof(*pcm) * MAX_FRAME_SAMP * toc.channels);
+    pcm = (oac_int16*) malloc(sizeof(*pcm)*MAX_FRAME_SAMP*toc.channels);
 
     while (i + SETUP_BYTE_COUNT < size && num_decodes++ < MAX_DECODES) {
         int len, fec;
 
-        len = (oac_uint32) data[i    ] << 24 |
-              (oac_uint32) data[i + 1] << 16 |
-              (oac_uint32) data[i + 2] <<  8 |
-              (oac_uint32) data[i + 3];
+        len = (oac_uint32) data[i    ]<<24
+              |(oac_uint32) data[i + 1]<<16
+              |(oac_uint32) data[i + 2]<<8
+              |(oac_uint32) data[i + 3];
         if (len > MAX_PACKET || len < 0 || i + SETUP_BYTE_COUNT + len > size) {
             break;
         }
 
         /* Bytes 4..7 represent encoder final range, but are unused here.
          * Instead, byte 4 is repurposed to determine if FEC is used. */
-        fec = data[i + 4] & 1;
+        fec = data[i + 4]&1;
 
         if (len == 0) {
             /* Lost packet */

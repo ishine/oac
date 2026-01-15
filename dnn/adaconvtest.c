@@ -27,9 +27,7 @@ void adaconv_compare(
     int left_padding,
     float filter_gain_a,
     float filter_gain_b,
-    float shape_gain
-)
-{
+    float shape_gain) {
     char feature_file[256];
     char x_in_file[256];
     char x_out_file[256];
@@ -50,8 +48,7 @@ void adaconv_compare(
     strcpy(feature_file, prefix);
     strcat(feature_file, "_features.f32");
     f_features = fopen(feature_file, "r");
-    if (f_features == NULL)
-    {
+    if (f_features == NULL) {
         sprintf(message, "could not open file %s", feature_file);
         perror(message);
         exit(1);
@@ -60,8 +57,7 @@ void adaconv_compare(
     strcpy(x_in_file, prefix);
     strcat(x_in_file, "_x_in.f32");
     f_x_in = fopen(x_in_file, "r");
-    if (f_x_in == NULL)
-    {
+    if (f_x_in == NULL) {
         sprintf(message, "could not open file %s", x_in_file);
         perror(message);
         exit(1);
@@ -70,29 +66,24 @@ void adaconv_compare(
     strcpy(x_out_file, prefix);
     strcat(x_out_file, "_x_out.f32");
     f_x_out = fopen(x_out_file, "r");
-    if (f_x_out == NULL)
-    {
+    if (f_x_out == NULL) {
         sprintf(message, "could not open file %s", x_out_file);
         perror(message);
         exit(1);
     }
 
-    for (i_frame = 0; i_frame < num_frames; i_frame ++)
-    {
-        if (fread(features, sizeof(float), feature_dim, f_features) != feature_dim)
-        {
+    for (i_frame = 0; i_frame < num_frames; i_frame++) {
+        if (fread(features, sizeof(float), feature_dim, f_features) != feature_dim) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, feature_file);
             exit(1);
         }
 
-        if (fread(x_in, sizeof(float), frame_size * in_channels, f_x_in) != frame_size * in_channels)
-        {
+        if (fread(x_in, sizeof(float), frame_size*in_channels, f_x_in) != frame_size*in_channels) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, x_in_file);
             exit(1);
         }
 
-        if (fread(x_out_ref, sizeof(float), frame_size * out_channels, f_x_out) != frame_size * out_channels)
-        {
+        if (fread(x_out_ref, sizeof(float), frame_size*out_channels, f_x_out) != frame_size*out_channels) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, x_out_file);
             exit(1);
         }
@@ -102,11 +93,10 @@ void adaconv_compare(
             filter_gain_a, filter_gain_b, shape_gain, window, 0);
 
         mse = 0;
-        for (i_sample = 0; i_sample < frame_size * out_channels; i_sample ++)
-        {
+        for (i_sample = 0; i_sample < frame_size*out_channels; i_sample++) {
             mse += pow(x_out_ref[i_sample] - x_out[i_sample], 2);
         }
-        mse = sqrt(mse / (frame_size * out_channels));
+        mse = sqrt(mse/(frame_size*out_channels));
         printf("rmse[%d] %f\n", i_frame, mse);
 
     }
@@ -127,9 +117,7 @@ void adacomb_compare(
     int left_padding,
     float filter_gain_a,
     float filter_gain_b,
-    float log_gain_limit
-)
-{
+    float log_gain_limit) {
     char feature_file[256];
     char x_in_file[256];
     char p_in_file[256];
@@ -152,8 +140,7 @@ void adacomb_compare(
     strcpy(feature_file, prefix);
     strcat(feature_file, "_features.f32");
     f_features = fopen(feature_file, "r");
-    if (f_features == NULL)
-    {
+    if (f_features == NULL) {
         sprintf(message, "could not open file %s", feature_file);
         perror(message);
         exit(1);
@@ -162,8 +149,7 @@ void adacomb_compare(
     strcpy(x_in_file, prefix);
     strcat(x_in_file, "_x_in.f32");
     f_x_in = fopen(x_in_file, "r");
-    if (f_x_in == NULL)
-    {
+    if (f_x_in == NULL) {
         sprintf(message, "could not open file %s", x_in_file);
         perror(message);
         exit(1);
@@ -172,8 +158,7 @@ void adacomb_compare(
     strcpy(p_in_file, prefix);
     strcat(p_in_file, "_p_in.s32");
     f_p_in = fopen(p_in_file, "r");
-    if (f_p_in == NULL)
-    {
+    if (f_p_in == NULL) {
         sprintf(message, "could not open file %s", p_in_file);
         perror(message);
         exit(1);
@@ -182,49 +167,43 @@ void adacomb_compare(
     strcpy(x_out_file, prefix);
     strcat(x_out_file, "_x_out.f32");
     f_x_out = fopen(x_out_file, "r");
-    if (f_x_out == NULL)
-    {
+    if (f_x_out == NULL) {
         sprintf(message, "could not open file %s", x_out_file);
         perror(message);
         exit(1);
     }
 
-    for (i_frame = 0; i_frame < num_frames; i_frame ++)
-    {
-        if (fread(features, sizeof(float), feature_dim, f_features) != feature_dim)
-        {
+    for (i_frame = 0; i_frame < num_frames; i_frame++) {
+        if (fread(features, sizeof(float), feature_dim, f_features) != feature_dim) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, feature_file);
             exit(1);
         }
 
-        if (fread(x_in, sizeof(float), frame_size, f_x_in) != frame_size)
-        {
+        if (fread(x_in, sizeof(float), frame_size, f_x_in) != frame_size) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, x_in_file);
             exit(1);
         }
 
-        if (fread(&pitch_lag, sizeof(int), 1, f_p_in) != 1)
-        {
+        if (fread(&pitch_lag, sizeof(int), 1, f_p_in) != 1) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, p_in_file);
             exit(1);
         }
 
-        if (fread(x_out_ref, sizeof(float), frame_size, f_x_out) != frame_size)
-        {
+        if (fread(x_out_ref, sizeof(float), frame_size, f_x_out) != frame_size) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, x_out_file);
             exit(1);
         }
 
         adacomb_process_frame(hAdaComb, x_out, x_in, features, kernel_layer, gain_layer, global_gain_layer,
-            pitch_lag, feature_dim, frame_size, overlap_size, kernel_size, left_padding, filter_gain_a, filter_gain_b, log_gain_limit, window, 0);
+            pitch_lag, feature_dim, frame_size, overlap_size, kernel_size, left_padding, filter_gain_a, filter_gain_b,
+        log_gain_limit, window, 0);
 
 
         mse = 0;
-        for (i_sample = 0; i_sample < frame_size; i_sample ++)
-        {
+        for (i_sample = 0; i_sample < frame_size; i_sample++) {
             mse += pow(x_out_ref[i_sample] - x_out[i_sample], 2);
         }
-        mse = sqrt(mse / (frame_size));
+        mse = sqrt(mse/(frame_size));
         printf("rmse[%d] %f\n", i_frame, mse);
 
     }
@@ -238,9 +217,7 @@ void adashape_compare(
     LinearLayer *alpha2,
     int feature_dim,
     int frame_size,
-    int avg_pool_k
-)
-{
+    int avg_pool_k) {
     char feature_file[256];
     char x_in_file[256];
     char x_out_file[256];
@@ -259,8 +236,7 @@ void adashape_compare(
     strcpy(feature_file, prefix);
     strcat(feature_file, "_features.f32");
     f_features = fopen(feature_file, "r");
-    if (f_features == NULL)
-    {
+    if (f_features == NULL) {
         sprintf(message, "could not open file %s", feature_file);
         perror(message);
         exit(1);
@@ -269,8 +245,7 @@ void adashape_compare(
     strcpy(x_in_file, prefix);
     strcat(x_in_file, "_x_in.f32");
     f_x_in = fopen(x_in_file, "r");
-    if (f_x_in == NULL)
-    {
+    if (f_x_in == NULL) {
         sprintf(message, "could not open file %s", x_in_file);
         perror(message);
         exit(1);
@@ -279,29 +254,24 @@ void adashape_compare(
     strcpy(x_out_file, prefix);
     strcat(x_out_file, "_x_out.f32");
     f_x_out = fopen(x_out_file, "r");
-    if (f_x_out == NULL)
-    {
+    if (f_x_out == NULL) {
         sprintf(message, "could not open file %s", x_out_file);
         perror(message);
         exit(1);
     }
 
-    for (i_frame = 0; i_frame < num_frames; i_frame ++)
-    {
-        if (fread(features, sizeof(float), feature_dim, f_features) != feature_dim)
-        {
+    for (i_frame = 0; i_frame < num_frames; i_frame++) {
+        if (fread(features, sizeof(float), feature_dim, f_features) != feature_dim) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, feature_file);
             exit(1);
         }
 
-        if (fread(x_in, sizeof(float), frame_size, f_x_in) != frame_size)
-        {
+        if (fread(x_in, sizeof(float), frame_size, f_x_in) != frame_size) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, x_in_file);
             exit(1);
         }
 
-        if (fread(x_out_ref, sizeof(float), frame_size, f_x_out) != frame_size)
-        {
+        if (fread(x_out_ref, sizeof(float), frame_size, f_x_out) != frame_size) {
             fprintf(stderr, "could not read frame %d from %s\n", i_frame, x_out_file);
             exit(1);
         }
@@ -310,19 +280,17 @@ void adashape_compare(
             frame_size, avg_pool_k, 0);
 
         mse = 0;
-        for (i_sample = 0; i_sample < frame_size; i_sample ++)
-        {
+        for (i_sample = 0; i_sample < frame_size; i_sample++) {
             mse += pow(x_out_ref[i_sample] - x_out[i_sample], 2);
         }
-        mse = sqrt(mse / (frame_size));
+        mse = sqrt(mse/(frame_size));
         printf("rmse[%d] %f\n", i_frame, mse);
 
     }
 }
 
 
-int main()
-{
+int main() {
     LACELayers hLACE;
     NOLACELayers hNoLACE;
 
@@ -352,7 +320,7 @@ int main()
         LACE_AF1_FILTER_GAIN_A,
         LACE_AF1_FILTER_GAIN_B,
         LACE_AF1_SHAPE_GAIN
-    );
+        );
 
 
     printf("\ntesting nolace.af1 (1 in, 2 out)...\n");
@@ -372,7 +340,7 @@ int main()
         NOLACE_AF1_FILTER_GAIN_A,
         NOLACE_AF1_FILTER_GAIN_B,
         NOLACE_AF1_SHAPE_GAIN
-    );
+        );
 
 
     printf("testing nolace.af4 (2 in, 1 out)...\n");
@@ -392,7 +360,7 @@ int main()
         NOLACE_AF4_FILTER_GAIN_A,
         NOLACE_AF4_FILTER_GAIN_B,
         NOLACE_AF4_SHAPE_GAIN
-    );
+        );
 
     printf("\ntesting nolace.af2 (2 in, 2 out)...\n");
     adaconv_compare(
@@ -411,7 +379,7 @@ int main()
         NOLACE_AF2_FILTER_GAIN_A,
         NOLACE_AF2_FILTER_GAIN_B,
         NOLACE_AF2_SHAPE_GAIN
-    );
+        );
 
     printf("\ntesting lace.cf1...\n");
     adacomb_compare(
@@ -429,7 +397,7 @@ int main()
         LACE_CF1_FILTER_GAIN_A,
         LACE_CF1_FILTER_GAIN_B,
         LACE_CF1_LOG_GAIN_LIMIT
-    );
+        );
 
     printf("\ntesting nolace.tdshape1...\n");
     adashape_compare(
@@ -441,7 +409,7 @@ int main()
         NOLACE_TDSHAPE1_FEATURE_DIM,
         NOLACE_TDSHAPE1_FRAME_SIZE,
         NOLACE_TDSHAPE1_AVG_POOL_K
-    );
+        );
 
     return 0;
 }

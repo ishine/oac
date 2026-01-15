@@ -23,7 +23,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef OSCE_STRUCTS_H
 #define OSCE_STRUCTS_H
@@ -31,14 +31,14 @@
 #include "oac_types.h"
 #include "osce_config.h"
 #ifndef DISABLE_LACE
-#include "lace_data.h"
+# include "lace_data.h"
 #endif
 #ifndef DISABLE_NOLACE
-#include "nolace_data.h"
+# include "nolace_data.h"
 #endif
 #ifndef DISABLE_BBWENET
-#include "bbwenet_data.h"
-#include "resampler_structs.h"
+# include "bbwenet_data.h"
+# include "resampler_structs.h"
 #endif
 #include "nndsp.h"
 #include "nnet.h"
@@ -46,17 +46,17 @@
 /* feature calculation */
 
 typedef struct {
-    float               numbits_smooth;
-    int                 pitch_hangover_count;
-    int                 last_lag;
-    int                 last_type;
-    float               signal_history[OSCE_FEATURES_MAX_HISTORY];
-    int                 reset;
+    float numbits_smooth;
+    int pitch_hangover_count;
+    int last_lag;
+    int last_type;
+    float signal_history[OSCE_FEATURES_MAX_HISTORY];
+    int reset;
 } OSCEFeatureState;
 
 typedef struct {
     float signal_history[OSCE_BWE_HALF_WINDOW_SIZE];
-    float last_spec[2 * OSCE_BWE_MAX_INSTAFREQ_BIN + 2];
+    float last_spec[2*OSCE_BWE_MAX_INSTAFREQ_BIN + 2];
 } OSCEBWEFeatureState;
 
 #ifndef DISABLE_BBWENET
@@ -100,8 +100,7 @@ typedef struct {
     float deemph_mem;
 } LACEState;
 
-typedef struct
-{
+typedef struct {
     LACELayers layers;
     float window[LACE_OVERLAP_SIZE];
 } LACE;
@@ -141,7 +140,7 @@ typedef struct {
 
 /* OSCEModel */
 typedef struct {
-   int loaded;
+    int loaded;
 #ifndef DISABLE_LACE
     LACE lace;
 #endif
@@ -163,9 +162,9 @@ typedef union {
 } OSCEState;
 
 typedef struct {
-    #ifndef DISABLE_BBWENET
+#ifndef DISABLE_BBWENET
     BBWENetState bbwenet;
-    #endif
+#endif
 } OSCEBWEState;
 
 #endif

@@ -24,7 +24,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef LAPLACE_H
 #define LAPLACE_H
@@ -34,19 +34,19 @@
 
 /** Encode a value that is assumed to be the realisation of a
     Laplace-distributed random process
- @param enc Entropy encoder state
- @param value Value to encode
- @param fs Probability of 0, multiplied by 32768
- @param decay Probability of the value +/- 1, multiplied by 16384
-*/
+   @param enc Entropy encoder state
+   @param value Value to encode
+   @param fs Probability of 0, multiplied by 32768
+   @param decay Probability of the value +/- 1, multiplied by 16384
+ */
 void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay);
 
 /** Decode a value that is assumed to be the realisation of a
     Laplace-distributed random process
- @param dec Entropy decoder state
- @param fs Probability of 0, multiplied by 32768
- @param decay Probability of the value +/- 1, multiplied by 16384
- @return Value decoded
+   @param dec Entropy decoder state
+   @param fs Probability of 0, multiplied by 32768
+   @param decay Probability of the value +/- 1, multiplied by 16384
+   @return Value decoded
  */
 int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay);
 

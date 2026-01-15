@@ -1,32 +1,32 @@
 /***********************************************************************
-Copyright (c) 2006-2011, Skype Limited. All rights reserved.
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-- Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-- Neither the name of Internet Society, IETF or IETF Trust, nor the
-names of specific contributors, may be used to endorse or promote
-products derived from this software without specific prior written
-permission.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+   Copyright (c) 2006-2011, Skype Limited. All rights reserved.
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   - Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+   - Neither the name of Internet Society, IETF or IETF Trust, nor the
+   names of specific contributors, may be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "main.h"
@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "PLC.h"
 
 #ifdef ENABLE_OSCE
-#include "osce.h"
+# include "osce.h"
 #endif
 
 /****************/
@@ -43,21 +43,20 @@ POSSIBILITY OF SUCH DAMAGE.
 oac_int silk_decode_frame(
     silk_decoder_state          *psDec,                         /* I/O  Pointer to Silk decoder state               */
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
-    oac_int16                  pOut[],                         /* O    Pointer to output speech frame              */
+    oac_int16 pOut[],                                          /* O    Pointer to output speech frame              */
     oac_int32                  *pN,                            /* O    Pointer to size of output frame             */
-    oac_int                    lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
-    oac_int                    condCoding,                     /* I    The type of conditional coding to use       */
+    oac_int lostFlag,                                          /* I    0: no loss, 1 loss, 2 decode fec            */
+    oac_int condCoding,                                        /* I    The type of conditional coding to use       */
 #ifdef ENABLE_DEEP_PLC
     LPCNetPLCState              *lpcnet,
 #endif
 #ifdef ENABLE_OSCE
     OSCEModel                   *osce_model,
 #endif
-    int                         arch                            /* I    Run-time architecture                       */
-)
-{
+    int arch                                                    /* I    Run-time architecture                       */
+    ) {
     VARDECL( silk_decoder_control, psDecCtrl );
-    oac_int         L, mv_len, ret = 0;
+    oac_int L, mv_len, ret = 0;
     SAVE_STACK;
 
     L = psDec->frame_length;
@@ -67,16 +66,15 @@ oac_int silk_decode_frame(
     /* Safety checks */
     celt_assert( L > 0 && L <= MAX_FRAME_LENGTH );
 
-    if(   lostFlag == FLAG_DECODE_NORMAL ||
-        ( lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[ psDec->nFramesDecoded ] == 1 ) )
-    {
+    if (lostFlag == FLAG_DECODE_NORMAL
+        || (lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[ psDec->nFramesDecoded ] == 1)) {
         VARDECL( oac_int16, pulses );
 #ifdef ENABLE_OSCE
-        oac_int32  ec_start;
+        oac_int32 ec_start;
         ec_start = ec_tell(psRangeDec);
 #endif
-        ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1) &
-                       ~(SHELL_CODEC_FRAME_LENGTH - 1), oac_int16 );
+        ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1)
+            &~(SHELL_CODEC_FRAME_LENGTH - 1), oac_int16 );
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
@@ -103,8 +101,8 @@ oac_int silk_decode_frame(
         /*************************/
         celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
         mv_len = psDec->ltp_mem_length - psDec->frame_length;
-        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(oac_int16) );
-        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( oac_int16 ) );
+        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len*sizeof(oac_int16));
+        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length*sizeof(oac_int16));
 
 #ifdef ENABLE_OSCE
         /********************************************************/
@@ -144,8 +142,8 @@ oac_int silk_decode_frame(
         /*************************/
         celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
         mv_len = psDec->ltp_mem_length - psDec->frame_length;
-        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(oac_int16) );
-        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( oac_int16 ) );
+        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len*sizeof(oac_int16));
+        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length*sizeof(oac_int16));
     }
 
     /************************************************/

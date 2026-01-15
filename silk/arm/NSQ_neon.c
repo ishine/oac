@@ -1,31 +1,31 @@
 /***********************************************************************
-Copyright (C) 2014 Vidyo
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-- Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-- Neither the name of Internet Society, IETF or IETF Trust, nor the
-names of specific contributors, may be used to endorse or promote
-products derived from this software without specific prior written
-permission.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+   Copyright (C) 2014 Vidyo
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   - Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+   - Neither the name of Internet Society, IETF or IETF Trust, nor the
+   names of specific contributors, may be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <arm_neon.h>
@@ -35,8 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "celt/cpu_support.h"
 #include "celt/arm/armcpu.h"
 
-oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf32, const oac_int32 *coef32, oac_int order)
-{
+oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf32, const oac_int32 *coef32,
+                                                           oac_int order) {
     int32x4_t coef0 = vld1q_s32(coef32);
     int32x4_t coef1 = vld1q_s32(coef32 + 4);
     int32x4_t coef2 = vld1q_s32(coef32 + 8);
@@ -69,11 +69,10 @@ oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf3
 }
 
 
-oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef, oac_int order)
-{
+oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
+                                                  oac_int order) {
     oac_int32 out;
-    if (order == 8)
-    {
+    if (order == 8) {
         int32x4_t a00 = vdupq_n_s32(data0[0]);
         int32x4_t a01 = vld1q_s32(data1);  /* data1[0] ... [3] */
 
@@ -81,19 +80,19 @@ oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_in
         int32x4_t a1 = vld1q_s32(data1 + 3);  /* data1[3] ... [6] */
 
         /*TODO: Convert these once in advance instead of once per sample, like
-          silk_noise_shape_quantizer_short_prediction_neon() does.*/
+           silk_noise_shape_quantizer_short_prediction_neon() does.*/
         int16x8_t coef16 = vld1q_s16(coef);
         int32x4_t coef0 = vmovl_s16(vget_low_s16(coef16));
         int32x4_t coef1 = vmovl_s16(vget_high_s16(coef16));
 
         /*This is not bit-exact with the C version, since we do not drop the
-          lower 16 bits of each multiply, but wait until the end to truncate
-          precision. This is an encoder-specific calculation (and unlike
-          silk_noise_shape_quantizer_short_prediction_neon(), is not meant to
-          simulate what the decoder will do). We still could use vqdmulhq_s32()
-          like silk_noise_shape_quantizer_short_prediction_neon() and save
-          half the multiplies, but the speed difference is not large, since we
-          then need two extra adds.*/
+           lower 16 bits of each multiply, but wait until the end to truncate
+           precision. This is an encoder-specific calculation (and unlike
+           silk_noise_shape_quantizer_short_prediction_neon(), is not meant to
+           simulate what the decoder will do). We still could use vqdmulhq_s32()
+           like silk_noise_shape_quantizer_short_prediction_neon() and save
+           half the multiplies, but the speed difference is not large, since we
+           then need two extra adds.*/
         int64x2_t b0 = vmull_s32(vget_low_s32(a0), vget_low_s32(coef0));
         int64x2_t b1 = vmlal_s32(b0, vget_high_s32(a0), vget_high_s32(coef0));
         int64x2_t b2 = vmlal_s32(b1, vget_low_s32(a1), vget_low_s32(coef1));

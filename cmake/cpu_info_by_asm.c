@@ -10,22 +10,22 @@ int main() {
     __asm__ __volatile__ (
         "xchg %%ebx, %1\n"
         "cpuid\n"
-        "xchg %%ebx, %1\n":
+        "xchg %%ebx, %1\n" :
         "=a" (CPUInfo0),
         "=r" (CPUInfo1),
         "=c" (CPUInfo2),
         "=d" (CPUInfo3) :
         "0" (InfoType), "2" (0)
-    );
+        );
 #else
     __asm__ __volatile__ (
-        "cpuid":
+        "cpuid" :
         "=a" (CPUInfo0),
         "=b" (CPUInfo1),
         "=c" (CPUInfo2),
         "=d" (CPUInfo3) :
         "0" (InfoType), "2" (0)
-    );
+        );
 #endif
     return 0;
 }

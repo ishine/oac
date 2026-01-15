@@ -23,10 +23,10 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include <xmmintrin.h>
@@ -46,12 +46,11 @@ void silk_VQ_WMat_EC_sse4_1(
     const oac_int8             *cb_Q7,                         /* I    codebook                                    */
     const oac_uint8            *cb_gain_Q7,                    /* I    codebook effective gain                     */
     const oac_uint8            *cl_Q5,                         /* I    code length for each codebook vector        */
-    const oac_int              subfr_len,                      /* I    number of samples per subframe              */
-    const oac_int32            max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
-    const oac_int              L                               /* I    number of vectors in codebook               */
-)
-{
-    oac_int   k, gain_tmp_Q7;
+    const oac_int subfr_len,                                   /* I    number of samples per subframe              */
+    const oac_int32 max_gain_Q7,                               /* I    maximum sum of absolute LTP coefficients    */
+    const oac_int L                                            /* I    number of vectors in codebook               */
+    ) {
+    oac_int k, gain_tmp_Q7;
     const oac_int8 *cb_row_Q7;
     oac_int32 neg_xX_Q24[ 5 ];
     oac_int32 sum1_Q15, sum2_Q24;
@@ -65,8 +64,8 @@ void silk_VQ_WMat_EC_sse4_1(
     neg_xX_Q24[ 3 ] = -silk_LSHIFT32( xX_Q17[ 3 ], 7 );
     neg_xX_Q24[ 4 ] = -silk_LSHIFT32( xX_Q17[ 4 ], 7 );
 
-    v_XX_31_Q17 = _mm_loadu_si128( (__m128i *)(void*)(&XX_Q17[ 1 ] ) );
-    v_XX_42_Q17 = _mm_shuffle_epi32( v_XX_31_Q17, _MM_SHUFFLE( 0, 3, 2, 1 ) );
+    v_XX_31_Q17 = _mm_loadu_si128((__m128i *)(void*)(&XX_Q17[ 1 ]));
+    v_XX_42_Q17 = _mm_shuffle_epi32( v_XX_31_Q17, _MM_SHUFFLE( 0, 3, 2, 1 ));
 
     /* Loop over codebook */
     *rate_dist_Q8 = silk_int32_MAX;
@@ -74,7 +73,7 @@ void silk_VQ_WMat_EC_sse4_1(
     cb_row_Q7 = cb_Q7;
     /* If things go really bad, at least *ind is set to something safe. */
     *ind = 0;
-    for( k = 0; k < L; k++ ) {
+    for (k = 0; k < L; k++) {
         oac_int32 penalty;
         gain_tmp_Q7 = cb_gain_Q7[k];
         /* Weighted rate */
@@ -86,11 +85,11 @@ void silk_VQ_WMat_EC_sse4_1(
 
         /* first row of XX_Q17 */
         v_cb_row_31_Q7 = OP_CVTEPI8_EPI32_M32( &cb_row_Q7[ 1 ] );
-        v_cb_row_42_Q7 = _mm_shuffle_epi32( v_cb_row_31_Q7, _MM_SHUFFLE( 0, 3, 2, 1 ) );
+        v_cb_row_42_Q7 = _mm_shuffle_epi32( v_cb_row_31_Q7, _MM_SHUFFLE( 0, 3, 2, 1 ));
         v_cb_row_31_Q7 = _mm_mul_epi32( v_XX_31_Q17, v_cb_row_31_Q7 );
         v_cb_row_42_Q7 = _mm_mul_epi32( v_XX_42_Q17, v_cb_row_42_Q7 );
         v_acc1_Q24 = _mm_add_epi64( v_cb_row_31_Q7, v_cb_row_42_Q7);
-        v_acc2_Q24 = _mm_shuffle_epi32( v_acc1_Q24, _MM_SHUFFLE( 1, 0, 3, 2 ) );
+        v_acc2_Q24 = _mm_shuffle_epi32( v_acc1_Q24, _MM_SHUFFLE( 1, 0, 3, 2 ));
         v_acc1_Q24 = _mm_add_epi64( v_acc1_Q24, v_acc2_Q24);
         sum2_Q24 = _mm_cvtsi128_si32( v_acc1_Q24 );
         sum2_Q24 = silk_ADD32( neg_xX_Q24[ 0 ], sum2_Q24 );
@@ -125,12 +124,12 @@ void silk_VQ_WMat_EC_sse4_1(
         sum1_Q15 = silk_SMLAWB( sum1_Q15,        sum2_Q24,  cb_row_Q7[ 4 ] );
 
         /* find best */
-        if( sum1_Q15 >= 0 ) {
+        if (sum1_Q15 >= 0) {
             /* Translate residual energy to bits using high-rate assumption (6 dB ==> 1 bit/sample) */
-            bits_res_Q8 = silk_SMULBB( subfr_len, silk_lin2log( sum1_Q15 + penalty) - (15 << 7) );
+            bits_res_Q8 = silk_SMULBB( subfr_len, silk_lin2log( sum1_Q15 + penalty) - (15<<7));
             /* In the following line we reduce the codelength component by half ("-1"); seems to slightly improve quality */
-            bits_tot_Q8 = silk_ADD_LSHIFT32( bits_res_Q8, cl_Q5[ k ], 3-1 );
-            if( bits_tot_Q8 <= *rate_dist_Q8 ) {
+            bits_tot_Q8 = silk_ADD_LSHIFT32( bits_res_Q8, cl_Q5[ k ], 3 - 1 );
+            if (bits_tot_Q8 <= *rate_dist_Q8) {
                 *rate_dist_Q8 = bits_tot_Q8;
                 *res_nrg_Q15 = sum1_Q15 + penalty;
                 *ind = (oac_int8)k;
@@ -144,10 +143,10 @@ void silk_VQ_WMat_EC_sse4_1(
 
 #ifdef OAC_CHECK_ASM
     {
-        oac_int8  ind_c = 0;
+        oac_int8 ind_c = 0;
         oac_int32 res_nrg_Q15_c = 0;
         oac_int32 rate_dist_Q8_c = 0;
-        oac_int   gain_Q7_c = 0;
+        oac_int gain_Q7_c = 0;
 
         silk_VQ_WMat_EC_c(
             &ind_c,
@@ -162,7 +161,7 @@ void silk_VQ_WMat_EC_sse4_1(
             subfr_len,
             max_gain_Q7,
             L
-        );
+            );
 
         silk_assert( *ind == ind_c );
         silk_assert( *res_nrg_Q15 == res_nrg_Q15_c );

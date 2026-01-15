@@ -1,28 +1,28 @@
 /***********************************************************************
-Copyright (c) 2006-2011, Skype Limited. All rights reserved.
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-- Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-- Neither the name of Internet Society, IETF or IETF Trust, nor the
-names of specific contributors, may be used to endorse or promote
-products derived from this software without specific prior written
-permission.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+   Copyright (c) 2006-2011, Skype Limited. All rights reserved.
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   - Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+   - Neither the name of Internet Society, IETF or IETF Trust, nor the
+   names of specific contributors, may be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 
@@ -32,9 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #if defined (__mips_dsp) && __mips == 32
 
-#undef silk_SMULWB
-static inline int silk_SMULWB(int a, int b)
-{
+# undef silk_SMULWB
+static inline int silk_SMULWB(int a, int b) {
     long long ac;
     int c;
 
@@ -44,12 +43,11 @@ static inline int silk_SMULWB(int a, int b)
     return c;
 }
 
-#undef silk_SMLAWB
-#define silk_SMLAWB(a32, b32, c32)       ((a32) + silk_SMULWB(b32, c32))
+# undef silk_SMLAWB
+# define silk_SMLAWB(a32, b32, c32)       ((a32) + silk_SMULWB(b32, c32))
 
-#undef silk_SMULWW
-static inline int silk_SMULWW(int a, int b)
-{
+# undef silk_SMULWW
+static inline int silk_SMULWW(int a, int b) {
     long long ac;
     int c;
 
@@ -59,9 +57,8 @@ static inline int silk_SMULWW(int a, int b)
     return c;
 }
 
-#undef silk_SMLAWW
-static inline int silk_SMLAWW(int a, int b, int c)
-{
+# undef silk_SMLAWW
+static inline int silk_SMLAWW(int a, int b, int c) {
     long long ac;
     int res;
 
@@ -74,35 +71,31 @@ static inline int silk_SMLAWW(int a, int b, int c)
 
 #elif defined (__mips_isa_rev) && __mips == 32
 
-#undef silk_SMULWB
-static inline int silk_SMULWB(int a, int b)
-{
-    long long ac = (long long)a * (int)(b << 16);
+# undef silk_SMULWB
+static inline int silk_SMULWB(int a, int b) {
+    long long ac = (long long)a*(int)(b<<16);
 
-    return ac >> 32;
+    return ac>>32;
 }
 
 /* a32 + (b32 * (oac_int32)((oac_int16)(c32))) >> 16 output have to be 32bit int */
-#undef silk_SMLAWB
-static inline int silk_SMLAWB(int a, int b, int c)
-{
-    long long ac = (long long)b * (int)(c << 16);
+# undef silk_SMLAWB
+static inline int silk_SMLAWB(int a, int b, int c) {
+    long long ac = (long long)b*(int)(c<<16);
 
-    return a + (ac >> 32);
+    return a + (ac>>32);
 }
 
 #endif
 
 #if defined (__mips_isa_rev) /* MIPS32r1+ */
 
-static inline int mips_clz(oac_uint32 x)
-{
+static inline int mips_clz(oac_uint32 x) {
     return x ? __builtin_clz(x) : 32;
 }
 
-#define OVERRIDE_silk_CLZ16
-static inline oac_int32 silk_CLZ16(oac_int16 in16)
-{
+# define OVERRIDE_silk_CLZ16
+static inline oac_int32 silk_CLZ16(oac_int16 in16) {
     int re32;
     oac_uint32 in32 = (oac_uint16)in16;
     re32 = mips_clz(in32);
@@ -110,9 +103,8 @@ static inline oac_int32 silk_CLZ16(oac_int16 in16)
     return re32;
 }
 
-#define OVERRIDE_silk_CLZ32
-static inline oac_int32 silk_CLZ32(oac_int32 in32)
-{
+# define OVERRIDE_silk_CLZ32
+static inline oac_int32 silk_CLZ32(oac_int32 in32) {
     int re32;
     re32 = mips_clz(in32);
     return re32;

@@ -23,13 +23,13 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 /* oac_types.h based on ogg_types.h from libogg */
 
 /**
    @file oac_types.h
    @brief Oac reference implementation types
-*/
+ */
 #ifndef OAC_TYPES_H
 #define OAC_TYPES_H
 
@@ -42,124 +42,125 @@
 #define oac_uint8       unsigned char
 
 /* Use the real stdint.h if it's there (taken from Paul Hsieh's pstdint.h) */
-#if (defined(__STDC__) && __STDC__ && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && (defined(_STDINT_H) || defined(_STDINT_H_)) || defined (HAVE_STDINT_H))
-#include <stdint.h>
-#  undef oac_int64
-#  undef oac_int8
-#  undef oac_uint64
-#  undef oac_uint8
-   typedef int8_t oac_int8;
-   typedef uint8_t oac_uint8;
-   typedef int16_t oac_int16;
-   typedef uint16_t oac_uint16;
-   typedef int32_t oac_int32;
-   typedef uint32_t oac_uint32;
-   typedef int64_t oac_int64;
-   typedef uint64_t oac_uint64;
+#if (defined(__STDC__) && __STDC__ && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__GNUC__) \
+    && (defined(_STDINT_H) || defined(_STDINT_H_)) || defined (HAVE_STDINT_H))
+# include <stdint.h>
+# undef oac_int64
+# undef oac_int8
+# undef oac_uint64
+# undef oac_uint8
+typedef int8_t oac_int8;
+typedef uint8_t oac_uint8;
+typedef int16_t oac_int16;
+typedef uint16_t oac_uint16;
+typedef int32_t oac_int32;
+typedef uint32_t oac_uint32;
+typedef int64_t oac_int64;
+typedef uint64_t oac_uint64;
 #elif defined(_WIN32)
 
-#  if defined(__CYGWIN__)
-#    include <_G_config.h>
-     typedef _G_int32_t oac_int32;
-     typedef _G_uint32_t oac_uint32;
-     typedef _G_int16 oac_int16;
-     typedef _G_uint16 oac_uint16;
-#  elif defined(__MINGW32__)
-     typedef short oac_int16;
-     typedef unsigned short oac_uint16;
-     typedef int oac_int32;
-     typedef unsigned int oac_uint32;
-#  elif defined(__MWERKS__)
-     typedef int oac_int32;
-     typedef unsigned int oac_uint32;
-     typedef short oac_int16;
-     typedef unsigned short oac_uint16;
-#  else
-     /* MSVC/Borland */
-     typedef __int32 oac_int32;
-     typedef unsigned __int32 oac_uint32;
-     typedef __int16 oac_int16;
-     typedef unsigned __int16 oac_uint16;
-#  endif
+# if defined(__CYGWIN__)
+#  include <_G_config.h>
+typedef _G_int32_t oac_int32;
+typedef _G_uint32_t oac_uint32;
+typedef _G_int16 oac_int16;
+typedef _G_uint16 oac_uint16;
+# elif defined(__MINGW32__)
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+typedef int oac_int32;
+typedef unsigned int oac_uint32;
+# elif defined(__MWERKS__)
+typedef int oac_int32;
+typedef unsigned int oac_uint32;
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+# else
+/* MSVC/Borland */
+typedef __int32 oac_int32;
+typedef unsigned __int32 oac_uint32;
+typedef __int16 oac_int16;
+typedef unsigned __int16 oac_uint16;
+# endif
 
 #elif defined(__MACOS__)
 
-#  include <sys/types.h>
-   typedef SInt16 oac_int16;
-   typedef UInt16 oac_uint16;
-   typedef SInt32 oac_int32;
-   typedef UInt32 oac_uint32;
+# include <sys/types.h>
+typedef SInt16 oac_int16;
+typedef UInt16 oac_uint16;
+typedef SInt32 oac_int32;
+typedef UInt32 oac_uint32;
 
 #elif (defined(__APPLE__) && defined(__MACH__)) /* MacOS X Framework build */
 
-#  include <sys/types.h>
-   typedef int16_t oac_int16;
-   typedef u_int16_t oac_uint16;
-   typedef int32_t oac_int32;
-   typedef u_int32_t oac_uint32;
+# include <sys/types.h>
+typedef int16_t oac_int16;
+typedef u_int16_t oac_uint16;
+typedef int32_t oac_int32;
+typedef u_int32_t oac_uint32;
 
 #elif defined(__BEOS__)
 
-   /* Be */
-#  include <inttypes.h>
-   typedef int16 oac_int16;
-   typedef u_int16 oac_uint16;
-   typedef int32_t oac_int32;
-   typedef u_int32_t oac_uint32;
+/* Be */
+# include <inttypes.h>
+typedef int16 oac_int16;
+typedef u_int16 oac_uint16;
+typedef int32_t oac_int32;
+typedef u_int32_t oac_uint32;
 
 #elif defined (__EMX__)
 
-   /* OS/2 GCC */
-   typedef short oac_int16;
-   typedef unsigned short oac_uint16;
-   typedef int oac_int32;
-   typedef unsigned int oac_uint32;
+/* OS/2 GCC */
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+typedef int oac_int32;
+typedef unsigned int oac_uint32;
 
 #elif defined (DJGPP)
 
-   /* DJGPP */
-   typedef short oac_int16;
-   typedef unsigned short oac_uint16;
-   typedef int oac_int32;
-   typedef unsigned int oac_uint32;
+/* DJGPP */
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+typedef int oac_int32;
+typedef unsigned int oac_uint32;
 
 #elif defined(R5900)
 
-   /* PS2 EE */
-   typedef int oac_int32;
-   typedef unsigned oac_uint32;
-   typedef short oac_int16;
-   typedef unsigned short oac_uint16;
+/* PS2 EE */
+typedef int oac_int32;
+typedef unsigned oac_uint32;
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
 
 #elif defined(__SYMBIAN32__)
 
-   /* Symbian GCC */
-   typedef signed short oac_int16;
-   typedef unsigned short oac_uint16;
-   typedef signed int oac_int32;
-   typedef unsigned int oac_uint32;
+/* Symbian GCC */
+typedef signed short oac_int16;
+typedef unsigned short oac_uint16;
+typedef signed int oac_int32;
+typedef unsigned int oac_uint32;
 
 #elif defined(CONFIG_TI_C54X) || defined (CONFIG_TI_C55X)
 
-   typedef short oac_int16;
-   typedef unsigned short oac_uint16;
-   typedef long oac_int32;
-   typedef unsigned long oac_uint32;
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+typedef long oac_int32;
+typedef unsigned long oac_uint32;
 
 #elif defined(CONFIG_TI_C6X)
 
-   typedef short oac_int16;
-   typedef unsigned short oac_uint16;
-   typedef int oac_int32;
-   typedef unsigned int oac_uint32;
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+typedef int oac_int32;
+typedef unsigned int oac_uint32;
 
 #else
 
-   /* Give up, take a reasonable guess */
-   typedef short oac_int16;
-   typedef unsigned short oac_uint16;
-   typedef int oac_int32;
-   typedef unsigned int oac_uint32;
+/* Give up, take a reasonable guess */
+typedef short oac_int16;
+typedef unsigned short oac_uint16;
+typedef int oac_int32;
+typedef unsigned int oac_uint32;
 
 #endif
 
