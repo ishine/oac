@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('ref_wav', type=str, help='reference wav file')
 parser.add_argument('test_wav', type=str, help='test wav file')
 
-opus_eband5ms = [0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100]
-opus_eband10ms = [2 * b for b in opus_eband5ms]
+oac_eband5ms = [0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100]
+oac_eband10ms = [2 * b for b in oac_eband5ms]
 
 def create_filter_bank(band_limits, num_bins, normalize=False):
     filters = []
@@ -27,7 +27,7 @@ def create_filter_bank(band_limits, num_bins, normalize=False):
     fb = np.concatenate(filters, axis=0)
     return fb
 
-fb = create_filter_bank(opus_eband10ms, 241)
+fb = create_filter_bank(oac_eband10ms, 241)
 
 highband_idx = -4
 func = lambda x : x ** 0.25

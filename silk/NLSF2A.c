@@ -41,22 +41,22 @@ POSSIBILITY OF SUCH DAMAGE.
 #define QA      16
 
 /* helper function for NLSF2A(..) */
-static OPUS_INLINE void silk_NLSF2A_find_poly(
-    opus_int32          *out,      /* O    intermediate polynomial, QA [dd+1]        */
-    const opus_int32    *cLSF,     /* I    vector of interleaved 2*cos(LSFs), QA [d] */
-    opus_int            dd         /* I    polynomial order (= 1/2 * filter order)   */
+static OAC_INLINE void silk_NLSF2A_find_poly(
+    oac_int32          *out,      /* O    intermediate polynomial, QA [dd+1]        */
+    const oac_int32    *cLSF,     /* I    vector of interleaved 2*cos(LSFs), QA [d] */
+    oac_int            dd         /* I    polynomial order (= 1/2 * filter order)   */
 )
 {
-    opus_int   k, n;
-    opus_int32 ftmp;
+    oac_int   k, n;
+    oac_int32 ftmp;
 
     out[0] = silk_LSHIFT( 1, QA );
     out[1] = -cLSF[0];
     for( k = 1; k < dd; k++ ) {
         ftmp = cLSF[2*k];            /* QA*/
-        out[k+1] = silk_LSHIFT( out[k-1], 1 ) - (opus_int32)silk_RSHIFT_ROUND64( silk_SMULL( ftmp, out[k] ), QA );
+        out[k+1] = silk_LSHIFT( out[k-1], 1 ) - (oac_int32)silk_RSHIFT_ROUND64( silk_SMULL( ftmp, out[k] ), QA );
         for( n = k; n > 1; n-- ) {
-            out[n] += out[n-2] - (opus_int32)silk_RSHIFT_ROUND64( silk_SMULL( ftmp, out[n-1] ), QA );
+            out[n] += out[n-2] - (oac_int32)silk_RSHIFT_ROUND64( silk_SMULL( ftmp, out[n-1] ), QA );
         }
         out[1] -= ftmp;
     }
@@ -64,9 +64,9 @@ static OPUS_INLINE void silk_NLSF2A_find_poly(
 
 /* compute whitening filter coefficients from normalized line spectral frequencies */
 void silk_NLSF2A(
-    opus_int16                  *a_Q12,             /* O    monic whitening filter coefficients in Q12,  [ d ]          */
-    const opus_int16            *NLSF,              /* I    normalized line spectral frequencies in Q15, [ d ]          */
-    const opus_int              d,                  /* I    filter order (should be even)                               */
+    oac_int16                  *a_Q12,             /* O    monic whitening filter coefficients in Q12,  [ d ]          */
+    const oac_int16            *NLSF,              /* I    normalized line spectral frequencies in Q15, [ d ]          */
+    const oac_int              d,                  /* I    filter order (should be even)                               */
     int                         arch                /* I    Run-time architecture                                       */
 )
 {
@@ -79,11 +79,11 @@ void silk_NLSF2A(
       0, 9, 6, 3, 4, 5, 8, 1, 2, 7
     };
     const unsigned char *ordering;
-    opus_int   k, i, dd;
-    opus_int32 cos_LSF_QA[ SILK_MAX_ORDER_LPC ];
-    opus_int32 P[ SILK_MAX_ORDER_LPC / 2 + 1 ], Q[ SILK_MAX_ORDER_LPC / 2 + 1 ];
-    opus_int32 Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
-    opus_int32 a32_QA1[ SILK_MAX_ORDER_LPC ];
+    oac_int   k, i, dd;
+    oac_int32 cos_LSF_QA[ SILK_MAX_ORDER_LPC ];
+    oac_int32 P[ SILK_MAX_ORDER_LPC / 2 + 1 ], Q[ SILK_MAX_ORDER_LPC / 2 + 1 ];
+    oac_int32 Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
+    oac_int32 a32_QA1[ SILK_MAX_ORDER_LPC ];
 
     silk_assert( LSF_COS_TAB_SZ_FIX == 128 );
     celt_assert( d==10 || d==16 );
@@ -116,7 +116,7 @@ void silk_NLSF2A(
     silk_NLSF2A_find_poly( P, &cos_LSF_QA[ 0 ], dd );
     silk_NLSF2A_find_poly( Q, &cos_LSF_QA[ 1 ], dd );
 
-    /* convert even and odd polynomials to opus_int32 Q12 filter coefs */
+    /* convert even and odd polynomials to oac_int32 Q12 filter coefs */
     for( k = 0; k < dd; k++ ) {
         Ptmp = P[ k+1 ] + P[ k ];
         Qtmp = Q[ k+1 ] - Q[ k ];
@@ -134,7 +134,7 @@ void silk_NLSF2A(
         /* on the unscaled coefficients, convert to Q12 and measure again                   */
         silk_bwexpander_32( a32_QA1, d, 65536 - silk_LSHIFT( 2, i ) );
         for( k = 0; k < d; k++ ) {
-            a_Q12[ k ] = (opus_int16)silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 );            /* QA+1 -> Q12 */
+            a_Q12[ k ] = (oac_int16)silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 );            /* QA+1 -> Q12 */
         }
     }
 }

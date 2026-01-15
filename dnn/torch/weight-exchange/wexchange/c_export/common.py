@@ -40,10 +40,10 @@ def print_vector(writer, vector, name, dtype='float', reshape_8x4=False, static=
 
     dtype_suffix = {
         'float' : 'float',
-        'opus_uint8' : 'uint8',
-        'opus_int8' : 'int8',
-        'opus_uint16' : 'uint16',
-        'opus_int16' : 'int16',
+        'oac_uint8' : 'uint8',
+        'oac_int8' : 'int8',
+        'oac_uint16' : 'uint16',
+        'oac_int16' : 'int16',
         'int' : 'int',
         'qweight': 'qweight'
     }
@@ -164,7 +164,7 @@ def print_sparse_weight(writer, A, name, scale=1/128, have_diag=True, quantize=F
                 W = np.concatenate([W, vblock])
         idx[pos] = nb_nonzero
 
-    if quantize: print_vector(writer, W, name + '_int8', reshape_8x4=False, dtype='opus_int8')
+    if quantize: print_vector(writer, W, name + '_int8', reshape_8x4=False, dtype='oac_int8')
     print_vector(writer, W0, name + '_float', reshape_8x4=False, dtype='float', debug_float=quantize)
     print_vector(writer, idx, name + '_idx', reshape_8x4=False, dtype='int')
 
@@ -237,7 +237,7 @@ def print_linear_layer(writer : CWriter,
     else:
         if quantize:
             weight_q = quantize_weight(weight, scale)
-            print_vector(writer, weight_q, name + "_weights_int8", dtype='opus_int8', reshape_8x4=True)
+            print_vector(writer, weight_q, name + "_weights_int8", dtype='oac_int8', reshape_8x4=True)
 
         print_vector(writer, weight, name + "_weights_float", dtype='float', reshape_8x4=False, debug_float=quantize)
 

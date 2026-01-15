@@ -43,8 +43,8 @@
 
 void clt_mdct_forward_neon(const mdct_lookup *l,
                            kiss_fft_scalar *in,
-                           kiss_fft_scalar * OPUS_RESTRICT out,
-                           const opus_val16 *window,
+                           kiss_fft_scalar * OAC_RESTRICT out,
+                           const oac_val16 *window,
                            int overlap, int shift, int stride, int arch)
 {
    int i;
@@ -73,11 +73,11 @@ void clt_mdct_forward_neon(const mdct_lookup *l,
    /* Window, shuffle, fold */
    {
       /* Temp pointers to make it really clear to the compiler what we're doing */
-      const kiss_fft_scalar * OPUS_RESTRICT xp1 = in+(overlap>>1);
-      const kiss_fft_scalar * OPUS_RESTRICT xp2 = in+N2-1+(overlap>>1);
-      kiss_fft_scalar * OPUS_RESTRICT yp = f;
-      const opus_val16 * OPUS_RESTRICT wp1 = window+(overlap>>1);
-      const opus_val16 * OPUS_RESTRICT wp2 = window+(overlap>>1)-1;
+      const kiss_fft_scalar * OAC_RESTRICT xp1 = in+(overlap>>1);
+      const kiss_fft_scalar * OAC_RESTRICT xp2 = in+N2-1+(overlap>>1);
+      kiss_fft_scalar * OAC_RESTRICT yp = f;
+      const oac_val16 * OAC_RESTRICT wp1 = window+(overlap>>1);
+      const oac_val16 * OAC_RESTRICT wp2 = window+(overlap>>1)-1;
       for(i=0;i<((overlap+3)>>2);i++)
       {
          /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
@@ -111,7 +111,7 @@ void clt_mdct_forward_neon(const mdct_lookup *l,
    }
    /* Pre-rotation */
    {
-      kiss_fft_scalar * OPUS_RESTRICT yp = f;
+      kiss_fft_scalar * OAC_RESTRICT yp = f;
       const kiss_twiddle_scalar *t = &trig[0];
       for(i=0;i<N4;i++)
       {
@@ -130,14 +130,14 @@ void clt_mdct_forward_neon(const mdct_lookup *l,
       }
    }
 
-   opus_fft(st, f2, (kiss_fft_cpx *)f, arch);
+   oac_fft(st, f2, (kiss_fft_cpx *)f, arch);
 
    /* Post-rotate */
    {
       /* Temp pointers to make it really clear to the compiler what we're doing */
-      const kiss_fft_cpx * OPUS_RESTRICT fp = (kiss_fft_cpx *)f;
-      kiss_fft_scalar * OPUS_RESTRICT yp1 = out;
-      kiss_fft_scalar * OPUS_RESTRICT yp2 = out+stride*(N2-1);
+      const kiss_fft_cpx * OAC_RESTRICT fp = (kiss_fft_cpx *)f;
+      kiss_fft_scalar * OAC_RESTRICT yp1 = out;
+      kiss_fft_scalar * OAC_RESTRICT yp2 = out+stride*(N2-1);
       const kiss_twiddle_scalar *t = &trig[0];
       /* Temp pointers to make it really clear to the compiler what we're doing */
       for(i=0;i<N4;i++)
@@ -157,8 +157,8 @@ void clt_mdct_forward_neon(const mdct_lookup *l,
 
 void clt_mdct_backward_neon(const mdct_lookup *l,
                             kiss_fft_scalar *in,
-                            kiss_fft_scalar * OPUS_RESTRICT out,
-                            const opus_val16 * OPUS_RESTRICT window,
+                            kiss_fft_scalar * OAC_RESTRICT out,
+                            const oac_val16 * OAC_RESTRICT window,
                             int overlap, int shift, int stride, int arch)
 {
    int i;
@@ -182,10 +182,10 @@ void clt_mdct_backward_neon(const mdct_lookup *l,
    /* Pre-rotate */
    {
       /* Temp pointers to make it really clear to the compiler what we're doing */
-      const kiss_fft_scalar * OPUS_RESTRICT xp1 = in;
-      const kiss_fft_scalar * OPUS_RESTRICT xp2 = in+stride*(N2-1);
-      kiss_fft_scalar * OPUS_RESTRICT yp = f;
-      const kiss_twiddle_scalar * OPUS_RESTRICT t = &trig[0];
+      const kiss_fft_scalar * OAC_RESTRICT xp1 = in;
+      const kiss_fft_scalar * OAC_RESTRICT xp2 = in+stride*(N2-1);
+      kiss_fft_scalar * OAC_RESTRICT yp = f;
+      const kiss_twiddle_scalar * OAC_RESTRICT t = &trig[0];
       for(i=0;i<N4;i++)
       {
          kiss_fft_scalar yr, yi;
@@ -198,7 +198,7 @@ void clt_mdct_backward_neon(const mdct_lookup *l,
       }
    }
 
-   opus_ifft(st, (kiss_fft_cpx *)f, (kiss_fft_cpx*)(out+(overlap>>1)), arch);
+   oac_ifft(st, (kiss_fft_cpx *)f, (kiss_fft_cpx*)(out+(overlap>>1)), arch);
 
    /* Post-rotate and de-shuffle from both ends of the buffer at once to make
       it in-place. */
@@ -238,10 +238,10 @@ void clt_mdct_backward_neon(const mdct_lookup *l,
 
    /* Mirror on both sides for TDAC */
    {
-      kiss_fft_scalar * OPUS_RESTRICT xp1 = out+overlap-1;
-      kiss_fft_scalar * OPUS_RESTRICT yp1 = out;
-      const opus_val16 * OPUS_RESTRICT wp1 = window;
-      const opus_val16 * OPUS_RESTRICT wp2 = window+overlap-1;
+      kiss_fft_scalar * OAC_RESTRICT xp1 = out+overlap-1;
+      kiss_fft_scalar * OAC_RESTRICT yp1 = out;
+      const oac_val16 * OAC_RESTRICT wp1 = window;
+      const oac_val16 * OAC_RESTRICT wp2 = window+overlap-1;
 
       for(i = 0; i < overlap/2; i++)
       {

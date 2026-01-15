@@ -35,10 +35,10 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_k2a_FLP(
     silk_float          *A,                 /* O     prediction coefficients [order]                            */
     const silk_float    *rc,                /* I     reflection coefficients [order]                            */
-    opus_int32          order               /* I     prediction order                                           */
+    oac_int32          order               /* I     prediction order                                           */
 )
 {
-    opus_int   k, n;
+    oac_int   k, n;
     silk_float rck, tmp1, tmp2;
 
     for( k = 0; k < order; k++ ) {

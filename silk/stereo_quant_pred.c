@@ -33,12 +33,12 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Quantize mid/side predictors */
 void silk_stereo_quant_pred(
-    opus_int32                  pred_Q13[],                     /* I/O  Predictors (out: quantized)                 */
-    opus_int8                   ix[ 2 ][ 3 ]                    /* O    Quantization indices                        */
+    oac_int32                  pred_Q13[],                     /* I/O  Predictors (out: quantized)                 */
+    oac_int8                   ix[ 2 ][ 3 ]                    /* O    Quantization indices                        */
 )
 {
-    opus_int   i, j, n;
-    opus_int32 low_Q13, step_Q13, lvl_Q13, err_min_Q13, err_Q13, quant_pred_Q13 = 0;
+    oac_int   i, j, n;
+    oac_int32 low_Q13, step_Q13, lvl_Q13, err_min_Q13, err_Q13, quant_pred_Q13 = 0;
 
     /* Quantize */
     for( n = 0; n < 2; n++ ) {

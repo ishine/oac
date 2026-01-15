@@ -43,11 +43,11 @@
 #define PLC_SKIP_UPDATES
 
 void lpcnet_plc_reset(LPCNetPLCState *st) {
-  OPUS_CLEAR((char*)&st->LPCNET_PLC_RESET_START,
+  OAC_CLEAR((char*)&st->LPCNET_PLC_RESET_START,
           sizeof(LPCNetPLCState)-
           ((char*)&st->LPCNET_PLC_RESET_START - (char*)st));
   lpcnet_encoder_init(&st->enc);
-  OPUS_CLEAR(st->pcm, PLC_BUF_SIZE);
+  OAC_CLEAR(st->pcm, PLC_BUF_SIZE);
   st->blend = 0;
   st->loss_count = 0;
   st->analysis_gap = 1;
@@ -57,7 +57,7 @@ void lpcnet_plc_reset(LPCNetPLCState *st) {
 
 int lpcnet_plc_init(LPCNetPLCState *st) {
   int ret;
-  st->arch = opus_select_arch();
+  st->arch = oac_select_arch();
   fargan_init(&st->fargan);
   lpcnet_encoder_init(&st->enc);
   st->loaded = 0;
@@ -77,7 +77,7 @@ int lpcnet_plc_load_model(LPCNetPLCState *st, const void *data, int len) {
   int ret;
   parse_weights(&list, data, len);
   ret = init_plcmodel(&st->model, list);
-  opus_free(list);
+  oac_free(list);
   if (ret == 0) {
     ret = lpcnet_encoder_load_model(&st->enc, data, len);
   }
@@ -94,7 +94,7 @@ void lpcnet_plc_fec_add(LPCNetPLCState *st, const float *features) {
     return;
   }
   celt_assert(st->fec_fill_pos < PLC_MAX_FEC);
-  OPUS_COPY(&st->fec[st->fec_fill_pos][0], features, NB_FEATURES);
+  OAC_COPY(&st->fec[st->fec_fill_pos][0], features, NB_FEATURES);
   st->fec_fill_pos++;
 }
 
@@ -118,10 +118,10 @@ static int get_fec_or_pred(LPCNetPLCState *st, float *out) {
   if (st->fec_read_pos != st->fec_fill_pos && st->fec_skip==0) {
     float plc_features[2*NB_BANDS+NB_FEATURES+1] = {0};
     float discard[NB_FEATURES];
-    OPUS_COPY(out, &st->fec[st->fec_read_pos][0], NB_FEATURES);
+    OAC_COPY(out, &st->fec[st->fec_read_pos][0], NB_FEATURES);
     st->fec_read_pos++;
     /* Update PLC state using FEC, so without Burg features. */
-    OPUS_COPY(&plc_features[2*NB_BANDS], out, NB_FEATURES);
+    OAC_COPY(&plc_features[2*NB_BANDS], out, NB_FEATURES);
     plc_features[2*NB_BANDS+NB_FEATURES] = -1;
     compute_plc_pred(st, discard, plc_features);
     return 1;
@@ -134,19 +134,19 @@ static int get_fec_or_pred(LPCNetPLCState *st, float *out) {
 }
 
 static void queue_features(LPCNetPLCState *st, const float *features) {
-  OPUS_MOVE(&st->cont_features[0], &st->cont_features[NB_FEATURES], (CONT_VECTORS-1)*NB_FEATURES);
-  OPUS_COPY(&st->cont_features[(CONT_VECTORS-1)*NB_FEATURES], features, NB_FEATURES);
+  OAC_MOVE(&st->cont_features[0], &st->cont_features[NB_FEATURES], (CONT_VECTORS-1)*NB_FEATURES);
+  OAC_COPY(&st->cont_features[(CONT_VECTORS-1)*NB_FEATURES], features, NB_FEATURES);
 }
 
 /* In this causal version of the code, the DNN model implemented by compute_plc_pred()
    needs to generate two feature vectors to conceal the first lost packet.*/
 
-int lpcnet_plc_update(LPCNetPLCState *st, opus_int16 *pcm) {
+int lpcnet_plc_update(LPCNetPLCState *st, oac_int16 *pcm) {
   int i;
   if (st->analysis_pos - FRAME_SIZE >= 0) st->analysis_pos -= FRAME_SIZE;
   else st->analysis_gap = 1;
   if (st->predict_pos - FRAME_SIZE >= 0) st->predict_pos -= FRAME_SIZE;
-  OPUS_MOVE(st->pcm, &st->pcm[FRAME_SIZE], PLC_BUF_SIZE-FRAME_SIZE);
+  OAC_MOVE(st->pcm, &st->pcm[FRAME_SIZE], PLC_BUF_SIZE-FRAME_SIZE);
   for (i=0;i<FRAME_SIZE;i++) st->pcm[PLC_BUF_SIZE-FRAME_SIZE+i] = (1.f/32768.f)*pcm[i];
   st->loss_count = 0;
   st->blend = 0;
@@ -154,7 +154,7 @@ int lpcnet_plc_update(LPCNetPLCState *st, opus_int16 *pcm) {
 }
 
 static const float att_table[10] = {0, 0,  -.2, -.2,  -.4, -.4,  -.8, -.8, -1.6, -1.6};
-int lpcnet_plc_conceal(LPCNetPLCState *st, opus_int16 *pcm) {
+int lpcnet_plc_conceal(LPCNetPLCState *st, oac_int16 *pcm) {
   int i;
   celt_assert(st->loaded);
   if (st->blend == 0) {
@@ -169,7 +169,7 @@ int lpcnet_plc_conceal(LPCNetPLCState *st, opus_int16 *pcm) {
       lpcnet_compute_single_frame_features_float(&st->enc, x, st->features, st->arch);
       if ((!st->analysis_gap || count>0) && st->analysis_pos >= st->predict_pos) {
         queue_features(st, st->features);
-        OPUS_COPY(&plc_features[2*NB_BANDS], st->features, NB_FEATURES);
+        OAC_COPY(&plc_features[2*NB_BANDS], st->features, NB_FEATURES);
         plc_features[2*NB_BANDS+NB_FEATURES] = 1;
         st->plc_bak[0] = st->plc_bak[1];
         st->plc_bak[1] = st->plc_net;
@@ -200,7 +200,7 @@ int lpcnet_plc_conceal(LPCNetPLCState *st, opus_int16 *pcm) {
   if (st->analysis_pos - FRAME_SIZE >= 0) st->analysis_pos -= FRAME_SIZE;
   else st->analysis_gap = 1;
   st->predict_pos = PLC_BUF_SIZE;
-  OPUS_MOVE(st->pcm, &st->pcm[FRAME_SIZE], PLC_BUF_SIZE-FRAME_SIZE);
+  OAC_MOVE(st->pcm, &st->pcm[FRAME_SIZE], PLC_BUF_SIZE-FRAME_SIZE);
   for (i=0;i<FRAME_SIZE;i++) st->pcm[PLC_BUF_SIZE-FRAME_SIZE+i] = (1.f/32768.f)*pcm[i];
   st->blend = 1;
   return 0;

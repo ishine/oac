@@ -37,7 +37,7 @@ static void conv1_cond_init(float *mem, int len, int dilation, int *init)
 {
     if (!*init) {
         int i;
-        for (i=0;i<dilation;i++) OPUS_CLEAR(&mem[i*len], len);
+        for (i=0;i<dilation;i++) OAC_CLEAR(&mem[i*len], len);
     }
     *init = 1;
 }
@@ -71,15 +71,15 @@ void dred_rdovae_dec_init_states(
     int counter=0;
     compute_generic_dense(&model->dec_hidden_init, hidden, initial_state, ACTIVATION_TANH, arch);
     compute_generic_dense(&model->dec_gru_init, state_init, hidden, ACTIVATION_TANH, arch);
-    OPUS_COPY(h->gru1_state, state_init, DEC_GRU1_STATE_SIZE);
+    OAC_COPY(h->gru1_state, state_init, DEC_GRU1_STATE_SIZE);
     counter += DEC_GRU1_STATE_SIZE;
-    OPUS_COPY(h->gru2_state, &state_init[counter], DEC_GRU2_STATE_SIZE);
+    OAC_COPY(h->gru2_state, &state_init[counter], DEC_GRU2_STATE_SIZE);
     counter += DEC_GRU2_STATE_SIZE;
-    OPUS_COPY(h->gru3_state, &state_init[counter], DEC_GRU3_STATE_SIZE);
+    OAC_COPY(h->gru3_state, &state_init[counter], DEC_GRU3_STATE_SIZE);
     counter += DEC_GRU3_STATE_SIZE;
-    OPUS_COPY(h->gru4_state, &state_init[counter], DEC_GRU4_STATE_SIZE);
+    OAC_COPY(h->gru4_state, &state_init[counter], DEC_GRU4_STATE_SIZE);
     counter += DEC_GRU4_STATE_SIZE;
-    OPUS_COPY(h->gru5_state, &state_init[counter], DEC_GRU5_STATE_SIZE);
+    OAC_COPY(h->gru5_state, &state_init[counter], DEC_GRU5_STATE_SIZE);
     h->initialized = 0;
 }
 

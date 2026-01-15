@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# opus/read-sources-list.py
+# oac/read-sources-list.py
 #
 # Parses .mk files and extracts list of source files.
 # Prints one line per source file list, with filenames space-separated.

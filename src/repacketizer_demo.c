@@ -29,7 +29,7 @@
 #include "config.h"
 #endif
 
-#include "opus.h"
+#include "oac.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +41,7 @@ void usage(char *argv0)
    fprintf(stderr, "usage: %s [options] input_file output_file\n", argv0);
 }
 
-static void int_to_char(opus_uint32 i, unsigned char ch[4])
+static void int_to_char(oac_uint32 i, unsigned char ch[4])
 {
     ch[0] = i>>24;
     ch[1] = (i>>16)&0xFF;
@@ -49,10 +49,10 @@ static void int_to_char(opus_uint32 i, unsigned char ch[4])
     ch[3] = i&0xFF;
 }
 
-static opus_uint32 char_to_int(unsigned char ch[4])
+static oac_uint32 char_to_int(unsigned char ch[4])
 {
-    return ((opus_uint32)ch[0]<<24) | ((opus_uint32)ch[1]<<16)
-         | ((opus_uint32)ch[2]<< 8) |  (opus_uint32)ch[3];
+    return ((oac_uint32)ch[0]<<24) | ((oac_uint32)ch[1]<<16)
+         | ((oac_uint32)ch[2]<< 8) |  (oac_uint32)ch[3];
 }
 
 int main(int argc, char *argv[])
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
    unsigned char packets[48][1500];
    int len[48];
    int rng[48];
-   OpusRepacketizer *rp;
+   OacRepacketizer *rp;
    unsigned char output_packet[MAX_PACKETOUT];
    int merge = 1, split=0;
 
@@ -110,12 +110,12 @@ int main(int argc, char *argv[])
      return EXIT_FAILURE;
    }
 
-   rp = opus_repacketizer_create();
+   rp = oac_repacketizer_create();
    while (!eof)
    {
       int err;
       int nb_packets=merge;
-      opus_repacketizer_init(rp);
+      oac_repacketizer_init(rp);
       for (i=0;i<nb_packets;i++)
       {
          unsigned char ch[4];
@@ -173,10 +173,10 @@ int main(int argc, char *argv[])
              }
              break;
          }
-         err = opus_repacketizer_cat(rp, packets[i], len[i]);
-         if (err!=OPUS_OK)
+         err = oac_repacketizer_cat(rp, packets[i], len[i]);
+         if (err!=OAC_OK)
          {
-            fprintf(stderr, "opus_repacketizer_cat() failed: %s\n", opus_strerror(err));
+            fprintf(stderr, "oac_repacketizer_cat() failed: %s\n", oac_strerror(err));
             break;
          }
       }
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 
       if (!split)
       {
-         err = opus_repacketizer_out(rp, output_packet, MAX_PACKETOUT);
+         err = oac_repacketizer_out(rp, output_packet, MAX_PACKETOUT);
          if (err>0) {
             unsigned char int_field[4];
             int_to_char(err, int_field);
@@ -206,13 +206,13 @@ int main(int argc, char *argv[])
             }
             /*fprintf(stderr, "out len = %d\n", err);*/
          } else {
-            fprintf(stderr, "opus_repacketizer_out() failed: %s\n", opus_strerror(err));
+            fprintf(stderr, "oac_repacketizer_out() failed: %s\n", oac_strerror(err));
          }
       } else {
-         int nb_frames = opus_repacketizer_get_nb_frames(rp);
+         int nb_frames = oac_repacketizer_get_nb_frames(rp);
          for (i=0;i<nb_frames;i++)
          {
-            err = opus_repacketizer_out_range(rp, i, i+1, output_packet, MAX_PACKETOUT);
+            err = oac_repacketizer_out_range(rp, i, i+1, output_packet, MAX_PACKETOUT);
             if (err>0) {
                unsigned char int_field[4];
                int_to_char(err, int_field);
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
                }
                /*fprintf(stderr, "out len = %d\n", err);*/
             } else {
-               fprintf(stderr, "opus_repacketizer_out() failed: %s\n", opus_strerror(err));
+               fprintf(stderr, "oac_repacketizer_out() failed: %s\n", oac_strerror(err));
             }
 
          }

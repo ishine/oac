@@ -163,7 +163,7 @@ void fwgan_cont(FWGANState *st, const float *pcm0, const float *features0)
   /* Process the first frame, discard the first subframe, and keep the rest for the first
      synthesis call. */
   fwgan_synthesize_impl(st, new_pcm, lpc, features0);
-  OPUS_COPY(st->pcm_buf, &new_pcm[SUBFRAME_SIZE], FWGAN_FRAME_SIZE-SUBFRAME_SIZE);
+  OAC_COPY(st->pcm_buf, &new_pcm[SUBFRAME_SIZE], FWGAN_FRAME_SIZE-SUBFRAME_SIZE);
 }
 
 static void apply_gain(float *pcm, float c0, float *last_gain) {
@@ -178,10 +178,10 @@ static void fwgan_lpc_syn(float *pcm, float *mem, const float *lpc, float last_l
   for (i=0;i<SUBFRAME_SIZE;i++) {
     int j;
     for (j=0;j<LPC_ORDER;j++) pcm[i] -= mem[j]*last_lpc[j];
-    OPUS_MOVE(&mem[1], &mem[0], LPC_ORDER-1);
+    OAC_MOVE(&mem[1], &mem[0], LPC_ORDER-1);
     mem[0] = pcm[i];
   }
-  OPUS_COPY(last_lpc, lpc, LPC_ORDER);
+  OAC_COPY(last_lpc, lpc, LPC_ORDER);
 }
 
 static void fwgan_preemphasis(float *pcm, float *preemph_mem) {
@@ -213,8 +213,8 @@ static void run_fwgan_subframe(FWGANState *st, float *pcm, const float *cond, do
 
   pitch_embeddings(pembed, st->embed_phase, w0);
   /* Interleave bfcc_cond and pembed for each subframe in feat_in. */
-  OPUS_COPY(&feat_in[BFCC_WITH_CORR_UPSAMPLER_FC_OUT_SIZE/4], &cond[0], BFCC_WITH_CORR_UPSAMPLER_FC_OUT_SIZE/4);
-  OPUS_COPY(&feat_in[0], &pembed[0], FWGAN_FRAME_SIZE/2);
+  OAC_COPY(&feat_in[BFCC_WITH_CORR_UPSAMPLER_FC_OUT_SIZE/4], &cond[0], BFCC_WITH_CORR_UPSAMPLER_FC_OUT_SIZE/4);
+  OAC_COPY(&feat_in[0], &pembed[0], FWGAN_FRAME_SIZE/2);
 
   compute_generic_conv1d(&model->feat_in_conv1_conv, rnn_in, st->cont_conv1_mem, feat_in, FEAT_IN_CONV1_CONV_IN_SIZE, ACTIVATION_LINEAR);
   celt_assert(FEAT_IN_NL1_GATE_OUT_SIZE == model->feat_in_nl1_gate.nb_outputs);
@@ -223,10 +223,10 @@ static void run_fwgan_subframe(FWGANState *st, float *pcm, const float *cond, do
   if (st->cont_initialized == 1) {
     /* On the very first subframe we stop here. We only want to run the feat_in layer since the
        others are initialized via the continuation network. */
-    OPUS_CLEAR(pcm, SUBFRAME_SIZE);
+    OAC_CLEAR(pcm, SUBFRAME_SIZE);
     st->cont_initialized = 2;
     apply_gain(pcm, c0, &st->last_gain);
-    OPUS_COPY(st->last_lpc, lpc, LPC_ORDER);
+    OAC_COPY(st->last_lpc, lpc, LPC_ORDER);
     return;
   }
 
@@ -264,7 +264,7 @@ static void run_fwgan_subframe(FWGANState *st, float *pcm, const float *cond, do
 void fwgan_init(FWGANState *st)
 {
   int ret;
-  OPUS_CLEAR(st, 1);
+  OAC_CLEAR(st, 1);
   ret = init_fwgan(&st->model, fwgan_arrays);
   celt_assert(ret == 0);
   /* FIXME: perform arch detection. */
@@ -275,7 +275,7 @@ int fwgan_load_model(FWGANState *st, const unsigned char *data, int len) {
   int ret;
   parse_weights(&list, data, len);
   ret = init_fwgan(&st->model, list);
-  opus_free(list);
+  oac_free(list);
   if (ret == 0) return 0;
   else return -1;
 }
@@ -288,7 +288,7 @@ static void fwgan_synthesize_impl(FWGANState *st, float *pcm, const float *lpc, 
   int period;
   float fwgan_features[NB_FEATURES-1];
   celt_assert(st->cont_initialized);
-  OPUS_COPY(fwgan_features, features, NB_FEATURES-2);
+  OAC_COPY(fwgan_features, features, NB_FEATURES-2);
   fwgan_features[NB_FEATURES-2] = features[NB_FEATURES-1]+.5;
 
   period = (int)floor(.1 + 50*features[NB_BANDS]+100);
@@ -308,12 +308,12 @@ void fwgan_synthesize(FWGANState *st, float *pcm, const float *features)
   compute_wlpc(lpc, features);
   fwgan_synthesize_impl(st, new_pcm, lpc, features);
   /* Handle buffering. */
-  OPUS_COPY(pcm, st->pcm_buf, FWGAN_FRAME_SIZE-SUBFRAME_SIZE);
-  OPUS_COPY(&pcm[FWGAN_FRAME_SIZE-SUBFRAME_SIZE], new_pcm, SUBFRAME_SIZE);
-  OPUS_COPY(st->pcm_buf, &new_pcm[SUBFRAME_SIZE], FWGAN_FRAME_SIZE-SUBFRAME_SIZE);
+  OAC_COPY(pcm, st->pcm_buf, FWGAN_FRAME_SIZE-SUBFRAME_SIZE);
+  OAC_COPY(&pcm[FWGAN_FRAME_SIZE-SUBFRAME_SIZE], new_pcm, SUBFRAME_SIZE);
+  OAC_COPY(st->pcm_buf, &new_pcm[SUBFRAME_SIZE], FWGAN_FRAME_SIZE-SUBFRAME_SIZE);
 }
 
-void fwgan_synthesize_int(FWGANState *st, opus_int16 *pcm, const float *features)
+void fwgan_synthesize_int(FWGANState *st, oac_int16 *pcm, const float *features)
 {
   int i;
   float fpcm[FWGAN_FRAME_SIZE];

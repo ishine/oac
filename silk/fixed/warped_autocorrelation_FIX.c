@@ -39,18 +39,18 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Autocorrelations for a warped frequency axis */
 #ifndef OVERRIDE_silk_warped_autocorrelation_FIX_c
 void silk_warped_autocorrelation_FIX_c(
-          opus_int32                *corr,                                  /* O    Result [order + 1]                                                          */
-          opus_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
-    const opus_int16                *input,                                 /* I    Input data to correlate                                                     */
-    const opus_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
-    const opus_int                  length,                                 /* I    Length of input                                                             */
-    const opus_int                  order                                   /* I    Correlation order (even)                                                    */
+          oac_int32                *corr,                                  /* O    Result [order + 1]                                                          */
+          oac_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
+    const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
+    const oac_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
+    const oac_int                  length,                                 /* I    Length of input                                                             */
+    const oac_int                  order                                   /* I    Correlation order (even)                                                    */
 )
 {
-    opus_int   n, i, lsh;
-    opus_int32 tmp1_QS, tmp2_QS;
-    opus_int32 state_QS[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
-    opus_int64 corr_QC[  MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+    oac_int   n, i, lsh;
+    oac_int32 tmp1_QS, tmp2_QS;
+    oac_int32 state_QS[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+    oac_int64 corr_QC[  MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
 
     /* Order must be even */
     celt_assert( ( order & 1 ) == 0 );
@@ -58,7 +58,7 @@ void silk_warped_autocorrelation_FIX_c(
 
     /* Loop over samples */
     for( n = 0; n < length; n++ ) {
-        tmp1_QS = silk_LSHIFT32( (opus_int32)input[ n ], QS );
+        tmp1_QS = silk_LSHIFT32( (oac_int32)input[ n ], QS );
         /* Loop over allpass sections */
         for( i = 0; i < order; i += 2 ) {
             /* Output of allpass section */
@@ -80,11 +80,11 @@ void silk_warped_autocorrelation_FIX_c(
     silk_assert( *scale >= -30 && *scale <= 12 );
     if( lsh >= 0 ) {
         for( i = 0; i < order + 1; i++ ) {
-            corr[ i ] = (opus_int32)silk_CHECK_FIT32( silk_LSHIFT64( corr_QC[ i ], lsh ) );
+            corr[ i ] = (oac_int32)silk_CHECK_FIT32( silk_LSHIFT64( corr_QC[ i ], lsh ) );
         }
     } else {
         for( i = 0; i < order + 1; i++ ) {
-            corr[ i ] = (opus_int32)silk_CHECK_FIT32( silk_RSHIFT64( corr_QC[ i ], -lsh ) );
+            corr[ i ] = (oac_int32)silk_CHECK_FIT32( silk_RSHIFT64( corr_QC[ i ], -lsh ) );
         }
     }
     silk_assert( corr_QC[ 0 ] >= 0 ); /* If breaking, decrease QC*/

@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include <arm_neon.h>
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
 # include <string.h>
 # include "stack_alloc.h"
 #endif
@@ -53,16 +53,16 @@ static inline void silk_biquad_alt_stride2_kernel( const int32x4_t A_L_s32x4, co
 }
 
 void silk_biquad_alt_stride2_neon(
-    const opus_int16            *in,                /* I     input signal                                               */
-    const opus_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
-    const opus_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
-    opus_int32                  *S,                 /* I/O   State vector [4]                                           */
-    opus_int16                  *out,               /* O     output signal                                              */
-    const opus_int32            len                 /* I     signal length (must be even)                               */
+    const oac_int16            *in,                /* I     input signal                                               */
+    const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
+    const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
+    oac_int32                  *S,                 /* I/O   State vector [4]                                           */
+    oac_int16                  *out,               /* O     output signal                                              */
+    const oac_int32            len                 /* I     signal length (must be even)                               */
 )
 {
     /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-    opus_int        k            = 0;
+    oac_int        k            = 0;
     const int32x2_t offset_s32x2 = vdup_n_s32( (1<<14) - 1 );
     const int32x4_t offset_s32x4 = vcombine_s32( offset_s32x2, offset_s32x2 );
     int16x4_t       in_s16x4  = vdup_n_s16( 0 );
@@ -71,11 +71,11 @@ void silk_biquad_alt_stride2_neon(
     int32x4_t       A_L_s32x4, A_U_s32x4, B_Q28_s32x4, S_s32x4, out32_Q14_s32x4;
     int32x2x2_t     t0_s32x2x2, t1_s32x2x2, t2_s32x2x2, S_s32x2x2;
 
-#ifdef OPUS_CHECK_ASM
-    opus_int32 S_c[ 4 ];
-    VARDECL( opus_int16, out_c );
+#ifdef OAC_CHECK_ASM
+    oac_int32 S_c[ 4 ];
+    VARDECL( oac_int16, out_c );
     SAVE_STACK;
-    ALLOC( out_c, 2 * len, opus_int16 );
+    ALLOC( out_c, 2 * len, oac_int16 );
 
     silk_memcpy( &S_c, S, sizeof( S_c ) );
     silk_biquad_alt_stride2_c( in, B_Q28, A_Q28, S_c, out_c, len );
@@ -118,8 +118,8 @@ void silk_biquad_alt_stride2_neon(
         /* Scale back to Q0 and saturate */
         out32_Q14_s32x4 = vcombine_s32( out32_Q14_s32x2[ 0 ], out32_Q14_s32x2[ 1 ] );                   /* out32_Q14_{0,1,2,3}                                                                                        */
         out32_Q14_s32x4 = vaddq_s32( out32_Q14_s32x4, offset_s32x4 );                                   /* out32_Q14_{0,1,2,3} + (1<<14) - 1                                                                          */
-        out_s16x4       = vqshrn_n_s32( out32_Q14_s32x4, 14 );                                          /* (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14_{0,1,2,3} + (1<<14) - 1, 14 ) )                             */
-        vst1_s16( &out[ 2 * k ], out_s16x4 );                                                           /* out[ 2 * k + {0,1,2,3} ] = (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14_{0,1,2,3} + (1<<14) - 1, 14 ) ); */
+        out_s16x4       = vqshrn_n_s32( out32_Q14_s32x4, 14 );                                          /* (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14_{0,1,2,3} + (1<<14) - 1, 14 ) )                             */
+        vst1_s16( &out[ 2 * k ], out_s16x4 );                                                           /* out[ 2 * k + {0,1,2,3} ] = (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14_{0,1,2,3} + (1<<14) - 1, 14 ) ); */
     }
 
     /* Process leftover. */
@@ -138,9 +138,9 @@ void silk_biquad_alt_stride2_neon(
         /* Scale back to Q0 and saturate */
         out32_Q14_s32x2 = vadd_s32( out32_Q14_s32x2, offset_s32x2 );                                    /* out32_Q14_{0,1} + (1<<14) - 1                                                              */
         out32_Q14_s32x4 = vcombine_s32( out32_Q14_s32x2, out32_Q14_s32x2 );                             /* out32_Q14_{0,1,0,1} + (1<<14) - 1                                                          */
-        out_s16x4       = vqshrn_n_s32( out32_Q14_s32x4, 14 );                                          /* (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14_{0,1,0,1} + (1<<14) - 1, 14 ) )             */
-        vst1_lane_s16( &out[ 2 * k + 0 ], out_s16x4, 0 );                                               /* out[ 2 * k + 0 ] = (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14_0 + (1<<14) - 1, 14 ) ); */
-        vst1_lane_s16( &out[ 2 * k + 1 ], out_s16x4, 1 );                                               /* out[ 2 * k + 1 ] = (opus_int16)silk_SAT16( silk_RSHIFT( out32_Q14_1 + (1<<14) - 1, 14 ) ); */
+        out_s16x4       = vqshrn_n_s32( out32_Q14_s32x4, 14 );                                          /* (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14_{0,1,0,1} + (1<<14) - 1, 14 ) )             */
+        vst1_lane_s16( &out[ 2 * k + 0 ], out_s16x4, 0 );                                               /* out[ 2 * k + 0 ] = (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14_0 + (1<<14) - 1, 14 ) ); */
+        vst1_lane_s16( &out[ 2 * k + 1 ], out_s16x4, 1 );                                               /* out[ 2 * k + 1 ] = (oac_int16)silk_SAT16( silk_RSHIFT( out32_Q14_1 + (1<<14) - 1, 14 ) ); */
     }
 
     vst1q_lane_s32( &S[ 0 ], S_s32x4, 0 );                                                              /* S[ 0 ] = S0; */
@@ -148,9 +148,9 @@ void silk_biquad_alt_stride2_neon(
     vst1q_lane_s32( &S[ 2 ], S_s32x4, 1 );                                                              /* S[ 2 ] = S1; */
     vst1q_lane_s32( &S[ 3 ], S_s32x4, 3 );                                                              /* S[ 3 ] = S3; */
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     silk_assert( !memcmp( S_c, S, sizeof( S_c ) ) );
-    silk_assert( !memcmp( out_c, out, 2 * len * sizeof( opus_int16 ) ) );
+    silk_assert( !memcmp( out_c, out, 2 * len * sizeof( oac_int16 ) ) );
     RESTORE_STACK;
 #endif
 }

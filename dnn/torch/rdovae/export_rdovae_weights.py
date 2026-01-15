@@ -92,10 +92,10 @@ def dump_statistical_model(writer, w, name, xmlout):
     p0_q8 = p0_q8[:, mask]
     N = r_q8.shape[-1]
 
-    print_vector(writer.source, quant_scales_q8, f'dred_{name}_quant_scales_q8', dtype='opus_uint8', static=False)
-    print_vector(writer.source, dead_zone_q8, f'dred_{name}_dead_zone_q8', dtype='opus_uint8', static=False)
-    print_vector(writer.source, r_q8, f'dred_{name}_r_q8', dtype='opus_uint8', static=False)
-    print_vector(writer.source, p0_q8, f'dred_{name}_p0_q8', dtype='opus_uint8', static=False)
+    print_vector(writer.source, quant_scales_q8, f'dred_{name}_quant_scales_q8', dtype='oac_uint8', static=False)
+    print_vector(writer.source, dead_zone_q8, f'dred_{name}_dead_zone_q8', dtype='oac_uint8', static=False)
+    print_vector(writer.source, r_q8, f'dred_{name}_r_q8', dtype='oac_uint8', static=False)
+    print_vector(writer.source, p0_q8, f'dred_{name}_p0_q8', dtype='oac_uint8', static=False)
 
     print_xml(xmlout, quant_scales_q8, "Scale", "scale", name)
     print_xml(xmlout, dead_zone_q8, "Dead zone", "deadzone", name)
@@ -104,10 +104,10 @@ def dump_statistical_model(writer, w, name, xmlout):
 
     writer.header.write(
 f"""
-extern const opus_uint8 dred_{name}_quant_scales_q8[{levels * N}];
-extern const opus_uint8 dred_{name}_dead_zone_q8[{levels * N}];
-extern const opus_uint8 dred_{name}_r_q8[{levels * N}];
-extern const opus_uint8 dred_{name}_p0_q8[{levels * N}];
+extern const oac_uint8 dred_{name}_quant_scales_q8[{levels * N}];
+extern const oac_uint8 dred_{name}_dead_zone_q8[{levels * N}];
+extern const oac_uint8 dred_{name}_r_q8[{levels * N}];
+extern const oac_uint8 dred_{name}_p0_q8[{levels * N}];
 
 """
     )
@@ -128,7 +128,7 @@ def c_export(args, model):
     for writer in [enc_writer, dec_writer]:
         writer.header.write(
 f"""
-#include "opus_types.h"
+#include "oac_types.h"
 
 #include "dred_rdovae.h"
 
@@ -139,7 +139,7 @@ f"""
 
     stats_writer.header.write(
 f"""
-#include "opus_types.h"
+#include "oac_types.h"
 
 #include "dred_rdovae_constants.h"
 

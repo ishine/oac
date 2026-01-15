@@ -44,12 +44,12 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Helper function for A2NLSF(..)                    */
 /* Transforms polynomials from cos(n*f) to cos(f)^n  */
-static OPUS_INLINE void silk_A2NLSF_trans_poly(
-    opus_int32          *p,                     /* I/O    Polynomial                                */
-    const opus_int      dd                      /* I      Polynomial order (= filter order / 2 )    */
+static OAC_INLINE void silk_A2NLSF_trans_poly(
+    oac_int32          *p,                     /* I/O    Polynomial                                */
+    const oac_int      dd                      /* I      Polynomial order (= filter order / 2 )    */
 )
 {
-    opus_int k, n;
+    oac_int k, n;
 
     for( k = 2; k <= dd; k++ ) {
         for( n = dd; n > k; n-- ) {
@@ -60,19 +60,19 @@ static OPUS_INLINE void silk_A2NLSF_trans_poly(
 }
 /* Helper function for A2NLSF(..) */
 /* Polynomial evaluation          */
-static OPUS_INLINE opus_int32 silk_A2NLSF_eval_poly( /* return the polynomial evaluation, in Q16     */
-    opus_int32          *p,                     /* I    Polynomial, Q16                         */
-    const opus_int32    x,                      /* I    Evaluation point, Q12                   */
-    const opus_int      dd                      /* I    Order                                   */
+static OAC_INLINE oac_int32 silk_A2NLSF_eval_poly( /* return the polynomial evaluation, in Q16     */
+    oac_int32          *p,                     /* I    Polynomial, Q16                         */
+    const oac_int32    x,                      /* I    Evaluation point, Q12                   */
+    const oac_int      dd                      /* I    Order                                   */
 )
 {
-    opus_int   n;
-    opus_int32 x_Q16, y32;
+    oac_int   n;
+    oac_int32 x_Q16, y32;
 
     y32 = p[ dd ];                                  /* Q16 */
     x_Q16 = silk_LSHIFT( x, 4 );
 
-    if ( opus_likely( 8 == dd ) )
+    if ( oac_likely( 8 == dd ) )
     {
         y32 = silk_SMLAWW( p[ 7 ], y32, x_Q16 );
         y32 = silk_SMLAWW( p[ 6 ], y32, x_Q16 );
@@ -92,14 +92,14 @@ static OPUS_INLINE opus_int32 silk_A2NLSF_eval_poly( /* return the polynomial ev
     return y32;
 }
 
-static OPUS_INLINE void silk_A2NLSF_init(
-     const opus_int32    *a_Q16,
-     opus_int32          *P,
-     opus_int32          *Q,
-     const opus_int      dd
+static OAC_INLINE void silk_A2NLSF_init(
+     const oac_int32    *a_Q16,
+     oac_int32          *P,
+     oac_int32          *Q,
+     const oac_int      dd
 )
 {
-    opus_int k;
+    oac_int k;
 
     /* Convert filter coefs to even and odd polynomials */
     P[dd] = silk_LSHIFT( 1, 16 );
@@ -125,19 +125,19 @@ static OPUS_INLINE void silk_A2NLSF_init(
 /* Compute Normalized Line Spectral Frequencies (NLSFs) from whitening filter coefficients      */
 /* If not all roots are found, the a_Q16 coefficients are bandwidth expanded until convergence. */
 void silk_A2NLSF(
-    opus_int16                  *NLSF,              /* O    Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d] */
-    opus_int32                  *a_Q16,             /* I/O  Monic whitening filter coefficients in Q16 [d]              */
-    const opus_int              d                   /* I    Filter order (must be even)                                 */
+    oac_int16                  *NLSF,              /* O    Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d] */
+    oac_int32                  *a_Q16,             /* I/O  Monic whitening filter coefficients in Q16 [d]              */
+    const oac_int              d                   /* I    Filter order (must be even)                                 */
 )
 {
-    opus_int   i, k, m, dd, root_ix, ffrac;
-    opus_int32 xlo, xhi, xmid;
-    opus_int32 ylo, yhi, ymid, thr;
-    opus_int32 nom, den;
-    opus_int32 P[ SILK_MAX_ORDER_LPC / 2 + 1 ];
-    opus_int32 Q[ SILK_MAX_ORDER_LPC / 2 + 1 ];
-    opus_int32 *PQ[ 2 ];
-    opus_int32 *p;
+    oac_int   i, k, m, dd, root_ix, ffrac;
+    oac_int32 xlo, xhi, xmid;
+    oac_int32 ylo, yhi, ymid, thr;
+    oac_int32 nom, den;
+    oac_int32 P[ SILK_MAX_ORDER_LPC / 2 + 1 ];
+    oac_int32 Q[ SILK_MAX_ORDER_LPC / 2 + 1 ];
+    oac_int32 *PQ[ 2 ];
+    oac_int32 *p;
 
     /* Store pointers to array */
     PQ[ 0 ] = P;
@@ -211,7 +211,7 @@ void silk_A2NLSF(
                 /* No risk of dividing by zero because abs(ylo - yhi) >= abs(ylo) >= 65536 */
                 ffrac += silk_DIV32( ylo, silk_RSHIFT( ylo - yhi, 8 - BIN_DIV_STEPS_A2NLSF_FIX ) );
             }
-            NLSF[ root_ix ] = (opus_int16)silk_min_32( silk_LSHIFT( (opus_int32)k, 8 ) + ffrac, silk_int16_MAX );
+            NLSF[ root_ix ] = (oac_int16)silk_min_32( silk_LSHIFT( (oac_int32)k, 8 ) + ffrac, silk_int16_MAX );
 
             silk_assert( NLSF[ root_ix ] >= 0 );
 
@@ -237,9 +237,9 @@ void silk_A2NLSF(
                 i++;
                 if( i > MAX_ITERATIONS_A2NLSF_FIX ) {
                     /* Set NLSFs to white spectrum and exit */
-                    NLSF[ 0 ] = (opus_int16)silk_DIV32_16( 1 << 15, d + 1 );
+                    NLSF[ 0 ] = (oac_int16)silk_DIV32_16( 1 << 15, d + 1 );
                     for( k = 1; k < d; k++ ) {
-                        NLSF[ k ] = (opus_int16)silk_ADD16( NLSF[ k-1 ], NLSF[ 0 ] );
+                        NLSF[ k ] = (oac_int16)silk_ADD16( NLSF[ k-1 ], NLSF[ 0 ] );
                     }
                     return;
                 }

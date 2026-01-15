@@ -32,10 +32,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mini_kfft.c"
 
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
-#define OPUS_PI (3.14159265F)
+#define OAC_PI (3.14159265F)
 
-#define OPUS_COSF(_x)        ((float)cos(_x))
-#define OPUS_SINF(_x)        ((float)sin(_x))
+#define OAC_COSF(_x)        ((float)cos(_x))
+#define OAC_SINF(_x)        ((float)sin(_x))
 
 static void *check_alloc(void *_ptr){
   if(_ptr==NULL){
@@ -45,11 +45,11 @@ static void *check_alloc(void *_ptr){
   return _ptr;
 }
 
-static void *opus_malloc(size_t _size){
+static void *oac_malloc(size_t _size){
   return check_alloc(malloc(_size));
 }
 
-static void *opus_realloc(void *_ptr,size_t _size){
+static void *oac_realloc(void *_ptr,size_t _size){
   return check_alloc(realloc(_ptr,_size));
 }
 
@@ -114,7 +114,7 @@ static size_t read_pcm(float **_samples,FILE *_fin,int _nchannels,
     if(nsamples+nread>csamples){
       do csamples=csamples<<1|1;
       while(nsamples+nread>csamples);
-      samples=(float *)opus_realloc(samples,
+      samples=(float *)oac_realloc(samples,
        _nchannels*csamples*sizeof(*samples));
     }
     if (format==FORMAT_S16_LE) {
@@ -156,7 +156,7 @@ static size_t read_pcm(float **_samples,FILE *_fin,int _nchannels,
       }
     nsamples+=nread;
   }
-  *_samples=(float *)opus_realloc(samples,
+  *_samples=(float *)oac_realloc(samples,
    _nchannels*nsamples*sizeof(*samples));
   biquad(*_samples, mem, *_samples, b_hp, a_hp, nsamples);
   return nsamples;
@@ -176,8 +176,8 @@ static void spectrum(float *_ps,const int *_bands, int _nbands,
   /* Blackman-Harris window. */
   for(xj=0;xj<_window_sz;xj++){
     double n = (xj+.5)/_window_sz;
-    window[xj]=0.35875 - 0.48829*cos(2*OPUS_PI*n)
-             + 0.14128*cos(4*OPUS_PI*n) - 0.01168*cos(6*OPUS_PI*n);
+    window[xj]=0.35875 - 0.48829*cos(2*OAC_PI*n)
+             + 0.14128*cos(4*OAC_PI*n) - 0.01168*cos(6*OAC_PI*n);
   }
   kfft = mini_kiss_fftr_alloc(_window_sz, 0, NULL, NULL);
   for(xi=0;xi<_nframes;xi++){
@@ -395,8 +395,8 @@ int compare_audio(int _argc,const char **_argv, const char *argv0){
     return EXIT_FAILURE;
   }
   nframes=(xlength-test_win_size+test_win_step)/test_win_step;
-  X=(float *)opus_malloc(nframes*nfreqs*nchannels*sizeof(*X));
-  Y=(float *)opus_malloc(nframes*yfreqs*nchannels*sizeof(*Y));
+  X=(float *)oac_malloc(nframes*nfreqs*nchannels*sizeof(*X));
+  Y=(float *)oac_malloc(nframes*yfreqs*nchannels*sizeof(*Y));
 
   for(xi=2;xi<nframes-2;xi++){
     float xcorr[PITCH_MAX+1], ycorr[PITCH_MAX+1];
@@ -493,7 +493,7 @@ int compare_audio(int _argc,const char **_argv, const char *argv0){
       w = 1.f/(BANDS[bi+1]-BANDS[bi]);
       for(xj=BANDS[bi];xj<BANDS[bi+1]&&xj<max_compare;xj++){
         float f, thresh;
-        f = xj*OPUS_PI/960;
+        f = xj*OAC_PI/960;
         /* Shape the lower threshold similar to 1/(1 - 0.85*z^-1)
            deemphasis filter at 48 kHz. */
         thresh = .1/(.15*.15 + f*f);

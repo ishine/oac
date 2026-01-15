@@ -38,13 +38,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 void silk_insertion_sort_decreasing_FLP(
     silk_float          *a,                 /* I/O  Unsorted / Sorted vector                                    */
-    opus_int            *idx,               /* O    Index vector for the sorted elements                        */
-    const opus_int      L,                  /* I    Vector length                                               */
-    const opus_int      K                   /* I    Number of correctly sorted positions                        */
+    oac_int            *idx,               /* O    Index vector for the sorted elements                        */
+    const oac_int      L,                  /* I    Vector length                                               */
+    const oac_int      K                   /* I    Number of correctly sorted positions                        */
 )
 {
     silk_float value;
-    opus_int   i, j;
+    oac_int   i, j;
 
     /* Safety checks */
     celt_assert( K >  0 );

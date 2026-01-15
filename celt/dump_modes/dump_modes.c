@@ -49,8 +49,8 @@
 #define WORD32 FLOAT
 #endif
 
-#define COEF16(x, a) ((opus_int16)SATURATE(((opus_int64)(x)+(1<<(a)>>1))>>(a), 32767))
-int opus_select_arch(void) {
+#define COEF16(x, a) ((oac_int16)SATURATE(((oac_int64)(x)+(1<<(a)>>1))>>(a), 32767))
+int oac_select_arch(void) {
    return 0;
 }
 
@@ -82,14 +82,14 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes)
       int standard, framerate;
 
       mdctSize = mode->shortMdctSize*mode->nbShortMdcts;
-      standard = (mode->Fs == 400*(opus_int32)mode->shortMdctSize);
+      standard = (mode->Fs == 400*(oac_int32)mode->shortMdctSize);
       framerate = mode->Fs/mode->shortMdctSize;
 
       if (!standard)
       {
          fprintf(file, "#ifndef DEF_EBANDS%d_%d\n", mode->Fs, mdctSize);
          fprintf(file, "#define DEF_EBANDS%d_%d\n", mode->Fs, mdctSize);
-         fprintf (file, "static const opus_int16 eBands%d_%d[%d] = {\n", mode->Fs, mdctSize, mode->nbEBands+2);
+         fprintf (file, "static const oac_int16 eBands%d_%d[%d] = {\n", mode->Fs, mdctSize, mode->nbEBands+2);
          for (j=0;j<mode->nbEBands+2;j++)
             fprintf (file, "%d, ", mode->eBands[j]);
          fprintf (file, "};\n");
@@ -124,7 +124,7 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes)
 
       fprintf(file, "#ifndef DEF_LOGN%d\n", framerate);
       fprintf(file, "#define DEF_LOGN%d\n", framerate);
-      fprintf (file, "static const opus_int16 logN%d[%d] = {\n", framerate, mode->nbEBands);
+      fprintf (file, "static const oac_int16 logN%d[%d] = {\n", framerate, mode->nbEBands);
       for (j=0;j<mode->nbEBands;j++)
          fprintf (file, "%d, ", mode->logN[j]);
       fprintf (file, "};\n");
@@ -134,7 +134,7 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes)
       /* Pulse cache */
       fprintf(file, "#ifndef DEF_PULSE_CACHE%d\n", mode->Fs/mdctSize);
       fprintf(file, "#define DEF_PULSE_CACHE%d\n", mode->Fs/mdctSize);
-      fprintf (file, "static const opus_int16 cache_index%d[%d] = {\n", mode->Fs/mdctSize, (mode->maxLM+2)*mode->nbEBands);
+      fprintf (file, "static const oac_int16 cache_index%d[%d] = {\n", mode->Fs/mdctSize, (mode->maxLM+2)*mode->nbEBands);
       for (j=0;j<mode->nbEBands*(mode->maxLM+2);j++)
          fprintf (file, "%d,%c", mode->cache.index[j],(j+16)%15==0?'\n':' ');
       fprintf (file, "};\n");
@@ -168,7 +168,7 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes)
       {
          fprintf(file, "#ifndef FFT_BITREV%d\n", mode->mdct.kfft[k]->nfft);
          fprintf(file, "#define FFT_BITREV%d\n", mode->mdct.kfft[k]->nfft);
-         fprintf (file, "static const opus_int16 fft_bitrev%d[%d] = {\n",
+         fprintf (file, "static const oac_int16 fft_bitrev%d[%d] = {\n",
                mode->mdct.kfft[k]->nfft, mode->mdct.kfft[k]->nfft);
          for (j=0;j<mode->mdct.kfft[k]->nfft;j++)
             fprintf (file, "%d,%c", mode->mdct.kfft[k]->bitrev[j],(j+16)%15==0?'\n':' ');
@@ -338,7 +338,7 @@ int main(int argc, char **argv)
       int Fs, frame;
       Fs      = atoi(argv[2*i+1]);
       frame   = atoi(argv[2*i+2]);
-      m[i] = opus_custom_mode_create(Fs, frame, NULL);
+      m[i] = oac_custom_mode_create(Fs, frame, NULL);
       if (m[i]==NULL)
       {
          fprintf(stderr,"Error creating mode with Fs=%s, frame_size=%s\n",
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
    dump_modes_arch_finalize();
 #endif
    for (i=0;i<nb;i++)
-      opus_custom_mode_destroy(m[i]);
+      oac_custom_mode_destroy(m[i]);
    free(m);
    return 0;
 }

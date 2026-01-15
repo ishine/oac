@@ -77,7 +77,7 @@ int fwgan_load_model(FWGANState *st, const unsigned char *data, int len);
 void fwgan_cont(FWGANState *st, const float *pcm0, const float *features0);
 
 void fwgan_synthesize(FWGANState *st, float *pcm, const float *features);
-void fwgan_synthesize_int(FWGANState *st, opus_int16 *pcm, const float *features);
+void fwgan_synthesize_int(FWGANState *st, oac_int16 *pcm, const float *features);
 
 
 #endif /* FWGAN_H */

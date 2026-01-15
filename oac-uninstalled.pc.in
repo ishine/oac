@@ -1,0 +1,12 @@
+# Oac codec reference implementation uninstalled pkg-config file
+
+libdir=${pcfiledir}/.libs
+includedir=${pcfiledir}
+
+Name: oac uninstalled
+Description: Oac IETF audio codec (not installed, @PC_BUILD@)
+Version: @VERSION@
+Requires:
+Conflicts:
+Libs: ${libdir}/liboac.la @LIBM@
+Cflags: -I${pcfiledir}/@top_srcdir@/include

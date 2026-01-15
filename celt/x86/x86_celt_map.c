@@ -35,16 +35,16 @@
 #include "pitch_sse.h"
 #include "vq.h"
 
-#if defined(OPUS_HAVE_RTCD)
+#if defined(OAC_HAVE_RTCD)
 
 # if defined(FIXED_POINT)
 
-#if defined(OPUS_X86_MAY_HAVE_SSE4_1) && !defined(OPUS_X86_PRESUME_SSE4_1)
+#if defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)
 
-void (*const CELT_FIR_IMPL[OPUS_ARCHMASK + 1])(
-         const opus_val16 *x,
-         const opus_val16 *num,
-         opus_val16       *y,
+void (*const CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
+         const oac_val16 *x,
+         const oac_val16 *num,
+         oac_val16       *y,
          int              N,
          int              ord,
          int              arch
@@ -56,10 +56,10 @@ void (*const CELT_FIR_IMPL[OPUS_ARCHMASK + 1])(
   MAY_HAVE_SSE4_1(celt_fir)  /* avx  */
 };
 
-void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
-         const opus_val16 *x,
-         const opus_val16 *y,
-         opus_val32       sum[4],
+void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+         const oac_val16 *x,
+         const oac_val16 *y,
+         oac_val32       sum[4],
          int              len
 ) = {
   xcorr_kernel_c,                /* non-sse */
@@ -71,12 +71,12 @@ void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
 
 #endif
 
-#if (defined(OPUS_X86_MAY_HAVE_SSE4_1) && !defined(OPUS_X86_PRESUME_SSE4_1)) ||  \
- (!defined(OPUS_X86_MAY_HAVE_SSE_4_1) && defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(OPUS_X86_PRESUME_SSE2))
+#if (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) ||  \
+ (!defined(OAC_X86_MAY_HAVE_SSE_4_1) && defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2))
 
-opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
-         const opus_val16 *x,
-         const opus_val16 *y,
+oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+         const oac_val16 *x,
+         const oac_val16 *y,
          int              N
 ) = {
   celt_inner_prod_c,                /* non-sse */
@@ -90,9 +90,9 @@ opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
 
 # else
 
-#if defined(OPUS_X86_MAY_HAVE_AVX2) && !defined(OPUS_X86_PRESUME_AVX2)
+#if defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)
 
-void (*const PITCH_XCORR_IMPL[OPUS_ARCHMASK + 1])(
+void (*const PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
          const float *_x,
          const float *_y,
          float *xcorr,
@@ -110,12 +110,12 @@ void (*const PITCH_XCORR_IMPL[OPUS_ARCHMASK + 1])(
 #endif
 
 
-#if defined(OPUS_X86_MAY_HAVE_SSE) && !defined(OPUS_X86_PRESUME_SSE)
+#if defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)
 
-void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
-         const opus_val16 *x,
-         const opus_val16 *y,
-         opus_val32       sum[4],
+void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+         const oac_val16 *x,
+         const oac_val16 *y,
+         oac_val32       sum[4],
          int              len
 ) = {
   xcorr_kernel_c,                /* non-sse */
@@ -125,9 +125,9 @@ void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
   MAY_HAVE_SSE(xcorr_kernel)
 };
 
-opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
-         const opus_val16 *x,
-         const opus_val16 *y,
+oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+         const oac_val16 *x,
+         const oac_val16 *y,
          int              N
 ) = {
   celt_inner_prod_c,                /* non-sse */
@@ -137,13 +137,13 @@ opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
   MAY_HAVE_SSE(celt_inner_prod)
 };
 
-void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
-                    const opus_val16 *x,
-                    const opus_val16 *y01,
-                    const opus_val16 *y02,
+void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+                    const oac_val16 *x,
+                    const oac_val16 *y01,
+                    const oac_val16 *y02,
                     int               N,
-                    opus_val32       *xy1,
-                    opus_val32       *xy2
+                    oac_val32       *xy1,
+                    oac_val32       *xy2
 ) = {
   dual_inner_prod_c,                /* non-sse */
   MAY_HAVE_SSE(dual_inner_prod),
@@ -152,14 +152,14 @@ void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
   MAY_HAVE_SSE(dual_inner_prod)
 };
 
-void (*const COMB_FILTER_CONST_IMPL[OPUS_ARCHMASK + 1])(
-              opus_val32 *y,
-              opus_val32 *x,
+void (*const COMB_FILTER_CONST_IMPL[OAC_ARCHMASK + 1])(
+              oac_val32 *y,
+              oac_val32 *x,
               int         T,
               int         N,
-              opus_val16  g10,
-              opus_val16  g11,
-              opus_val16  g12
+              oac_val16  g10,
+              oac_val16  g11,
+              oac_val16  g12
 ) = {
   comb_filter_const_c,                /* non-sse */
   MAY_HAVE_SSE(comb_filter_const),
@@ -171,8 +171,8 @@ void (*const COMB_FILTER_CONST_IMPL[OPUS_ARCHMASK + 1])(
 
 #endif
 
-#if defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(OPUS_X86_PRESUME_SSE2)
-opus_val16 (*const OP_PVQ_SEARCH_IMPL[OPUS_ARCHMASK + 1])(
+#if defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2)
+oac_val16 (*const OP_PVQ_SEARCH_IMPL[OAC_ARCHMASK + 1])(
       celt_norm *_X, int *iy, int K, int N, int arch
 ) = {
   op_pvq_search_c,                /* non-sse */

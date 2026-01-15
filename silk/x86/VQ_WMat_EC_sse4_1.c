@@ -37,25 +37,25 @@
 
 /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
 void silk_VQ_WMat_EC_sse4_1(
-    opus_int8                   *ind,                           /* O    index of best codebook vector               */
-    opus_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
-    opus_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
-    opus_int                    *gain_Q7,                       /* O    sum of absolute LTP coefficients            */
-    const opus_int32            *XX_Q17,                        /* I    correlation matrix                          */
-    const opus_int32            *xX_Q17,                        /* I    correlation vector                          */
-    const opus_int8             *cb_Q7,                         /* I    codebook                                    */
-    const opus_uint8            *cb_gain_Q7,                    /* I    codebook effective gain                     */
-    const opus_uint8            *cl_Q5,                         /* I    code length for each codebook vector        */
-    const opus_int              subfr_len,                      /* I    number of samples per subframe              */
-    const opus_int32            max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
-    const opus_int              L                               /* I    number of vectors in codebook               */
+    oac_int8                   *ind,                           /* O    index of best codebook vector               */
+    oac_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
+    oac_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
+    oac_int                    *gain_Q7,                       /* O    sum of absolute LTP coefficients            */
+    const oac_int32            *XX_Q17,                        /* I    correlation matrix                          */
+    const oac_int32            *xX_Q17,                        /* I    correlation vector                          */
+    const oac_int8             *cb_Q7,                         /* I    codebook                                    */
+    const oac_uint8            *cb_gain_Q7,                    /* I    codebook effective gain                     */
+    const oac_uint8            *cl_Q5,                         /* I    code length for each codebook vector        */
+    const oac_int              subfr_len,                      /* I    number of samples per subframe              */
+    const oac_int32            max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
+    const oac_int              L                               /* I    number of vectors in codebook               */
 )
 {
-    opus_int   k, gain_tmp_Q7;
-    const opus_int8 *cb_row_Q7;
-    opus_int32 neg_xX_Q24[ 5 ];
-    opus_int32 sum1_Q15, sum2_Q24;
-    opus_int32 bits_res_Q8, bits_tot_Q8;
+    oac_int   k, gain_tmp_Q7;
+    const oac_int8 *cb_row_Q7;
+    oac_int32 neg_xX_Q24[ 5 ];
+    oac_int32 sum1_Q15, sum2_Q24;
+    oac_int32 bits_res_Q8, bits_tot_Q8;
     __m128i v_XX_31_Q17, v_XX_42_Q17, v_cb_row_31_Q7, v_cb_row_42_Q7, v_acc1_Q24, v_acc2_Q24;
 
     /* Negate and convert to new Q domain */
@@ -75,7 +75,7 @@ void silk_VQ_WMat_EC_sse4_1(
     /* If things go really bad, at least *ind is set to something safe. */
     *ind = 0;
     for( k = 0; k < L; k++ ) {
-        opus_int32 penalty;
+        oac_int32 penalty;
         gain_tmp_Q7 = cb_gain_Q7[k];
         /* Weighted rate */
         /* Quantization error: 1 - 2 * xX * cb + cb' * XX * cb */
@@ -133,7 +133,7 @@ void silk_VQ_WMat_EC_sse4_1(
             if( bits_tot_Q8 <= *rate_dist_Q8 ) {
                 *rate_dist_Q8 = bits_tot_Q8;
                 *res_nrg_Q15 = sum1_Q15 + penalty;
-                *ind = (opus_int8)k;
+                *ind = (oac_int8)k;
                 *gain_Q7 = gain_tmp_Q7;
             }
         }
@@ -142,12 +142,12 @@ void silk_VQ_WMat_EC_sse4_1(
         cb_row_Q7 += LTP_ORDER;
     }
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     {
-        opus_int8  ind_c = 0;
-        opus_int32 res_nrg_Q15_c = 0;
-        opus_int32 rate_dist_Q8_c = 0;
-        opus_int   gain_Q7_c = 0;
+        oac_int8  ind_c = 0;
+        oac_int32 res_nrg_Q15_c = 0;
+        oac_int32 rate_dist_Q8_c = 0;
+        oac_int   gain_Q7_c = 0;
 
         silk_VQ_WMat_EC_c(
             &ind_c,

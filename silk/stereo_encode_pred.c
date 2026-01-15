@@ -34,10 +34,10 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Entropy code the mid/side quantization indices */
 void silk_stereo_encode_pred(
     ec_enc                      *psRangeEnc,                    /* I/O  Compressor data structure                   */
-    opus_int8                   ix[ 2 ][ 3 ]                    /* I    Quantization indices                        */
+    oac_int8                   ix[ 2 ][ 3 ]                    /* I    Quantization indices                        */
 )
 {
-    opus_int   n;
+    oac_int   n;
 
     /* Entropy coding */
     n = 5 * ix[ 0 ][ 2 ] + ix[ 1 ][ 2 ];
@@ -54,7 +54,7 @@ void silk_stereo_encode_pred(
 /* Entropy code the mid-only flag */
 void silk_stereo_encode_mid_only(
     ec_enc                      *psRangeEnc,                    /* I/O  Compressor data structure                   */
-    opus_int8                   mid_only_flag
+    oac_int8                   mid_only_flag
 )
 {
     /* Encode flag that only mid channel is coded */

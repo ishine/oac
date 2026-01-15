@@ -58,17 +58,17 @@ int dred_encoder_load_model(DREDEnc* enc, const void *data, int len)
     int ret;
     parse_weights(&list, data, len);
     ret = init_rdovaeenc(&enc->model, list);
-    opus_free(list);
+    oac_free(list);
     if (ret == 0) {
       ret = lpcnet_encoder_load_model(&enc->lpcnet_enc_state, data, len);
     }
     if (ret == 0) enc->loaded = 1;
-    return (ret == 0) ? OPUS_OK : OPUS_BAD_ARG;
+    return (ret == 0) ? OAC_OK : OAC_BAD_ARG;
 }
 
 void dred_encoder_reset(DREDEnc* enc)
 {
-    OPUS_CLEAR((char*)&enc->DREDENC_RESET_START,
+    OAC_CLEAR((char*)&enc->DREDENC_RESET_START,
               sizeof(DREDEnc)-
               ((char*)&enc->DREDENC_RESET_START - (char*)enc));
     enc->input_buffer_fill = DRED_SILK_ENCODER_DELAY;
@@ -76,7 +76,7 @@ void dred_encoder_reset(DREDEnc* enc)
     DRED_rdovae_init_encoder(&enc->rdovae_enc);
 }
 
-void dred_encoder_init(DREDEnc* enc, opus_int32 Fs, int channels)
+void dred_encoder_init(DREDEnc* enc, oac_int32 Fs, int channels)
 {
     enc->Fs = Fs;
     enc->channels = channels;
@@ -94,16 +94,16 @@ static void dred_process_frame(DREDEnc *enc, int arch)
 
     celt_assert(enc->loaded);
     /* shift latents buffer */
-    OPUS_MOVE(enc->latents_buffer + DRED_LATENT_DIM, enc->latents_buffer, (DRED_MAX_FRAMES - 1) * DRED_LATENT_DIM);
-    OPUS_MOVE(enc->state_buffer + DRED_STATE_DIM, enc->state_buffer, (DRED_MAX_FRAMES - 1) * DRED_STATE_DIM);
+    OAC_MOVE(enc->latents_buffer + DRED_LATENT_DIM, enc->latents_buffer, (DRED_MAX_FRAMES - 1) * DRED_LATENT_DIM);
+    OAC_MOVE(enc->state_buffer + DRED_STATE_DIM, enc->state_buffer, (DRED_MAX_FRAMES - 1) * DRED_STATE_DIM);
 
     /* calculate LPCNet features */
     lpcnet_compute_single_frame_features_float(&enc->lpcnet_enc_state, enc->input_buffer, feature_buffer, arch);
     lpcnet_compute_single_frame_features_float(&enc->lpcnet_enc_state, enc->input_buffer + DRED_FRAME_SIZE, feature_buffer + 36, arch);
 
     /* prepare input buffer (discard LPC coefficients) */
-    OPUS_COPY(input_buffer, feature_buffer, DRED_NUM_FEATURES);
-    OPUS_COPY(input_buffer + DRED_NUM_FEATURES, feature_buffer + 36, DRED_NUM_FEATURES);
+    OAC_COPY(input_buffer, feature_buffer, DRED_NUM_FEATURES);
+    OAC_COPY(input_buffer + DRED_NUM_FEATURES, feature_buffer + 36, DRED_NUM_FEATURES);
 
     /* run RDOVAE encoder */
     dred_rdovae_encode_dframe(&enc->rdovae_enc, &enc->model, enc->latents_buffer, enc->state_buffer, input_buffer, arch);
@@ -139,7 +139,7 @@ static void dred_convert_to_16k(DREDEnc *enc, const float *in, int in_len, float
     int i;
     int up;
     celt_assert(enc->channels*in_len <= MAX_DOWNMIX_BUFFER);
-    celt_assert(in_len * (opus_int32)16000 == out_len * enc->Fs);
+    celt_assert(in_len * (oac_int32)16000 == out_len * enc->Fs);
     switch(enc->Fs) {
         case 8000:
             up = 2;
@@ -165,14 +165,14 @@ static void dred_convert_to_16k(DREDEnc *enc, const float *in, int in_len, float
             celt_assert(0);
     }
     celt_assert(up*in_len <= MAX_DOWNMIX_BUFFER);
-    OPUS_CLEAR(downmix, up*in_len);
+    OAC_CLEAR(downmix, up*in_len);
     if (enc->channels == 1) {
         for (i=0;i<in_len;i++) downmix[up*i] = FLOAT2INT16(up*in[i])+VERY_SMALL;
     } else {
         for (i=0;i<in_len;i++) downmix[up*i] = FLOAT2INT16(.5*up*(in[2*i]+in[2*i+1]))+VERY_SMALL;
     }
     if (enc->Fs == 16000) {
-        OPUS_COPY(out, downmix, out_len);
+        OAC_COPY(out, downmix, out_len);
     } else if (enc->Fs == 48000 || enc->Fs == 24000) {
         /* ellip(7, .2, 70, 7750/24000) */
 
@@ -228,7 +228,7 @@ void dred_compute_latents(DREDEnc *enc, const float *pcm, int frame_size, int ex
             curr_offset16k += 320;
             dred_process_frame(enc, arch);
             enc->input_buffer_fill -= 2*DRED_FRAME_SIZE;
-            OPUS_MOVE(&enc->input_buffer[0], &enc->input_buffer[2*DRED_FRAME_SIZE], enc->input_buffer_fill);
+            OAC_MOVE(&enc->input_buffer[0], &enc->input_buffer[2*DRED_FRAME_SIZE], enc->input_buffer_fill);
             /* 15 ms (6*2.5 ms) is the ideal offset for DRED because it corresponds to our vocoder look-ahead. */
             if (enc->dred_offset < 6) {
                 enc->dred_offset += 8;
@@ -242,7 +242,7 @@ void dred_compute_latents(DREDEnc *enc, const float *pcm, int frame_size, int ex
     }
 }
 
-static void dred_encode_latents(ec_enc *enc, const float *x, const opus_uint8 *scale, const opus_uint8 *dzone, const opus_uint8 *r, const opus_uint8 *p0, int dim, int arch) {
+static void dred_encode_latents(ec_enc *enc, const float *x, const oac_uint8 *scale, const oac_uint8 *dzone, const oac_uint8 *r, const oac_uint8 *p0, int dim, int arch) {
     int i;
     int q[IMAX(DRED_LATENT_DIM,DRED_STATE_DIM)];
     float xq[IMAX(DRED_LATENT_DIM,DRED_STATE_DIM)];
@@ -294,7 +294,7 @@ int dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks, int
 
     latent_offset = enc->latent_offset;
     /* Delaying new DRED data when just out of silence because we already have the
-       main Opus payload for that frame. */
+       main Oac payload for that frame. */
     if (activity_mem[0] && enc->last_extra_dred_offset>0) {
         latent_offset = enc->last_extra_dred_offset;
         delayed_dred = 1;

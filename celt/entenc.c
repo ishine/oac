@@ -98,7 +98,7 @@ static void ec_enc_carry_out(ec_enc *_this,int _c){
   else _this->ext++;
 }
 
-static OPUS_INLINE void ec_enc_normalize(ec_enc *_this){
+static OAC_INLINE void ec_enc_normalize(ec_enc *_this){
   /*If the range is too small, output some bits and rescale it.*/
   while(_this->rng<=EC_CODE_BOT){
     ec_enc_carry_out(_this,(int)(_this->val>>EC_CODE_SHIFT));
@@ -109,7 +109,7 @@ static OPUS_INLINE void ec_enc_normalize(ec_enc *_this){
   }
 }
 
-void ec_enc_init(ec_enc *_this,unsigned char *_buf,opus_uint32 _size){
+void ec_enc_init(ec_enc *_this,unsigned char *_buf,oac_uint32 _size){
   _this->buf=_buf;
   _this->end_offs=0;
   _this->end_window=0;
@@ -126,7 +126,7 @@ void ec_enc_init(ec_enc *_this,unsigned char *_buf,opus_uint32 _size){
 }
 
 void ec_encode(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _ft){
-  opus_uint32 r;
+  oac_uint32 r;
   r=celt_udiv(_this->rng,_ft);
   if(_fl>0){
     _this->val+=_this->rng-IMUL32(r,(_ft-_fl));
@@ -137,7 +137,7 @@ void ec_encode(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _ft){
 }
 
 void ec_encode_bin(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _bits){
-  opus_uint32 r;
+  oac_uint32 r;
   r=_this->rng>>_bits;
   if(_fl>0){
     _this->val+=_this->rng-IMUL32(r,((1U<<_bits)-_fl));
@@ -149,9 +149,9 @@ void ec_encode_bin(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _bits){
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
 void ec_enc_bit_logp(ec_enc *_this,int _val,unsigned _logp){
-  opus_uint32 r;
-  opus_uint32 s;
-  opus_uint32 l;
+  oac_uint32 r;
+  oac_uint32 s;
+  oac_uint32 l;
   r=_this->rng;
   l=_this->val;
   s=r>>_logp;
@@ -162,7 +162,7 @@ void ec_enc_bit_logp(ec_enc *_this,int _val,unsigned _logp){
 }
 
 void ec_enc_icdf(ec_enc *_this,int _s,const unsigned char *_icdf,unsigned _ftb){
-  opus_uint32 r;
+  oac_uint32 r;
   r=_this->rng>>_ftb;
   if(_s>0){
     _this->val+=_this->rng-IMUL32(r,_icdf[_s-1]);
@@ -172,8 +172,8 @@ void ec_enc_icdf(ec_enc *_this,int _s,const unsigned char *_icdf,unsigned _ftb){
   ec_enc_normalize(_this);
 }
 
-void ec_enc_icdf16(ec_enc *_this,int _s,const opus_uint16 *_icdf,unsigned _ftb){
-  opus_uint32 r;
+void ec_enc_icdf16(ec_enc *_this,int _s,const oac_uint16 *_icdf,unsigned _ftb){
+  oac_uint32 r;
   r=_this->rng>>_ftb;
   if(_s>0){
     _this->val+=_this->rng-IMUL32(r,_icdf[_s-1]);
@@ -183,7 +183,7 @@ void ec_enc_icdf16(ec_enc *_this,int _s,const opus_uint16 *_icdf,unsigned _ftb){
   ec_enc_normalize(_this);
 }
 
-void ec_enc_uint(ec_enc *_this,opus_uint32 _fl,opus_uint32 _ft){
+void ec_enc_uint(ec_enc *_this,oac_uint32 _fl,oac_uint32 _ft){
   unsigned  ft;
   unsigned  fl;
   int       ftb;
@@ -196,12 +196,12 @@ void ec_enc_uint(ec_enc *_this,opus_uint32 _fl,opus_uint32 _ft){
     ft=(_ft>>ftb)+1;
     fl=(unsigned)(_fl>>ftb);
     ec_encode(_this,fl,fl+1,ft);
-    ec_enc_bits(_this,_fl&(((opus_uint32)1<<ftb)-1U),ftb);
+    ec_enc_bits(_this,_fl&(((oac_uint32)1<<ftb)-1U),ftb);
   }
   else ec_encode(_this,_fl,_fl+1,_ft+1);
 }
 
-void ec_enc_bits(ec_enc *_this,opus_uint32 _fl,unsigned _bits){
+void ec_enc_bits(ec_enc *_this,oac_uint32 _fl,unsigned _bits){
   ec_window window;
   int       used;
   window=_this->end_window;
@@ -238,16 +238,16 @@ void ec_enc_patch_initial_bits(ec_enc *_this,unsigned _val,unsigned _nbits){
   }
   else if(_this->rng<=(EC_CODE_TOP>>_nbits)){
     /*The renormalization loop has never been run.*/
-    _this->val=(_this->val&~((opus_uint32)mask<<EC_CODE_SHIFT))|
-     (opus_uint32)_val<<(EC_CODE_SHIFT+shift);
+    _this->val=(_this->val&~((oac_uint32)mask<<EC_CODE_SHIFT))|
+     (oac_uint32)_val<<(EC_CODE_SHIFT+shift);
   }
   /*The encoder hasn't even encoded _nbits of data yet.*/
   else _this->error=-1;
 }
 
-void ec_enc_shrink(ec_enc *_this,opus_uint32 _size){
+void ec_enc_shrink(ec_enc *_this,oac_uint32 _size){
   celt_assert(_this->offs+_this->end_offs<=_size);
-  OPUS_MOVE(_this->buf+_size-_this->end_offs,
+  OAC_MOVE(_this->buf+_size-_this->end_offs,
    _this->buf+_this->storage-_this->end_offs,_this->end_offs);
   _this->storage=_size;
 }
@@ -255,8 +255,8 @@ void ec_enc_shrink(ec_enc *_this,opus_uint32 _size){
 void ec_enc_done(ec_enc *_this){
   ec_window   window;
   int         used;
-  opus_uint32 msk;
-  opus_uint32 end;
+  oac_uint32 msk;
+  oac_uint32 end;
   int         l;
   /*We output the minimum number of bits that ensures that the symbols encoded
      thus far will be decoded correctly regardless of the bits that follow.*/
@@ -285,7 +285,7 @@ void ec_enc_done(ec_enc *_this){
   }
   /*Clear any excess space and add any remaining extra bits to the last byte.*/
   if(!_this->error){
-    if (_this->buf) OPUS_CLEAR(_this->buf+_this->offs,
+    if (_this->buf) OAC_CLEAR(_this->buf+_this->offs,
      _this->storage-_this->offs-_this->end_offs);
     if(used>0){
       /*If there's no range coder data at all, give up.*/

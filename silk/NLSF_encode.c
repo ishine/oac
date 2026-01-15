@@ -35,29 +35,29 @@ POSSIBILITY OF SUCH DAMAGE.
 /***********************/
 /* NLSF vector encoder */
 /***********************/
-opus_int32 silk_NLSF_encode(                                    /* O    Returns RD value in Q25                     */
-          opus_int8             *NLSFIndices,                   /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
-          opus_int16            *pNLSF_Q15,                     /* I/O  (Un)quantized NLSF vector [ LPC_ORDER ]     */
+oac_int32 silk_NLSF_encode(                                    /* O    Returns RD value in Q25                     */
+          oac_int8             *NLSFIndices,                   /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
+          oac_int16            *pNLSF_Q15,                     /* I/O  (Un)quantized NLSF vector [ LPC_ORDER ]     */
     const silk_NLSF_CB_struct   *psNLSF_CB,                     /* I    Codebook object                             */
-    const opus_int16            *pW_Q2,                         /* I    NLSF weight vector [ LPC_ORDER ]            */
-    const opus_int              NLSF_mu_Q20,                    /* I    Rate weight for the RD optimization         */
-    const opus_int              nSurvivors,                     /* I    Max survivors after first stage             */
-    const opus_int              signalType                      /* I    Signal type: 0/1/2                          */
+    const oac_int16            *pW_Q2,                         /* I    NLSF weight vector [ LPC_ORDER ]            */
+    const oac_int              NLSF_mu_Q20,                    /* I    Rate weight for the RD optimization         */
+    const oac_int              nSurvivors,                     /* I    Max survivors after first stage             */
+    const oac_int              signalType                      /* I    Signal type: 0/1/2                          */
 )
 {
-    opus_int         i, s, ind1, bestIndex, prob_Q8, bits_q7;
-    opus_int32       W_tmp_Q9, ret;
-    VARDECL( opus_int32, err_Q24 );
-    VARDECL( opus_int32, RD_Q25 );
-    VARDECL( opus_int, tempIndices1 );
-    VARDECL( opus_int8, tempIndices2 );
-    opus_int16       res_Q10[      MAX_LPC_ORDER ];
-    opus_int16       NLSF_tmp_Q15[ MAX_LPC_ORDER ];
-    opus_int16       W_adj_Q5[     MAX_LPC_ORDER ];
-    opus_uint8       pred_Q8[      MAX_LPC_ORDER ];
-    opus_int16       ec_ix[        MAX_LPC_ORDER ];
-    const opus_uint8 *pCB_element, *iCDF_ptr;
-    const opus_int16 *pCB_Wght_Q9;
+    oac_int         i, s, ind1, bestIndex, prob_Q8, bits_q7;
+    oac_int32       W_tmp_Q9, ret;
+    VARDECL( oac_int32, err_Q24 );
+    VARDECL( oac_int32, RD_Q25 );
+    VARDECL( oac_int, tempIndices1 );
+    VARDECL( oac_int8, tempIndices2 );
+    oac_int16       res_Q10[      MAX_LPC_ORDER ];
+    oac_int16       NLSF_tmp_Q15[ MAX_LPC_ORDER ];
+    oac_int16       W_adj_Q5[     MAX_LPC_ORDER ];
+    oac_uint8       pred_Q8[      MAX_LPC_ORDER ];
+    oac_int16       ec_ix[        MAX_LPC_ORDER ];
+    const oac_uint8 *pCB_element, *iCDF_ptr;
+    const oac_int16 *pCB_Wght_Q9;
     SAVE_STACK;
 
     celt_assert( signalType >= 0 && signalType <= 2 );
@@ -67,15 +67,15 @@ opus_int32 silk_NLSF_encode(                                    /* O    Returns 
     silk_NLSF_stabilize( pNLSF_Q15, psNLSF_CB->deltaMin_Q15, psNLSF_CB->order );
 
     /* First stage: VQ */
-    ALLOC( err_Q24, psNLSF_CB->nVectors, opus_int32 );
+    ALLOC( err_Q24, psNLSF_CB->nVectors, oac_int32 );
     silk_NLSF_VQ( err_Q24, pNLSF_Q15, psNLSF_CB->CB1_NLSF_Q8, psNLSF_CB->CB1_Wght_Q9, psNLSF_CB->nVectors, psNLSF_CB->order );
 
     /* Sort the quantization errors */
-    ALLOC( tempIndices1, nSurvivors, opus_int );
+    ALLOC( tempIndices1, nSurvivors, oac_int );
     silk_insertion_sort_increasing( err_Q24, tempIndices1, psNLSF_CB->nVectors, nSurvivors );
 
-    ALLOC( RD_Q25, nSurvivors, opus_int32 );
-    ALLOC( tempIndices2, nSurvivors * MAX_LPC_ORDER, opus_int8 );
+    ALLOC( RD_Q25, nSurvivors, oac_int32 );
+    ALLOC( tempIndices2, nSurvivors * MAX_LPC_ORDER, oac_int8 );
 
     /* Loop over survivors */
     for( s = 0; s < nSurvivors; s++ ) {
@@ -85,10 +85,10 @@ opus_int32 silk_NLSF_encode(                                    /* O    Returns 
         pCB_element = &psNLSF_CB->CB1_NLSF_Q8[ ind1 * psNLSF_CB->order ];
         pCB_Wght_Q9 = &psNLSF_CB->CB1_Wght_Q9[ ind1 * psNLSF_CB->order ];
         for( i = 0; i < psNLSF_CB->order; i++ ) {
-            NLSF_tmp_Q15[ i ] = silk_LSHIFT16( (opus_int16)pCB_element[ i ], 7 );
+            NLSF_tmp_Q15[ i ] = silk_LSHIFT16( (oac_int16)pCB_element[ i ], 7 );
             W_tmp_Q9 = pCB_Wght_Q9[ i ];
-            res_Q10[ i ] = (opus_int16)silk_RSHIFT( silk_SMULBB( pNLSF_Q15[ i ] - NLSF_tmp_Q15[ i ], W_tmp_Q9 ), 14 );
-            W_adj_Q5[ i ] = silk_DIV32_varQ( (opus_int32)pW_Q2[ i ], silk_SMULBB( W_tmp_Q9, W_tmp_Q9 ), 21 );
+            res_Q10[ i ] = (oac_int16)silk_RSHIFT( silk_SMULBB( pNLSF_Q15[ i ] - NLSF_tmp_Q15[ i ], W_tmp_Q9 ), 14 );
+            W_adj_Q5[ i ] = silk_DIV32_varQ( (oac_int32)pW_Q2[ i ], silk_SMULBB( W_tmp_Q9, W_tmp_Q9 ), 21 );
         }
 
         /* Unpack entropy table indices and predictor for current CB1 index */
@@ -112,8 +112,8 @@ opus_int32 silk_NLSF_encode(                                    /* O    Returns 
     /* Find the lowest rate-distortion error */
     silk_insertion_sort_increasing( RD_Q25, &bestIndex, nSurvivors, 1 );
 
-    NLSFIndices[ 0 ] = (opus_int8)tempIndices1[ bestIndex ];
-    silk_memcpy( &NLSFIndices[ 1 ], &tempIndices2[ bestIndex * MAX_LPC_ORDER ], psNLSF_CB->order * sizeof( opus_int8 ) );
+    NLSFIndices[ 0 ] = (oac_int8)tempIndices1[ bestIndex ];
+    silk_memcpy( &NLSFIndices[ 1 ], &tempIndices2[ bestIndex * MAX_LPC_ORDER ], psNLSF_CB->order * sizeof( oac_int8 ) );
 
     /* Decode */
     silk_NLSF_decode( pNLSF_Q15, NLSFIndices, psNLSF_CB );

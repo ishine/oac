@@ -50,11 +50,11 @@ int main(void) {
 
   fprintf(file, "#include \"kiss_fft.h\"\n\n");
 
-  kfft = opus_fft_alloc_twiddles(WINDOW_SIZE, NULL, NULL, NULL, 0);
+  kfft = oac_fft_alloc_twiddles(WINDOW_SIZE, NULL, NULL, NULL, 0);
 
   fprintf(file, "static const arch_fft_state arch_fft = {0, NULL};\n\n");
 
-  fprintf (file, "static const opus_int16 fft_bitrev[%d] = {\n", kfft->nfft);
+  fprintf (file, "static const oac_int16 fft_bitrev[%d] = {\n", kfft->nfft);
   for (i=0;i<kfft->nfft;i++)
     fprintf (file, "%d,%c", kfft->bitrev[i],(i+16)%15==0?'\n':' ');
   fprintf (file, "};\n\n");

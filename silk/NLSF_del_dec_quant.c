@@ -32,33 +32,33 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 
 /* Delayed-decision quantizer for NLSF residuals */
-opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns RD value in Q25                     */
-    opus_int8                   indices[],                      /* O    Quantization indices [ order ]              */
-    const opus_int16            x_Q10[],                        /* I    Input [ order ]                             */
-    const opus_int16            w_Q5[],                         /* I    Weights [ order ]                           */
-    const opus_uint8            pred_coef_Q8[],                 /* I    Backward predictor coefs [ order ]          */
-    const opus_int16            ec_ix[],                        /* I    Indices to entropy coding tables [ order ]  */
-    const opus_uint8            ec_rates_Q5[],                  /* I    Rates []                                    */
-    const opus_int              quant_step_size_Q16,            /* I    Quantization step size                      */
-    const opus_int16            inv_quant_step_size_Q6,         /* I    Inverse quantization step size              */
-    const opus_int32            mu_Q20,                         /* I    R/D tradeoff                                */
-    const opus_int16            order                           /* I    Number of input values                      */
+oac_int32 silk_NLSF_del_dec_quant(                             /* O    Returns RD value in Q25                     */
+    oac_int8                   indices[],                      /* O    Quantization indices [ order ]              */
+    const oac_int16            x_Q10[],                        /* I    Input [ order ]                             */
+    const oac_int16            w_Q5[],                         /* I    Weights [ order ]                           */
+    const oac_uint8            pred_coef_Q8[],                 /* I    Backward predictor coefs [ order ]          */
+    const oac_int16            ec_ix[],                        /* I    Indices to entropy coding tables [ order ]  */
+    const oac_uint8            ec_rates_Q5[],                  /* I    Rates []                                    */
+    const oac_int              quant_step_size_Q16,            /* I    Quantization step size                      */
+    const oac_int16            inv_quant_step_size_Q6,         /* I    Inverse quantization step size              */
+    const oac_int32            mu_Q20,                         /* I    R/D tradeoff                                */
+    const oac_int16            order                           /* I    Number of input values                      */
 )
 {
-    opus_int         i, j, nStates, ind_tmp, ind_min_max, ind_max_min, in_Q10, res_Q10;
-    opus_int         pred_Q10, diff_Q10, rate0_Q5, rate1_Q5;
-    opus_int16       out0_Q10, out1_Q10;
-    opus_int32       RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25;
-    opus_int         ind_sort[         NLSF_QUANT_DEL_DEC_STATES ];
-    opus_int8        ind[              NLSF_QUANT_DEL_DEC_STATES ][ MAX_LPC_ORDER ];
-    opus_int16       prev_out_Q10[ 2 * NLSF_QUANT_DEL_DEC_STATES ];
-    opus_int32       RD_Q25[       2 * NLSF_QUANT_DEL_DEC_STATES ];
-    opus_int32       RD_min_Q25[       NLSF_QUANT_DEL_DEC_STATES ];
-    opus_int32       RD_max_Q25[       NLSF_QUANT_DEL_DEC_STATES ];
-    const opus_uint8 *rates_Q5;
+    oac_int         i, j, nStates, ind_tmp, ind_min_max, ind_max_min, in_Q10, res_Q10;
+    oac_int         pred_Q10, diff_Q10, rate0_Q5, rate1_Q5;
+    oac_int16       out0_Q10, out1_Q10;
+    oac_int32       RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25;
+    oac_int         ind_sort[         NLSF_QUANT_DEL_DEC_STATES ];
+    oac_int8        ind[              NLSF_QUANT_DEL_DEC_STATES ][ MAX_LPC_ORDER ];
+    oac_int16       prev_out_Q10[ 2 * NLSF_QUANT_DEL_DEC_STATES ];
+    oac_int32       RD_Q25[       2 * NLSF_QUANT_DEL_DEC_STATES ];
+    oac_int32       RD_min_Q25[       NLSF_QUANT_DEL_DEC_STATES ];
+    oac_int32       RD_max_Q25[       NLSF_QUANT_DEL_DEC_STATES ];
+    const oac_uint8 *rates_Q5;
 
-    opus_int out0_Q10_table[2 * NLSF_QUANT_MAX_AMPLITUDE_EXT];
-    opus_int out1_Q10_table[2 * NLSF_QUANT_MAX_AMPLITUDE_EXT];
+    oac_int out0_Q10_table[2 * NLSF_QUANT_MAX_AMPLITUDE_EXT];
+    oac_int out1_Q10_table[2 * NLSF_QUANT_MAX_AMPLITUDE_EXT];
 
     for (i = -NLSF_QUANT_MAX_AMPLITUDE_EXT; i <= NLSF_QUANT_MAX_AMPLITUDE_EXT-1; i++)
     {
@@ -88,11 +88,11 @@ opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns 
         rates_Q5 = &ec_rates_Q5[ ec_ix[ i ] ];
         in_Q10 = x_Q10[ i ];
         for( j = 0; j < nStates; j++ ) {
-            pred_Q10 = silk_RSHIFT( silk_SMULBB( (opus_int16)pred_coef_Q8[ i ], prev_out_Q10[ j ] ), 8 );
+            pred_Q10 = silk_RSHIFT( silk_SMULBB( (oac_int16)pred_coef_Q8[ i ], prev_out_Q10[ j ] ), 8 );
             res_Q10  = silk_SUB16( in_Q10, pred_Q10 );
             ind_tmp  = silk_RSHIFT( silk_SMULBB( inv_quant_step_size_Q6, res_Q10 ), 16 );
             ind_tmp  = silk_LIMIT( ind_tmp, -NLSF_QUANT_MAX_AMPLITUDE_EXT, NLSF_QUANT_MAX_AMPLITUDE_EXT-1 );
-            ind[ j ][ i ] = (opus_int8)ind_tmp;
+            ind[ j ][ i ] = (oac_int8)ind_tmp;
 
             /* compute outputs for ind_tmp and ind_tmp + 1 */
             out0_Q10 = out0_Q10_table[ ind_tmp + NLSF_QUANT_MAX_AMPLITUDE_EXT ];
@@ -185,7 +185,7 @@ opus_int32 silk_NLSF_del_dec_quant(                             /* O    Returns 
                 prev_out_Q10[ ind_max_min ] = prev_out_Q10[ ind_min_max + NLSF_QUANT_DEL_DEC_STATES ];
                 RD_min_Q25[   ind_max_min ] = 0;
                 RD_max_Q25[   ind_min_max ] = silk_int32_MAX;
-                silk_memcpy( ind[ ind_max_min ], ind[ ind_min_max ], MAX_LPC_ORDER * sizeof( opus_int8 ) );
+                silk_memcpy( ind[ ind_max_min ], ind[ ind_min_max ], MAX_LPC_ORDER * sizeof( oac_int8 ) );
             }
             /* increment index if it comes from the upper half */
             for( j = 0; j < NLSF_QUANT_DEL_DEC_STATES; j++ ) {

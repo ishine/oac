@@ -65,7 +65,7 @@ void write_weights(const WeightArray *list, FILE *fout)
     h.type = list[i].type;
     h.size = list[i].size;
     h.block_size = (h.size+WEIGHT_BLOCK_SIZE-1)/WEIGHT_BLOCK_SIZE*WEIGHT_BLOCK_SIZE;
-    OPUS_CLEAR(h.name, sizeof(h.name));
+    OAC_CLEAR(h.name, sizeof(h.name));
     strncpy(h.name, list[i].name, sizeof(h.name));
     h.name[sizeof(h.name)-1] = 0;
     celt_assert(sizeof(h) == WEIGHT_BLOCK_SIZE);

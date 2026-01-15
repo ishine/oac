@@ -34,13 +34,13 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Chirp (bandwidth expand) LP AR filter.
    This logic is reused in _celt_lpc(). Any bug fixes should also be applied there. */
 void silk_bwexpander_32(
-    opus_int32                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
-    const opus_int              d,                  /* I    Length of ar                                                */
-    opus_int32                  chirp_Q16           /* I    Chirp factor in Q16                                         */
+    oac_int32                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
+    const oac_int              d,                  /* I    Length of ar                                                */
+    oac_int32                  chirp_Q16           /* I    Chirp factor in Q16                                         */
 )
 {
-    opus_int   i;
-    opus_int32 chirp_minus_one_Q16 = chirp_Q16 - 65536;
+    oac_int   i;
+    oac_int32 chirp_minus_one_Q16 = chirp_Q16 - 65536;
 
     for( i = 0; i < d - 1; i++ ) {
         ar[ i ]    = silk_SMULWW( chirp_Q16, ar[ i ] );

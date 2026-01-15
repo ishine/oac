@@ -37,7 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Noise shaping analysis state */
 /********************************/
 typedef struct {
-    opus_int8                   LastGainIndex;
+    oac_int8                   LastGainIndex;
     silk_float                  HarmShapeGain_smth;
     silk_float                  Tilt_smth;
 } silk_shape_state_FLP;
@@ -63,7 +63,7 @@ typedef struct {
     silk_float                  PredCoef[ 2 ][ MAX_LPC_ORDER ];     /* holds interpolated and final coefficients */
     silk_float                  LTPCoef[LTP_ORDER * MAX_NB_SUBFR];
     silk_float                  LTP_scale;
-    opus_int                    pitchL[ MAX_NB_SUBFR ];
+    oac_int                    pitchL[ MAX_NB_SUBFR ];
 
     /* Noise shaping parameters */
     silk_float                  AR[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
@@ -81,8 +81,8 @@ typedef struct {
     silk_float                  ResNrg[ MAX_NB_SUBFR ];             /* Residual energy per subframe */
 
     /* Parameters for CBR mode */
-    opus_int32                  GainsUnq_Q16[ MAX_NB_SUBFR ];
-    opus_int8                   lastGainIndexPrev;
+    oac_int32                  GainsUnq_Q16[ MAX_NB_SUBFR ];
+    oac_int8                   lastGainIndexPrev;
 } silk_encoder_control_FLP;
 
 /************************/
@@ -90,14 +90,14 @@ typedef struct {
 /************************/
 typedef struct {
     stereo_enc_state            sStereo;
-    opus_int32                  nBitsUsedLBRR;
-    opus_int32                  nBitsExceeded;
-    opus_int                    nChannelsAPI;
-    opus_int                    nChannelsInternal;
-    opus_int                    nPrevChannelsInternal;
-    opus_int                    timeSinceSwitchAllowed_ms;
-    opus_int                    allowBandwidthSwitch;
-    opus_int                    prev_decode_only_middle;
+    oac_int32                  nBitsUsedLBRR;
+    oac_int32                  nBitsExceeded;
+    oac_int                    nChannelsAPI;
+    oac_int                    nChannelsInternal;
+    oac_int                    nPrevChannelsInternal;
+    oac_int                    timeSinceSwitchAllowed_ms;
+    oac_int                    allowBandwidthSwitch;
+    oac_int                    prev_decode_only_middle;
     /* This needs to be last so we can skip the second state for mono. */
     silk_encoder_state_FLP      state_Fxx[ ENCODER_NUM_CHANNELS ];
 } silk_encoder;

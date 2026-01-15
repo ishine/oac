@@ -11,7 +11,7 @@ tests = [
 
 foreach test_name : tests
   exe = executable(test_name, '@0@.c'.format(test_name),
-                   include_directories : opus_includes,
+                   include_directories : oac_includes,
                    link_with : [celt_lib, celt_static_libs],
                    dependencies : libm,
                    install : false)

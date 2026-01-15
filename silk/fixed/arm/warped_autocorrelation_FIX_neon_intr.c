@@ -30,13 +30,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include <arm_neon.h>
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
 # include <string.h>
 #endif
 #include "stack_alloc.h"
 #include "main_FIX.h"
 
-static OPUS_INLINE void calc_corr( const opus_int32 *const input_QS, opus_int64 *const corr_QC, const opus_int offset, const int32x4_t state_QS_s32x4 )
+static OAC_INLINE void calc_corr( const oac_int32 *const input_QS, oac_int64 *const corr_QC, const oac_int offset, const int32x4_t state_QS_s32x4 )
 {
     int64x2_t corr_QC_s64x2[ 2 ], t_s64x2[ 2 ];
     const int32x4_t input_QS_s32x4 = vld1q_s32( input_QS + offset );
@@ -50,7 +50,7 @@ static OPUS_INLINE void calc_corr( const opus_int32 *const input_QS, opus_int64 
     vst1q_s64( corr_QC + offset + 2, corr_QC_s64x2[ 1 ] );
 }
 
-static OPUS_INLINE int32x4_t calc_state( const int32x4_t state_QS0_s32x4, const int32x4_t state_QS0_1_s32x4, const int32x4_t state_QS1_1_s32x4, const int32x4_t warping_Q16_s32x4 )
+static OAC_INLINE int32x4_t calc_state( const int32x4_t state_QS0_s32x4, const int32x4_t state_QS0_1_s32x4, const int32x4_t state_QS1_1_s32x4, const int32x4_t warping_Q16_s32x4 )
 {
     int32x4_t t_s32x4 = vsubq_s32( state_QS0_s32x4, state_QS0_1_s32x4 );
     t_s32x4 = vqdmulhq_s32( t_s32x4, warping_Q16_s32x4 );
@@ -58,26 +58,26 @@ static OPUS_INLINE int32x4_t calc_state( const int32x4_t state_QS0_s32x4, const 
 }
 
 void silk_warped_autocorrelation_FIX_neon(
-          opus_int32                *corr,                                  /* O    Result [order + 1]                                                          */
-          opus_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
-    const opus_int16                *input,                                 /* I    Input data to correlate                                                     */
-    const opus_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
-    const opus_int                  length,                                 /* I    Length of input                                                             */
-    const opus_int                  order                                   /* I    Correlation order (even)                                                    */
+          oac_int32                *corr,                                  /* O    Result [order + 1]                                                          */
+          oac_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
+    const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
+    const oac_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
+    const oac_int                  length,                                 /* I    Length of input                                                             */
+    const oac_int                  order                                   /* I    Correlation order (even)                                                    */
 )
 {
     if( ( MAX_SHAPE_LPC_ORDER > 24 ) || ( order < 6 ) ) {
         silk_warped_autocorrelation_FIX_c( corr, scale, input, warping_Q16, length, order );
     } else {
-        opus_int       n, i, lsh;
-        opus_int64     corr_QC[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 }; /* In reverse order */
-        opus_int64     corr_QC_orderT;
+        oac_int       n, i, lsh;
+        oac_int64     corr_QC[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 }; /* In reverse order */
+        oac_int64     corr_QC_orderT;
         int64x2_t      lsh_s64x2;
-        const opus_int orderT = ( order + 3 ) & ~3;
-        opus_int64     *corr_QCT;
-        opus_int32     *input_QS;
-        VARDECL( opus_int32, input_QST );
-        VARDECL( opus_int32, state );
+        const oac_int orderT = ( order + 3 ) & ~3;
+        oac_int64     *corr_QCT;
+        oac_int32     *input_QS;
+        VARDECL( oac_int32, input_QST );
+        VARDECL( oac_int32, state );
         SAVE_STACK;
 
         /* Order must be even */
@@ -86,7 +86,7 @@ void silk_warped_autocorrelation_FIX_neon(
 
         /* The additional +4 is to ensure a later vld1q_s32 call does not overflow.               */
         /* Strictly, only +3 is needed but +4 simplifies initialization using the 4x32 neon load. */
-        ALLOC( input_QST, length + 2 * MAX_SHAPE_LPC_ORDER + 4, opus_int32 );
+        ALLOC( input_QST, length + 2 * MAX_SHAPE_LPC_ORDER + 4, oac_int32 );
 
         input_QS = input_QST;
         /* input_QS has zero paddings in the beginning and end. */
@@ -110,7 +110,7 @@ void silk_warped_autocorrelation_FIX_neon(
             vst1q_s32( input_QS + 4, vshll_n_s16( vget_high_s16( t0_s16x4 ), QS ) );
         }
         for( ; n < length; n++, input_QS++ ) {
-            input_QS[ 0 ] = silk_LSHIFT32( (opus_int32)input[ n ], QS );
+            input_QS[ 0 ] = silk_LSHIFT32( (oac_int32)input[ n ], QS );
         }
         vst1q_s32( input_QS, vdupq_n_s32( 0 ) );
         input_QS += 4;
@@ -134,8 +134,8 @@ void silk_warped_autocorrelation_FIX_neon(
         /* Keep the C code here to help understand the intrinsics optimization. */
         /*
         {
-            opus_int32 state_QS[ 2 ][ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
-            opus_int32 *state_QST[ 3 ];
+            oac_int32 state_QS[ 2 ][ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+            oac_int32 *state_QST[ 3 ];
             state_QST[ 0 ] = state_QS[ 0 ];
             state_QST[ 1 ] = state_QS[ 1 ];
             for( n = 0; n < length + order; n++, input_QS++ ) {
@@ -153,12 +153,12 @@ void silk_warped_autocorrelation_FIX_neon(
 
         {
             const int32x4_t warping_Q16_s32x4 = vdupq_n_s32( warping_Q16 << 15 );
-            const opus_int32 *in = input_QS + orderT;
-            opus_int o = orderT;
+            const oac_int32 *in = input_QS + orderT;
+            oac_int o = orderT;
             int32x4_t state_QS_s32x4[ 3 ][ 2 ];
 
             /* The additional +4 is to ensure a later vld1q_s32 call does not overflow. */
-            ALLOC( state, length + order + 4, opus_int32 );
+            ALLOC( state, length + order + 4, oac_int32 );
             state_QS_s32x4[ 2 ][ 1 ] = vdupq_n_s32( 0 );
 
             /* Calculate 8 taps of all inputs in each loop. */
@@ -184,7 +184,7 @@ void silk_warped_autocorrelation_FIX_neon(
 
             if( o ) {
                 /* Calculate the last 4 taps of all inputs. */
-                opus_int32 *stateT = state;
+                oac_int32 *stateT = state;
                 silk_assert( o == 4 );
                 state_QS_s32x4[ 0 ][ 0 ] = state_QS_s32x4[ 1 ][ 0 ] = vdupq_n_s32( 0 );
                 n = length + order;
@@ -202,7 +202,7 @@ void silk_warped_autocorrelation_FIX_neon(
         }
 
         {
-            const opus_int16 *inputT = input;
+            const oac_int16 *inputT = input;
             int32x4_t t_s32x4;
             int64x1_t t_s64x1;
             int64x2_t t_s64x2 = vdupq_n_s64( 0 );
@@ -242,21 +242,21 @@ void silk_warped_autocorrelation_FIX_neon(
         }
         if( lsh >= 0 ) {
             for( ; i < order + 1; i++ ) {
-                corr[ order - i ] = (opus_int32)silk_CHECK_FIT32( silk_LSHIFT64( corr_QCT[ i ], lsh ) );
+                corr[ order - i ] = (oac_int32)silk_CHECK_FIT32( silk_LSHIFT64( corr_QCT[ i ], lsh ) );
             }
         } else {
             for( ; i < order + 1; i++ ) {
-                corr[ order - i ] = (opus_int32)silk_CHECK_FIT32( silk_RSHIFT64( corr_QCT[ i ], -lsh ) );
+                corr[ order - i ] = (oac_int32)silk_CHECK_FIT32( silk_RSHIFT64( corr_QCT[ i ], -lsh ) );
             }
         }
         silk_assert( corr_QCT[ order ] >= 0 ); /* If breaking, decrease QC*/
         RESTORE_STACK;
     }
 
-#ifdef OPUS_CHECK_ASM
+#ifdef OAC_CHECK_ASM
     {
-        opus_int32 corr_c[ MAX_SHAPE_LPC_ORDER + 1 ];
-        opus_int   scale_c;
+        oac_int32 corr_c[ MAX_SHAPE_LPC_ORDER + 1 ];
+        oac_int   scale_c;
         silk_warped_autocorrelation_FIX_c( corr_c, &scale_c, input, warping_Q16, length, order );
         silk_assert( !memcmp( corr_c, corr, sizeof( corr_c[ 0 ] ) * ( order + 1 ) ) );
         silk_assert( scale_c == *scale );

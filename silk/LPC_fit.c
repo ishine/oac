@@ -34,15 +34,15 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Convert int32 coefficients to int16 coefs and make sure there's no wrap-around.
    This logic is reused in _celt_lpc(). Any bug fixes should also be applied there. */
 void silk_LPC_fit(
-    opus_int16                  *a_QOUT,            /* O    Output signal                                               */
-    opus_int32                    *a_QIN,             /* I/O  Input signal                                                */
-    const opus_int              QOUT,               /* I    Input Q domain                                              */
-    const opus_int              QIN,                /* I    Input Q domain                                              */
-    const opus_int              d                   /* I    Filter order                                                */
+    oac_int16                  *a_QOUT,            /* O    Output signal                                               */
+    oac_int32                    *a_QIN,             /* I/O  Input signal                                                */
+    const oac_int              QOUT,               /* I    Input Q domain                                              */
+    const oac_int              QIN,                /* I    Input Q domain                                              */
+    const oac_int              d                   /* I    Filter order                                                */
 )
 {
-    opus_int    i, k, idx = 0;
-    opus_int32    maxabs, absval, chirp_Q16;
+    oac_int    i, k, idx = 0;
+    oac_int32    maxabs, absval, chirp_Q16;
 
     /* Limit the maximum absolute value of the prediction coefficients, so that they'll fit in int16 */
     for( i = 0; i < 10; i++ ) {
@@ -71,12 +71,12 @@ void silk_LPC_fit(
     if( i == 10 ) {
         /* Reached the last iteration, clip the coefficients */
         for( k = 0; k < d; k++ ) {
-            a_QOUT[ k ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( a_QIN[ k ], QIN - QOUT ) );
-            a_QIN[ k ] = silk_LSHIFT( (opus_int32)a_QOUT[ k ], QIN - QOUT );
+            a_QOUT[ k ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( a_QIN[ k ], QIN - QOUT ) );
+            a_QIN[ k ] = silk_LSHIFT( (oac_int32)a_QOUT[ k ], QIN - QOUT );
         }
     } else {
         for( k = 0; k < d; k++ ) {
-            a_QOUT[ k ] = (opus_int16)silk_RSHIFT_ROUND( a_QIN[ k ], QIN - QOUT );
+            a_QOUT[ k ] = (oac_int16)silk_RSHIFT_ROUND( a_QIN[ k ], QIN - QOUT );
         }
     }
 }

@@ -33,13 +33,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Step up function, converts reflection coefficients to prediction coefficients */
 void silk_k2a_Q16(
-    opus_int32                  *A_Q24,             /* O    Prediction coefficients [order] Q24                         */
-    const opus_int32            *rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
-    const opus_int32            order               /* I    Prediction order                                            */
+    oac_int32                  *A_Q24,             /* O    Prediction coefficients [order] Q24                         */
+    const oac_int32            *rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
+    const oac_int32            order               /* I    Prediction order                                            */
 )
 {
-    opus_int   k, n;
-    opus_int32 rc, tmp1, tmp2;
+    oac_int   k, n;
+    oac_int32 rc, tmp1, tmp2;
 
     for( k = 0; k < order; k++ ) {
         rc = rc_Q16[ k ];

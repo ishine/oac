@@ -67,12 +67,12 @@ def make_table(filename, data, title=None):
 
     # mean values
     tbl = PrettyTable()
-    tbl.field_names = ['bitrate (bps)', 'Opus', 'LACE', 'NoLACE']
+    tbl.field_names = ['bitrate (bps)', 'Oac', 'LACE', 'NoLACE']
     for br in data.keys():
-        opus = data[br][:, 0]
+        oac = data[br][:, 0]
         lace = data[br][:, 1]
         nolace = data[br][:, 2]
-        tbl.add_row([br, f"{float(opus.mean()):.3f} ({float(opus.std()):.2f})", f"{float(lace.mean()):.3f} ({float(lace.std()):.2f})", f"{float(nolace.mean()):.3f} ({float(nolace.std()):.2f})"])
+        tbl.add_row([br, f"{float(oac.mean()):.3f} ({float(oac.std()):.2f})", f"{float(lace.mean()):.3f} ({float(lace.std()):.2f})", f"{float(nolace.mean()):.3f} ({float(nolace.std()):.2f})"])
 
     with open(filename + ".txt", "w") as f:
         f.write(str(tbl))
@@ -90,11 +90,11 @@ def make_diff_table(filename, data, title=None):
 
     # mean values
     tbl = PrettyTable()
-    tbl.field_names = ['bitrate (bps)', 'LACE - Opus', 'NoLACE - Opus']
+    tbl.field_names = ['bitrate (bps)', 'LACE - Oac', 'NoLACE - Oac']
     for br in data.keys():
-        opus = data[br][:, 0]
-        lace = data[br][:, 1] - opus
-        nolace = data[br][:, 2] - opus
+        oac = data[br][:, 0]
+        lace = data[br][:, 1] - oac
+        nolace = data[br][:, 2] - oac
         tbl.add_row([br, f"{float(lace.mean()):.3f} ({float(lace.std()):.2f})", f"{float(nolace.mean()):.3f} ({float(nolace.std()):.2f})"])
 
     with open(filename + ".txt", "w") as f:

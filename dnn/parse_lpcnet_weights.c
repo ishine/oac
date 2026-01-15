@@ -56,7 +56,7 @@ int parse_weights(WeightArray **list, const void *data, int len)
 {
   int nb_arrays=0;
   int capacity=20;
-  *list = (WeightArray*)opus_alloc(capacity*sizeof(WeightArray));
+  *list = (WeightArray*)oac_alloc(capacity*sizeof(WeightArray));
   while (len > 0) {
     int ret;
     WeightArray array = {NULL, 0, 0, 0};
@@ -65,11 +65,11 @@ int parse_weights(WeightArray **list, const void *data, int len)
       if (nb_arrays+1 >= capacity) {
         /* Make sure there's room for the ending NULL element too. */
         capacity = capacity*3/2;
-        *list = (WeightArray*)opus_realloc(*list, capacity*sizeof(WeightArray));
+        *list = (WeightArray*)oac_realloc(*list, capacity*sizeof(WeightArray));
       }
       (*list)[nb_arrays++] = array;
     } else {
-      opus_free(*list);
+      oac_free(*list);
       *list = NULL;
       return -1;
     }
@@ -150,7 +150,7 @@ int linear_init(LinearLayer *layer, const WeightArray *arrays,
     int total_blocks;
     if ((layer->weights_idx = (const int*)find_idx_check(arrays, weights_idx, nb_inputs, nb_outputs, &total_blocks)) == NULL) return 1;
     if (weights != NULL) {
-      if ((layer->weights = (const opus_int8*)find_array_check(arrays, weights, SPARSE_BLOCK_SIZE*total_blocks*sizeof(layer->weights[0]))) == NULL) return 1;
+      if ((layer->weights = (const oac_int8*)find_array_check(arrays, weights, SPARSE_BLOCK_SIZE*total_blocks*sizeof(layer->weights[0]))) == NULL) return 1;
     }
     if (float_weights != NULL) {
       layer->float_weights = (const float*)opt_array_check(arrays, float_weights, SPARSE_BLOCK_SIZE*total_blocks*sizeof(layer->float_weights[0]), &err);
@@ -158,7 +158,7 @@ int linear_init(LinearLayer *layer, const WeightArray *arrays,
     }
   } else {
     if (weights != NULL) {
-      if ((layer->weights = (const opus_int8*)find_array_check(arrays, weights, nb_inputs*nb_outputs*sizeof(layer->weights[0]))) == NULL) return 1;
+      if ((layer->weights = (const oac_int8*)find_array_check(arrays, weights, nb_inputs*nb_outputs*sizeof(layer->weights[0]))) == NULL) return 1;
     }
     if (float_weights != NULL) {
       layer->float_weights = (const float*)opt_array_check(arrays, float_weights, nb_inputs*nb_outputs*sizeof(layer->float_weights[0]), &err);
@@ -230,7 +230,7 @@ int main()
     printf("found %s: size %d\n", list[i].name, list[i].size);
   }
   printf("%p\n", list[i].name);
-  opus_free(list);
+  oac_free(list);
   munmap(data, len);
   close(fd);
   return 0;

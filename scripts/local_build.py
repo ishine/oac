@@ -52,7 +52,7 @@ def main():
 
     if not autotools_only and not meson_only:
         result += cmake_build(test)
-        result += cmake_build(test, extra_options="-DOPUS_NEURAL_FEC=ON")
+        result += cmake_build(test, extra_options="-DOAC_NEURAL_FEC=ON")
 
     if not autotools_only and not cmake_only:
         result += meson_build(test)
@@ -124,7 +124,7 @@ def cmake_build(test=False, extra_options=""):
         return [(build, cmake_build_succeeded, cmake_test_succeeded)]
 
     cmake_build_dir = create_dir_with_random_postfix("cmake-build")
-    cmake_cfg_cmd = ["cmake", "-S" ".", "-B", cmake_build_dir, "-G", '"Ninja"', "-DCMAKE_BUILD_TYPE=Release", "-DOPUS_BUILD_TESTING=ON", "-DOPUS_BUILD_PROGRAMS=ON", "-DOPUS_FAST_MATH=ON", "-DOPUS_FLOAT_APPROX=ON"]
+    cmake_cfg_cmd = ["cmake", "-S" ".", "-B", cmake_build_dir, "-G", '"Ninja"', "-DCMAKE_BUILD_TYPE=Release", "-DOAC_BUILD_TESTING=ON", "-DOAC_BUILD_PROGRAMS=ON", "-DOAC_FAST_MATH=ON", "-DOAC_FLOAT_APPROX=ON"]
     cmake_cfg_cmd += [option for option in extra_options.split(" ")]
     run_command(" ".join(cmake_cfg_cmd))
     cmake_build_cmd = ["cmake", "--build", cmake_build_dir, "-j", "{}".format(get_cpu_core_count())]

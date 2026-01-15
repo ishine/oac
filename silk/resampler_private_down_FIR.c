@@ -33,20 +33,20 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "resampler_private.h"
 #include "stack_alloc.h"
 
-static OPUS_INLINE opus_int16 *silk_resampler_private_down_FIR_INTERPOL(
-    opus_int16          *out,
-    opus_int32          *buf,
-    const opus_int16    *FIR_Coefs,
-    opus_int            FIR_Order,
-    opus_int            FIR_Fracs,
-    opus_int32          max_index_Q16,
-    opus_int32          index_increment_Q16
+static OAC_INLINE oac_int16 *silk_resampler_private_down_FIR_INTERPOL(
+    oac_int16          *out,
+    oac_int32          *buf,
+    const oac_int16    *FIR_Coefs,
+    oac_int            FIR_Order,
+    oac_int            FIR_Fracs,
+    oac_int32          max_index_Q16,
+    oac_int32          index_increment_Q16
 )
 {
-    opus_int32 index_Q16, res_Q6;
-    opus_int32 *buf_ptr;
-    opus_int32 interpol_ind;
-    const opus_int16 *interpol_ptr;
+    oac_int32 index_Q16, res_Q6;
+    oac_int32 *buf_ptr;
+    oac_int32 interpol_ind;
+    const oac_int16 *interpol_ptr;
 
     switch( FIR_Order ) {
         case RESAMPLER_DOWN_ORDER_FIR0:
@@ -80,7 +80,7 @@ static OPUS_INLINE opus_int16 *silk_resampler_private_down_FIR_INTERPOL(
                 res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[  9 ], interpol_ptr[ 8 ] );
 
                 /* Scale down, saturate and store in output array */
-                *out++ = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
+                *out++ = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
             }
             break;
         case RESAMPLER_DOWN_ORDER_FIR1:
@@ -103,7 +103,7 @@ static OPUS_INLINE opus_int16 *silk_resampler_private_down_FIR_INTERPOL(
                 res_Q6 = silk_SMLAWB( res_Q6, silk_ADD32( buf_ptr[ 11 ], buf_ptr[ 12 ] ), FIR_Coefs[ 11 ] );
 
                 /* Scale down, saturate and store in output array */
-                *out++ = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
+                *out++ = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
             }
             break;
         case RESAMPLER_DOWN_ORDER_FIR2:
@@ -132,7 +132,7 @@ static OPUS_INLINE opus_int16 *silk_resampler_private_down_FIR_INTERPOL(
                 res_Q6 = silk_SMLAWB( res_Q6, silk_ADD32( buf_ptr[ 17 ], buf_ptr[ 18 ] ), FIR_Coefs[ 17 ] );
 
                 /* Scale down, saturate and store in output array */
-                *out++ = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
+                *out++ = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ) );
             }
             break;
         default:
@@ -144,22 +144,22 @@ static OPUS_INLINE opus_int16 *silk_resampler_private_down_FIR_INTERPOL(
 /* Resample with a 2nd order AR filter followed by FIR interpolation */
 void silk_resampler_private_down_FIR(
     void                            *SS,            /* I/O  Resampler state             */
-    opus_int16                      out[],          /* O    Output signal               */
-    const opus_int16                in[],           /* I    Input signal                */
-    opus_int32                      inLen           /* I    Number of input samples     */
+    oac_int16                      out[],          /* O    Output signal               */
+    const oac_int16                in[],           /* I    Input signal                */
+    oac_int32                      inLen           /* I    Number of input samples     */
 )
 {
     silk_resampler_state_struct *S = (silk_resampler_state_struct *)SS;
-    opus_int32 nSamplesIn;
-    opus_int32 max_index_Q16, index_increment_Q16;
-    VARDECL( opus_int32, buf );
-    const opus_int16 *FIR_Coefs;
+    oac_int32 nSamplesIn;
+    oac_int32 max_index_Q16, index_increment_Q16;
+    VARDECL( oac_int32, buf );
+    const oac_int16 *FIR_Coefs;
     SAVE_STACK;
 
-    ALLOC( buf, S->batchSize + S->FIR_Order, opus_int32 );
+    ALLOC( buf, S->batchSize + S->FIR_Order, oac_int32 );
 
     /* Copy buffered samples to start of buffer */
-    silk_memcpy( buf, S->sFIR.i32, S->FIR_Order * sizeof( opus_int32 ) );
+    silk_memcpy( buf, S->sFIR.i32, S->FIR_Order * sizeof( oac_int32 ) );
 
     FIR_Coefs = &S->Coefs[ 2 ];
 
@@ -182,13 +182,13 @@ void silk_resampler_private_down_FIR(
 
         if( inLen > 1 ) {
             /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-            silk_memcpy( buf, &buf[ nSamplesIn ], S->FIR_Order * sizeof( opus_int32 ) );
+            silk_memcpy( buf, &buf[ nSamplesIn ], S->FIR_Order * sizeof( oac_int32 ) );
         } else {
             break;
         }
     }
 
     /* Copy last part of filtered signal to the state for the next call */
-    silk_memcpy( S->sFIR.i32, &buf[ nSamplesIn ], S->FIR_Order * sizeof( opus_int32 ) );
+    silk_memcpy( S->sFIR.i32, &buf[ nSamplesIn ], S->FIR_Order * sizeof( oac_int32 ) );
     RESTORE_STACK;
 }

@@ -3,9 +3,9 @@ celt/arch.h \
 celt/bands.h \
 celt/celt.h \
 celt/cpu_support.h \
-include/opus_types.h \
-include/opus_defines.h \
-include/opus_custom.h \
+include/oac_types.h \
+include/oac_defines.h \
+include/oac_custom.h \
 celt/cwrs.h \
 celt/ecintrin.h \
 celt/entcode.h \

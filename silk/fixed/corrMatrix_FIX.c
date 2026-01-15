@@ -37,18 +37,18 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Calculates correlation vector X'*t */
 void silk_corrVector_FIX(
-    const opus_int16                *x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
-    const opus_int16                *t,                                     /* I    Target vector [L]                                                           */
-    const opus_int                  L,                                      /* I    Length of vectors                                                           */
-    const opus_int                  order,                                  /* I    Max lag for correlation                                                     */
-    opus_int32                      *Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
-    const opus_int                  rshifts,                                /* I    Right shifts of correlations                                                */
+    const oac_int16                *x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+    const oac_int16                *t,                                     /* I    Target vector [L]                                                           */
+    const oac_int                  L,                                      /* I    Length of vectors                                                           */
+    const oac_int                  order,                                  /* I    Max lag for correlation                                                     */
+    oac_int32                      *Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
+    const oac_int                  rshifts,                                /* I    Right shifts of correlations                                                */
     int                             arch                                    /* I    Run-time architecture                                                       */
 )
 {
-    opus_int         lag, i;
-    const opus_int16 *ptr1, *ptr2;
-    opus_int32       inner_prod;
+    oac_int         lag, i;
+    const oac_int16 *ptr1, *ptr2;
+    oac_int32       inner_prod;
 
     ptr1 = &x[ order - 1 ]; /* Points to first sample of column 0 of X: X[:,0] */
     ptr2 = t;
@@ -74,18 +74,18 @@ void silk_corrVector_FIX(
 
 /* Calculates correlation matrix X'*X */
 void silk_corrMatrix_FIX(
-    const opus_int16                *x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
-    const opus_int                  L,                                      /* I    Length of vectors                                                           */
-    const opus_int                  order,                                  /* I    Max lag for correlation                                                     */
-    opus_int32                      *XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
-    opus_int32                      *nrg,                                    /* O    Energy of x vector                                                            */
-    opus_int                        *rshifts,                               /* O    Right shifts of correlations and energy                                     */
+    const oac_int16                *x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+    const oac_int                  L,                                      /* I    Length of vectors                                                           */
+    const oac_int                  order,                                  /* I    Max lag for correlation                                                     */
+    oac_int32                      *XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
+    oac_int32                      *nrg,                                    /* O    Energy of x vector                                                            */
+    oac_int                        *rshifts,                               /* O    Right shifts of correlations and energy                                     */
     int                             arch                                    /* I    Run-time architecture                                                       */
 )
 {
-    opus_int         i, j, lag;
-    opus_int32       energy;
-    const opus_int16 *ptr1, *ptr2;
+    oac_int         i, j, lag;
+    oac_int32       energy;
+    const oac_int16 *ptr1, *ptr2;
 
     /* Calculate energy to find shift used to fit in 32 bits */
     silk_sum_sqr_shift( nrg, rshifts, x, L + order - 1 );

@@ -33,21 +33,21 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Slower than schur(), but more accurate.                              */
 /* Uses SMULL(), available on armv4                                     */
-opus_int32 silk_schur64(                            /* O    returns residual energy                                     */
-    opus_int32                  rc_Q16[],           /* O    Reflection coefficients [order] Q16                         */
-    const opus_int32            c[],                /* I    Correlations [order+1]                                      */
-    opus_int32                  order               /* I    Prediction order                                            */
+oac_int32 silk_schur64(                            /* O    returns residual energy                                     */
+    oac_int32                  rc_Q16[],           /* O    Reflection coefficients [order] Q16                         */
+    const oac_int32            c[],                /* I    Correlations [order+1]                                      */
+    oac_int32                  order               /* I    Prediction order                                            */
 )
 {
-    opus_int   k, n;
-    opus_int32 C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
-    opus_int32 Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
+    oac_int   k, n;
+    oac_int32 C[ SILK_MAX_ORDER_LPC + 1 ][ 2 ];
+    oac_int32 Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
 
     celt_assert( order >= 0 && order <= SILK_MAX_ORDER_LPC );
 
     /* Check for invalid input */
     if( c[ 0 ] <= 0 ) {
-        silk_memset( rc_Q16, 0, order * sizeof( opus_int32 ) );
+        silk_memset( rc_Q16, 0, order * sizeof( oac_int32 ) );
         return 0;
     }
 

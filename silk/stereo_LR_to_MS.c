@@ -35,58 +35,58 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */
 void silk_stereo_LR_to_MS(
     stereo_enc_state            *state,                         /* I/O  State                                       */
-    opus_int16                  x1[],                           /* I/O  Left input signal, becomes mid signal       */
-    opus_int16                  x2[],                           /* I/O  Right input signal, becomes side signal     */
-    opus_int8                   ix[ 2 ][ 3 ],                   /* O    Quantization indices                        */
-    opus_int8                   *mid_only_flag,                 /* O    Flag: only mid signal coded                 */
-    opus_int32                  mid_side_rates_bps[],           /* O    Bitrates for mid and side signals           */
-    opus_int32                  total_rate_bps,                 /* I    Total bitrate                               */
-    opus_int                    prev_speech_act_Q8,             /* I    Speech activity level in previous frame     */
-    opus_int                    toMono,                         /* I    Last frame before a stereo->mono transition */
-    opus_int                    fs_kHz,                         /* I    Sample rate (kHz)                           */
-    opus_int                    frame_length                    /* I    Number of samples                           */
+    oac_int16                  x1[],                           /* I/O  Left input signal, becomes mid signal       */
+    oac_int16                  x2[],                           /* I/O  Right input signal, becomes side signal     */
+    oac_int8                   ix[ 2 ][ 3 ],                   /* O    Quantization indices                        */
+    oac_int8                   *mid_only_flag,                 /* O    Flag: only mid signal coded                 */
+    oac_int32                  mid_side_rates_bps[],           /* O    Bitrates for mid and side signals           */
+    oac_int32                  total_rate_bps,                 /* I    Total bitrate                               */
+    oac_int                    prev_speech_act_Q8,             /* I    Speech activity level in previous frame     */
+    oac_int                    toMono,                         /* I    Last frame before a stereo->mono transition */
+    oac_int                    fs_kHz,                         /* I    Sample rate (kHz)                           */
+    oac_int                    frame_length                    /* I    Number of samples                           */
 )
 {
-    opus_int   n, is10msFrame, denom_Q16, delta0_Q13, delta1_Q13;
-    opus_int32 sum, diff, smooth_coef_Q16, pred_Q13[ 2 ], pred0_Q13, pred1_Q13;
-    opus_int32 LP_ratio_Q14, HP_ratio_Q14, frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
-    VARDECL( opus_int16, side );
-    VARDECL( opus_int16, LP_mid );
-    VARDECL( opus_int16, HP_mid );
-    VARDECL( opus_int16, LP_side );
-    VARDECL( opus_int16, HP_side );
-    opus_int16 *mid = &x1[ -2 ];
+    oac_int   n, is10msFrame, denom_Q16, delta0_Q13, delta1_Q13;
+    oac_int32 sum, diff, smooth_coef_Q16, pred_Q13[ 2 ], pred0_Q13, pred1_Q13;
+    oac_int32 LP_ratio_Q14, HP_ratio_Q14, frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
+    VARDECL( oac_int16, side );
+    VARDECL( oac_int16, LP_mid );
+    VARDECL( oac_int16, HP_mid );
+    VARDECL( oac_int16, LP_side );
+    VARDECL( oac_int16, HP_side );
+    oac_int16 *mid = &x1[ -2 ];
     SAVE_STACK;
 
-    ALLOC( side, frame_length + 2, opus_int16 );
+    ALLOC( side, frame_length + 2, oac_int16 );
     /* Convert to basic mid/side signals */
     for( n = 0; n < frame_length + 2; n++ ) {
-        sum  = x1[ n - 2 ] + (opus_int32)x2[ n - 2 ];
-        diff = x1[ n - 2 ] - (opus_int32)x2[ n - 2 ];
-        mid[  n ] = (opus_int16)silk_RSHIFT_ROUND( sum, 1 );
-        side[ n ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( diff, 1 ) );
+        sum  = x1[ n - 2 ] + (oac_int32)x2[ n - 2 ];
+        diff = x1[ n - 2 ] - (oac_int32)x2[ n - 2 ];
+        mid[  n ] = (oac_int16)silk_RSHIFT_ROUND( sum, 1 );
+        side[ n ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( diff, 1 ) );
     }
 
     /* Buffering */
-    silk_memcpy( mid,  state->sMid,  2 * sizeof( opus_int16 ) );
-    silk_memcpy( side, state->sSide, 2 * sizeof( opus_int16 ) );
-    silk_memcpy( state->sMid,  &mid[  frame_length ], 2 * sizeof( opus_int16 ) );
-    silk_memcpy( state->sSide, &side[ frame_length ], 2 * sizeof( opus_int16 ) );
+    silk_memcpy( mid,  state->sMid,  2 * sizeof( oac_int16 ) );
+    silk_memcpy( side, state->sSide, 2 * sizeof( oac_int16 ) );
+    silk_memcpy( state->sMid,  &mid[  frame_length ], 2 * sizeof( oac_int16 ) );
+    silk_memcpy( state->sSide, &side[ frame_length ], 2 * sizeof( oac_int16 ) );
 
     /* LP and HP filter mid signal */
-    ALLOC( LP_mid, frame_length, opus_int16 );
-    ALLOC( HP_mid, frame_length, opus_int16 );
+    ALLOC( LP_mid, frame_length, oac_int16 );
+    ALLOC( HP_mid, frame_length, oac_int16 );
     for( n = 0; n < frame_length; n++ ) {
-        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT32( mid[ n ] + (opus_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 2 );
+        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT32( mid[ n ] + (oac_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 2 );
         LP_mid[ n ] = sum;
         HP_mid[ n ] = mid[ n + 1 ] - sum;
     }
 
     /* LP and HP filter side signal */
-    ALLOC( LP_side, frame_length, opus_int16 );
-    ALLOC( HP_side, frame_length, opus_int16 );
+    ALLOC( LP_side, frame_length, oac_int16 );
+    ALLOC( HP_side, frame_length, oac_int16 );
     for( n = 0; n < frame_length; n++ ) {
-        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT32( side[ n ] + (opus_int32)side[ n + 2 ], side[ n + 1 ], 1 ), 2 );
+        sum = silk_RSHIFT_ROUND( silk_ADD_LSHIFT32( side[ n ] + (oac_int32)side[ n + 2 ], side[ n + 1 ], 1 ), 2 );
         LP_side[ n ] = sum;
         HP_side[ n ] = side[ n + 1 ] - sum;
     }
@@ -128,7 +128,7 @@ void silk_stereo_LR_to_MS(
     }
 
     /* Smoother */
-    state->smth_width_Q14 = (opus_int16)silk_SMLAWB( state->smth_width_Q14, width_Q14 - state->smth_width_Q14, smooth_coef_Q16 );
+    state->smth_width_Q14 = (oac_int16)silk_SMLAWB( state->smth_width_Q14, width_Q14 - state->smth_width_Q14, smooth_coef_Q16 );
 
     /* At very low bitrates or for inputs that are nearly amplitude panned, switch to panned-mono coding */
     *mid_only_flag = 0;
@@ -199,7 +199,7 @@ void silk_stereo_LR_to_MS(
     pred0_Q13  = -state->pred_prev_Q13[ 0 ];
     pred1_Q13  = -state->pred_prev_Q13[ 1 ];
     w_Q24      =  silk_LSHIFT( state->width_prev_Q14, 10 );
-    denom_Q16  = silk_DIV32_16( (opus_int32)1 << 16, STEREO_INTERP_LEN_MS * fs_kHz );
+    denom_Q16  = silk_DIV32_16( (oac_int32)1 << 16, STEREO_INTERP_LEN_MS * fs_kHz );
     delta0_Q13 = -silk_RSHIFT_ROUND( silk_SMULBB( pred_Q13[ 0 ] - state->pred_prev_Q13[ 0 ], denom_Q16 ), 16 );
     delta1_Q13 = -silk_RSHIFT_ROUND( silk_SMULBB( pred_Q13[ 1 ] - state->pred_prev_Q13[ 1 ], denom_Q16 ), 16 );
     deltaw_Q24 =  silk_LSHIFT( silk_SMULWB( width_Q14 - state->width_prev_Q14, denom_Q16 ), 10 );
@@ -207,23 +207,23 @@ void silk_stereo_LR_to_MS(
         pred0_Q13 += delta0_Q13;
         pred1_Q13 += delta1_Q13;
         w_Q24   += deltaw_Q24;
-        sum = silk_LSHIFT( silk_ADD_LSHIFT32( mid[ n ] + (opus_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
+        sum = silk_LSHIFT( silk_ADD_LSHIFT32( mid[ n ] + (oac_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
         sum = silk_SMLAWB( silk_SMULWB( w_Q24, side[ n + 1 ] ), sum, pred0_Q13 );               /* Q8  */
-        sum = silk_SMLAWB( sum, silk_LSHIFT( (opus_int32)mid[ n + 1 ], 11 ), pred1_Q13 );       /* Q8  */
-        x2[ n - 1 ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( sum, 8 ) );
+        sum = silk_SMLAWB( sum, silk_LSHIFT( (oac_int32)mid[ n + 1 ], 11 ), pred1_Q13 );       /* Q8  */
+        x2[ n - 1 ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( sum, 8 ) );
     }
 
     pred0_Q13 = -pred_Q13[ 0 ];
     pred1_Q13 = -pred_Q13[ 1 ];
     w_Q24     =  silk_LSHIFT( width_Q14, 10 );
     for( n = STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++ ) {
-        sum = silk_LSHIFT( silk_ADD_LSHIFT32( mid[ n ] + (opus_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
+        sum = silk_LSHIFT( silk_ADD_LSHIFT32( mid[ n ] + (oac_int32)mid[ n + 2 ], mid[ n + 1 ], 1 ), 9 );    /* Q11 */
         sum = silk_SMLAWB( silk_SMULWB( w_Q24, side[ n + 1 ] ), sum, pred0_Q13 );               /* Q8  */
-        sum = silk_SMLAWB( sum, silk_LSHIFT( (opus_int32)mid[ n + 1 ], 11 ), pred1_Q13 );       /* Q8  */
-        x2[ n - 1 ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( sum, 8 ) );
+        sum = silk_SMLAWB( sum, silk_LSHIFT( (oac_int32)mid[ n + 1 ], 11 ), pred1_Q13 );       /* Q8  */
+        x2[ n - 1 ] = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( sum, 8 ) );
     }
-    state->pred_prev_Q13[ 0 ] = (opus_int16)pred_Q13[ 0 ];
-    state->pred_prev_Q13[ 1 ] = (opus_int16)pred_Q13[ 1 ];
-    state->width_prev_Q14     = (opus_int16)width_Q14;
+    state->pred_prev_Q13[ 0 ] = (oac_int16)pred_Q13[ 0 ];
+    state->pred_prev_Q13[ 1 ] = (oac_int16)pred_Q13[ 1 ];
+    state->width_prev_Q14     = (oac_int16)width_Q14;
     RESTORE_STACK;
 }

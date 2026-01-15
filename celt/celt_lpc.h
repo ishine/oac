@@ -31,18 +31,18 @@
 #include "arch.h"
 #include "cpu_support.h"
 
-#if defined(OPUS_X86_MAY_HAVE_SSE4_1)
+#if defined(OAC_X86_MAY_HAVE_SSE4_1)
 #include "x86/celt_lpc_sse.h"
 #endif
 
 #define CELT_LPC_ORDER 24
 
-void _celt_lpc(opus_val16 *_lpc, const opus_val32 *ac, int p);
+void _celt_lpc(oac_val16 *_lpc, const oac_val32 *ac, int p);
 
 void celt_fir_c(
-         const opus_val16 *x,
-         const opus_val16 *num,
-         opus_val16 *y,
+         const oac_val16 *x,
+         const oac_val16 *num,
+         oac_val16 *y,
          int N,
          int ord,
          int arch);
@@ -52,15 +52,15 @@ void celt_fir_c(
     (celt_fir_c(x, num, y, N, ord, arch))
 #endif
 
-void celt_iir(const opus_val32 *x,
-         const opus_val16 *den,
-         opus_val32 *y,
+void celt_iir(const oac_val32 *x,
+         const oac_val16 *den,
+         oac_val32 *y,
          int N,
          int ord,
-         opus_val16 *mem,
+         oac_val16 *mem,
          int arch);
 
-int _celt_autocorr(const opus_val16 *x, opus_val32 *ac,
+int _celt_autocorr(const oac_val16 *x, oac_val32 *ac,
          const celt_coef *window, int overlap, int lag, int n, int arch);
 
 #endif /* CELT_LPC_H */

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #
-# Opus get-version.py
+# Oac get-version.py
 #
 # Extracts versions for build:
-#  - Opus package version based on 'git describe' or $srcroot/package_version
+#  - Oac package version based on 'git describe' or $srcroot/package_version
 #  - libtool version based on configure.ac
 #  - macos lib version based on configure.ac
 #
@@ -16,7 +16,7 @@ import sys
 import shutil
 
 if __name__ == '__main__':
-    arg_parser = argparse.ArgumentParser(description='Extract Opus package version or libtool version')
+    arg_parser = argparse.ArgumentParser(description='Extract Oac package version or libtool version')
     group = arg_parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--libtool-version', action='store_true')
     group.add_argument('--package-version', action='store_true')
@@ -57,27 +57,27 @@ if __name__ == '__main__':
 
     # libtool version + darwin version
     elif args.libtool_version or args.darwin_version:
-        opus_lt_cur = None
-        opus_lt_rev = None
-        opus_lt_age = None
+        oac_lt_cur = None
+        oac_lt_rev = None
+        oac_lt_age = None
 
         with open(os.path.join(srcroot, 'configure.ac'), 'r') as f:
             for line in f:
-                if line.strip().startswith('OPUS_LT_CURRENT='):
-                    opus_lt_cur = line[16:].strip()
-                elif line.strip().startswith('OPUS_LT_REVISION='):
-                    opus_lt_rev = line[17:].strip()
-                elif line.strip().startswith('OPUS_LT_AGE='):
-                    opus_lt_age = line[12:].strip()
+                if line.strip().startswith('OAC_LT_CURRENT='):
+                    oac_lt_cur = line[16:].strip()
+                elif line.strip().startswith('OAC_LT_REVISION='):
+                    oac_lt_rev = line[17:].strip()
+                elif line.strip().startswith('OAC_LT_AGE='):
+                    oac_lt_age = line[12:].strip()
 
-        if opus_lt_cur and opus_lt_rev and opus_lt_age:
-            opus_lt_cur = int(opus_lt_cur)
-            opus_lt_rev = int(opus_lt_rev)
-            opus_lt_age = int(opus_lt_age)
+        if oac_lt_cur and oac_lt_rev and oac_lt_age:
+            oac_lt_cur = int(oac_lt_cur)
+            oac_lt_rev = int(oac_lt_rev)
+            oac_lt_age = int(oac_lt_age)
             if args.libtool_version:
-              print('{}.{}.{}'.format(opus_lt_cur - opus_lt_age, opus_lt_age, opus_lt_rev))
+              print('{}.{}.{}'.format(oac_lt_cur - oac_lt_age, oac_lt_age, oac_lt_rev))
             elif args.darwin_version:
-              print('{}.{}.{}'.format(opus_lt_cur + 1, 0, 0))
+              print('{}.{}.{}'.format(oac_lt_cur + 1, 0, 0))
             sys.exit(0)
         else:
             print('ERROR: Could not extract libtool version from configure.ac file in', srcroot, file=sys.stderr)

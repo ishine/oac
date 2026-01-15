@@ -43,12 +43,12 @@ POSSIBILITY OF SUCH DAMAGE.
 /*********************************/
 /* Initialize Silk Encoder state */
 /*********************************/
-opus_int silk_init_encoder(
+oac_int silk_init_encoder(
     silk_encoder_state_Fxx          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     int                              arch                                   /* I    Run-time architecture                                                       */
 )
 {
-    opus_int ret = 0;
+    oac_int ret = 0;
 
     /* Clear the entire encoder state */
     silk_memset( psEnc, 0, sizeof( silk_encoder_state_Fxx ) );

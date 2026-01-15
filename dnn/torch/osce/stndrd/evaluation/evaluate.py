@@ -64,25 +64,25 @@ def get_itemlist(folder):
 
 def process_item(folder, item, bitrate, metric):
     fs, x_clean  = wavfile.read(os.path.join(folder, 'clean', f"{item}_{bitrate}_clean.wav"))
-    fs, x_opus   = wavfile.read(os.path.join(folder, 'opus', f"{item}_{bitrate}_opus.wav"))
+    fs, x_oac   = wavfile.read(os.path.join(folder, 'oac', f"{item}_{bitrate}_oac.wav"))
     fs, x_lace   = wavfile.read(os.path.join(folder, 'lace', f"{item}_{bitrate}_lace.wav"))
     fs, x_nolace = wavfile.read(os.path.join(folder, 'nolace', f"{item}_{bitrate}_nolace.wav"))
 
     x_clean  = x_clean.astype(np.float32) / 2**15
-    x_opus   = x_opus.astype(np.float32) / 2**15
+    x_oac   = x_oac.astype(np.float32) / 2**15
     x_lace   = x_lace.astype(np.float32) / 2**15
     x_nolace = x_nolace.astype(np.float32) / 2**15
 
     if metric == 'pesq':
-        result = [pesq(fs, x_clean, x_opus), pesq(fs, x_clean, x_lace), pesq(fs, x_clean, x_nolace)]
+        result = [pesq(fs, x_clean, x_oac), pesq(fs, x_clean, x_lace), pesq(fs, x_clean, x_nolace)]
     elif metric =='moc':
-        result = [compare(x_clean, x_opus), compare(x_clean, x_lace), compare(x_clean, x_nolace)]
+        result = [compare(x_clean, x_oac), compare(x_clean, x_lace), compare(x_clean, x_nolace)]
     elif metric =='moc2':
-        result = [compare2(x_clean, x_opus), compare2(x_clean, x_lace), compare2(x_clean, x_nolace)]
+        result = [compare2(x_clean, x_oac), compare2(x_clean, x_lace), compare2(x_clean, x_nolace)]
     # elif metric == 'warpq':
-        # result = [warpq(x_clean, x_opus), warpq(x_clean, x_lace), warpq(x_clean, x_nolace)]
+        # result = [warpq(x_clean, x_oac), warpq(x_clean, x_lace), warpq(x_clean, x_nolace)]
     elif metric == 'laceloss':
-        result = [laceloss_compare(x_clean, x_opus), laceloss_compare(x_clean, x_lace), laceloss_compare(x_clean, x_nolace)]
+        result = [laceloss_compare(x_clean, x_oac), laceloss_compare(x_clean, x_lace), laceloss_compare(x_clean, x_nolace)]
     else:
         raise ValueError(f'unknown metric {metric}')
 

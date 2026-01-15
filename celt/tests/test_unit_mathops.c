@@ -55,11 +55,11 @@ int ret = 0;
 
 void testdiv(void)
 {
-   opus_int32 i;
+   oac_int32 i;
    for (i=1;i<=327670;i++)
    {
       double prod;
-      opus_val32 val;
+      oac_val32 val;
       val = celt_rcp(i);
 #ifdef FIXED_POINT
       prod = (1./32768./65526.)*val*i;
@@ -76,11 +76,11 @@ void testdiv(void)
 
 void testsqrt(void)
 {
-   opus_int32 i;
+   oac_int32 i;
    for (i=1;i<=1000000000;i++)
    {
       double ratio;
-      opus_val16 val;
+      oac_val16 val;
       val = celt_sqrt(i);
       ratio = val/sqrt(i);
       if (fabs(ratio - 1) > .0005 && fabs(val-sqrt(i)) > 2)
@@ -95,13 +95,13 @@ void testsqrt(void)
 void testbitexactcos(void)
 {
    int i;
-   opus_int32 min_d,max_d,last,chk;
+   oac_int32 min_d,max_d,last,chk;
    chk=max_d=0;
    last=min_d=32767;
    for(i=64;i<=16320;i++)
    {
-      opus_int32 d;
-      opus_int32 q=bitexact_cos(i);
+      oac_int32 d;
+      oac_int32 q=bitexact_cos(i);
       chk ^= q*i;
       d = last - q;
       if (d>max_d)max_d=d;
@@ -119,15 +119,15 @@ void testbitexactcos(void)
 void testbitexactlog2tan(void)
 {
    int i,fail;
-   opus_int32 min_d,max_d,last,chk;
+   oac_int32 min_d,max_d,last,chk;
    fail=chk=max_d=0;
    last=min_d=15059;
    for(i=64;i<8193;i++)
    {
-      opus_int32 d;
-      opus_int32 mid=bitexact_cos(i);
-      opus_int32 side=bitexact_cos(16384-i);
-      opus_int32 q=bitexact_log2tan(mid,side);
+      oac_int32 d;
+      oac_int32 mid=bitexact_cos(i);
+      oac_int32 side=bitexact_cos(16384-i);
+      oac_int32 q=bitexact_log2tan(mid,side);
       chk ^= q*i;
       d = last - q;
       if (q!=-1*bitexact_log2tan(side,mid))
@@ -287,7 +287,7 @@ void testlog2_db(void)
    float error = -1;
    float max_error = -2;
    float error_threshold = 2.e-07;
-   opus_int32 x = 0;
+   oac_int32 x = 0;
    int q_input = 14;
    for (x = 8; x < 1073741824; x += (x >> 3))
    {
@@ -309,7 +309,7 @@ void testlog2_db(void)
 
 void testlog2(void)
 {
-   opus_val32 x;
+   oac_val32 x;
    for (x=8;x<1073741824;x+=(x>>3))
    {
       float error = fabs((1.442695040888963387*log(x/16384.0))-celt_log2(x)/1024.0);
@@ -323,7 +323,7 @@ void testlog2(void)
 
 void testexp2(void)
 {
-   opus_val16 x;
+   oac_val16 x;
    for (x=-32768;x<15360;x++)
    {
       float error1 = fabs(x/1024.0-(1.442695040888963387*log(celt_exp2(x)/65536.0)));
@@ -343,7 +343,7 @@ void testexp2_db(void)
    float relative_error_threshold = -2;
    float fx;
    float quantized_fx;
-   opus_val32 x_32;
+   oac_val32 x_32;
 
    for (fx = -32.0; fx < 15.0; fx += 0.0007)
    {
@@ -372,7 +372,7 @@ void testexp2_db(void)
 
 void testexp2log2(void)
 {
-   opus_val32 x;
+   oac_val32 x;
    for (x=8;x<65536;x+=(x>>3))
    {
       float error = fabs(x-0.25*celt_exp2(celt_log2(x)))/16384;
@@ -386,11 +386,11 @@ void testexp2log2(void)
 
 void testilog2(void)
 {
-   opus_val32 x;
+   oac_val32 x;
    for (x=1;x<=268435455;x+=127)
    {
-      opus_val32 lg;
-      opus_val32 y;
+      oac_val32 lg;
+      oac_val32 y;
 
       lg = celt_ilog2(x);
       if (lg<0 || lg>=31)
@@ -415,7 +415,7 @@ void testrsqrt(void)
    float max_error = 0;
    float fx = 0;
    float quantized_fx;
-   opus_int32 x;
+   oac_int32 x;
    for (fx = 0.25; fx < 1.0f; fx += 0.007f)
    {
       x = DOUBLE_TO_FIX_INT(fx, 31);
@@ -441,7 +441,7 @@ void testrsqrt(void)
 
 void testsqrt32(void)
 {
-   opus_int32 i;
+   oac_int32 i;
    float absolute_error;
    float two_LSBs = FIX_INT_TO_DOUBLE(2, 16);
    float relative_error_threshold;
@@ -470,7 +470,7 @@ void testatan_norm(void)
    float max_error = -2;
    float error_threshold = 5.97e-08;
    float fx = 0;
-   opus_int32 x = 0;
+   oac_int32 x = 0;
    int q_input = 30;
    int q_output = 30;
    #define ATAN2_2_OVER_PI 0.636619772367581f
@@ -501,8 +501,8 @@ void testatan2p_norm(void)
    float error_threshold = 1.2e-07;
    float fx = 0;
    float fy = 0;
-   opus_int32 x = 0;
-   opus_int32 y = 0;
+   oac_int32 x = 0;
+   oac_int32 y = 0;
    int q_input = 30;
    int q_output = 30;
    #define ATAN2_2_OVER_PI 0.636619772367581f
@@ -546,7 +546,7 @@ void test_cos_norm32(void)
    float max_error = -2;
    float error_threshold = 1e-07;
    float fx = 0;
-   opus_int32 x = 0;
+   oac_int32 x = 0;
    int q_input = 30;
    int q_output = 31;
    for (fx = -1.0f; fx <= 1.0f; fx += 0.007f)
@@ -584,7 +584,7 @@ void test_rcp_norm32(void)
    float max_relative_error = -1;
    float fx;
    float quantized_fx;
-   opus_val32 x;
+   oac_val32 x;
    int q_input = 31;
 
    for (fx = 0.5; fx <= 1.0; fx += 0.0000007)
@@ -668,7 +668,7 @@ void testcelt_float2int16(int use_ref_impl, int buffer_size)
    {
       celt_float2int16_c(floatsToConvert, results, cnt);
    } else {
-      celt_float2int16(floatsToConvert, results, cnt, opus_select_arch());
+      celt_float2int16(floatsToConvert, results, cnt, oac_select_arch());
    }
 
    for (i = 0; i < cnt; ++i)
@@ -694,12 +694,12 @@ void testcelt_float2int16(int use_ref_impl, int buffer_size)
 #undef MAX_BUFFER_SIZE
 }
 
-void testopus_limit2_checkwithin1(int use_ref_impl)
+void testoac_limit2_checkwithin1(int use_ref_impl)
 {
 #define BUFFER_SIZE 37 /* strange float count to trigger residue loop of SIMD implementation */
 #define BYTE_COUNT (BUFFER_SIZE * sizeof(float))
    int i, within1;
-   const int arch = opus_select_arch();
+   const int arch = oac_select_arch();
 
    float pattern[BUFFER_SIZE], buffer[BUFFER_SIZE];
 
@@ -711,10 +711,10 @@ void testopus_limit2_checkwithin1(int use_ref_impl)
    /* All values within -1..1:
    Nothing changed. Return value is implementation-dependent (not expected to recognise nothing exceeds -1..1) */
    memcpy(buffer, pattern, BYTE_COUNT);
-   within1 = use_ref_impl ? opus_limit2_checkwithin1_c(buffer, BUFFER_SIZE) : opus_limit2_checkwithin1(buffer, BUFFER_SIZE, arch);
+   within1 = use_ref_impl ? oac_limit2_checkwithin1_c(buffer, BUFFER_SIZE) : oac_limit2_checkwithin1(buffer, BUFFER_SIZE, arch);
    if (memcmp(buffer, pattern, BYTE_COUNT) != 0)
    {
-      fprintf (stderr, "opus_limit2_checkwithin1() modified values not exceeding -1..1 (ref=%d)\n", use_ref_impl);
+      fprintf (stderr, "oac_limit2_checkwithin1() modified values not exceeding -1..1 (ref=%d)\n", use_ref_impl);
       ret = 1;
    }
 
@@ -726,16 +726,16 @@ void testopus_limit2_checkwithin1(int use_ref_impl)
 
       memcpy(buffer, pattern, BYTE_COUNT);
       buffer[i] = replace_value;
-      within1 = use_ref_impl ? opus_limit2_checkwithin1_c(buffer, BUFFER_SIZE) : opus_limit2_checkwithin1(buffer, BUFFER_SIZE, arch);
+      within1 = use_ref_impl ? oac_limit2_checkwithin1_c(buffer, BUFFER_SIZE) : oac_limit2_checkwithin1(buffer, BUFFER_SIZE, arch);
       if (within1 || buffer[i] != replace_value)
       {
-         fprintf (stderr, "opus_limit2_checkwithin1() handled value exceeding -1..1 erroneously (ref=%d, i=%d)\n", use_ref_impl, i);
+         fprintf (stderr, "oac_limit2_checkwithin1() handled value exceeding -1..1 erroneously (ref=%d, i=%d)\n", use_ref_impl, i);
          ret = 1;
       }
       buffer[i] = pattern[i];
       if (memcmp(buffer, pattern, BYTE_COUNT) != 0)
       {
-         fprintf (stderr, "opus_limit2_checkwithin1() modified value within -2..2  (ref=%d, i=%d)\n", use_ref_impl, i);
+         fprintf (stderr, "oac_limit2_checkwithin1() modified value within -2..2  (ref=%d, i=%d)\n", use_ref_impl, i);
          ret = 1;
       }
    }
@@ -748,16 +748,16 @@ void testopus_limit2_checkwithin1(int use_ref_impl)
 
       memcpy(buffer, pattern, BYTE_COUNT);
       buffer[i] = replace_value;
-      within1 = use_ref_impl ? opus_limit2_checkwithin1_c(buffer, BUFFER_SIZE) : opus_limit2_checkwithin1(buffer, BUFFER_SIZE, arch);
+      within1 = use_ref_impl ? oac_limit2_checkwithin1_c(buffer, BUFFER_SIZE) : oac_limit2_checkwithin1(buffer, BUFFER_SIZE, arch);
       if (within1 || buffer[i] != (replace_value > 0.f ? 2.f : -2.f))
       {
-         fprintf (stderr, "opus_limit2_checkwithin1() handled value exceeding -2..2 erroneously (ref=%d, i=%d)\n", use_ref_impl, i);
+         fprintf (stderr, "oac_limit2_checkwithin1() handled value exceeding -2..2 erroneously (ref=%d, i=%d)\n", use_ref_impl, i);
          ret = 1;
       }
       buffer[i] = pattern[i];
       if (memcmp(buffer, pattern, BYTE_COUNT) != 0)
       {
-         fprintf (stderr, "opus_limit2_checkwithin1() modified value within -2..2  (ref=%d, i=%d)\n", use_ref_impl, i);
+         fprintf (stderr, "oac_limit2_checkwithin1() modified value within -2..2  (ref=%d, i=%d)\n", use_ref_impl, i);
          ret = 1;
       }
    }
@@ -798,7 +798,7 @@ int main(void)
       testcelt_float2int16(use_ref_impl[i], 32);
       testcelt_float2int16(use_ref_impl[i], 127);
       testcelt_float2int16(use_ref_impl[i], 1031);
-      testopus_limit2_checkwithin1(use_ref_impl[i]);
+      testoac_limit2_checkwithin1(use_ref_impl[i]);
    }
 #else
    (void)i;

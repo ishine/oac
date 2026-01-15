@@ -33,7 +33,7 @@ import argparse
 
 os.environ['CUDA_VISIBLE_DEVICES'] = ""
 
-parser = argparse.ArgumentParser(description='Encode redundancy for Opus neural FEC. Designed for use with voip application and 20ms frames')
+parser = argparse.ArgumentParser(description='Encode redundancy for Oac neural FEC. Designed for use with voip application and 20ms frames')
 
 parser.add_argument('input', metavar='<input signal>', help='audio input (.wav or .raw or .pcm as int16)')
 parser.add_argument('checkpoint', metavar='<weights>', help='model checkpoint')

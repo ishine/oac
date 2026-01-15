@@ -28,7 +28,7 @@
 #ifndef OSCE_STRUCTS_H
 #define OSCE_STRUCTS_H
 
-#include "opus_types.h"
+#include "oac_types.h"
 #include "osce_config.h"
 #ifndef DISABLE_LACE
 #include "lace_data.h"
@@ -70,7 +70,7 @@ typedef struct {
     float feature_net_conv1_state[BBWENET_FNET_CONV1_STATE_SIZE];
     float feature_net_conv2_state[BBWENET_FNET_CONV2_STATE_SIZE];
     float feature_net_gru_state[BBWENET_FNET_GRU_STATE_SIZE];
-    opus_int16 outbut_buffer[OSCE_BWE_OUTPUT_DELAY];
+    oac_int16 outbut_buffer[OSCE_BWE_OUTPUT_DELAY];
     AdaConvState af1_state;
     AdaConvState af2_state;
     AdaConvState af3_state;

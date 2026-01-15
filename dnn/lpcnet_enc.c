@@ -62,20 +62,20 @@ int lpcnet_encoder_load_model(LPCNetEncState *st, const void *data, int len) {
 
 LPCNetEncState *lpcnet_encoder_create(void) {
   LPCNetEncState *st;
-  st = (LPCNetEncState*)opus_alloc(lpcnet_encoder_get_size());
+  st = (LPCNetEncState*)oac_alloc(lpcnet_encoder_get_size());
   lpcnet_encoder_init(st);
   return st;
 }
 
 void lpcnet_encoder_destroy(LPCNetEncState *st) {
-  opus_free(st);
+  oac_free(st);
 }
 
 static void frame_analysis(LPCNetEncState *st, kiss_fft_cpx *X, float *Ex, const float *in) {
   float x[WINDOW_SIZE];
-  OPUS_COPY(x, st->analysis_mem, OVERLAP_SIZE);
-  OPUS_COPY(&x[OVERLAP_SIZE], in, FRAME_SIZE);
-  OPUS_COPY(st->analysis_mem, &in[FRAME_SIZE-OVERLAP_SIZE], OVERLAP_SIZE);
+  OAC_COPY(x, st->analysis_mem, OVERLAP_SIZE);
+  OAC_COPY(&x[OVERLAP_SIZE], in, FRAME_SIZE);
+  OAC_COPY(st->analysis_mem, &in[FRAME_SIZE-OVERLAP_SIZE], OVERLAP_SIZE);
   apply_window(x);
   forward_transform(X, x);
   lpcn_compute_band_energy(Ex, X);
@@ -124,7 +124,7 @@ void compute_frame_features(LPCNetEncState *st, const float *in, int arch) {
   /* [b,a]=ellip(2, 2, 20, 1200/8000); */
   static const float lp_b[2] = {-0.84946f, 1.f};
   static const float lp_a[2] = {-1.54220f, 0.70781f};
-  OPUS_COPY(aligned_in, &st->analysis_mem[OVERLAP_SIZE-TRAINING_OFFSET], TRAINING_OFFSET);
+  OAC_COPY(aligned_in, &st->analysis_mem[OVERLAP_SIZE-TRAINING_OFFSET], TRAINING_OFFSET);
   frame_analysis(st, X, Ex, in);
   st->if_features[0] = MAX16(-1.f, MIN16(1.f, (1.f/64)*(10.f*celt_log10(1e-15f + X[0].r*X[0].r)-6.f)));
   for (i=1;i<PITCH_IF_MAX_FREQ;i++) {
@@ -137,7 +137,7 @@ void compute_frame_features(LPCNetEncState *st, const float *in, int arch) {
     st->if_features[3*i-1] = prod.i;
     st->if_features[3*i] = MAX16(-1.f, MIN16(1.f, (1.f/64)*(10.f*celt_log10(1e-15f + X[i].r*X[i].r + X[i].i*X[i].i)-6.f)));
   }
-  OPUS_COPY(st->prev_if, X, PITCH_IF_MAX_FREQ);
+  OAC_COPY(st->prev_if, X, PITCH_IF_MAX_FREQ);
   /*for (i=0;i<88;i++) printf("%f ", st->if_features[i]);printf("\n");*/
   logMax = -2;
   follow = -2;
@@ -151,12 +151,12 @@ void compute_frame_features(LPCNetEncState *st, const float *in, int arch) {
   st->features[0] -= 4;
   lpc_from_cepstrum(st->lpc, st->features);
   for (i=0;i<LPC_ORDER;i++) st->features[NB_BANDS+2+i] = st->lpc[i];
-  OPUS_MOVE(st->exc_buf, &st->exc_buf[FRAME_SIZE], PITCH_MAX_PERIOD);
-  OPUS_MOVE(st->lp_buf, &st->lp_buf[FRAME_SIZE], PITCH_MAX_PERIOD);
-  OPUS_COPY(&aligned_in[TRAINING_OFFSET], in, FRAME_SIZE-TRAINING_OFFSET);
-  OPUS_COPY(&x[0], st->pitch_mem, LPC_ORDER);
-  OPUS_COPY(&x[LPC_ORDER], aligned_in, FRAME_SIZE);
-  OPUS_COPY(st->pitch_mem, &aligned_in[FRAME_SIZE-LPC_ORDER], LPC_ORDER);
+  OAC_MOVE(st->exc_buf, &st->exc_buf[FRAME_SIZE], PITCH_MAX_PERIOD);
+  OAC_MOVE(st->lp_buf, &st->lp_buf[FRAME_SIZE], PITCH_MAX_PERIOD);
+  OAC_COPY(&aligned_in[TRAINING_OFFSET], in, FRAME_SIZE-TRAINING_OFFSET);
+  OAC_COPY(&x[0], st->pitch_mem, LPC_ORDER);
+  OAC_COPY(&x[LPC_ORDER], aligned_in, FRAME_SIZE);
+  OAC_COPY(st->pitch_mem, &aligned_in[FRAME_SIZE-LPC_ORDER], LPC_ORDER);
   celt_fir(&x[LPC_ORDER], st->lpc, &st->lp_buf[PITCH_MAX_PERIOD], FRAME_SIZE, LPC_ORDER, arch);
   for (i=0;i<FRAME_SIZE;i++) {
     st->exc_buf[PITCH_MAX_PERIOD+i] = st->lp_buf[PITCH_MAX_PERIOD+i] + .7f*st->pitch_filt;
@@ -209,11 +209,11 @@ void preemphasis(float *y, float *mem, const float *x, float coef, int N) {
 static int lpcnet_compute_single_frame_features_impl(LPCNetEncState *st, float *x, float features[NB_TOTAL_FEATURES], int arch) {
   preemphasis(x, &st->mem_preemph, x, PREEMPHASIS, FRAME_SIZE);
   compute_frame_features(st, x, arch);
-  OPUS_COPY(features, &st->features[0], NB_TOTAL_FEATURES);
+  OAC_COPY(features, &st->features[0], NB_TOTAL_FEATURES);
   return 0;
 }
 
-int lpcnet_compute_single_frame_features(LPCNetEncState *st, const opus_int16 *pcm, float features[NB_TOTAL_FEATURES], int arch) {
+int lpcnet_compute_single_frame_features(LPCNetEncState *st, const oac_int16 *pcm, float features[NB_TOTAL_FEATURES], int arch) {
   int i;
   float x[FRAME_SIZE];
   for (i=0;i<FRAME_SIZE;i++) x[i] = pcm[i];

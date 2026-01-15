@@ -39,13 +39,13 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_corrVector_FLP(
     const silk_float                *x,                                 /* I    x vector [L+order-1] used to create X       */
     const silk_float                *t,                                 /* I    Target vector [L]                           */
-    const opus_int                  L,                                  /* I    Length of vecors                            */
-    const opus_int                  Order,                              /* I    Max lag for correlation                     */
+    const oac_int                  L,                                  /* I    Length of vecors                            */
+    const oac_int                  Order,                              /* I    Max lag for correlation                     */
     silk_float                      *Xt,                                /* O    X'*t correlation vector [order]             */
     int                             arch
 )
 {
-    opus_int lag;
+    oac_int lag;
     const silk_float *ptr1;
 
     ptr1 = &x[ Order - 1 ];                     /* Points to first sample of column 0 of X: X[:,0] */
@@ -59,13 +59,13 @@ void silk_corrVector_FLP(
 /* Calculates correlation matrix X'*X */
 void silk_corrMatrix_FLP(
     const silk_float                *x,                                 /* I    x vector [ L+order-1 ] used to create X     */
-    const opus_int                  L,                                  /* I    Length of vectors                           */
-    const opus_int                  Order,                              /* I    Max lag for correlation                     */
+    const oac_int                  L,                                  /* I    Length of vectors                           */
+    const oac_int                  Order,                              /* I    Max lag for correlation                     */
     silk_float                      *XX,                                /* O    X'*X correlation matrix [order x order]     */
     int                             arch
 )
 {
-    opus_int j, lag;
+    oac_int j, lag;
     double  energy;
     const silk_float *ptr1, *ptr2;
 

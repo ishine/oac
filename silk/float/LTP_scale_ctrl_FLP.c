@@ -34,10 +34,10 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_LTP_scale_ctrl_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
-    opus_int                        condCoding                          /* I    The type of conditional coding to use       */
+    oac_int                        condCoding                          /* I    The type of conditional coding to use       */
 )
 {
-    opus_int   round_loss;
+    oac_int   round_loss;
 
     if( condCoding == CODE_INDEPENDENTLY ) {
         /* Only scale if first frame in packet */

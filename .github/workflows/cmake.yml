@@ -28,7 +28,7 @@ jobs:
         run: |
           which cmake
           cmake --version
-          cmake .. -DOPUS_BUILD_PROGRAMS=ON -DBUILD_TESTING=ON
+          cmake .. -DOAC_BUILD_PROGRAMS=ON -DBUILD_TESTING=ON
       - name: Build
         working-directory: ./build
         run: make -j 2 -s
@@ -53,7 +53,7 @@ jobs:
         run: cmake --version
       - name: Configure
         working-directory: ./build
-        run: cmake .. -DOPUS_BUILD_PROGRAMS=ON -DBUILD_TESTING=ON -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc
+        run: cmake .. -DOAC_BUILD_PROGRAMS=ON -DBUILD_TESTING=ON -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc
       - name: Build
         working-directory: ./build
         run: cmake --build . -j 2 --config Release --target package
@@ -206,25 +206,25 @@ jobs:
             name: "CustomModes/Linux/Lib/X64/Release",
             os: ubuntu-latest,
             config: Release,
-            args: "-DOPUS_CUSTOM_MODES=ON"
+            args: "-DOAC_CUSTOM_MODES=ON"
           }
         - {
             name: "AssertionsFuzz/Windows/Lib/X64/Release",
             os: windows-latest,
             config: Release,
-            args: -G "Visual Studio 17 2022" -A Win32 -DOPUS_ASSERTIONS=ON -DOPUS_FUZZING=ON
+            args: -G "Visual Studio 17 2022" -A Win32 -DOAC_ASSERTIONS=ON -DOAC_FUZZING=ON
           }
         - {
             name: "AssertionsFuzz/Linux/Lib/X64/Release",
             os: ubuntu-latest,
             config: Release,
-            args: -DOPUS_ASSERTIONS=ON -DOPUS_FUZZING=ON
+            args: -DOAC_ASSERTIONS=ON -DOAC_FUZZING=ON
           }
         - {
             name: "AssertionsFuzz/MacOSX/Lib/X64/Release",
             os: macos-latest,
             config: Release,
-            args: -DOPUS_ASSERTIONS=ON -DOPUS_FUZZING=ON
+            args: -DOAC_ASSERTIONS=ON -DOAC_FUZZING=ON
           }
 
     steps:
@@ -249,7 +249,7 @@ jobs:
         run: cmake --version
       - name: Configure
         working-directory: ./build
-        run: cmake .. ${{ matrix.config.args }} -DCMAKE_BUILD_TYPE=${{ matrix.config.config }} -DOPUS_BUILD_PROGRAMS=ON -DBUILD_TESTING=ON
+        run: cmake .. ${{ matrix.config.args }} -DCMAKE_BUILD_TYPE=${{ matrix.config.config }} -DOAC_BUILD_PROGRAMS=ON -DBUILD_TESTING=ON
       - name: Build
         working-directory: ./build
         run: cmake --build . -j 2 --config ${{ matrix.config.config }} --target package

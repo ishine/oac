@@ -45,7 +45,7 @@ static unsigned ec_laplace_get_freq1(unsigned fs0, int decay)
 {
    unsigned ft;
    ft = 32768 - LAPLACE_MINP*(2*LAPLACE_NMIN) - fs0;
-   return ft*(opus_int32)(16384-decay)>>15;
+   return ft*(oac_int32)(16384-decay)>>15;
 }
 
 void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay)
@@ -66,7 +66,7 @@ void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay)
       {
          fs *= 2;
          fl += fs+2*LAPLACE_MINP;
-         fs = (fs*(opus_int32)decay)>>15;
+         fs = (fs*(oac_int32)decay)>>15;
       }
       /* Everything beyond that has probability LAPLACE_MINP. */
       if (!fs)
@@ -108,7 +108,7 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay)
       {
          fs *= 2;
          fl += fs;
-         fs = ((fs-2*LAPLACE_MINP)*(opus_int32)decay)>>15;
+         fs = ((fs-2*LAPLACE_MINP)*(oac_int32)decay)>>15;
          fs += LAPLACE_MINP;
          val++;
       }
@@ -133,10 +133,10 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay)
    return val;
 }
 
-void ec_laplace_encode_p0(ec_enc *enc, int value, opus_uint16 p0, opus_uint16 decay)
+void ec_laplace_encode_p0(ec_enc *enc, int value, oac_uint16 p0, oac_uint16 decay)
 {
    int s;
-   opus_uint16 sign_icdf[3];
+   oac_uint16 sign_icdf[3];
    sign_icdf[0] = 32768-p0;
    sign_icdf[1] = sign_icdf[0]/2;
    sign_icdf[2] = 0;
@@ -146,11 +146,11 @@ void ec_laplace_encode_p0(ec_enc *enc, int value, opus_uint16 p0, opus_uint16 de
    if (value)
    {
       int i;
-      opus_uint16 icdf[8];
+      oac_uint16 icdf[8];
       icdf[0] = IMAX(7, decay);
       for (i=1;i<7;i++)
       {
-         icdf[i] = IMAX(7-i, (icdf[i-1] * (opus_int32)decay) >> 15);
+         icdf[i] = IMAX(7-i, (icdf[i-1] * (oac_int32)decay) >> 15);
       }
       icdf[7] = 0;
       value--;
@@ -161,11 +161,11 @@ void ec_laplace_encode_p0(ec_enc *enc, int value, opus_uint16 p0, opus_uint16 de
    }
 }
 
-int ec_laplace_decode_p0(ec_dec *dec, opus_uint16 p0, opus_uint16 decay)
+int ec_laplace_decode_p0(ec_dec *dec, oac_uint16 p0, oac_uint16 decay)
 {
    int s;
    int value;
-   opus_uint16 sign_icdf[3];
+   oac_uint16 sign_icdf[3];
    sign_icdf[0] = 32768-p0;
    sign_icdf[1] = sign_icdf[0]/2;
    sign_icdf[2] = 0;
@@ -175,11 +175,11 @@ int ec_laplace_decode_p0(ec_dec *dec, opus_uint16 p0, opus_uint16 decay)
    {
       int i;
       int v;
-      opus_uint16 icdf[8];
+      oac_uint16 icdf[8];
       icdf[0] = IMAX(7, decay);
       for (i=1;i<7;i++)
       {
-         icdf[i] = IMAX(7-i, (icdf[i-1] * (opus_int32)decay) >> 15);
+         icdf[i] = IMAX(7-i, (icdf[i-1] * (oac_int32)decay) >> 15);
       }
       icdf[7] = 0;
       value = 1;

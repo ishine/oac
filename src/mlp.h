@@ -27,24 +27,24 @@
 #ifndef MLP_H_
 #define MLP_H_
 
-#include "opus_types.h"
+#include "oac_types.h"
 
 #define WEIGHTS_SCALE (1.f/128)
 
 #define MAX_NEURONS 32
 
 typedef struct {
-  const opus_int8 *bias;
-  const opus_int8 *input_weights;
+  const oac_int8 *bias;
+  const oac_int8 *input_weights;
   int nb_inputs;
   int nb_neurons;
   int sigmoid;
 } AnalysisDenseLayer;
 
 typedef struct {
-  const opus_int8 *bias;
-  const opus_int8 *input_weights;
-  const opus_int8 *recurrent_weights;
+  const oac_int8 *bias;
+  const oac_int8 *input_weights;
+  const oac_int8 *recurrent_weights;
   int nb_inputs;
   int nb_neurons;
 } AnalysisGRULayer;

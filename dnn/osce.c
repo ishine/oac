@@ -68,7 +68,7 @@ static void print_int_array(FILE *fid, const char  *name, const int *array, int 
     }
 }
 
-static void print_int8_array(FILE *fid, const char  *name, const opus_int8 *array, int n)
+static void print_int8_array(FILE *fid, const char  *name, const oac_int8 *array, int n)
 {
     int i;
     for (i = 0; i < n; i++)
@@ -141,7 +141,7 @@ static void compute_lace_numbits_embedding(float *emb, float numbits, int dim, f
 static int init_lace(LACE *hLACE, const WeightArray *weights)
 {
     int ret = 0;
-    OPUS_CLEAR(hLACE, 1);
+    OAC_CLEAR(hLACE, 1);
     celt_assert(weights != NULL);
 
     ret = init_lacelayers(&hLACE->layers, weights);
@@ -153,7 +153,7 @@ static int init_lace(LACE *hLACE, const WeightArray *weights)
 
 static void reset_lace_state(LACEState *state)
 {
-    OPUS_CLEAR(state, 1);
+    OAC_CLEAR(state, 1);
 
     init_adacomb_state(&state->cf1_state);
     init_adacomb_state(&state->cf2_state);
@@ -183,9 +183,9 @@ static void lace_feature_net(
     /* scaling and dimensionality reduction */
     for (i_subframe = 0; i_subframe < 4; i_subframe ++)
     {
-        OPUS_COPY(input_buffer, features + i_subframe * LACE_NUM_FEATURES, LACE_NUM_FEATURES);
-        OPUS_COPY(input_buffer + LACE_NUM_FEATURES, hLACE->layers.lace_pitch_embedding.float_weights + periods[i_subframe] * LACE_PITCH_EMBEDDING_DIM, LACE_PITCH_EMBEDDING_DIM);
-        OPUS_COPY(input_buffer + LACE_NUM_FEATURES + LACE_PITCH_EMBEDDING_DIM, numbits_embedded, 2 * LACE_NUMBITS_EMBEDDING_DIM);
+        OAC_COPY(input_buffer, features + i_subframe * LACE_NUM_FEATURES, LACE_NUM_FEATURES);
+        OAC_COPY(input_buffer + LACE_NUM_FEATURES, hLACE->layers.lace_pitch_embedding.float_weights + periods[i_subframe] * LACE_PITCH_EMBEDDING_DIM, LACE_PITCH_EMBEDDING_DIM);
+        OAC_COPY(input_buffer + LACE_NUM_FEATURES + LACE_PITCH_EMBEDDING_DIM, numbits_embedded, 2 * LACE_NUMBITS_EMBEDDING_DIM);
 
         compute_generic_conv1d(
             &hLACE->layers.lace_fnet_conv1,
@@ -198,7 +198,7 @@ static void lace_feature_net(
     }
 
     /* subframe accumulation */
-    OPUS_COPY(input_buffer, output_buffer, 4 * LACE_HIDDEN_FEATURE_DIM);
+    OAC_COPY(input_buffer, output_buffer, 4 * LACE_HIDDEN_FEATURE_DIM);
     compute_generic_conv1d(
         &hLACE->layers.lace_fnet_conv2,
         output_buffer,
@@ -210,7 +210,7 @@ static void lace_feature_net(
     );
 
     /* tconv upsampling */
-    OPUS_COPY(input_buffer, output_buffer, 4 * LACE_COND_DIM);
+    OAC_COPY(input_buffer, output_buffer, 4 * LACE_COND_DIM);
     compute_generic_dense(
         &hLACE->layers.lace_fnet_tconv,
         output_buffer,
@@ -220,7 +220,7 @@ static void lace_feature_net(
     );
 
     /* GRU */
-    OPUS_COPY(input_buffer, output_buffer, 4 * LACE_COND_DIM);
+    OAC_COPY(input_buffer, output_buffer, 4 * LACE_COND_DIM);
     for (i_subframe = 0; i_subframe < 4; i_subframe++)
     {
         compute_generic_gru(
@@ -230,7 +230,7 @@ static void lace_feature_net(
             input_buffer + i_subframe * LACE_COND_DIM,
             arch
         );
-        OPUS_COPY(output + i_subframe * LACE_COND_DIM, state->feature_net_gru_state, LACE_COND_DIM);
+        OAC_COPY(output + i_subframe * LACE_COND_DIM, state->feature_net_gru_state, LACE_COND_DIM);
     }
 }
 
@@ -406,7 +406,7 @@ static void compute_nolace_numbits_embedding(float *emb, float numbits, int dim,
 static int init_nolace(NoLACE *hNoLACE, const WeightArray *weights)
 {
     int ret = 0;
-    OPUS_CLEAR(hNoLACE, 1);
+    OAC_CLEAR(hNoLACE, 1);
     celt_assert(weights != NULL);
 
     ret = init_nolacelayers(&hNoLACE->layers, weights);
@@ -418,7 +418,7 @@ static int init_nolace(NoLACE *hNoLACE, const WeightArray *weights)
 
 static void reset_nolace_state(NoLACEState *state)
 {
-    OPUS_CLEAR(state, 1);
+    OAC_CLEAR(state, 1);
 
     init_adacomb_state(&state->cf1_state);
     init_adacomb_state(&state->cf2_state);
@@ -454,9 +454,9 @@ static void nolace_feature_net(
     /* scaling and dimensionality reduction */
     for (i_subframe = 0; i_subframe < 4; i_subframe ++)
     {
-        OPUS_COPY(input_buffer, features + i_subframe * NOLACE_NUM_FEATURES, NOLACE_NUM_FEATURES);
-        OPUS_COPY(input_buffer + NOLACE_NUM_FEATURES, hNoLACE->layers.nolace_pitch_embedding.float_weights + periods[i_subframe] * NOLACE_PITCH_EMBEDDING_DIM, NOLACE_PITCH_EMBEDDING_DIM);
-        OPUS_COPY(input_buffer + NOLACE_NUM_FEATURES + NOLACE_PITCH_EMBEDDING_DIM, numbits_embedded, 2 * NOLACE_NUMBITS_EMBEDDING_DIM);
+        OAC_COPY(input_buffer, features + i_subframe * NOLACE_NUM_FEATURES, NOLACE_NUM_FEATURES);
+        OAC_COPY(input_buffer + NOLACE_NUM_FEATURES, hNoLACE->layers.nolace_pitch_embedding.float_weights + periods[i_subframe] * NOLACE_PITCH_EMBEDDING_DIM, NOLACE_PITCH_EMBEDDING_DIM);
+        OAC_COPY(input_buffer + NOLACE_NUM_FEATURES + NOLACE_PITCH_EMBEDDING_DIM, numbits_embedded, 2 * NOLACE_NUMBITS_EMBEDDING_DIM);
 
         compute_generic_conv1d(
             &hNoLACE->layers.nolace_fnet_conv1,
@@ -469,7 +469,7 @@ static void nolace_feature_net(
     }
 
     /* subframe accumulation */
-    OPUS_COPY(input_buffer, output_buffer, 4 * NOLACE_HIDDEN_FEATURE_DIM);
+    OAC_COPY(input_buffer, output_buffer, 4 * NOLACE_HIDDEN_FEATURE_DIM);
     compute_generic_conv1d(
         &hNoLACE->layers.nolace_fnet_conv2,
         output_buffer,
@@ -481,7 +481,7 @@ static void nolace_feature_net(
     );
 
     /* tconv upsampling */
-    OPUS_COPY(input_buffer, output_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(input_buffer, output_buffer, 4 * NOLACE_COND_DIM);
     compute_generic_dense(
         &hNoLACE->layers.nolace_fnet_tconv,
         output_buffer,
@@ -491,7 +491,7 @@ static void nolace_feature_net(
     );
 
     /* GRU */
-    OPUS_COPY(input_buffer, output_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(input_buffer, output_buffer, 4 * NOLACE_COND_DIM);
     for (i_subframe = 0; i_subframe < 4; i_subframe++)
     {
         compute_generic_gru(
@@ -501,7 +501,7 @@ static void nolace_feature_net(
             input_buffer + i_subframe * NOLACE_COND_DIM,
             arch
         );
-        OPUS_COPY(output + i_subframe * NOLACE_COND_DIM, state->feature_net_gru_state, NOLACE_COND_DIM);
+        OAC_COPY(output + i_subframe * NOLACE_COND_DIM, state->feature_net_gru_state, NOLACE_COND_DIM);
     }
 }
 
@@ -596,7 +596,7 @@ static void nolace_process_20ms_frame(
     }
 
     /* update feature buffer */
-    OPUS_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
 
 #ifdef DEBUG_NOLACE
     fwrite(x_buffer1, sizeof(float), 4 * NOLACE_FRAME_SIZE, f_postcf1);
@@ -637,7 +637,7 @@ static void nolace_process_20ms_frame(
     }
 
     /* update feature buffer */
-    OPUS_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
 
 #ifdef DEBUG_NOLACE
     fwrite(x_buffer1, sizeof(float), 4 * NOLACE_FRAME_SIZE, f_postcf2);
@@ -677,7 +677,7 @@ static void nolace_process_20ms_frame(
     }
 
     /* update feature buffer */
-    OPUS_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
 
 #ifdef DEBUG_NOLACE
     fwrite(x_buffer2, sizeof(float), 4 * NOLACE_FRAME_SIZE * NOLACE_AF1_OUT_CHANNELS, f_postaf1);
@@ -734,7 +734,7 @@ static void nolace_process_20ms_frame(
     }
 
     /* update feature buffer */
-    OPUS_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
 
 #ifdef DEBUG_NOLACE
     fwrite(x_buffer1, sizeof(float), 4 * NOLACE_FRAME_SIZE * NOLACE_AF2_OUT_CHANNELS, f_postaf2);
@@ -791,7 +791,7 @@ static void nolace_process_20ms_frame(
     }
 
     /* update feature buffer */
-    OPUS_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
+    OAC_COPY(feature_buffer, feature_transform_buffer, 4 * NOLACE_COND_DIM);
 
     /* third shape-mix round */
     for (i_subframe = 0; i_subframe < 4; i_subframe++)
@@ -899,7 +899,7 @@ static void bbwe_feature_net(
         fwrite(output_buffer + i_frame * BBWENET_FNET_CONV1_OUT_SIZE, sizeof(float), BBWENET_FNET_CONV1_OUT_SIZE, f_conv1);
 #endif
     }
-    OPUS_COPY(input_buffer, output_buffer, num_frames * BBWENET_FNET_CONV1_OUT_SIZE);
+    OAC_COPY(input_buffer, output_buffer, num_frames * BBWENET_FNET_CONV1_OUT_SIZE);
 
     /* second conv layer */
     for (i_frame = 0; i_frame < num_frames; i_frame++)
@@ -917,7 +917,7 @@ static void bbwe_feature_net(
         fwrite(output_buffer + i_frame * BBWENET_FNET_CONV2_OUT_SIZE, sizeof(float), BBWENET_FNET_CONV2_OUT_SIZE, f_conv2);
 #endif
     }
-    OPUS_COPY(input_buffer, output_buffer, num_frames * BBWENET_FNET_CONV2_OUT_SIZE);
+    OAC_COPY(input_buffer, output_buffer, num_frames * BBWENET_FNET_CONV2_OUT_SIZE);
 
     /* tconv upsampling*/
     for (i_frame = 0; i_frame < num_frames; i_frame++)
@@ -933,7 +933,7 @@ static void bbwe_feature_net(
         fwrite(output_buffer + i_frame * BBWENET_FNET_TCONV_OUT_CHANNELS * BBWENET_FNET_TCONV_STRIDE, sizeof(float), BBWENET_FNET_TCONV_OUT_CHANNELS * BBWENET_FNET_TCONV_STRIDE, f_tconv);
 #endif
     }
-    OPUS_COPY(input_buffer, output_buffer, num_frames * BBWENET_FNET_TCONV_OUT_CHANNELS * BBWENET_FNET_TCONV_STRIDE);
+    OAC_COPY(input_buffer, output_buffer, num_frames * BBWENET_FNET_TCONV_OUT_CHANNELS * BBWENET_FNET_TCONV_STRIDE);
 
     /* GRU */
     celt_assert(BBWENET_FNET_TCONV_STRIDE == 2);
@@ -949,7 +949,7 @@ static void bbwe_feature_net(
 #ifdef DEBUG_BBWENET
         fwrite(state->feature_net_gru_state, sizeof(float), BBWENET_FNET_GRU_STATE_SIZE, f_gru);
 #endif
-        OPUS_COPY(output + i_subframe * BBWENET_FNET_GRU_STATE_SIZE, state->feature_net_gru_state, BBWENET_FNET_GRU_STATE_SIZE);
+        OAC_COPY(output + i_subframe * BBWENET_FNET_GRU_STATE_SIZE, state->feature_net_gru_state, BBWENET_FNET_GRU_STATE_SIZE);
     }
 }
 
@@ -1001,8 +1001,8 @@ static void interpol_3_2(resamp_state *state, float *x_out, const float *x_in, i
     celt_assert(num_samples < 8 * BBWENET_FRAME_SIZE16);
     celt_assert(num_samples % 2 == 0);
 
-    OPUS_COPY(buffer, state->interpol_buffer, DELAY_SAMPLES);
-    OPUS_COPY(buffer + DELAY_SAMPLES, x_in, num_samples);
+    OAC_COPY(buffer, state->interpol_buffer, DELAY_SAMPLES);
+    OAC_COPY(buffer + DELAY_SAMPLES, x_in, num_samples);
 
     for (i_sample = 0; i_sample < num_samples; i_sample+=2)
     {
@@ -1035,7 +1035,7 @@ static void interpol_3_2(resamp_state *state, float *x_out, const float *x_in, i
     }
 
     /* copy last samples to buffer */
-    OPUS_COPY(state->interpol_buffer, buffer + num_samples, DELAY_SAMPLES);
+    OAC_COPY(state->interpol_buffer, buffer + num_samples, DELAY_SAMPLES);
 }
 
 static void upsamp_2x(resamp_state *state, float *x_out, const float *x_in, int num_samples)
@@ -1049,7 +1049,7 @@ static void upsamp_2x(resamp_state *state, float *x_out, const float *x_in, int 
     celt_assert(num_samples > 1);
     celt_assert(num_samples < 4 * BBWENET_FRAME_SIZE16);
 
-    OPUS_COPY(buffer, x_in, num_samples);
+    OAC_COPY(buffer, x_in, num_samples);
 
     for (k = 0; k < num_samples; k++)
     {
@@ -1349,7 +1349,7 @@ static void bbwenet_process_frames(
 
 static void reset_bbwenet_state(BBWENetState *state)
 {
-    OPUS_CLEAR(state, 1);
+    OAC_CLEAR(state, 1);
 
     init_adaconv_state(&state->af1_state);
     init_adaconv_state(&state->af2_state);
@@ -1361,7 +1361,7 @@ static void reset_bbwenet_state(BBWENetState *state)
 static int init_bbwenet(BBWENet *hBBWENET, const WeightArray *weights)
 {
     int ret = 0;
-    OPUS_CLEAR(hBBWENET, 1);
+    OAC_CLEAR(hBBWENET, 1);
     celt_assert(weights != NULL);
 
     ret = init_bbwenetlayers(&hBBWENET->layers, weights);
@@ -1382,7 +1382,7 @@ void osce_reset(silk_OSCE_struct *hOSCE, int method)
 {
     OSCEState *state = &hOSCE->state;
 
-    OPUS_CLEAR(&hOSCE->features, 1);
+    OAC_CLEAR(&hOSCE->features, 1);
 
     switch(method)
     {
@@ -1410,7 +1410,7 @@ void osce_reset(silk_OSCE_struct *hOSCE, int method)
 void osce_bwe_reset(silk_OSCE_BWE_struct *hOSCEBWE)
 {
     int k;
-    OPUS_CLEAR(&hOSCEBWE->features, 1);
+    OAC_CLEAR(&hOSCEBWE->features, 1);
 #if 1
     /* weird python initialization: Fix eventually! */
     for (k = 0; k <= OSCE_BWE_MAX_INSTAFREQ_BIN; k ++)
@@ -1478,9 +1478,9 @@ int osce_load_models(OSCEModel *model, const void *data, int len)
 void osce_bwe(
     OSCEModel                   *model,                         /* I    OSCE model struct                           */
     silk_OSCE_BWE_struct        *psOSCEBWE,                     /* I/O  OSCE BWE state                              */
-    opus_int16                  xq48[],                         /* O    bandwidth-extended speech                   */
-    opus_int16                  xq16[],                         /* I    Decoded speech                              */
-    opus_int32                  xq16_len,                       /* I    Length of xq16 in samples                   */
+    oac_int16                  xq48[],                         /* O    bandwidth-extended speech                   */
+    oac_int16                  xq16[],                         /* I    Decoded speech                              */
+    oac_int32                  xq16_len,                       /* I    Length of xq16 in samples                   */
     int                         arch                            /* I    Run-time architecture                       */
  )
  {
@@ -1521,7 +1521,7 @@ void osce_bwe(
 #endif
 
     /* scale and delay output */
-    OPUS_COPY(xq48, psOSCEBWE->state.bbwenet.outbut_buffer, OSCE_BWE_OUTPUT_DELAY);
+    OAC_COPY(xq48, psOSCEBWE->state.bbwenet.outbut_buffer, OSCE_BWE_OUTPUT_DELAY);
     for (i = 0; i < 3 * xq16_len - OSCE_BWE_OUTPUT_DELAY; i++)
     {
         float tmp = 32768.f * out_buffer[i];
@@ -1547,8 +1547,8 @@ void osce_enhance_frame(
     OSCEModel                   *model,                         /* I    OSCE model struct                           */
     silk_decoder_state          *psDec,                         /* I/O  Decoder state                               */
     silk_decoder_control        *psDecCtrl,                     /* I    Decoder control                             */
-    opus_int16                  xq[],                           /* I/O  Decoded speech                              */
-    opus_int32                  num_bits,                       /* I    Size of SILK payload in bits                */
+    oac_int16                  xq[],                           /* I/O  Decoded speech                              */
+    oac_int32                  num_bits,                       /* I    Size of SILK payload in bits                */
     int                         arch                            /* I    Run-time architecture                       */
 )
 {
@@ -1582,7 +1582,7 @@ void osce_enhance_frame(
     switch(method)
     {
         case OSCE_METHOD_NONE:
-            OPUS_COPY(out_buffer, in_buffer, 320);
+            OAC_COPY(out_buffer, in_buffer, 320);
             break;
 #ifndef DISABLE_LACE
         case OSCE_METHOD_LACE:
@@ -1625,7 +1625,7 @@ void osce_enhance_frame(
         float tmp;
         int16_t itmp;
         float lpc_buffer[16] = {0};
-        opus_int16 *A_Q12, *B_Q14;
+        oac_int16 *A_Q12, *B_Q14;
 
         (void) num_bits;
         (void) arch;
@@ -1660,7 +1660,7 @@ void osce_enhance_frame(
 
     if (psDec->osce.features.reset > 1)
     {
-        OPUS_COPY(out_buffer, in_buffer, 320);
+        OAC_COPY(out_buffer, in_buffer, 320);
         psDec->osce.features.reset --;
     }
     else if (psDec->osce.features.reset)

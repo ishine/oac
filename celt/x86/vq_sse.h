@@ -27,24 +27,24 @@
 #ifndef VQ_SSE_H
 #define VQ_SSE_H
 
-#if defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT)
+#if defined(OAC_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT)
 
-opus_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
+oac_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
 
-#if defined(OPUS_X86_PRESUME_SSE2)
+#if defined(OAC_X86_PRESUME_SSE2)
 
 #define OVERRIDE_OP_PVQ_SEARCH
 #define op_pvq_search(x, iy, K, N, arch) \
     (op_pvq_search_sse2(x, iy, K, N, arch))
 
-#elif defined(OPUS_HAVE_RTCD)
+#elif defined(OAC_HAVE_RTCD)
 
 #define OVERRIDE_OP_PVQ_SEARCH
-extern opus_val16 (*const OP_PVQ_SEARCH_IMPL[OPUS_ARCHMASK + 1])(
+extern oac_val16 (*const OP_PVQ_SEARCH_IMPL[OAC_ARCHMASK + 1])(
       celt_norm *_X, int *iy, int K, int N, int arch);
 
 #  define op_pvq_search(X, iy, K, N, arch) \
-    ((*OP_PVQ_SEARCH_IMPL[(arch) & OPUS_ARCHMASK])(X, iy, K, N, arch))
+    ((*OP_PVQ_SEARCH_IMPL[(arch) & OAC_ARCHMASK])(X, iy, K, N, arch))
 
 #endif
 #endif

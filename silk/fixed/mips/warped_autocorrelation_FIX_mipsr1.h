@@ -65,21 +65,21 @@ static inline long long MIPS_SHILO(long long acc, int sh) {
 #define QS  14
 
 void silk_warped_autocorrelation_FIX_c(
-          opus_int32                *corr,                                  /* O    Result [order + 1]                                                          */
-          opus_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
-    const opus_int16                *input,                                 /* I    Input data to correlate                                                     */
-    const opus_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
-    const opus_int                  length,                                 /* I    Length of input                                                             */
-    const opus_int                  order                                   /* I    Correlation order (even)                                                    */
+          oac_int32                *corr,                                  /* O    Result [order + 1]                                                          */
+          oac_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
+    const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
+    const oac_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
+    const oac_int                  length,                                 /* I    Length of input                                                             */
+    const oac_int                  order                                   /* I    Correlation order (even)                                                    */
 )
 {
-    opus_int   n, i, lsh;
-    opus_int32 tmp1_QS=0, tmp2_QS=0, tmp3_QS=0, tmp4_QS=0, tmp5_QS=0, tmp6_QS=0, tmp7_QS=0, tmp8_QS=0, start_1=0, start_2=0, start_3=0;
-    opus_int32 state_QS[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
-    opus_int64 corr_QC[  MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
-    opus_int64 temp64;
+    oac_int   n, i, lsh;
+    oac_int32 tmp1_QS=0, tmp2_QS=0, tmp3_QS=0, tmp4_QS=0, tmp5_QS=0, tmp6_QS=0, tmp7_QS=0, tmp8_QS=0, start_1=0, start_2=0, start_3=0;
+    oac_int32 state_QS[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+    oac_int64 corr_QC[  MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+    oac_int64 temp64;
 
-    opus_int32 val;
+    oac_int32 val;
     val = 2 * QS - QC;
 
     /* Order must be even */
@@ -89,13 +89,13 @@ void silk_warped_autocorrelation_FIX_c(
     /* Loop over samples */
     for( n = 0; n < length; n=n+4 ) {
 
-        tmp1_QS = silk_LSHIFT32( (opus_int32)input[ n ], QS );
+        tmp1_QS = silk_LSHIFT32( (oac_int32)input[ n ], QS );
         start_1 = tmp1_QS;
-        tmp3_QS = silk_LSHIFT32( (opus_int32)input[ n+1], QS );
+        tmp3_QS = silk_LSHIFT32( (oac_int32)input[ n+1], QS );
         start_2 = tmp3_QS;
-        tmp5_QS = silk_LSHIFT32( (opus_int32)input[ n+2], QS );
+        tmp5_QS = silk_LSHIFT32( (oac_int32)input[ n+2], QS );
         start_3 = tmp5_QS;
-        tmp7_QS = silk_LSHIFT32( (opus_int32)input[ n+3], QS );
+        tmp7_QS = silk_LSHIFT32( (oac_int32)input[ n+3], QS );
 
         /* Loop over allpass sections */
         for( i = 0; i < order; i += 2 ) {
@@ -138,7 +138,7 @@ void silk_warped_autocorrelation_FIX_c(
 
     for(;n< length; n++ ) {
 
-        tmp1_QS = silk_LSHIFT32( (opus_int32)input[ n ], QS );
+        tmp1_QS = silk_LSHIFT32( (oac_int32)input[ n ], QS );
 
         /* Loop over allpass sections */
         for( i = 0; i < order; i += 2 ) {
@@ -169,14 +169,14 @@ void silk_warped_autocorrelation_FIX_c(
             temp64 = corr_QC[ i ];
             //temp64 = MIPS_SHILO(temp64, val);
             temp64 = (val >= 0) ? (temp64 >> val) : (temp64 << -val);
-            corr[ i ] = (opus_int32)silk_CHECK_FIT32( MIPS_SHILO( temp64, -lsh ) );
+            corr[ i ] = (oac_int32)silk_CHECK_FIT32( MIPS_SHILO( temp64, -lsh ) );
         }
     } else {
         for( i = 0; i < order + 1; i++ ) {
             temp64 = corr_QC[ i ];
             //temp64 = MIPS_SHILO(temp64, val);
             temp64 = (val >= 0) ? (temp64 >> val) : (temp64 << -val);
-            corr[ i ] = (opus_int32)silk_CHECK_FIT32( MIPS_SHILO( temp64, -lsh ) );
+            corr[ i ] = (oac_int32)silk_CHECK_FIT32( MIPS_SHILO( temp64, -lsh ) );
         }
     }
 

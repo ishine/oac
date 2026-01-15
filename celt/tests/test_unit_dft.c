@@ -90,11 +90,11 @@ void test1d(int nfft,int isinverse,int arch)
     kiss_fft_cpx *out;
     int k;
 #ifdef CUSTOM_MODES
-    kiss_fft_state *cfg = opus_fft_alloc(nfft,0,0,arch);
+    kiss_fft_state *cfg = oac_fft_alloc(nfft,0,0,arch);
 #else
     int id;
     const kiss_fft_state *cfg;
-    CELTMode *mode = opus_custom_mode_create(48000, 960, NULL);
+    CELTMode *mode = oac_custom_mode_create(48000, 960, NULL);
     if (nfft == 480) id = 0;
     else if (nfft == 240) id = 1;
     else if (nfft == 120) id = 2;
@@ -127,9 +127,9 @@ void test1d(int nfft,int isinverse,int arch)
     /*for (k=0;k<nfft;++k) printf("%d %d ", in[k].r, in[k].i);printf("\n");*/
 
     if (isinverse)
-       opus_ifft(cfg,in,out, arch);
+       oac_ifft(cfg,in,out, arch);
     else
-       opus_fft(cfg,in,out, arch);
+       oac_fft(cfg,in,out, arch);
 
     /*for (k=0;k<nfft;++k) printf("%d %d ", out[k].r, out[k].i);printf("\n");*/
 
@@ -138,7 +138,7 @@ void test1d(int nfft,int isinverse,int arch)
     free(in);
     free(out);
 #ifdef CUSTOM_MODES
-    opus_fft_free(cfg, arch);
+    oac_fft_free(cfg, arch);
 #endif
 }
 
@@ -146,7 +146,7 @@ int main(int argc,char ** argv)
 {
     int arch;
     ALLOC_STACK;
-    arch = opus_select_arch();
+    arch = oac_select_arch();
 
     if (argc>1) {
         int k;

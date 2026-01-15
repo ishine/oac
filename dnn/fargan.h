@@ -62,7 +62,7 @@ int fargan_load_model(FARGANState *st, const void *data, int len);
 void fargan_cont(FARGANState *st, const float *pcm0, const float *features0);
 
 void fargan_synthesize(FARGANState *st, float *pcm, const float *features);
-void fargan_synthesize_int(FARGANState *st, opus_int16 *pcm, const float *features);
+void fargan_synthesize_int(FARGANState *st, oac_int16 *pcm, const float *features);
 
 
 #endif /* FARGAN_H */

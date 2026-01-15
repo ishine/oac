@@ -31,13 +31,13 @@ POSSIBILITY OF SUCH DAMAGE.
 /* This macro only avoids the undefined behaviour from a left shift of
    a negative value. It should only be used in macros that can't include
    SigProc_FIX.h. In other cases, use silk_LSHIFT32(). */
-#define SAFE_SHL(a, b) ((opus_int32)((opus_uint32)(a) << (b)))
+#define SAFE_SHL(a, b) ((oac_int32)((oac_uint32)(a) << (b)))
 
-/* (a32 * (opus_int32)((opus_int16)(b32))) >> 16 output have to be 32bit int */
+/* (a32 * (oac_int32)((oac_int16)(b32))) >> 16 output have to be 32bit int */
 #undef silk_SMULWB
-static OPUS_INLINE opus_int32 silk_SMULWB_lx7(opus_int32 a32, opus_int32 b32)
+static OAC_INLINE oac_int32 silk_SMULWB_lx7(oac_int32 a32, oac_int32 b32)
 {
-    opus_int32 res;
+    oac_int32 res;
     __asm__(
         "mulsh %0, %1, %2\n\t"
         : "=r"(res)
@@ -47,15 +47,15 @@ static OPUS_INLINE opus_int32 silk_SMULWB_lx7(opus_int32 a32, opus_int32 b32)
 }
 #define silk_SMULWB(a32, b32) (silk_SMULWB_lx7(a32, b32))
 
-/* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
+/* a32 + (b32 * (oac_int32)((oac_int16)(c32))) >> 16 output have to be 32bit int */
 #undef silk_SMLAWB
 #define silk_SMLAWB(a32, b32, c32) ((a32) + silk_SMULWB(b32, c32))
 
 /* (a32 * (b32 >> 16)) >> 16 */
 #undef silk_SMULWT
-static OPUS_INLINE opus_int32 silk_SMULWT_lx7(opus_int32 a32, opus_int32 b32)
+static OAC_INLINE oac_int32 silk_SMULWT_lx7(oac_int32 a32, oac_int32 b32)
 {
-    opus_int32 res;
+    oac_int32 res;
     __asm__(
         "mulsh %0, %1, %2\n\t"
         : "=r"(res)
@@ -69,7 +69,7 @@ static OPUS_INLINE opus_int32 silk_SMULWT_lx7(opus_int32 a32, opus_int32 b32)
 #define silk_SMLAWT(a32, b32, c32) ((a32) + silk_SMULWT_lx7(b32, c32))
 
 #undef silk_CLZ32
-static OPUS_INLINE opus_int32 silk_CLZ32_lx7(opus_int32 in32)
+static OAC_INLINE oac_int32 silk_CLZ32_lx7(oac_int32 in32)
 {
     return __builtin_clz(in32);
 }

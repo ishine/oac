@@ -33,7 +33,7 @@
 #include "x86cpu.h"
 #include "pitch.h"
 
-#if defined(OPUS_X86_MAY_HAVE_AVX2) && !defined(FIXED_POINT)
+#if defined(OAC_X86_MAY_HAVE_AVX2) && !defined(FIXED_POINT)
 
 /* Like the "regular" xcorr_kernel(), but computes 8 results at a time. */
 static void xcorr_kernel_avx(const float *x, const float *y, float sum[8], int len)

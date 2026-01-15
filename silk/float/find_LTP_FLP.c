@@ -36,13 +36,13 @@ void silk_find_LTP_FLP(
     silk_float                      XX[ MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER ], /* O    Weight for LTP quantization         */
     silk_float                      xX[ MAX_NB_SUBFR * LTP_ORDER ],     /* O    Weight for LTP quantization                 */
     const silk_float                r_ptr[],                            /* I    LPC residual                                */
-    const opus_int                  lag[ MAX_NB_SUBFR ],                /* I    LTP lags                                    */
-    const opus_int                  subfr_length,                       /* I    Subframe length                             */
-    const opus_int                  nb_subfr,                           /* I    number of subframes                         */
+    const oac_int                  lag[ MAX_NB_SUBFR ],                /* I    LTP lags                                    */
+    const oac_int                  subfr_length,                       /* I    Subframe length                             */
+    const oac_int                  nb_subfr,                           /* I    number of subframes                         */
     int                             arch
 )
 {
-    opus_int   k;
+    oac_int   k;
     silk_float *xX_ptr, *XX_ptr;
     const silk_float *lag_ptr;
     silk_float xx, temp;

@@ -35,19 +35,19 @@ POSSIBILITY OF SUCH DAMAGE.
 void silk_find_pred_coefs_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  encoder state                                                               */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  encoder control                                                             */
-    const opus_int16                res_pitch[],                            /* I    Residual from pitch analysis                                                */
-    const opus_int16                x[],                                    /* I    Speech signal                                                               */
-    opus_int                        condCoding                              /* I    The type of conditional coding to use                                       */
+    const oac_int16                res_pitch[],                            /* I    Residual from pitch analysis                                                */
+    const oac_int16                x[],                                    /* I    Speech signal                                                               */
+    oac_int                        condCoding                              /* I    The type of conditional coding to use                                       */
 )
 {
-    opus_int         i;
-    opus_int32       invGains_Q16[ MAX_NB_SUBFR ], local_gains[ MAX_NB_SUBFR ];
+    oac_int         i;
+    oac_int32       invGains_Q16[ MAX_NB_SUBFR ], local_gains[ MAX_NB_SUBFR ];
     /* Set to NLSF_Q15 to zero so we don't copy junk to the state. */
-    opus_int16       NLSF_Q15[ MAX_LPC_ORDER ]={0};
-    const opus_int16 *x_ptr;
-    opus_int16       *x_pre_ptr;
-    VARDECL( opus_int16, LPC_in_pre );
-    opus_int32       min_gain_Q16, minInvGain_Q30;
+    oac_int16       NLSF_Q15[ MAX_LPC_ORDER ]={0};
+    const oac_int16 *x_ptr;
+    oac_int16       *x_pre_ptr;
+    VARDECL( oac_int16, LPC_in_pre );
+    oac_int32       min_gain_Q16, minInvGain_Q30;
     SAVE_STACK;
 
     /* weighting for weighted least squares */
@@ -68,23 +68,23 @@ void silk_find_pred_coefs_FIX(
         silk_assert( invGains_Q16[ i ] == silk_SAT16( invGains_Q16[ i ] ) );
 
         /* Invert the inverted and normalized gains */
-        local_gains[ i ] = silk_DIV32( ( (opus_int32)1 << 16 ), invGains_Q16[ i ] );
+        local_gains[ i ] = silk_DIV32( ( (oac_int32)1 << 16 ), invGains_Q16[ i ] );
     }
 
     ALLOC( LPC_in_pre,
            psEnc->sCmn.nb_subfr * psEnc->sCmn.predictLPCOrder
-               + psEnc->sCmn.frame_length, opus_int16 );
+               + psEnc->sCmn.frame_length, oac_int16 );
     if( psEnc->sCmn.indices.signalType == TYPE_VOICED ) {
-        VARDECL( opus_int32, xXLTP_Q17 );
-        VARDECL( opus_int32, XXLTP_Q17 );
+        VARDECL( oac_int32, xXLTP_Q17 );
+        VARDECL( oac_int32, XXLTP_Q17 );
 
         /**********/
         /* VOICED */
         /**********/
         celt_assert( psEnc->sCmn.ltp_mem_length - psEnc->sCmn.predictLPCOrder >= psEncCtrl->pitchL[ 0 ] + LTP_ORDER / 2 );
 
-        ALLOC( xXLTP_Q17, psEnc->sCmn.nb_subfr * LTP_ORDER, opus_int32 );
-        ALLOC( XXLTP_Q17, psEnc->sCmn.nb_subfr * LTP_ORDER * LTP_ORDER, opus_int32 );
+        ALLOC( xXLTP_Q17, psEnc->sCmn.nb_subfr * LTP_ORDER, oac_int32 );
+        ALLOC( XXLTP_Q17, psEnc->sCmn.nb_subfr * LTP_ORDER * LTP_ORDER, oac_int32 );
 
         /* LTP analysis */
         silk_find_LTP_FIX( XXLTP_Q17, xXLTP_Q17, res_pitch,
@@ -115,7 +115,7 @@ void silk_find_pred_coefs_FIX(
             x_ptr     += psEnc->sCmn.subfr_length;
         }
 
-        silk_memset( psEncCtrl->LTPCoef_Q14, 0, psEnc->sCmn.nb_subfr * LTP_ORDER * sizeof( opus_int16 ) );
+        silk_memset( psEncCtrl->LTPCoef_Q14, 0, psEnc->sCmn.nb_subfr * LTP_ORDER * sizeof( oac_int16 ) );
         psEncCtrl->LTPredCodGain_Q7 = 0;
         psEnc->sCmn.sum_log_gain_Q7 = 0;
         psEncCtrl->LTP_scale_Q14 = 0;
@@ -125,7 +125,7 @@ void silk_find_pred_coefs_FIX(
     if( psEnc->sCmn.first_frame_after_reset ) {
         minInvGain_Q30 = SILK_FIX_CONST( 1.0f / MAX_PREDICTION_POWER_GAIN_AFTER_RESET, 30 );
     } else {
-        minInvGain_Q30 = silk_log2lin( silk_SMLAWB( 16 << 7, (opus_int32)psEncCtrl->LTPredCodGain_Q7, SILK_FIX_CONST( 1.0 / 3, 16 ) ) );      /* Q16 */
+        minInvGain_Q30 = silk_log2lin( silk_SMLAWB( 16 << 7, (oac_int32)psEncCtrl->LTPredCodGain_Q7, SILK_FIX_CONST( 1.0 / 3, 16 ) ) );      /* Q16 */
         minInvGain_Q30 = silk_DIV32_varQ( minInvGain_Q30,
             silk_SMULWW( SILK_FIX_CONST( MAX_PREDICTION_POWER_GAIN, 0 ),
                 silk_SMLAWB( SILK_FIX_CONST( 0.25, 18 ), SILK_FIX_CONST( 0.75, 18 ), psEncCtrl->coding_quality_Q14 ) ), 14 );

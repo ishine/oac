@@ -46,7 +46,7 @@
    with frac bits of fractional precision.
   Tested for all possible 32-bit inputs with frac=4, where the maximum
    overestimation is 0.06254243 bits.*/
-int log2_frac(opus_uint32 val, int frac)
+int log2_frac(oac_uint32 val, int frac)
 {
   int l;
   l=EC_ILOG(val);
@@ -207,14 +207,14 @@ int log2_frac(opus_uint32 val, int frac)
    pulses we will ever allocate for a given N=I (K=128, or however many fit in
    32 bits, whichever is smaller), plus one, and the maximum N for which
    K=I-1 pulses fit in 32 bits.
-  The largest band size in an Opus Custom mode is 208.
+  The largest band size in an Oac Custom mode is 208.
   Otherwise, we can limit things to the set of N which can be achieved by
-   splitting a band from a standard Opus mode: 176, 144, 96, 88, 72, 64, 48,
+   splitting a band from a standard Oac mode: 176, 144, 96, 88, 72, 64, 48,
    44, 36, 32, 24, 22, 18, 16, 8, 4, 2).*/
 #if defined(CWRS_EXTRA_ROWS)
-static const opus_uint32 CELT_PVQ_U_DATA[1488]={
+static const oac_uint32 CELT_PVQ_U_DATA[1488]={
 #else
-static const opus_uint32 CELT_PVQ_U_DATA[1272]={
+static const oac_uint32 CELT_PVQ_U_DATA[1272]={
 #endif
   /*N=0, K=0...176:*/
   1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -414,7 +414,7 @@ static const opus_uint32 CELT_PVQ_U_DATA[1272]={
 };
 
 #if defined(CWRS_EXTRA_ROWS)
-static const opus_uint32 *const CELT_PVQ_U_ROW[15]={
+static const oac_uint32 *const CELT_PVQ_U_ROW[15]={
   CELT_PVQ_U_DATA+   0,CELT_PVQ_U_DATA+ 208,CELT_PVQ_U_DATA+ 415,
   CELT_PVQ_U_DATA+ 621,CELT_PVQ_U_DATA+ 826,CELT_PVQ_U_DATA+1030,
   CELT_PVQ_U_DATA+1233,CELT_PVQ_U_DATA+1336,CELT_PVQ_U_DATA+1389,
@@ -422,7 +422,7 @@ static const opus_uint32 *const CELT_PVQ_U_ROW[15]={
   CELT_PVQ_U_DATA+1464,CELT_PVQ_U_DATA+1470,CELT_PVQ_U_DATA+1473
 };
 #else
-static const opus_uint32 *const CELT_PVQ_U_ROW[15]={
+static const oac_uint32 *const CELT_PVQ_U_ROW[15]={
   CELT_PVQ_U_DATA+   0,CELT_PVQ_U_DATA+ 176,CELT_PVQ_U_DATA+ 351,
   CELT_PVQ_U_DATA+ 525,CELT_PVQ_U_DATA+ 698,CELT_PVQ_U_DATA+ 870,
   CELT_PVQ_U_DATA+1041,CELT_PVQ_U_DATA+1131,CELT_PVQ_U_DATA+1178,
@@ -432,7 +432,7 @@ static const opus_uint32 *const CELT_PVQ_U_ROW[15]={
 #endif
 
 #if defined(CUSTOM_MODES)
-void get_required_bits(opus_int16 *_bits,int _n,int _maxk,int _frac){
+void get_required_bits(oac_int16 *_bits,int _n,int _maxk,int _frac){
   int k;
   /*_maxk==0 => there's nothing to do.*/
   celt_assert(_maxk>0);
@@ -441,8 +441,8 @@ void get_required_bits(opus_int16 *_bits,int _n,int _maxk,int _frac){
 }
 #endif
 
-static opus_uint32 icwrs(int _n,const int *_y){
-  opus_uint32 i;
+static oac_uint32 icwrs(int _n,const int *_y){
+  oac_uint32 i;
   int         j;
   int         k;
   celt_assert(_n>=2);
@@ -464,19 +464,19 @@ void encode_pulses(const int *_y,int _n,int _k,ec_enc *_enc){
   ec_enc_uint(_enc,icwrs(_n,_y),CELT_PVQ_V(_n,_k));
 }
 
-static opus_val32 cwrsi(int _n,int _k,opus_uint32 _i,int *_y){
-  opus_uint32 p;
+static oac_val32 cwrsi(int _n,int _k,oac_uint32 _i,int *_y){
+  oac_uint32 p;
   int         s;
   int         k0;
-  opus_int16  val;
-  opus_val32  yy=0;
+  oac_int16  val;
+  oac_val32  yy=0;
   celt_assert(_k>0);
   celt_assert(_n>1);
   while(_n>2){
-    opus_uint32 q;
+    oac_uint32 q;
     /*Lots of pulses case:*/
     if(_k>=_n){
-      const opus_uint32 *row;
+      const oac_uint32 *row;
       row=CELT_PVQ_U_ROW[_n];
       /*Are the pulses in this dimension negative?*/
       p=row[_k+1];
@@ -540,7 +540,7 @@ static opus_val32 cwrsi(int _n,int _k,opus_uint32 _i,int *_y){
   return yy;
 }
 
-opus_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
+oac_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
   return cwrsi(_n,_k,ec_dec_uint(_dec,CELT_PVQ_V(_n,_k)),_y);
 }
 
@@ -549,8 +549,8 @@ opus_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
 /*Computes the next row/column of any recurrence that obeys the relation
    u[i][j]=u[i-1][j]+u[i][j-1]+u[i-1][j-1].
   _ui0 is the base case for the new row/column.*/
-static OPUS_INLINE void unext(opus_uint32 *_ui,unsigned _len,opus_uint32 _ui0){
-  opus_uint32 ui1;
+static OAC_INLINE void unext(oac_uint32 *_ui,unsigned _len,oac_uint32 _ui0){
+  oac_uint32 ui1;
   unsigned      j;
   /*This do-while will overrun the array if we don't have storage for at least
      2 values.*/
@@ -565,8 +565,8 @@ static OPUS_INLINE void unext(opus_uint32 *_ui,unsigned _len,opus_uint32 _ui0){
 /*Computes the previous row/column of any recurrence that obeys the relation
    u[i-1][j]=u[i][j]-u[i][j-1]-u[i-1][j-1].
   _ui0 is the base case for the new row/column.*/
-static OPUS_INLINE void uprev(opus_uint32 *_ui,unsigned _n,opus_uint32 _ui0){
-  opus_uint32 ui1;
+static OAC_INLINE void uprev(oac_uint32 *_ui,unsigned _n,oac_uint32 _ui0){
+  oac_uint32 ui1;
   unsigned      j;
   /*This do-while will overrun the array if we don't have storage for at least
      2 values.*/
@@ -580,8 +580,8 @@ static OPUS_INLINE void uprev(opus_uint32 *_ui,unsigned _n,opus_uint32 _ui0){
 
 /*Compute V(_n,_k), as well as U(_n,0..._k+1).
   _u: On exit, _u[i] contains U(_n,i) for i in [0..._k+1].*/
-static opus_uint32 ncwrs_urow(unsigned _n,unsigned _k,opus_uint32 *_u){
-  opus_uint32 um2;
+static oac_uint32 ncwrs_urow(unsigned _n,unsigned _k,oac_uint32 *_u){
+  oac_uint32 um2;
   unsigned      len;
   unsigned      k;
   len=_k+2;
@@ -606,14 +606,14 @@ static opus_uint32 ncwrs_urow(unsigned _n,unsigned _k,opus_uint32 *_u){
   _y: Returns the vector of pulses.
   _u: Must contain entries [0..._k+1] of row _n of U() on input.
       Its contents will be destructively modified.*/
-static opus_val32 cwrsi(int _n,int _k,opus_uint32 _i,int *_y,opus_uint32 *_u){
+static oac_val32 cwrsi(int _n,int _k,oac_uint32 _i,int *_y,oac_uint32 *_u){
   int j;
-  opus_int16 val;
-  opus_val32 yy=0;
+  oac_int16 val;
+  oac_val32 yy=0;
   celt_assert(_n>0);
   j=0;
   do{
-    opus_uint32 p;
+    oac_uint32 p;
     int           s;
     int           yj;
     p=_u[_k+1];
@@ -637,7 +637,7 @@ static opus_val32 cwrsi(int _n,int _k,opus_uint32 _i,int *_y,opus_uint32 *_u){
    of size 1 with associated sign bits.
   _y: The vector of pulses, whose sum of absolute values is K.
   _k: Returns K.*/
-static OPUS_INLINE opus_uint32 icwrs1(const int *_y,int *_k){
+static OAC_INLINE oac_uint32 icwrs1(const int *_y,int *_k){
   *_k=abs(_y[0]);
   return _y[0]<0;
 }
@@ -646,9 +646,9 @@ static OPUS_INLINE opus_uint32 icwrs1(const int *_y,int *_k){
    of size _n with associated sign bits.
   _y:  The vector of pulses, whose sum of absolute values must be _k.
   _nc: Returns V(_n,_k).*/
-static OPUS_INLINE opus_uint32 icwrs(int _n,int _k,opus_uint32 *_nc,const int *_y,
- opus_uint32 *_u){
-  opus_uint32 i;
+static OAC_INLINE oac_uint32 icwrs(int _n,int _k,oac_uint32 *_nc,const int *_y,
+ oac_uint32 *_u){
+  oac_uint32 i;
   int         j;
   int         k;
   /*We can't unroll the first two iterations of the loop unless _n>=2.*/
@@ -671,7 +671,7 @@ static OPUS_INLINE opus_uint32 icwrs(int _n,int _k,opus_uint32 *_nc,const int *_
 }
 
 #if defined(CUSTOM_MODES)
-void get_required_bits(opus_int16 *_bits,int _n,int _maxk,int _frac){
+void get_required_bits(oac_int16 *_bits,int _n,int _maxk,int _frac){
   int k;
   /*_maxk==0 => there's nothing to do.*/
   celt_assert(_maxk>0);
@@ -682,9 +682,9 @@ void get_required_bits(opus_int16 *_bits,int _n,int _maxk,int _frac){
       _bits[k] = 1<<_frac;
   }
   else {
-    VARDECL(opus_uint32,u);
+    VARDECL(oac_uint32,u);
     SAVE_STACK;
-    ALLOC(u,_maxk+2U,opus_uint32);
+    ALLOC(u,_maxk+2U,oac_uint32);
     ncwrs_urow(_n,_maxk,u);
     for(k=1;k<=_maxk;k++)
       _bits[k]=log2_frac(u[k]+u[k+1],_frac);
@@ -694,23 +694,23 @@ void get_required_bits(opus_int16 *_bits,int _n,int _maxk,int _frac){
 #endif /* CUSTOM_MODES */
 
 void encode_pulses(const int *_y,int _n,int _k,ec_enc *_enc){
-  opus_uint32 i;
-  VARDECL(opus_uint32,u);
-  opus_uint32 nc;
+  oac_uint32 i;
+  VARDECL(oac_uint32,u);
+  oac_uint32 nc;
   SAVE_STACK;
   celt_assert(_k>0);
-  ALLOC(u,_k+2U,opus_uint32);
+  ALLOC(u,_k+2U,oac_uint32);
   i=icwrs(_n,_k,&nc,_y,u);
   ec_enc_uint(_enc,i,nc);
   RESTORE_STACK;
 }
 
-opus_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
-  VARDECL(opus_uint32,u);
+oac_val32 decode_pulses(int *_y,int _n,int _k,ec_dec *_dec){
+  VARDECL(oac_uint32,u);
   int ret;
   SAVE_STACK;
   celt_assert(_k>0);
-  ALLOC(u,_k+2U,opus_uint32);
+  ALLOC(u,_k+2U,oac_uint32);
   ret = cwrsi(_n,_k,ec_dec_uint(_dec,ncwrs_urow(_n,_k,u)),_y,u);
   RESTORE_STACK;
   return ret;

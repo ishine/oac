@@ -35,22 +35,22 @@
 #  include "custom_support.h"
 #endif
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "oac_types.h"
+#include "oac_defines.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-/** Opus wrapper for malloc(). To do your own dynamic allocation replace this function, opus_realloc, and opus_free */
-#ifndef OVERRIDE_OPUS_ALLOC
-static OPUS_INLINE void *opus_alloc (size_t size)
+/** Oac wrapper for malloc(). To do your own dynamic allocation replace this function, oac_realloc, and oac_free */
+#ifndef OVERRIDE_OAC_ALLOC
+static OAC_INLINE void *oac_alloc (size_t size)
 {
    return malloc(size);
 }
 #endif
 
-#ifndef OVERRIDE_OPUS_REALLOC
-static OPUS_INLINE void *opus_realloc (void *ptr, size_t size)
+#ifndef OVERRIDE_OAC_REALLOC
+static OAC_INLINE void *oac_realloc (void *ptr, size_t size)
 {
    return realloc(ptr, size);
 }
@@ -58,36 +58,36 @@ static OPUS_INLINE void *opus_realloc (void *ptr, size_t size)
 
 /** Used only for non-threadsafe pseudostack.
     If desired, this can always return the same area of memory rather than allocating a new one every time. */
-#ifndef OVERRIDE_OPUS_ALLOC_SCRATCH
-static OPUS_INLINE void *opus_alloc_scratch (size_t size)
+#ifndef OVERRIDE_OAC_ALLOC_SCRATCH
+static OAC_INLINE void *oac_alloc_scratch (size_t size)
 {
    /* Scratch space doesn't need to be cleared */
-   return opus_alloc(size);
+   return oac_alloc(size);
 }
 #endif
 
-/** Opus wrapper for free(). To do your own dynamic allocation replace this function, opus_realloc, and opus_free */
-#ifndef OVERRIDE_OPUS_FREE
-static OPUS_INLINE void opus_free (void *ptr)
+/** Oac wrapper for free(). To do your own dynamic allocation replace this function, oac_realloc, and oac_free */
+#ifndef OVERRIDE_OAC_FREE
+static OAC_INLINE void oac_free (void *ptr)
 {
    free(ptr);
 }
 #endif
 
 /** Copy n elements from src to dst. The 0* term provides compile-time type checking  */
-#ifndef OVERRIDE_OPUS_COPY
-#define OPUS_COPY(dst, src, n) (memcpy((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
+#ifndef OVERRIDE_OAC_COPY
+#define OAC_COPY(dst, src, n) (memcpy((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
 #endif
 
 /** Copy n elements from src to dst, allowing overlapping regions. The 0* term
     provides compile-time type checking */
-#ifndef OVERRIDE_OPUS_MOVE
-#define OPUS_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
+#ifndef OVERRIDE_OAC_MOVE
+#define OAC_MOVE(dst, src, n) (memmove((dst), (src), (n)*sizeof(*(dst)) + 0*((dst)-(src)) ))
 #endif
 
 /** Set n elements of dst to zero */
-#ifndef OVERRIDE_OPUS_CLEAR
-#define OPUS_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
+#ifndef OVERRIDE_OAC_CLEAR
+#define OAC_CLEAR(dst, n) (memset((dst), 0, (n)*sizeof(*(dst))))
 #endif
 
 /*#ifdef __GNUC__

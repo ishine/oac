@@ -1,4 +1,4 @@
-project('opus', 'c',
+project('oac', 'c',
   version: run_command('meson/get-version.py', '--package-version', check: true).stdout().strip(),
   meson_version: '>=0.54.0',
   default_options: ['warning_level=2',
@@ -14,10 +14,10 @@ host_cpu_family = host_machine.cpu_family()
 top_srcdir = meson.current_source_dir()
 top_builddir = meson.current_build_dir()
 
-opus_includes = include_directories('.', 'include', 'celt', 'silk', 'dnn')
-opus_public_includes = include_directories('include')
+oac_includes = include_directories('.', 'include', 'celt', 'silk', 'dnn')
+oac_public_includes = include_directories('include')
 
-add_project_arguments('-DOPUS_BUILD', language: 'c')
+add_project_arguments('-DOAC_BUILD', language: 'c')
 add_project_arguments('-DHAVE_CONFIG_H', language: 'c')
 
 if host_system == 'windows'
@@ -65,26 +65,26 @@ if cc.get_id() == 'msvc'
     language : 'c')
 endif
 
-opus_version = meson.project_version()
+oac_version = meson.project_version()
 
-opus_conf = configuration_data()
-opus_conf.set('PACKAGE_BUGREPORT', '"opus@xiph.org"')
-opus_conf.set('PACKAGE_NAME', '"opus"')
-opus_conf.set('PACKAGE_STRING', '"opus @0@"'.format(opus_version))
-opus_conf.set('PACKAGE_TARNAME', '"opus"')
-opus_conf.set('PACKAGE_URL', '""')
-opus_conf.set('PACKAGE_VERSION', '"@0@"'.format(opus_version))
+oac_conf = configuration_data()
+oac_conf.set('PACKAGE_BUGREPORT', '"oac@xiph.org"')
+oac_conf.set('PACKAGE_NAME', '"oac"')
+oac_conf.set('PACKAGE_STRING', '"oac @0@"'.format(oac_version))
+oac_conf.set('PACKAGE_TARNAME', '"oac"')
+oac_conf.set('PACKAGE_URL', '""')
+oac_conf.set('PACKAGE_VERSION', '"@0@"'.format(oac_version))
 
 # FIXME: optional Ne10 dependency
 have_arm_ne10 = false
 
 libm = cc.find_library('m', required : false)
 
-opus_conf.set('HAVE_LRINTF', cc.has_function('lrintf', prefix: '#include <math.h>', dependencies: libm))
-opus_conf.set('HAVE_LRINT', cc.has_function('lrint', prefix: '#include <math.h>', dependencies: libm))
-opus_conf.set('HAVE___MALLOC_HOOK', cc.has_function('__malloc_hook', prefix: '#include <malloc.h>'))
-opus_conf.set('HAVE_ELF_AUX_INFO', cc.has_function('elf_aux_info', prefix: '#include <sys/auxv.h>'))
-opus_conf.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
+oac_conf.set('HAVE_LRINTF', cc.has_function('lrintf', prefix: '#include <math.h>', dependencies: libm))
+oac_conf.set('HAVE_LRINT', cc.has_function('lrint', prefix: '#include <math.h>', dependencies: libm))
+oac_conf.set('HAVE___MALLOC_HOOK', cc.has_function('__malloc_hook', prefix: '#include <malloc.h>'))
+oac_conf.set('HAVE_ELF_AUX_INFO', cc.has_function('elf_aux_info', prefix: '#include <sys/auxv.h>'))
+oac_conf.set('HAVE_STDINT_H', cc.check_header('stdint.h'))
 
 # Check for restrict keyword
 restrict_tmpl = '''
@@ -103,13 +103,13 @@ int main (int argc, char ** argv) {
 # supported directly.
 if not cc.compiles(restrict_tmpl.format('restrict'), name : 'restrict keyword')
   if cc.compiles(restrict_tmpl.format('__restrict'), name : '__restrict')
-    opus_conf.set('restrict', '__restrict')
+    oac_conf.set('restrict', '__restrict')
   elif cc.compiles(restrict_tmpl.format('__restrict__'), name : '__restrict__')
-    opus_conf.set('restrict', '__restrict')
+    oac_conf.set('restrict', '__restrict')
   elif cc.compiles(restrict_tmpl.format('_Restrict'), name : '_Restrict')
-    opus_conf.set('restrict', '_Restrict')
+    oac_conf.set('restrict', '_Restrict')
   else
-    opus_conf.set('restrict', '/**/')
+    oac_conf.set('restrict', '/**/')
   endif
 endif
 
@@ -122,15 +122,15 @@ if cc.compiles('''static int x;
                     int N;
                     return a[0];
                   }''', name : 'C99 variable-size arrays')
-  opus_conf.set('VAR_ARRAYS', 1)
+  oac_conf.set('VAR_ARRAYS', 1)
   msg_use_alloca = 'NO (using C99 variable-size arrays instead)'
 elif cc.compiles('''#include <alloca.h>
                     void some_func (void) {
                       int foo=10;
                       int * array = alloca(foo);
                     }''', name : 'alloca (alloca.h)')
-  opus_conf.set('USE_ALLOCA', true)
-  opus_conf.set('HAVE_ALLOCA_H', true)
+  oac_conf.set('USE_ALLOCA', true)
+  oac_conf.set('HAVE_ALLOCA_H', true)
   msg_use_alloca = true
 elif cc.compiles('''#include <malloc.h>
                     #include <stdlib.h>
@@ -138,7 +138,7 @@ elif cc.compiles('''#include <malloc.h>
                       int foo=10;
                       int * array = alloca(foo);
                     }''', name : 'alloca (std)')
-  opus_conf.set('USE_ALLOCA', true)
+  oac_conf.set('USE_ALLOCA', true)
   msg_use_alloca = true
 endif
 
@@ -150,14 +150,14 @@ opts = [
   [ 'assertions', 'ENABLE_ASSERTIONS' ],
   [ 'hardening', 'ENABLE_HARDENING' ],
   [ 'fuzzing', 'FUZZING' ],
-  [ 'check-asm', 'OPUS_CHECK_ASM' ],
+  [ 'check-asm', 'OAC_CHECK_ASM' ],
 ]
 
 foreach opt : opts
   # we assume these are all boolean options
   opt_foo = get_option(opt[0])
   if opt_foo
-    opus_conf.set(opt[1], 1)
+    oac_conf.set(opt[1], 1)
   endif
   set_variable('opt_' + opt[0].underscorify(), opt_foo)
 endforeach
@@ -172,7 +172,7 @@ foreach opt : feat
   # we assume these are all boolean options
   opt_foo = get_option(opt[0])
   if opt_foo.enabled()
-    opus_conf.set(opt[1], 1)
+    oac_conf.set(opt[1], 1)
   endif
   set_variable('opt_' + opt[0].underscorify(), opt_foo)
 endforeach
@@ -185,11 +185,11 @@ opt_tests = get_option('tests')
 
 disable_float_api = not get_option('float-api')
 if disable_float_api
-  opus_conf.set('DISABLE_FLOAT_API', 1)
+  oac_conf.set('DISABLE_FLOAT_API', 1)
 endif
 
 if not get_option('dnn-debug-float').enabled()
-  opus_conf.set('DISABLE_DEBUG_FLOAT', 1)
+  oac_conf.set('DISABLE_DEBUG_FLOAT', 1)
 endif
 
 # This is for the description in the pkg-config .pc file
@@ -210,16 +210,16 @@ rtcd_support = []
 # specific instruction sets supported by that version of the compiler. No
 # special arguments are ever needed. If runtime CPU detection is not disabled,
 # we must always assume that we only 'may have' it.
-opus_can_presume_simd = true
+oac_can_presume_simd = true
 if cc.get_argument_syntax() == 'msvc'
   if opt_rtcd.disabled()
     warning('Building with an MSVC-like compiler and runtime CPU detection is disabled. Outputs may not run on all @0@ CPUs.'.format(host_cpu_family))
   else
-    opus_can_presume_simd = false
+    oac_can_presume_simd = false
   endif
 endif
 
-opus_arm_external_asm = false
+oac_arm_external_asm = false
 
 asm_tmpl = '''
 int main (int argc, char ** argv) {
@@ -232,7 +232,7 @@ inline_optimization = []
 if not opt_asm.disabled()
   # Currently we only have inline asm for fixed-point
   if host_cpu_family == 'arm' and opt_fixed_point
-    opus_conf.set('OPUS_ARM_ASM', true)
+    oac_conf.set('OAC_ARM_ASM', true)
 
     # Check if compiler supports gcc-style inline assembly
     if cc.compiles('''#ifdef __GNUC_MINOR__
@@ -243,33 +243,33 @@ if not opt_asm.disabled()
                       int main(int argc, char ** argv) { __asm__ (""::); }''',
                    name : 'compiler supports gcc-style inline assembly')
 
-      opus_conf.set('OPUS_ARM_INLINE_ASM', 1)
+      oac_conf.set('OAC_ARM_INLINE_ASM', 1)
 
       # AS_ASM_ARM_EDSP
       if cc.compiles(asm_tmpl.format('qadd r3,r3,r3'),
                      name : 'assembler supports EDSP instructions on ARM')
-        opus_conf.set('OPUS_ARM_INLINE_EDSP', 1)
+        oac_conf.set('OAC_ARM_INLINE_EDSP', 1)
         inline_optimization += ['ESDP']
       endif
 
       # AS_ASM_ARM_MEDIA
       if cc.compiles(asm_tmpl.format('shadd8 r3,r3,r3'),
                      name : 'assembler supports ARMv6 media instructions on ARM')
-        opus_conf.set('OPUS_ARM_INLINE_MEDIA', 1)
+        oac_conf.set('OAC_ARM_INLINE_MEDIA', 1)
         inline_optimization += ['Media']
       endif
 
       # AS_ASM_ARM_NEON
       if cc.compiles(asm_tmpl.format('vorr d0,d0,d0'),
                      name : 'assembler supports NEON instructions on ARM')
-        opus_conf.set('OPUS_ARM_INLINE_NEON', 1)
+        oac_conf.set('OAC_ARM_INLINE_NEON', 1)
         inline_optimization += ['NEON']
       endif
 
       # AS_ASM_ARM_DOTPROD
       if cc.compiles(asm_tmpl.format('udot v0.4s,v1.16b,v2.16b'),
                      name : 'assembler supports DOTPROD instructions on ARM')
-        opus_conf.set('OPUS_ARM_INLINE_DOTPROD', 1)
+        oac_conf.set('OAC_ARM_INLINE_DOTPROD', 1)
         inline_optimization += ['DOTPROD']
       endif
     endif
@@ -277,75 +277,75 @@ if not opt_asm.disabled()
     # We need Perl to translate RVCT-syntax asm to gas syntax
     perl = find_program('perl', required: get_option('asm'))
     if perl.found()
-      opus_arm_external_asm = true
-      # opus_arm_presume_* mean we can and will use those instructions
+      oac_arm_external_asm = true
+      # oac_arm_presume_* mean we can and will use those instructions
       # directly without doing runtime CPU detection.
-      # opus_arm_may_have_* mean we can emit those instructions, but we can
+      # oac_arm_may_have_* mean we can emit those instructions, but we can
       # only use them after runtime detection.
       # The same rules apply for x86 assembly and intrinsics.
 
-      opus_arm_may_have_edsp = opus_conf.has('OPUS_ARM_INLINE_EDSP')
-      opus_arm_presume_edsp = opus_arm_may_have_edsp and opus_can_presume_simd
+      oac_arm_may_have_edsp = oac_conf.has('OAC_ARM_INLINE_EDSP')
+      oac_arm_presume_edsp = oac_arm_may_have_edsp and oac_can_presume_simd
 
-      opus_arm_may_have_media = opus_conf.has('OPUS_ARM_INLINE_MEDIA')
-      opus_arm_presume_media = opus_arm_may_have_media and opus_can_presume_simd
+      oac_arm_may_have_media = oac_conf.has('OAC_ARM_INLINE_MEDIA')
+      oac_arm_presume_media = oac_arm_may_have_media and oac_can_presume_simd
 
-      opus_arm_may_have_neon = opus_conf.has('OPUS_ARM_INLINE_NEON')
-      opus_arm_presume_neon = opus_arm_may_have_neon and opus_can_presume_simd
+      oac_arm_may_have_neon = oac_conf.has('OAC_ARM_INLINE_NEON')
+      oac_arm_presume_neon = oac_arm_may_have_neon and oac_can_presume_simd
 
-      opus_arm_may_have_dotprod = opus_conf.has('OPUS_ARM_INLINE_DOTPROD')
-      opus_arm_presume_dotprod = opus_arm_may_have_dotprod and opus_can_presume_simd
+      oac_arm_may_have_dotprod = oac_conf.has('OAC_ARM_INLINE_DOTPROD')
+      oac_arm_presume_dotprod = oac_arm_may_have_dotprod and oac_can_presume_simd
 
       if not opt_rtcd.disabled()
-        if not opus_arm_may_have_edsp
+        if not oac_arm_may_have_edsp
           message('Trying to force-enable armv5e EDSP instructions...')
           # AS_ASM_ARM_EDSP_FORCE
-          opus_arm_may_have_edsp = cc.compiles(asm_tmpl.format('.arch armv5te;.object_arch armv4t;qadd r3,r3,r3'),
+          oac_arm_may_have_edsp = cc.compiles(asm_tmpl.format('.arch armv5te;.object_arch armv4t;qadd r3,r3,r3'),
                                                name : 'Assembler supports EDSP instructions on ARM (forced)')
         endif
-        if not opus_arm_may_have_media
+        if not oac_arm_may_have_media
           message('Trying to force-enable ARMv6 media instructions...')
-          opus_arm_may_have_media = cc.compiles(asm_tmpl.format('.arch armv6;.object_arch armv4t;shadd8 r3,r3,r3'),
+          oac_arm_may_have_media = cc.compiles(asm_tmpl.format('.arch armv6;.object_arch armv4t;shadd8 r3,r3,r3'),
                                                 name : 'Assembler supports ARMv6 media instructions on ARM (forced)')
         endif
-        if not opus_arm_may_have_neon
+        if not oac_arm_may_have_neon
           message('Trying to force-enable NEON instructions...')
-          opus_arm_may_have_neon = cc.compiles(asm_tmpl.format('.arch armv7-a;.fpu neon;.object_arch armv4t;vorr d0,d0,d0'),
+          oac_arm_may_have_neon = cc.compiles(asm_tmpl.format('.arch armv7-a;.fpu neon;.object_arch armv4t;vorr d0,d0,d0'),
                                                name : 'Assembler supports NEON instructions on ARM (forced)')
         endif
       endif
 
-      if opus_arm_may_have_edsp
-        opus_conf.set('OPUS_ARM_MAY_HAVE_EDSP', 1)
-        if opus_arm_presume_edsp
-          opus_conf.set('OPUS_ARM_PRESUME_EDSP', 1)
+      if oac_arm_may_have_edsp
+        oac_conf.set('OAC_ARM_MAY_HAVE_EDSP', 1)
+        if oac_arm_presume_edsp
+          oac_conf.set('OAC_ARM_PRESUME_EDSP', 1)
           asm_optimization += ['EDSP']
         else
           rtcd_support += ['EDSP']
         endif
       endif
-      if opus_arm_may_have_media
-        opus_conf.set('OPUS_ARM_MAY_HAVE_MEDIA', 1)
-        if opus_arm_presume_media
-          opus_conf.set('OPUS_ARM_PRESUME_MEDIA', 1)
+      if oac_arm_may_have_media
+        oac_conf.set('OAC_ARM_MAY_HAVE_MEDIA', 1)
+        if oac_arm_presume_media
+          oac_conf.set('OAC_ARM_PRESUME_MEDIA', 1)
           asm_optimization += ['Media']
         else
           rtcd_support += ['Media']
         endif
       endif
-      if opus_arm_may_have_neon
-        opus_conf.set('OPUS_ARM_MAY_HAVE_NEON', 1)
-        if opus_arm_presume_neon
-          opus_conf.set('OPUS_ARM_PRESUME_NEON', 1)
+      if oac_arm_may_have_neon
+        oac_conf.set('OAC_ARM_MAY_HAVE_NEON', 1)
+        if oac_arm_presume_neon
+          oac_conf.set('OAC_ARM_PRESUME_NEON', 1)
           asm_optimization += ['NEON']
         else
           rtcd_support += ['NEON']
         endif
       endif
-      if opus_arm_may_have_dotprod
-        opus_conf.set('OPUS_ARM_MAY_HAVE_DOTPROD', 1)
-        if opus_arm_presume_dotprod
-          opus_conf.set('OPUS_ARM_PRESUME_DOTPROD', 1)
+      if oac_arm_may_have_dotprod
+        oac_conf.set('OAC_ARM_MAY_HAVE_DOTPROD', 1)
+        if oac_arm_presume_dotprod
+          oac_conf.set('OAC_ARM_PRESUME_DOTPROD', 1)
           asm_optimization += ['DOTPROD']
         else
           rtcd_support += ['DOTPROD']
@@ -400,28 +400,28 @@ if not opt_intrinsics.disabled()
     intrin_name = 'ARMv7/AArch64 NEON'
     if cc.links(intrin_check,
                 name: 'compiler supports @0@ intrinsics'.format(intrin_name))
-      opus_arm_presume_neon_intr = opus_can_presume_simd
-      opus_arm_may_have_neon_intr = true
+      oac_arm_presume_neon_intr = oac_can_presume_simd
+      oac_arm_may_have_neon_intr = true
     else
-      opus_arm_presume_neon_intr = false
+      oac_arm_presume_neon_intr = false
       if cc.links(intrin_check,
                   args: arm_neon_intr_link_args,
                   name: 'compiler supports @0@ intrinsics with @1@'.format(intrin_name, ' '.join(arm_neon_intr_link_args)))
-        opus_arm_may_have_neon_intr = true
+        oac_arm_may_have_neon_intr = true
       else
-        opus_arm_may_have_neon_intr = false
+        oac_arm_may_have_neon_intr = false
       endif
     endif
 
-    if opus_arm_may_have_neon_intr
+    if oac_arm_may_have_neon_intr
       have_neon_intr = true
       intrinsics_support += [intrin_name]
-      opus_conf.set('OPUS_ARM_MAY_HAVE_NEON_INTR', 1)
-      if opus_arm_presume_neon_intr
-        opus_conf.set('OPUS_ARM_PRESUME_NEON_INTR', 1)
+      oac_conf.set('OAC_ARM_MAY_HAVE_NEON_INTR', 1)
+      if oac_arm_presume_neon_intr
+        oac_conf.set('OAC_ARM_PRESUME_NEON_INTR', 1)
       else
         rtcd_support += [intrin_name]
-        opus_neon_intr_args = arm_neon_intr_link_args
+        oac_neon_intr_args = arm_neon_intr_link_args
       endif
     else
       message('Compiler does not support @0@ intrinsics'.format(intrin_name))
@@ -438,24 +438,24 @@ if not opt_intrinsics.disabled()
     intrin_name = 'AArch64 NEON'
     if cc.links(intrin_check,
                 name: 'compiler supports @0@ intrinsics'.format(intrin_name))
-      opus_arm_presume_aarch64_neon_intr = opus_can_presume_simd
-      opus_arm_may_have_aarch64_neon_intr = true
+      oac_arm_presume_aarch64_neon_intr = oac_can_presume_simd
+      oac_arm_may_have_aarch64_neon_intr = true
     else
-      opus_arm_presume_aarch64_neon_intr = false
+      oac_arm_presume_aarch64_neon_intr = false
       if cc.links(intrin_check,
                   args: arm_neon_intr_link_args,
                   name: 'compiler supports @0@ intrinsics with @1@'.format(intrin_name, ' '.join(arm_neon_intr_link_args)))
-        opus_arm_may_have_aarch64_neon_intr = true
+        oac_arm_may_have_aarch64_neon_intr = true
       else
-        opus_arm_may_have_aarch64_neon_intr = false
+        oac_arm_may_have_aarch64_neon_intr = false
       endif
     endif
 
-    if opus_arm_may_have_aarch64_neon_intr
+    if oac_arm_may_have_aarch64_neon_intr
       intrinsics_support += [intrin_name]
-      opus_conf.set('OPUS_X86_MAY_HAVE_AARCH64_NEON_INTR', 1)
-      if opus_arm_presume_aarch64_neon_intr
-        opus_conf.set('OPUS_X86_PRESUME_AARCH64_NEON_INTR', 1)
+      oac_conf.set('OAC_X86_MAY_HAVE_AARCH64_NEON_INTR', 1)
+      if oac_arm_presume_aarch64_neon_intr
+        oac_conf.set('OAC_X86_PRESUME_AARCH64_NEON_INTR', 1)
       endif
     else
       message('Compiler does not support @0@ intrinsics'.format(intrin_name))
@@ -473,28 +473,28 @@ if not opt_intrinsics.disabled()
     intrin_name = 'AArch64 DOTPROD'
     if cc.links(intrin_check,
                 name: 'compiler supports @0@ intrinsics'.format(intrin_name))
-      opus_arm_presume_dotprod_intr = opus_can_presume_simd
-      opus_arm_may_have_dotprod_intr = true
+      oac_arm_presume_dotprod_intr = oac_can_presume_simd
+      oac_arm_may_have_dotprod_intr = true
     else
-      opus_arm_presume_dotprod_intr = false
+      oac_arm_presume_dotprod_intr = false
       if cc.links(intrin_check,
                   args: arm_dotprod_intr_link_args,
                   name: 'compiler supports @0@ intrinsics with @1@'.format(intrin_name, ' '.join(arm_dotprod_intr_link_args)))
-        opus_arm_may_have_dotprod_intr = true
+        oac_arm_may_have_dotprod_intr = true
       else
-        opus_arm_may_have_dotprod_intr = false
+        oac_arm_may_have_dotprod_intr = false
       endif
     endif
 
-    if opus_arm_may_have_dotprod_intr
+    if oac_arm_may_have_dotprod_intr
       have_dotprod_intr = true
       intrinsics_support += [intrin_name]
-      opus_conf.set('OPUS_ARM_MAY_HAVE_DOTPROD', 1)
-      if opus_arm_presume_dotprod_intr
-        opus_conf.set('OPUS_ARM_PRESUME_DOTPROD', 1)
+      oac_conf.set('OAC_ARM_MAY_HAVE_DOTPROD', 1)
+      if oac_arm_presume_dotprod_intr
+        oac_conf.set('OAC_ARM_PRESUME_DOTPROD', 1)
       else
         rtcd_support += [intrin_name]
-        opus_dotprod_intr_args = arm_dotprod_intr_link_args
+        oac_dotprod_intr_args = arm_dotprod_intr_link_args
       endif
     else
       message('Compiler does not support @0@ intrinsics'.format(intrin_name))
@@ -520,10 +520,10 @@ if not opt_intrinsics.disabled()
       intrin_args = cc.get_argument_syntax() == 'msvc' ? intrin[5] : intrin[4]
       if cc.get_argument_syntax() == 'msvc' and intrin_args.length() == 0 and cc.links(intrin_check, name : 'compiler supports @0@ intrinsics'.format(intrin_name))
         may_have_intrin = true
-        presume_intrin = opus_can_presume_simd
+        presume_intrin = oac_can_presume_simd
       elif cc.get_argument_syntax() != 'msvc' and cc.links(intrin_check, name : 'compiler supports @0@ intrinsics'.format(intrin_name))
         may_have_intrin = true
-        presume_intrin = opus_can_presume_simd
+        presume_intrin = oac_can_presume_simd
       elif intrin_args.length() > 0
         presume_intrin = false
         if cc.links(intrin_check,
@@ -538,12 +538,12 @@ if not opt_intrinsics.disabled()
         intrinsics_support += [intrin_name]
         intrin_lower_name = intrin_name.to_lower().underscorify()
         set_variable('have_' + intrin_lower_name, true)
-        opus_conf.set('OPUS_X86_MAY_HAVE_' + intrin_name.underscorify(), 1)
+        oac_conf.set('OAC_X86_MAY_HAVE_' + intrin_name.underscorify(), 1)
         if presume_intrin
-          opus_conf.set('OPUS_X86_PRESUME_' + intrin_name.underscorify(), 1)
+          oac_conf.set('OAC_X86_PRESUME_' + intrin_name.underscorify(), 1)
         else
           rtcd_support += [intrin_name]
-          set_variable('opus_@0@_args'.format(intrin_lower_name), intrin_args)
+          set_variable('oac_@0@_args'.format(intrin_lower_name), intrin_args)
         endif
       else
         message('Compiler does not support @0@ intrinsics'.format(intrin_name))
@@ -601,9 +601,9 @@ if not opt_intrinsics.disabled()
           __cpuid(&CPUInfo, InfoType);
         }'''
       if cc.links(cpuid_asm_code, name : 'Get X86 CPU info via inline assembly')
-        opus_conf.set('CPU_INFO_BY_ASM', 1)
+        oac_conf.set('CPU_INFO_BY_ASM', 1)
       elif cc.links(cpuid_c_code, name : 'Get X86 CPU info via C method')
-        opus_conf.set('CPU_INFO_BY_C', 1)
+        oac_conf.set('CPU_INFO_BY_C', 1)
       elif cc.get_define('_MSC_VER') != '' and cc.links(cpuid_msvc_code)
         message('Getting X86 CPU info via __cpuid')
       else
@@ -632,7 +632,7 @@ if opt_rtcd.disabled()
   rtcd_support = 'disabled'
 else
   if rtcd_support.length() > 0
-    opus_conf.set('OPUS_HAVE_RTCD', 1)
+    oac_conf.set('OAC_HAVE_RTCD', 1)
   else
     if intrinsics_support.length() == 0
       rtcd_support = 'none'
@@ -647,7 +647,7 @@ endif
 
 # extract source file lists from .mk files
 mk_files = [
-  'opus_headers.mk', 'opus_sources.mk',
+  'oac_headers.mk', 'oac_sources.mk',
   'silk_headers.mk', 'silk_sources.mk',
   'celt_sources.mk', 'celt_headers.mk',
   'lpcnet_headers.mk', 'lpcnet_sources.mk',
@@ -667,7 +667,7 @@ subdir('silk')
 subdir('dnn')
 subdir('src')
 
-configure_file(output: 'config.h', configuration: opus_conf)
+configure_file(output: 'config.h', configuration: oac_conf)
 
 if not opt_tests.disabled()
   subdir('celt/tests')
@@ -676,9 +676,9 @@ if not opt_tests.disabled()
 endif
 
 pkg = import('pkgconfig')
-pkg.generate(opus_lib,
-  description: 'Opus IETF audio codec (floating-point build)',
-  subdirs: 'opus',
+pkg.generate(oac_lib,
+  description: 'Oac IETF audio codec (floating-point build)',
+  subdirs: 'oac',
 )
 
 doxygen = find_program('doxygen', required: get_option('docs'))
@@ -688,8 +688,8 @@ endif
 
 summary(
   {
-    'C99 var arrays': opus_conf.has('VAR_ARRAYS'),
-    'C99 lrintf': opus_conf.has('HAVE_LRINTF'),
+    'C99 var arrays': oac_conf.has('VAR_ARRAYS'),
+    'C99 lrintf': oac_conf.has('HAVE_LRINTF'),
     'Use alloca': msg_use_alloca,
   },
   section: 'Compiler support',

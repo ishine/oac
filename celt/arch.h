@@ -34,8 +34,8 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-#include "opus_types.h"
-#include "opus_defines.h"
+#include "oac_types.h"
+#include "oac_defines.h"
 
 # if !defined(__GNUC_PREREQ)
 #  if defined(__GNUC__)&&defined(__GNUC_MINOR__)
@@ -46,12 +46,12 @@
 #  endif
 # endif
 
-#if OPUS_GNUC_PREREQ(3, 0)
-#define opus_likely(x)       (__builtin_expect(!!(x), 1))
-#define opus_unlikely(x)     (__builtin_expect(!!(x), 0))
+#if OAC_GNUC_PREREQ(3, 0)
+#define oac_likely(x)       (__builtin_expect(!!(x), 1))
+#define oac_unlikely(x)     (__builtin_expect(!!(x), 0))
 #else
-#define opus_likely(x)       (!!(x))
-#define opus_unlikely(x)     (!!(x))
+#define oac_likely(x)       (!!(x))
+#define oac_unlikely(x)     (!!(x))
 #endif
 
 #define CELT_SIG_SCALE 32768.f
@@ -82,11 +82,11 @@ void celt_fatal(const char *str, const char *file, int line)
 
 #define celt_assert(cond) {if (!(cond)) {CELT_FATAL("assertion failed: " #cond);}}
 #define celt_assert2(cond, message) {if (!(cond)) {CELT_FATAL("assertion failed: " #cond "\n" message);}}
-#define MUST_SUCCEED(call) celt_assert((call) == OPUS_OK)
+#define MUST_SUCCEED(call) celt_assert((call) == OAC_OK)
 #else
 #define celt_assert(cond) ((void)(cond))
 #define celt_assert2(cond, message) ((void)(cond))
-#define MUST_SUCCEED(call) do {if((call) != OPUS_OK) {RESTORE_STACK; return OPUS_INTERNAL_ERROR;} } while (0)
+#define MUST_SUCCEED(call) do {if((call) != OAC_OK) {RESTORE_STACK; return OAC_INTERNAL_ERROR;} } while (0)
 #endif
 
 #if defined(ENABLE_ASSERTIONS)
@@ -113,18 +113,18 @@ void celt_fatal(const char *str, const char *file, int line)
 /* Throughout the code, we use the following scaling for signals:
    FLOAT: used for float API, normalized to +/-1.
    INT16: used for 16-bit API, normalized to +/- 32768
-   RES: internal Opus resolution, defined as +/-1. in float builds, or either 16-bit or 24-bit int for fixed-point builds
+   RES: internal Oac resolution, defined as +/-1. in float builds, or either 16-bit or 24-bit int for fixed-point builds
    SIG: internal CELT resolution: defined as +/- 32768. in float builds, or Q27 in fixed-point builds (int16 shifted by 12)
 */
 
 
-/* Set this if opus_int64 is a native type of the CPU. */
+/* Set this if oac_int64 is a native type of the CPU. */
 /* Assume that all LP64 architectures have fast 64-bit types; also x86_64
    (which can be ILP32 for x32) and Win64 (which is LLP64). */
 #if defined(__x86_64__) || defined(__LP64__) || defined(_WIN64) || defined (__mips)
-#define OPUS_FAST_INT64 1
+#define OAC_FAST_INT64 1
 #else
-#define OPUS_FAST_INT64 0
+#define OAC_FAST_INT64 0
 #endif
 
 #ifdef FIXED_POINT
@@ -137,16 +137,16 @@ void celt_fatal(const char *str, const char *file, int line)
 
 #ifdef FIXED_POINT
 
-typedef opus_int16 opus_val16;
-typedef opus_int32 opus_val32;
-typedef opus_int64 opus_val64;
+typedef oac_int16 oac_val16;
+typedef oac_int32 oac_val32;
+typedef oac_int64 oac_val64;
 
-typedef opus_val32 celt_sig;
-typedef opus_val32 celt_norm;
-typedef opus_val32 celt_ener;
-typedef opus_val32 celt_glog;
+typedef oac_val32 celt_sig;
+typedef oac_val32 celt_norm;
+typedef oac_val32 celt_ener;
+typedef oac_val32 celt_glog;
 
-typedef opus_val32 opus_res;
+typedef oac_val32 oac_res;
 #define RES_SHIFT 8
 #define SIG2RES(a)      PSHR32(a, SIG_SHIFT-RES_SHIFT)
 #define RES2INT16(a)    SAT16(PSHR32(a, RES_SHIFT))
@@ -165,7 +165,7 @@ typedef opus_val32 opus_res;
 #define INT24TOSIG(a)   SHL32(a, SIG_SHIFT-8)
 
 #define NORM_SHIFT 24
-typedef opus_val32 celt_coef;
+typedef oac_val32 celt_coef;
 #define COEF_ONE Q31ONE
 #define MULT_COEF_32(a, b) MULT32_32_P31(a,b)
 #define MAC_COEF_32_ARM(c, a, b) ADD32((c), MULT32_32_Q32(a,b))
@@ -194,15 +194,15 @@ typedef opus_val32 celt_coef;
 
 #define EPSILON 1
 #define VERY_SMALL 0
-#define VERY_LARGE16 ((opus_val16)32767)
-#define Q15_ONE ((opus_val16)32767)
+#define VERY_LARGE16 ((oac_val16)32767)
+#define Q15_ONE ((oac_val16)32767)
 
 
 #define ABS16(x) ((x) < 0 ? (-(x)) : (x))
 #define ABS32(x) ((x) < 0 ? (-(x)) : (x))
 
-static OPUS_INLINE opus_int16 SAT16(opus_int32 x) {
-   return x > 32767 ? 32767 : x < -32768 ? -32768 : (opus_int16)x;
+static OAC_INLINE oac_int16 SAT16(oac_int32 x) {
+   return x > 32767 ? 32767 : x < -32768 ? -32768 : (oac_int16)x;
 }
 
 #ifdef FIXED_DEBUG
@@ -211,11 +211,11 @@ static OPUS_INLINE opus_int16 SAT16(opus_int32 x) {
 
 #include "fixed_generic.h"
 
-#ifdef OPUS_ARM_PRESUME_AARCH64_NEON_INTR
+#ifdef OAC_ARM_PRESUME_AARCH64_NEON_INTR
 #include "arm/fixed_arm64.h"
-#elif defined (OPUS_ARM_INLINE_EDSP)
+#elif defined (OAC_ARM_INLINE_EDSP)
 #include "arm/fixed_armv5e.h"
-#elif defined (OPUS_ARM_INLINE_ASM)
+#elif defined (OAC_ARM_INLINE_ASM)
 #include "arm/fixed_armv4.h"
 #elif defined (BFIN_ASM)
 #include "fixed_bfin.h"
@@ -229,30 +229,30 @@ static OPUS_INLINE opus_int16 SAT16(opus_int32 x) {
 
 #else /* FIXED_POINT */
 
-typedef float opus_val16;
-typedef float opus_val32;
-typedef float opus_val64;
+typedef float oac_val16;
+typedef float oac_val32;
+typedef float oac_val64;
 
 typedef float celt_sig;
 typedef float celt_norm;
 typedef float celt_ener;
 typedef float celt_glog;
 
-typedef float opus_res;
+typedef float oac_res;
 typedef float celt_coef;
 
 #ifdef FLOAT_APPROX
 /* This code should reliably detect NaN/inf even when -ffast-math is used.
    Assumes IEEE 754 format. */
-static OPUS_INLINE int celt_isnan(float x)
+static OAC_INLINE int celt_isnan(float x)
 {
-   union {float f; opus_uint32 i;} in;
+   union {float f; oac_uint32 i;} in;
    in.f = x;
    return ((in.i>>23)&0xFF)==0xFF && (in.i&0x007FFFFF)!=0;
 }
 #else
 #ifdef __FAST_MATH__
-#error Cannot build libopus with -ffast-math unless FLOAT_APPROX is defined. This could result in crashes on extreme (e.g. NaN) input
+#error Cannot build liboac with -ffast-math unless FLOAT_APPROX is defined. This could result in crashes on extreme (e.g. NaN) input
 #endif
 #define celt_isnan(x) ((x)!=(x))
 #endif
@@ -267,7 +267,7 @@ static OPUS_INLINE int celt_isnan(float x)
 #define EPSILON 1e-15f
 #define VERY_SMALL 1e-30f
 #define VERY_LARGE16 1e15f
-#define Q15_ONE ((opus_val16)1.f)
+#define Q15_ONE ((oac_val16)1.f)
 
 /* This appears to be the same speed as C99's fabsf() but it's more portable. */
 #define ABS16(x) ((float)fabs(x))
@@ -312,8 +312,8 @@ static OPUS_INLINE int celt_isnan(float x)
 #define PSHR32_ovflw(a,shift) (a)
 
 #define MULT16_16_16(a,b)     ((a)*(b))
-#define MULT16_16(a,b)     ((opus_val32)(a)*(opus_val32)(b))
-#define MAC16_16(c,a,b)     ((c)+(opus_val32)(a)*(opus_val32)(b))
+#define MULT16_16(a,b)     ((oac_val32)(a)*(oac_val32)(b))
+#define MAC16_16(c,a,b)     ((c)+(oac_val32)(a)*(oac_val32)(b))
 
 #define MULT16_32_Q15(a,b)     ((a)*(b))
 #define MULT16_32_Q16(a,b)     ((a)*(b))
@@ -341,8 +341,8 @@ static OPUS_INLINE int celt_isnan(float x)
 #define MULT_COEF(a, b)   ((a)*(b))
 #define MULT_COEF_TAPS(a, b)   ((a)*(b))
 
-#define DIV32_16(a,b)     (((opus_val32)(a))/(opus_val16)(b))
-#define DIV32(a,b)     (((opus_val32)(a))/(opus_val32)(b))
+#define DIV32_16(a,b)     (((oac_val32)(a))/(oac_val16)(b))
+#define DIV32(a,b)     (((oac_val32)(a))/(oac_val32)(b))
 
 #define SIG2RES(a)      ((1/CELT_SIG_SCALE)*(a))
 #define RES2INT16(a)    FLOAT2INT16(a)

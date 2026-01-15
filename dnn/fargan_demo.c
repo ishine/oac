@@ -131,12 +131,12 @@ void usage(void) {
 }
 
 #ifdef ENABLE_DRED
-void dred_decode_latents(ec_dec *dec, float *x, const opus_uint8 *scale, const opus_uint8 *r, const opus_uint8 *p0, int dim);
+void dred_decode_latents(ec_dec *dec, float *x, const oac_uint8 *scale, const oac_uint8 *r, const oac_uint8 *p0, int dim);
 
-static opus_uint32 char_to_int(unsigned char ch[4])
+static oac_uint32 char_to_int(unsigned char ch[4])
 {
-    return ((opus_uint32)ch[0]<<24) | ((opus_uint32)ch[1]<<16)
-         | ((opus_uint32)ch[2]<< 8) |  (opus_uint32)ch[3];
+    return ((oac_uint32)ch[0]<<24) | ((oac_uint32)ch[1]<<16)
+         | ((oac_uint32)ch[2]<< 8) |  (oac_uint32)ch[3];
 }
 #endif
 
@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
     void *data;
     const char *filename = "weights_blob.bin";
 #endif
-    arch = opus_select_arch();
+    arch = oac_select_arch();
     if (argc < 4) usage();
     if (strcmp(argv[1], "-features") == 0) mode=MODE_FEATURES;
     else if (strcmp(argv[1], "-fargan-synthesis") == 0) mode=MODE_FARGAN_SYNTHESIS;
@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
         net = lpcnet_encoder_create();
         while (1) {
             float features[NB_TOTAL_FEATURES];
-            opus_int16 pcm[LPCNET_FRAME_SIZE];
+            oac_int16 pcm[LPCNET_FRAME_SIZE];
             size_t ret;
             ret = fread(pcm, sizeof(pcm[0]), LPCNET_FRAME_SIZE, fin);
             if (feof(fin) || ret != LPCNET_FRAME_SIZE) break;
@@ -204,18 +204,18 @@ int main(int argc, char **argv) {
         /* uncomment the following to align with Python code */
         ret = fread(&in_features[0], sizeof(in_features[0]), NB_FEATURES, fin);
         for (i=1;i<5;i++) {
-           OPUS_COPY(&in_features[i*NB_FEATURES], &in_features[0], NB_FEATURES);
+           OAC_COPY(&in_features[i*NB_FEATURES], &in_features[0], NB_FEATURES);
         }
         fargan_cont(&fargan, zeros, in_features);
         while (1) {
             float features[NB_FEATURES];
             float fpcm[LPCNET_FRAME_SIZE];
-            opus_int16 pcm[LPCNET_FRAME_SIZE];
+            oac_int16 pcm[LPCNET_FRAME_SIZE];
             ret = fread(in_features, sizeof(features[0]), NB_FEATURES, fin);
             if (stop || feof(fin) || ret != NB_FEATURES) {
                stop++;
             } else {
-               OPUS_COPY(features, in_features, NB_FEATURES);
+               OAC_COPY(features, in_features, NB_FEATURES);
             }
             fargan_synthesize(&fargan, fpcm, features);
             for (i=0;i<LPCNET_FRAME_SIZE;i++) pcm[i] = (int)floor(.5 + MIN32(32767, MAX32(-32767, 32768.f*fpcm[i])));
@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
                     &latents[i*(DRED_LATENT_DIM+1)],
                     arch);
               for (k=0;k<4;k++) {
-                 OPUS_COPY(&features[(2*i-2+k)*DRED_NUM_FEATURES], &dec_tmp[(3-k)*DRED_NUM_FEATURES], DRED_NUM_FEATURES);
+                 OAC_COPY(&features[(2*i-2+k)*DRED_NUM_FEATURES], &dec_tmp[(3-k)*DRED_NUM_FEATURES], DRED_NUM_FEATURES);
               }
            }
            for (i=0;i<nb_chunks;i++) {

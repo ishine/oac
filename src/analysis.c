@@ -112,16 +112,16 @@ static const int tbands[NB_TBANDS+1] = {
 
 #define NB_TONAL_SKIP_BANDS 9
 
-static opus_val32 silk_resampler_down2_hp(
-    opus_val32                  *S,                 /* I/O  State vector [ 2 ]                                          */
-    opus_val32                  *out,               /* O    Output signal [ floor(len/2) ]                              */
-    const opus_val32            *in,                /* I    Input signal [ len ]                                        */
+static oac_val32 silk_resampler_down2_hp(
+    oac_val32                  *S,                 /* I/O  State vector [ 2 ]                                          */
+    oac_val32                  *out,               /* O    Output signal [ floor(len/2) ]                              */
+    const oac_val32            *in,                /* I    Input signal [ len ]                                        */
     int                         inLen               /* I    Number of input samples                                     */
 )
 {
     int k, len2 = inLen/2;
-    opus_val32 in32, out32, out32_hp, Y, X;
-    opus_val64 hp_ener = 0;
+    oac_val32 in32, out32, out32_hp, Y, X;
+    oac_val64 hp_ener = 0;
     /* Internal variables and state are in Q10 format */
     for( k = 0; k < len2; k++ ) {
         /* Convert to Q10 */
@@ -150,7 +150,7 @@ static opus_val32 silk_resampler_down2_hp(
         S[ 2 ] = ADD32( -in32, X );
 
         /* len2 can be up to 480, so we shift by 8 to make it fit. */
-        hp_ener += SHR64(out32_hp*(opus_val64)out32_hp, 8);
+        hp_ener += SHR64(out32_hp*(oac_val64)out32_hp, 8);
         /* Add, convert back to int16 and store to output */
         out[ k ] = HALF32(out32);
     }
@@ -159,14 +159,14 @@ static opus_val32 silk_resampler_down2_hp(
     hp_ener = hp_ener >> (2*SIG_SHIFT);
     if (hp_ener > 2147483647) hp_ener = 2147483647;
 #endif
-    return (opus_val32)hp_ener;
+    return (oac_val32)hp_ener;
 }
 
-static opus_val32 downmix_and_resample(downmix_func downmix, const void *_x, opus_val32 *y, opus_val32 S[3], int subframe, int offset, int c1, int c2, int C, int Fs)
+static oac_val32 downmix_and_resample(downmix_func downmix, const void *_x, oac_val32 *y, oac_val32 S[3], int subframe, int offset, int c1, int c2, int C, int Fs)
 {
-   VARDECL(opus_val32, tmp);
+   VARDECL(oac_val32, tmp);
    int j;
-   opus_val32 ret = 0;
+   oac_val32 ret = 0;
    SAVE_STACK;
 
    if (subframe==0) return 0;
@@ -179,7 +179,7 @@ static opus_val32 downmix_and_resample(downmix_func downmix, const void *_x, opu
       offset = offset*2/3;
    }
    else if (Fs != 24000) celt_assert(0);
-   ALLOC(tmp, subframe, opus_val32);
+   ALLOC(tmp, subframe, oac_val32);
 
    downmix(_x, tmp, subframe, offset, c1, c2, C);
    if ((c2==-2 && C==2) || c2>-1) {
@@ -191,10 +191,10 @@ static opus_val32 downmix_and_resample(downmix_func downmix, const void *_x, opu
    {
       ret = silk_resampler_down2_hp(S, y, tmp, subframe);
    } else if (Fs == 24000) {
-      OPUS_COPY(y, tmp, subframe);
+      OAC_COPY(y, tmp, subframe);
    } else if (Fs == 16000) {
-      VARDECL(opus_val32, tmp3x);
-      ALLOC(tmp3x, 3*subframe, opus_val32);
+      VARDECL(oac_val32, tmp3x);
+      ALLOC(tmp3x, 3*subframe, oac_val32);
       /* Don't do this at home! This resampler is horrible and it's only (barely)
          usable for the purpose of the analysis because we don't care about all
          the aliasing between 8 kHz and 12 kHz. */
@@ -213,10 +213,10 @@ static opus_val32 downmix_and_resample(downmix_func downmix, const void *_x, opu
    return ret;
 }
 
-void tonality_analysis_init(TonalityAnalysisState *tonal, opus_int32 Fs)
+void tonality_analysis_init(TonalityAnalysisState *tonal, oac_int32 Fs)
 {
   /* Initialize reusable fields. */
-  tonal->arch = opus_select_arch();
+  tonal->arch = oac_select_arch();
   tonal->Fs = Fs;
   /* Clear remaining fields. */
   tonality_analysis_reset(tonal);
@@ -226,7 +226,7 @@ void tonality_analysis_reset(TonalityAnalysisState *tonal)
 {
   /* Clear non-reusable fields. */
   char *start = (char*)&tonal->TONALITY_ANALYSIS_RESET_START;
-  OPUS_CLEAR(start, sizeof(TonalityAnalysisState) - (start - (char*)tonal));
+  OAC_CLEAR(start, sizeof(TonalityAnalysisState) - (start - (char*)tonal));
 }
 
 void tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len)
@@ -271,7 +271,7 @@ void tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int
    if (pos<0)
       pos = DETECT_SIZE-1;
    pos0 = pos;
-   OPUS_COPY(info_out, &tonal->info[pos], 1);
+   OAC_COPY(info_out, &tonal->info[pos], 1);
    if (!info_out->valid)
       return;
    tonality_max = tonality_avg = info_out->tonality;
@@ -418,17 +418,17 @@ static const float std_feature_bias[9] = {
 #ifdef FIXED_POINT
 /* For fixed-point, the input is +/-2^15 shifted up by SIG_SHIFT, so we need to
    compensate for that in the energy. */
-#define SCALE_COMPENS (1.f/((opus_int32)1<<(15+SIG_SHIFT)))
+#define SCALE_COMPENS (1.f/((oac_int32)1<<(15+SIG_SHIFT)))
 #define SCALE_ENER(e) ((SCALE_COMPENS*SCALE_COMPENS)*(e))
 #else
 #define SCALE_ENER(e) ((1.f/32768/32768)*e)
 #endif
 
 #ifdef FIXED_POINT
-static int is_digital_silence32(const opus_val32* pcm, int frame_size, int channels, int lsb_depth)
+static int is_digital_silence32(const oac_val32* pcm, int frame_size, int channels, int lsb_depth)
 {
    int silence = 0;
-   opus_val32 sample_max = 0;
+   oac_val32 sample_max = 0;
 #ifdef MLP_TRAINING
    return 0;
 #endif
@@ -449,9 +449,9 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     VARDECL(kiss_fft_cpx, in);
     VARDECL(kiss_fft_cpx, out);
     int N = 480, N2=240;
-    float * OPUS_RESTRICT A = tonal->angle;
-    float * OPUS_RESTRICT dA = tonal->d_angle;
-    float * OPUS_RESTRICT d2A = tonal->d2_angle;
+    float * OAC_RESTRICT A = tonal->angle;
+    float * OAC_RESTRICT dA = tonal->d_angle;
+    float * OAC_RESTRICT d2A = tonal->d2_angle;
     VARDECL(float, tonality);
     VARDECL(float, noisiness);
     float band_tonality[NB_TBANDS];
@@ -540,7 +540,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
        in[N-i-1].r = (kiss_fft_scalar)(w*tonal->inmem[N-i-1]);
        in[N-i-1].i = (kiss_fft_scalar)(w*tonal->inmem[N+N2-i-1]);
     }
-    OPUS_MOVE(tonal->inmem, tonal->inmem+ANALYSIS_BUF_SIZE-240, 240);
+    OAC_MOVE(tonal->inmem, tonal->inmem+ANALYSIS_BUF_SIZE-240, 240);
     remaining = len - (ANALYSIS_BUF_SIZE-tonal->mem_fill);
     tonal->hp_ener_accum = (float)downmix_and_resample(downmix, x,
           &tonal->inmem[240], tonal->downmix_state, remaining,
@@ -552,11 +552,11 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
        int prev_pos = tonal->write_pos-2;
        if (prev_pos < 0)
           prev_pos += DETECT_SIZE;
-       OPUS_COPY(info, &tonal->info[prev_pos], 1);
+       OAC_COPY(info, &tonal->info[prev_pos], 1);
        RESTORE_STACK;
        return;
     }
-    opus_fft(kfft, in, out, tonal->arch);
+    oac_fft(kfft, in, out, tonal->arch);
 #ifndef FIXED_POINT
     /* If there's any NaN on the input, the entire output will be NaN, so we only need to check one value. */
     if (celt_isnan(out[0].r))
@@ -945,14 +945,14 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
 
     info->bandwidth = bandwidth;
     tonal->prev_bandwidth = bandwidth;
-    /*printf("%d %d\n", info->bandwidth, info->opus_bandwidth);*/
+    /*printf("%d %d\n", info->bandwidth, info->oac_bandwidth);*/
     info->noisiness = frame_noisiness;
     info->valid = 1;
     RESTORE_STACK;
 }
 
 void run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, const void *analysis_pcm,
-                 int analysis_frame_size, int frame_size, int c1, int c2, int C, opus_int32 Fs,
+                 int analysis_frame_size, int frame_size, int c1, int c2, int C, oac_int32 Fs,
                  int lsb_depth, downmix_func downmix, AnalysisInfo *analysis_info)
 {
    int offset;

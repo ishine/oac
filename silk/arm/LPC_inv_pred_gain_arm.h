@@ -30,13 +30,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 # include "celt/arm/armcpu.h"
 
-# if defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
-opus_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse prediction gain in energy domain, Q30        */
-    const opus_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
-    const opus_int              order               /* I   Prediction order                                             */
+# if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
+oac_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse prediction gain in energy domain, Q30        */
+    const oac_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
+    const oac_int              order               /* I   Prediction order                                             */
 );
 
-#  if !defined(OPUS_HAVE_RTCD) && defined(OPUS_ARM_PRESUME_NEON)
+#  if !defined(OAC_HAVE_RTCD) && defined(OAC_ARM_PRESUME_NEON)
 #   define OVERRIDE_silk_LPC_inverse_pred_gain            (1)
 #   define silk_LPC_inverse_pred_gain(A_Q12, order, arch) ((void)(arch), PRESUME_NEON(silk_LPC_inverse_pred_gain)(A_Q12, order))
 #  endif
@@ -44,11 +44,11 @@ opus_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse predi
 
 # if !defined(OVERRIDE_silk_LPC_inverse_pred_gain)
 /*Is run-time CPU detection enabled on this platform?*/
-#  if defined(OPUS_HAVE_RTCD) && (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR))
-extern opus_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OPUS_ARCHMASK+1])(const opus_int16 *A_Q12, const opus_int order);
+#  if defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
+extern oac_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OAC_ARCHMASK+1])(const oac_int16 *A_Q12, const oac_int order);
 #   define OVERRIDE_silk_LPC_inverse_pred_gain            (1)
-#   define silk_LPC_inverse_pred_gain(A_Q12, order, arch) ((*SILK_LPC_INVERSE_PRED_GAIN_IMPL[(arch)&OPUS_ARCHMASK])(A_Q12, order))
-#  elif defined(OPUS_ARM_PRESUME_NEON_INTR)
+#   define silk_LPC_inverse_pred_gain(A_Q12, order, arch) ((*SILK_LPC_INVERSE_PRED_GAIN_IMPL[(arch)&OAC_ARCHMASK])(A_Q12, order))
+#  elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #   define OVERRIDE_silk_LPC_inverse_pred_gain            (1)
 #   define silk_LPC_inverse_pred_gain(A_Q12, order, arch) ((void)(arch), silk_LPC_inverse_pred_gain_neon(A_Q12, order))
 #  endif

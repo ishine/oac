@@ -30,7 +30,7 @@
 
 #include <stdlib.h>
 
-#include "opus_types.h"
+#include "oac_types.h"
 
 typedef struct RDOVAEDec RDOVAEDec;
 typedef struct RDOVAEEnc RDOVAEEnc;

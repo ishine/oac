@@ -32,11 +32,11 @@
 #include "x86/x86cpu.h"
 #include "nnet.h"
 
-#if defined(OPUS_HAVE_RTCD)
+#if defined(OAC_HAVE_RTCD)
 
-#if (defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(OPUS_X86_PRESUME_AVX2))
+#if (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_AVX2))
 
-void (*const DNN_COMPUTE_LINEAR_IMPL[OPUS_ARCHMASK + 1])(
+void (*const DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
          const LinearLayer *linear,
          float *out,
          const float *in
@@ -48,7 +48,7 @@ void (*const DNN_COMPUTE_LINEAR_IMPL[OPUS_ARCHMASK + 1])(
   MAY_HAVE_AVX2(compute_linear)  /* avx  */
 };
 
-void (*const DNN_COMPUTE_ACTIVATION_IMPL[OPUS_ARCHMASK + 1])(
+void (*const DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
          float *output,
          const float *input,
          int N,
@@ -61,7 +61,7 @@ void (*const DNN_COMPUTE_ACTIVATION_IMPL[OPUS_ARCHMASK + 1])(
   MAY_HAVE_AVX2(compute_activation)  /* avx  */
 };
 
-void (*const DNN_COMPUTE_CONV2D_IMPL[OPUS_ARCHMASK + 1])(
+void (*const DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
          const Conv2dLayer *conv,
          float *out,
          float *mem,

@@ -29,7 +29,7 @@
 #ifndef VEC_H
 #define VEC_H
 
-#include "opus_types.h"
+#include "oac_types.h"
 #include <math.h>
 #include "arch.h"
 #include "x86/x86_arch_macros.h"
@@ -50,7 +50,7 @@
 static inline void sgemv16x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x)
 {
    int i, j;
-   OPUS_CLEAR(out, rows);
+   OAC_CLEAR(out, rows);
    for (i=0;i<rows;i+=16)
    {
       for (j=0;j<cols;j++)
@@ -84,7 +84,7 @@ static inline void sgemv16x1(float *out, const float *weights, int rows, int col
 static inline void sgemv8x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x)
 {
    int i, j;
-   OPUS_CLEAR(out, rows);
+   OAC_CLEAR(out, rows);
    for (i=0;i<rows;i+=8)
    {
       for (j=0;j<cols;j++)
@@ -124,7 +124,7 @@ static inline void sgemv(float *out, const float *weights, int rows, int cols, i
 static inline void sparse_sgemv8x4(float *out, const float *w, const int *idx, int rows, const float *x)
 {
    int i, j;
-   OPUS_CLEAR(out, rows);
+   OAC_CLEAR(out, rows);
    for (i=0;i<rows;i+=8)
    {
       int cols;
@@ -181,7 +181,7 @@ static inline void sparse_sgemv8x4(float *out, const float *w, const int *idx, i
 }
 
 #ifdef USE_SU_BIAS
-static inline void sparse_cgemv8x4(float *out, const opus_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
+static inline void sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
    unsigned char x[MAX_INPUTS];
@@ -215,7 +215,7 @@ static inline void sparse_cgemv8x4(float *out, const opus_int8 *w, const int *id
    }
    for (i=0;i<rows;i++) out[i] *= scale[i];
 }
-static inline void cgemv8x4(float *out, const opus_int8 *w, const float *scale, int rows, int cols, const float *_x)
+static inline void cgemv8x4(float *out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
    unsigned char x[MAX_INPUTS];
@@ -246,10 +246,10 @@ static inline void cgemv8x4(float *out, const opus_int8 *w, const float *scale, 
    for (i=0;i<rows;i++) out[i] *= scale[i];
 }
 #else
-static inline void sparse_cgemv8x4(float *out, const opus_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
+static inline void sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
-   opus_int8 x[MAX_INPUTS];
+   oac_int8 x[MAX_INPUTS];
    for (i=0;i<rows;i++) out[i] = 0;
    for (i=0;i<cols;i++) x[i] = (int)floor(.5+127*_x[i]);
    for (i=0;i<rows;i+=8)
@@ -280,10 +280,10 @@ static inline void sparse_cgemv8x4(float *out, const opus_int8 *w, const int *id
    }
    for (i=0;i<rows;i++) out[i] *= scale[i];
 }
-static inline void cgemv8x4(float *out, const opus_int8 *w, const float *scale, int rows, int cols, const float *_x)
+static inline void cgemv8x4(float *out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x)
 {
    int i, j;
-   opus_int8 x[MAX_INPUTS];
+   oac_int8 x[MAX_INPUTS];
    for (i=0;i<rows;i++) out[i] = 0;
    for (i=0;i<cols;i++) x[i] = (int)floor(.5+127*_x[i]);
    for (i=0;i<rows;i+=8)
@@ -320,7 +320,7 @@ static inline float lpcnet_exp2(float x)
    float frac;
    union {
       float f;
-      opus_uint32 i;
+      oac_uint32 i;
    } res;
    integer = floor(x);
    if (integer < -50)
@@ -335,7 +335,7 @@ static inline float lpcnet_exp2(float x)
 #define lpcnet_exp(x) lpcnet_exp2((x)*1.44269504f)
 
 #define fmadd(a, b, c) ((a)*(b)+(c))
-static OPUS_INLINE float tanh_approx(float x)
+static OAC_INLINE float tanh_approx(float x)
 {
     const float N0 = 952.52801514f;
     const float N1 = 96.39235687f;

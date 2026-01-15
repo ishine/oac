@@ -32,19 +32,19 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main_FIX.h"
 
 /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
-opus_int32 silk_residual_energy16_covar_FIX(
-    const opus_int16                *c,                                     /* I    Prediction vector                                                           */
-    const opus_int32                *wXX,                                   /* I    Correlation matrix                                                          */
-    const opus_int32                *wXx,                                   /* I    Correlation vector                                                          */
-    opus_int32                      wxx,                                    /* I    Signal energy                                                               */
-    opus_int                        D,                                      /* I    Dimension                                                                   */
-    opus_int                        cQ                                      /* I    Q value for c vector 0 - 15                                                 */
+oac_int32 silk_residual_energy16_covar_FIX(
+    const oac_int16                *c,                                     /* I    Prediction vector                                                           */
+    const oac_int32                *wXX,                                   /* I    Correlation matrix                                                          */
+    const oac_int32                *wXx,                                   /* I    Correlation vector                                                          */
+    oac_int32                      wxx,                                    /* I    Signal energy                                                               */
+    oac_int                        D,                                      /* I    Dimension                                                                   */
+    oac_int                        cQ                                      /* I    Q value for c vector 0 - 15                                                 */
 )
 {
-    opus_int   i, j, lshifts, Qxtra;
-    opus_int32 c_max, w_max, tmp, tmp2, nrg;
-    opus_int   cn[ MAX_MATRIX_SIZE ];
-    const opus_int32 *pRow;
+    oac_int   i, j, lshifts, Qxtra;
+    oac_int32 c_max, w_max, tmp, tmp2, nrg;
+    oac_int   cn[ MAX_MATRIX_SIZE ];
+    const oac_int32 *pRow;
 
     /* Safety checks */
     celt_assert( D >=  0 );
@@ -57,7 +57,7 @@ opus_int32 silk_residual_energy16_covar_FIX(
 
     c_max = 0;
     for( i = 0; i < D; i++ ) {
-        c_max = silk_max_32( c_max, silk_abs( (opus_int32)c[ i ] ) );
+        c_max = silk_max_32( c_max, silk_abs( (oac_int32)c[ i ] ) );
     }
     Qxtra = silk_min_int( Qxtra, silk_CLZ32( c_max ) - 17 );
 
@@ -65,7 +65,7 @@ opus_int32 silk_residual_energy16_covar_FIX(
     Qxtra = silk_min_int( Qxtra, silk_CLZ32( silk_MUL( D, silk_RSHIFT( silk_SMULWB( w_max, c_max ), 4 ) ) ) - 5 );
     Qxtra = silk_max_int( Qxtra, 0 );
     for( i = 0; i < D; i++ ) {
-        cn[ i ] = silk_LSHIFT( ( opus_int )c[ i ], Qxtra );
+        cn[ i ] = silk_LSHIFT( ( oac_int )c[ i ], Qxtra );
         silk_assert( silk_abs(cn[i]) <= ( silk_int16_MAX + 1 ) ); /* Check that silk_SMLAWB can be used */
     }
     lshifts -= Qxtra;

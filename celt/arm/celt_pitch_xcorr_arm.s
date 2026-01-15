@@ -30,26 +30,26 @@
 
   GET    celt/arm/armopts.s
 
-IF OPUS_ARM_MAY_HAVE_EDSP
+IF OAC_ARM_MAY_HAVE_EDSP
   EXPORT celt_pitch_xcorr_edsp
 ENDIF
 
-IF OPUS_ARM_MAY_HAVE_NEON
+IF OAC_ARM_MAY_HAVE_NEON
   EXPORT celt_pitch_xcorr_neon
 ENDIF
 
-IF OPUS_ARM_MAY_HAVE_NEON
+IF OAC_ARM_MAY_HAVE_NEON
 
 ; Compute sum[k]=sum(x[j]*y[j+k],j=0...len-1), k=0...3
 xcorr_kernel_neon PROC
 xcorr_kernel_neon_start
   ; input:
   ;   r3     = int         len
-  ;   r4     = opus_val16 *x
-  ;   r5     = opus_val16 *y
-  ;   q0     = opus_val32  sum[4]
+  ;   r4     = oac_val16 *x
+  ;   r5     = oac_val16 *y
+  ;   q0     = oac_val32  sum[4]
   ; output:
-  ;   q0     = opus_val32  sum[4]
+  ;   q0     = oac_val32  sum[4]
   ; preserved: r0-r3, r6-r11, d2, q4-q7, q9-q15
   ; internal usage:
   ;   r12 = int j
@@ -152,19 +152,19 @@ xcorr_kernel_neon_process1
   MOV          pc, lr
   ENDP
 
-; opus_val32 celt_pitch_xcorr_neon(opus_val16 *_x, opus_val16 *_y,
-;  opus_val32 *xcorr, int len, int max_pitch, int arch)
+; oac_val32 celt_pitch_xcorr_neon(oac_val16 *_x, oac_val16 *_y,
+;  oac_val32 *xcorr, int len, int max_pitch, int arch)
 celt_pitch_xcorr_neon PROC
   ; input:
-  ;   r0  = opus_val16 *_x
-  ;   r1  = opus_val16 *_y
-  ;   r2  = opus_val32 *xcorr
+  ;   r0  = oac_val16 *_x
+  ;   r1  = oac_val16 *_y
+  ;   r2  = oac_val32 *xcorr
   ;   r3  = int         len
   ; output:
   ;   r0  = int         maxcorr
   ; internal usage:
-  ;   r4  = opus_val16 *x (for xcorr_kernel_neon())
-  ;   r5  = opus_val16 *y (for xcorr_kernel_neon())
+  ;   r4  = oac_val16 *x (for xcorr_kernel_neon())
+  ;   r5  = oac_val16 *y (for xcorr_kernel_neon())
   ;   r6  = int         max_pitch
   ;   r12 = int         j
   ;   q15 = int         maxcorr[4] (q15 is not used by xcorr_kernel_neon())
@@ -255,7 +255,7 @@ celt_pitch_xcorr_neon_done
 
 ENDIF
 
-IF OPUS_ARM_MAY_HAVE_EDSP
+IF OAC_ARM_MAY_HAVE_EDSP
 
 ; This will get used on ARMv7 devices without NEON, so it has been optimized
 ; to take advantage of dual-issuing where possible.
@@ -263,16 +263,16 @@ xcorr_kernel_edsp PROC
 xcorr_kernel_edsp_start
   ; input:
   ;   r3      = int         len
-  ;   r4      = opus_val16 *_x (must be 32-bit aligned)
-  ;   r5      = opus_val16 *_y (must be 32-bit aligned)
-  ;   r6...r9 = opus_val32  sum[4]
+  ;   r4      = oac_val16 *_x (must be 32-bit aligned)
+  ;   r5      = oac_val16 *_y (must be 32-bit aligned)
+  ;   r6...r9 = oac_val32  sum[4]
   ; output:
-  ;   r6...r9 = opus_val32  sum[4]
+  ;   r6...r9 = oac_val32  sum[4]
   ; preserved: r0-r5
   ; internal usage
   ;   r2      = int         j
-  ;   r12,r14 = opus_val16  x[4]
-  ;   r10,r11 = opus_val16  y[4]
+  ;   r12,r14 = oac_val16  x[4]
+  ;   r10,r11 = oac_val16  y[4]
   STMFD        sp!, {r2,r4,r5,lr}
   LDR          r10, [r5], #4      ; Load y[0...1]
   SUBS         r2, r3, #4         ; j = len-4
@@ -345,19 +345,19 @@ xcorr_kernel_edsp_done
 
 celt_pitch_xcorr_edsp PROC
   ; input:
-  ;   r0  = opus_val16 *_x (must be 32-bit aligned)
-  ;   r1  = opus_val16 *_y (only needs to be 16-bit aligned)
-  ;   r2  = opus_val32 *xcorr
+  ;   r0  = oac_val16 *_x (must be 32-bit aligned)
+  ;   r1  = oac_val16 *_y (only needs to be 16-bit aligned)
+  ;   r2  = oac_val32 *xcorr
   ;   r3  = int         len
   ; output:
   ;   r0  = maxcorr
   ; internal usage
-  ;   r4  = opus_val16 *x
-  ;   r5  = opus_val16 *y
-  ;   r6  = opus_val32  sum0
-  ;   r7  = opus_val32  sum1
-  ;   r8  = opus_val32  sum2
-  ;   r9  = opus_val32  sum3
+  ;   r4  = oac_val16 *x
+  ;   r5  = oac_val16 *y
+  ;   r6  = oac_val32  sum0
+  ;   r7  = oac_val32  sum1
+  ;   r8  = oac_val32  sum2
+  ;   r9  = oac_val32  sum3
   ;   r1  = int         max_pitch
   ;   r12 = int         j
   ; ignored:

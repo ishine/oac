@@ -32,11 +32,11 @@ POSSIBILITY OF SUCH DAMAGE.
 /* This macro only avoids the undefined behaviour from a left shift of
    a negative value. It should only be used in macros that can't include
    SigProc_FIX.h. In other cases, use silk_LSHIFT32(). */
-#define SAFE_SHL(a,b) ((opus_int32)((opus_uint32)(a) << (b)))
+#define SAFE_SHL(a,b) ((oac_int32)((oac_uint32)(a) << (b)))
 
-/* (a32 * (opus_int32)((opus_int16)(b32))) >> 16 output have to be 32bit int */
+/* (a32 * (oac_int32)((oac_int16)(b32))) >> 16 output have to be 32bit int */
 #undef silk_SMULWB
-static OPUS_INLINE opus_int32 silk_SMULWB_armv5e(opus_int32 a, opus_int16 b)
+static OAC_INLINE oac_int32 silk_SMULWB_armv5e(oac_int32 a, oac_int16 b)
 {
   int res;
   __asm__(
@@ -49,10 +49,10 @@ static OPUS_INLINE opus_int32 silk_SMULWB_armv5e(opus_int32 a, opus_int16 b)
 }
 #define silk_SMULWB(a, b) (silk_SMULWB_armv5e(a, b))
 
-/* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
+/* a32 + (b32 * (oac_int32)((oac_int16)(c32))) >> 16 output have to be 32bit int */
 #undef silk_SMLAWB
-static OPUS_INLINE opus_int32 silk_SMLAWB_armv5e(opus_int32 a, opus_int32 b,
- opus_int16 c)
+static OAC_INLINE oac_int32 silk_SMLAWB_armv5e(oac_int32 a, oac_int32 b,
+ oac_int16 c)
 {
   int res;
   __asm__(
@@ -67,7 +67,7 @@ static OPUS_INLINE opus_int32 silk_SMLAWB_armv5e(opus_int32 a, opus_int32 b,
 
 /* (a32 * (b32 >> 16)) >> 16 */
 #undef silk_SMULWT
-static OPUS_INLINE opus_int32 silk_SMULWT_armv5e(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_SMULWT_armv5e(oac_int32 a, oac_int32 b)
 {
   int res;
   __asm__(
@@ -82,8 +82,8 @@ static OPUS_INLINE opus_int32 silk_SMULWT_armv5e(opus_int32 a, opus_int32 b)
 
 /* a32 + (b32 * (c32 >> 16)) >> 16 */
 #undef silk_SMLAWT
-static OPUS_INLINE opus_int32 silk_SMLAWT_armv5e(opus_int32 a, opus_int32 b,
- opus_int32 c)
+static OAC_INLINE oac_int32 silk_SMLAWT_armv5e(oac_int32 a, oac_int32 b,
+ oac_int32 c)
 {
   int res;
   __asm__(
@@ -96,9 +96,9 @@ static OPUS_INLINE opus_int32 silk_SMLAWT_armv5e(opus_int32 a, opus_int32 b,
 }
 #define silk_SMLAWT(a, b, c) (silk_SMLAWT_armv5e(a, b, c))
 
-/* (opus_int32)((opus_int16)(a3))) * (opus_int32)((opus_int16)(b32)) output have to be 32bit int */
+/* (oac_int32)((oac_int16)(a3))) * (oac_int32)((oac_int16)(b32)) output have to be 32bit int */
 #undef silk_SMULBB
-static OPUS_INLINE opus_int32 silk_SMULBB_armv5e(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_SMULBB_armv5e(oac_int32 a, oac_int32 b)
 {
   int res;
   __asm__(
@@ -111,10 +111,10 @@ static OPUS_INLINE opus_int32 silk_SMULBB_armv5e(opus_int32 a, opus_int32 b)
 }
 #define silk_SMULBB(a, b) (silk_SMULBB_armv5e(a, b))
 
-/* a32 + (opus_int32)((opus_int16)(b32)) * (opus_int32)((opus_int16)(c32)) output have to be 32bit int */
+/* a32 + (oac_int32)((oac_int16)(b32)) * (oac_int32)((oac_int16)(c32)) output have to be 32bit int */
 #undef silk_SMLABB
-static OPUS_INLINE opus_int32 silk_SMLABB_armv5e(opus_int32 a, opus_int32 b,
- opus_int32 c)
+static OAC_INLINE oac_int32 silk_SMLABB_armv5e(oac_int32 a, oac_int32 b,
+ oac_int32 c)
 {
   int res;
   __asm__(
@@ -127,9 +127,9 @@ static OPUS_INLINE opus_int32 silk_SMLABB_armv5e(opus_int32 a, opus_int32 b,
 }
 #define silk_SMLABB(a, b, c) (silk_SMLABB_armv5e(a, b, c))
 
-/* (opus_int32)((opus_int16)(a32)) * (b32 >> 16) */
+/* (oac_int32)((oac_int16)(a32)) * (b32 >> 16) */
 #undef silk_SMULBT
-static OPUS_INLINE opus_int32 silk_SMULBT_armv5e(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_SMULBT_armv5e(oac_int32 a, oac_int32 b)
 {
   int res;
   __asm__(
@@ -142,10 +142,10 @@ static OPUS_INLINE opus_int32 silk_SMULBT_armv5e(opus_int32 a, opus_int32 b)
 }
 #define silk_SMULBT(a, b) (silk_SMULBT_armv5e(a, b))
 
-/* a32 + (opus_int32)((opus_int16)(b32)) * (c32 >> 16) */
+/* a32 + (oac_int32)((oac_int16)(b32)) * (c32 >> 16) */
 #undef silk_SMLABT
-static OPUS_INLINE opus_int32 silk_SMLABT_armv5e(opus_int32 a, opus_int32 b,
- opus_int32 c)
+static OAC_INLINE oac_int32 silk_SMLABT_armv5e(oac_int32 a, oac_int32 b,
+ oac_int32 c)
 {
   int res;
   __asm__(
@@ -160,7 +160,7 @@ static OPUS_INLINE opus_int32 silk_SMLABT_armv5e(opus_int32 a, opus_int32 b,
 
 /* add/subtract with output saturated */
 #undef silk_ADD_SAT32
-static OPUS_INLINE opus_int32 silk_ADD_SAT32_armv5e(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_ADD_SAT32_armv5e(oac_int32 a, oac_int32 b)
 {
   int res;
   __asm__(
@@ -174,7 +174,7 @@ static OPUS_INLINE opus_int32 silk_ADD_SAT32_armv5e(opus_int32 a, opus_int32 b)
 #define silk_ADD_SAT32(a, b) (silk_ADD_SAT32_armv5e(a, b))
 
 #undef silk_SUB_SAT32
-static OPUS_INLINE opus_int32 silk_SUB_SAT32_armv5e(opus_int32 a, opus_int32 b)
+static OAC_INLINE oac_int32 silk_SUB_SAT32_armv5e(oac_int32 a, oac_int32 b)
 {
   int res;
   __asm__(
@@ -188,7 +188,7 @@ static OPUS_INLINE opus_int32 silk_SUB_SAT32_armv5e(opus_int32 a, opus_int32 b)
 #define silk_SUB_SAT32(a, b) (silk_SUB_SAT32_armv5e(a, b))
 
 #undef silk_CLZ16
-static OPUS_INLINE opus_int32 silk_CLZ16_armv5(opus_int16 in16)
+static OAC_INLINE oac_int32 silk_CLZ16_armv5(oac_int16 in16)
 {
   int res;
   __asm__(
@@ -202,7 +202,7 @@ static OPUS_INLINE opus_int32 silk_CLZ16_armv5(opus_int16 in16)
 #define silk_CLZ16(in16) (silk_CLZ16_armv5(in16))
 
 #undef silk_CLZ32
-static OPUS_INLINE opus_int32 silk_CLZ32_armv5(opus_int32 in32)
+static OAC_INLINE oac_int32 silk_CLZ32_armv5(oac_int32 in32)
 {
   int res;
   __asm__(

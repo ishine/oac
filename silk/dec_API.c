@@ -47,9 +47,9 @@ POSSIBILITY OF SUCH DAMAGE.
 typedef struct {
     silk_decoder_state          channel_state[ DECODER_NUM_CHANNELS ];
     stereo_dec_state                sStereo;
-    opus_int                         nChannelsAPI;
-    opus_int                         nChannelsInternal;
-    opus_int                         prev_decode_only_middle;
+    oac_int                         nChannelsAPI;
+    oac_int                         nChannelsInternal;
+    oac_int                         prev_decode_only_middle;
 #ifdef ENABLE_OSCE
     OSCEModel                        osce_model;
 #endif
@@ -61,10 +61,10 @@ typedef struct {
 
 
 
-opus_int silk_LoadOSCEModels(void *decState, const unsigned char *data, int len)
+oac_int silk_LoadOSCEModels(void *decState, const unsigned char *data, int len)
 {
 #ifdef ENABLE_OSCE
-    opus_int ret = SILK_NO_ERROR;
+    oac_int ret = SILK_NO_ERROR;
 
     ret = osce_load_models(&((silk_decoder *)decState)->osce_model, data, len);
     ((silk_decoder *)decState)->osce_model.loaded = (ret == 0);
@@ -77,11 +77,11 @@ opus_int silk_LoadOSCEModels(void *decState, const unsigned char *data, int len)
 #endif
 }
 
-opus_int silk_Get_Decoder_Size(                         /* O    Returns error code                              */
-    opus_int                        *decSizeBytes       /* O    Number of bytes in SILK decoder state           */
+oac_int silk_Get_Decoder_Size(                         /* O    Returns error code                              */
+    oac_int                        *decSizeBytes       /* O    Number of bytes in SILK decoder state           */
 )
 {
-    opus_int ret = SILK_NO_ERROR;
+    oac_int ret = SILK_NO_ERROR;
 
     *decSizeBytes = sizeof( silk_decoder );
 
@@ -89,11 +89,11 @@ opus_int silk_Get_Decoder_Size(                         /* O    Returns error co
 }
 
 /* Reset decoder state */
-opus_int silk_ResetDecoder(                              /* O    Returns error code                              */
+oac_int silk_ResetDecoder(                              /* O    Returns error code                              */
     void                            *decState           /* I/O  State                                           */
 )
 {
-    opus_int n, ret = SILK_NO_ERROR;
+    oac_int n, ret = SILK_NO_ERROR;
     silk_decoder_state *channel_state = ((silk_decoder *)decState)->channel_state;
 
     for( n = 0; n < DECODER_NUM_CHANNELS; n++ ) {
@@ -107,11 +107,11 @@ opus_int silk_ResetDecoder(                              /* O    Returns error c
 }
 
 
-opus_int silk_InitDecoder(                              /* O    Returns error code                              */
+oac_int silk_InitDecoder(                              /* O    Returns error code                              */
     void                            *decState           /* I/O  State                                           */
 )
 {
-    opus_int n, ret = SILK_NO_ERROR;
+    oac_int n, ret = SILK_NO_ERROR;
     silk_decoder_state *channel_state = ((silk_decoder *)decState)->channel_state;
 #ifdef ENABLE_OSCE
     ((silk_decoder *)decState)->osce_model.loaded = 0;
@@ -132,33 +132,33 @@ opus_int silk_InitDecoder(                              /* O    Returns error co
 }
 
 /* Decode a frame */
-opus_int silk_Decode(                                   /* O    Returns error code                              */
+oac_int silk_Decode(                                   /* O    Returns error code                              */
     void*                           decState,           /* I/O  State                                           */
     silk_DecControlStruct*          decControl,         /* I/O  Control Structure                               */
-    opus_int                        lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
-    opus_int                        newPacketFlag,      /* I    Indicates first decoder call for this packet    */
+    oac_int                        lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
+    oac_int                        newPacketFlag,      /* I    Indicates first decoder call for this packet    */
     ec_dec                          *psRangeDec,        /* I/O  Compressor data structure                       */
-    opus_res                        *samplesOut,        /* O    Decoded output speech vector                    */
-    opus_int32                      *nSamplesOut,       /* O    Number of samples decoded                       */
+    oac_res                        *samplesOut,        /* O    Decoded output speech vector                    */
+    oac_int32                      *nSamplesOut,       /* O    Number of samples decoded                       */
 #ifdef ENABLE_DEEP_PLC
     LPCNetPLCState                  *lpcnet,
 #endif
     int                             arch                /* I    Run-time architecture                           */
 )
 {
-    opus_int   i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;
-    opus_int32 nSamplesOutDec, LBRR_symbol;
-    opus_int16 *samplesOut1_tmp[ 2 ];
-    VARDECL( opus_int16, samplesOut1_tmp_storage1 );
-    VARDECL( opus_int16, samplesOut2_tmp );
-    opus_int32 MS_pred_Q13[ 2 ] = { 0 };
-    opus_int16 *resample_out_ptr;
+    oac_int   i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;
+    oac_int32 nSamplesOutDec, LBRR_symbol;
+    oac_int16 *samplesOut1_tmp[ 2 ];
+    VARDECL( oac_int16, samplesOut1_tmp_storage1 );
+    VARDECL( oac_int16, samplesOut2_tmp );
+    oac_int32 MS_pred_Q13[ 2 ] = { 0 };
+    oac_int16 *resample_out_ptr;
     silk_decoder *psDec = ( silk_decoder * )decState;
     silk_decoder_state *channel_state = psDec->channel_state;
-    opus_int has_side;
-    opus_int stereo_to_mono;
+    oac_int has_side;
+    oac_int stereo_to_mono;
 #ifdef ENABLE_OSCE_BWE
-    VARDECL( opus_int16, resamp_buffer );
+    VARDECL( oac_int16, resamp_buffer );
 #endif
     SAVE_STACK;
 
@@ -183,7 +183,7 @@ opus_int silk_Decode(                                   /* O    Returns error co
 
     if( channel_state[ 0 ].nFramesDecoded == 0 ) {
         for( n = 0; n < decControl->nChannelsInternal; n++ ) {
-            opus_int fs_kHz_dec;
+            oac_int fs_kHz_dec;
             if( decControl->payloadSize_ms == 0 ) {
                 /* Assuming packet loss, use 10 ms */
                 channel_state[ n ].nFramesPerPacket = 1;
@@ -223,7 +223,7 @@ opus_int silk_Decode(                                   /* O    Returns error co
     psDec->nChannelsAPI      = decControl->nChannelsAPI;
     psDec->nChannelsInternal = decControl->nChannelsInternal;
 
-    if( decControl->API_sampleRate > (opus_int32)MAX_API_FS_KHZ * 1000 || decControl->API_sampleRate < 8000 ) {
+    if( decControl->API_sampleRate > (oac_int32)MAX_API_FS_KHZ * 1000 || decControl->API_sampleRate < 8000 ) {
         ret = SILK_DEC_INVALID_SAMPLING_FREQUENCY;
         RESTORE_STACK;
         return( ret );
@@ -258,8 +258,8 @@ opus_int silk_Decode(                                   /* O    Returns error co
             for( i = 0; i < channel_state[ 0 ].nFramesPerPacket; i++ ) {
                 for( n = 0; n < decControl->nChannelsInternal; n++ ) {
                     if( channel_state[ n ].LBRR_flags[ i ] ) {
-                        opus_int16 pulses[ MAX_FRAME_LENGTH ];
-                        opus_int condCoding;
+                        oac_int16 pulses[ MAX_FRAME_LENGTH ];
+                        oac_int condCoding;
 
                         if( decControl->nChannelsInternal == 2 && n == 0 ) {
                             silk_stereo_decode_pred( psRangeDec, MS_pred_Q13 );
@@ -317,7 +317,7 @@ opus_int silk_Decode(                                   /* O    Returns error co
        we can delay allocating the temp buffer until after the SILK peak stack
        usage. We need to use a < and not a <= because of the two extra samples. */
     ALLOC( samplesOut1_tmp_storage1, decControl->nChannelsInternal*(channel_state[ 0 ].frame_length + 2 ),
-           opus_int16 );
+           oac_int16 );
     samplesOut1_tmp[ 0 ] = samplesOut1_tmp_storage1;
     samplesOut1_tmp[ 1 ] = samplesOut1_tmp_storage1 + channel_state[ 0 ].frame_length + 2;
 
@@ -331,8 +331,8 @@ opus_int silk_Decode(                                   /* O    Returns error co
     /* Call decoder for one frame */
     for( n = 0; n < decControl->nChannelsInternal; n++ ) {
         if( n == 0 || has_side ) {
-            opus_int FrameIndex;
-            opus_int condCoding;
+            oac_int FrameIndex;
+            oac_int condCoding;
 
             FrameIndex = channel_state[ 0 ].nFramesDecoded - n;
             /* Use independent coding if no previous frame available */
@@ -361,7 +361,7 @@ opus_int silk_Decode(                                   /* O    Returns error co
 #endif
                 arch);
         } else {
-            silk_memset( &samplesOut1_tmp[ n ][ 2 ], 0, nSamplesOutDec * sizeof( opus_int16 ) );
+            silk_memset( &samplesOut1_tmp[ n ][ 2 ], 0, nSamplesOutDec * sizeof( oac_int16 ) );
         }
         channel_state[ n ].nFramesDecoded++;
     }
@@ -371,19 +371,19 @@ opus_int silk_Decode(                                   /* O    Returns error co
         silk_stereo_MS_to_LR( &psDec->sStereo, samplesOut1_tmp[ 0 ], samplesOut1_tmp[ 1 ], MS_pred_Q13, channel_state[ 0 ].fs_kHz, nSamplesOutDec );
     } else {
         /* Buffering */
-        silk_memcpy( samplesOut1_tmp[ 0 ], psDec->sStereo.sMid, 2 * sizeof( opus_int16 ) );
-        silk_memcpy( psDec->sStereo.sMid, &samplesOut1_tmp[ 0 ][ nSamplesOutDec ], 2 * sizeof( opus_int16 ) );
+        silk_memcpy( samplesOut1_tmp[ 0 ], psDec->sStereo.sMid, 2 * sizeof( oac_int16 ) );
+        silk_memcpy( psDec->sStereo.sMid, &samplesOut1_tmp[ 0 ][ nSamplesOutDec ], 2 * sizeof( oac_int16 ) );
     }
 
     /* Number of output samples */
     *nSamplesOut = silk_DIV32( nSamplesOutDec * decControl->API_sampleRate, silk_SMULBB( channel_state[ 0 ].fs_kHz, 1000 ) );
 
     /* Set up pointers to temp buffers */
-    ALLOC( samplesOut2_tmp, *nSamplesOut, opus_int16 );
+    ALLOC( samplesOut2_tmp, *nSamplesOut, oac_int16 );
     resample_out_ptr = samplesOut2_tmp;
 
 #ifdef ENABLE_OSCE_BWE
-    ALLOC(resamp_buffer, 3 * MAX_FRAME_LENGTH, opus_int16);
+    ALLOC(resamp_buffer, 3 * MAX_FRAME_LENGTH, oac_int16);
 #endif
 
     for( n = 0; n < silk_min( decControl->nChannelsAPI, decControl->nChannelsInternal ); n++ ) {
@@ -476,14 +476,14 @@ opus_int silk_Decode(                                   /* O    Returns error co
 
 #if 0
 /* Getting table of contents for a packet */
-opus_int silk_get_TOC(
-    const opus_uint8                *payload,           /* I    Payload data                                */
-    const opus_int                  nBytesIn,           /* I    Number of input bytes                       */
-    const opus_int                  nFramesPerPayload,  /* I    Number of SILK frames per payload           */
+oac_int silk_get_TOC(
+    const oac_uint8                *payload,           /* I    Payload data                                */
+    const oac_int                  nBytesIn,           /* I    Number of input bytes                       */
+    const oac_int                  nFramesPerPayload,  /* I    Number of SILK frames per payload           */
     silk_TOC_struct                 *Silk_TOC           /* O    Type of content                             */
 )
 {
-    opus_int i, flags, ret = SILK_NO_ERROR;
+    oac_int i, flags, ret = SILK_NO_ERROR;
 
     if( nBytesIn < 1 ) {
         return -1;

@@ -1,6 +1,6 @@
-# Using the Meson Build System for the Opus Project
+# Using the Meson Build System for the Oac Project
 
-This guide provides instructions for using the Meson build system to build the Opus project with various configuration options. Meson is a fast and efficient build system that aims to be easy to use and understand.
+This guide provides instructions for using the Meson build system to build the Oac project with various configuration options. Meson is a fast and efficient build system that aims to be easy to use and understand.
 
 Please note that software documentation can sometimes become outdated as new versions are released. For the most up-to-date and accurate information, we recommend referring to the official Meson documentation, which can be found at [mesonbuild.com](https://mesonbuild.com/).
 
@@ -15,18 +15,18 @@ Before proceeding, ensure that you have the following prerequisites installed:
 
 ## Build and Test Instructions
 
-Follow the steps below to build the Opus project using Meson.
+Follow the steps below to build the Oac project using Meson.
 
 ### Check out Source
-Clone the Opus repository using Git:
+Clone the Oac repository using Git:
 
 ```shell
-git clone https://gitlab.xiph.org/xiph/opus
-cd opus
+git clone https://gitlab.xiph.org/xiph/oac
+cd oac
 ```
 
 ### Configure
-To configure the build with Meson, you can set the desired configuration options using the -D flag followed by the option name and value. For the Opus project-specific build options, please refer to the [meson_options.txt](./../meson_options.txt) file. For general Meson options use the command meson `setup --help` to get a list of these options.
+To configure the build with Meson, you can set the desired configuration options using the -D flag followed by the option name and value. For the Oac project-specific build options, please refer to the [meson_options.txt](./../meson_options.txt) file. For general Meson options use the command meson `setup --help` to get a list of these options.
 
 For example, to setup and disable tests, use the following command:
 
@@ -40,13 +40,13 @@ meson setup builddir -Dtests=disabled
 meson compile -C builddir
 ```
 
-After a successful build, you can find the compiled Opus library and associated files in the builddir directory.
+After a successful build, you can find the compiled Oac library and associated files in the builddir directory.
 
 ### Testing with Meson
 
-Opus provides a comprehensive test suite to ensure the functionality and correctness of the project. You can execute the tests using Meson's built-in testing functionality.
+Oac provides a comprehensive test suite to ensure the functionality and correctness of the project. You can execute the tests using Meson's built-in testing functionality.
 
-To run the Opus tests using Meson:
+To run the Oac tests using Meson:
 
 ```shell
 meson test -C builddir
@@ -54,9 +54,9 @@ meson test -C builddir
 
 ## Platform Support and Bug Reporting
 
-The Opus Meson build system aims to provide support for the same platforms as [GStreamer](https://gstreamer.freedesktop.org/), a widely used multimedia framework. GStreamer supports a wide range of operating systems and platforms, including Linux, Windows (MSVC and MingW), Android, macOS, iOS, and various BSD systems.
+The Oac Meson build system aims to provide support for the same platforms as [GStreamer](https://gstreamer.freedesktop.org/), a widely used multimedia framework. GStreamer supports a wide range of operating systems and platforms, including Linux, Windows (MSVC and MingW), Android, macOS, iOS, and various BSD systems.
 
-While efforts are made to ensure compatibility and stability across these platforms, bugs or issues may still arise in specific configurations. If you encounter any problems during the configuration process or while building the Opus project, we encourage you to file an issue in the [project's issue tracker](https://gitlab.xiph.org/xiph/opus/-/issues).
+While efforts are made to ensure compatibility and stability across these platforms, bugs or issues may still arise in specific configurations. If you encounter any problems during the configuration process or while building the Oac project, we encourage you to file an issue in the [project's issue tracker](https://gitlab.xiph.org/xiph/oac/-/issues).
 
 When reporting an issue, please provide the following information to help us understand and effectively reproduce the configuration problem:
 
@@ -67,9 +67,9 @@ When reporting an issue, please provide the following information to help us und
 5. Any relevant information about the platform, toolchain, or dependencies used.
 6. Additional context or details that might assist in troubleshooting the issue.
 
-By providing thorough information when reporting configuration issues, you contribute to improving the Opus project's compatibility and reliability across different platforms.
+By providing thorough information when reporting configuration issues, you contribute to improving the Oac project's compatibility and reliability across different platforms.
 
-We appreciate your help in identifying and addressing any configuration-related problems, ensuring a better experience for all users of the Opus project.
+We appreciate your help in identifying and addressing any configuration-related problems, ensuring a better experience for all users of the Oac project.
 
 ## Platform Specific Examples
 

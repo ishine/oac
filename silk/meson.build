@@ -24,15 +24,15 @@ else
   silk_sources += silk_sources_float
 endif
 
-silk_includes = [opus_includes, include_directories('float', 'fixed')]
+silk_includes = [oac_includes, include_directories('float', 'fixed')]
 silk_static_libs = []
 
-if host_cpu_family in ['x86', 'x86_64'] and opus_conf.has('OPUS_HAVE_RTCD')
+if host_cpu_family in ['x86', 'x86_64'] and oac_conf.has('OAC_HAVE_RTCD')
   silk_sources +=  sources['SILK_SOURCES_X86_RTCD']
 endif
 
 if host_cpu_family in ['arm', 'aarch64'] and have_arm_intrinsics_or_asm
-  if opus_conf.has('OPUS_HAVE_RTCD')
+  if oac_conf.has('OAC_HAVE_RTCD')
     silk_sources +=  sources['SILK_SOURCES_ARM_RTCD']
   endif
 endif
@@ -48,7 +48,7 @@ foreach intr_name : ['sse4_1', 'avx2', 'neon_intr']
     intr_sources += get_variable('silk_sources_float_' + intr_name)
   endif
 
-  intr_args = get_variable('opus_@0@_args'.format(intr_name), [])
+  intr_args = get_variable('oac_@0@_args'.format(intr_name), [])
   silk_static_libs += static_library('silk_' + intr_name, intr_sources,
       c_args: intr_args,
       include_directories: silk_includes,
@@ -60,7 +60,7 @@ if host_machine.system() == 'windows'
   silk_c_args += ['-DDLL_EXPORT']
 endif
 
-silk_lib = static_library('opus-silk',
+silk_lib = static_library('oac-silk',
   silk_sources,
   c_args: silk_c_args,
   include_directories: silk_includes,

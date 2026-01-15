@@ -36,18 +36,18 @@ POSSIBILITY OF SUCH DAMAGE.
 /* LPC analysis */
 void silk_find_LPC_FLP(
     silk_encoder_state              *psEncC,                            /* I/O  Encoder state                               */
-    opus_int16                      NLSF_Q15[],                         /* O    NLSFs                                       */
+    oac_int16                      NLSF_Q15[],                         /* O    NLSFs                                       */
     const silk_float                x[],                                /* I    Input signal                                */
     const silk_float                minInvGain,                         /* I    Inverse of max prediction gain              */
     int                             arch
 )
 {
-    opus_int    k, subfr_length;
+    oac_int    k, subfr_length;
     silk_float  a[ MAX_LPC_ORDER ];
 
     /* Used only for NLSF interpolation */
     silk_float  res_nrg, res_nrg_2nd, res_nrg_interp;
-    opus_int16  NLSF0_Q15[ MAX_LPC_ORDER ];
+    oac_int16  NLSF0_Q15[ MAX_LPC_ORDER ];
     silk_float  a_tmp[ MAX_LPC_ORDER ];
     silk_float  LPC_res[ MAX_FRAME_LENGTH + MAX_NB_SUBFR * MAX_LPC_ORDER ];
 
@@ -86,7 +86,7 @@ void silk_find_LPC_FLP(
             if( res_nrg_interp < res_nrg ) {
                 /* Interpolation has lower residual energy */
                 res_nrg = res_nrg_interp;
-                psEncC->indices.NLSFInterpCoef_Q2 = (opus_int8)k;
+                psEncC->indices.NLSFInterpCoef_Q2 = (oac_int8)k;
             } else if( res_nrg_interp > res_nrg_2nd ) {
                 /* No reason to continue iterating - residual energies will continue to climb */
                 break;

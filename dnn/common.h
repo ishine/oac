@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "opus_defines.h"
+#include "oac_defines.h"
 
 #define LOG256 5.5451774445f
-static OPUS_INLINE float log2_approx(float x)
+static OAC_INLINE float log2_approx(float x)
 {
    int integer;
    float frac;
@@ -28,7 +28,7 @@ static OPUS_INLINE float log2_approx(float x)
 
 #define log_approx(x) (0.69315f*log2_approx(x))
 
-static OPUS_INLINE float ulaw2lin(float u)
+static OAC_INLINE float ulaw2lin(float u)
 {
     float s;
     float scale_1 = 32768.f/255.f;
@@ -38,7 +38,7 @@ static OPUS_INLINE float ulaw2lin(float u)
     return s*scale_1*(exp(u/128.*LOG256)-1);
 }
 
-static OPUS_INLINE int lin2ulaw(float x)
+static OAC_INLINE int lin2ulaw(float x)
 {
     float u;
     float scale = 255.f/32768.f;

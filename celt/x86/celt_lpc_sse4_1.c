@@ -40,21 +40,21 @@
 
 #if defined(FIXED_POINT)
 
-void celt_fir_sse4_1(const opus_val16 *x,
-         const opus_val16 *num,
-         opus_val16 *y,
+void celt_fir_sse4_1(const oac_val16 *x,
+         const oac_val16 *num,
+         oac_val16 *y,
          int N,
          int ord,
          int arch)
 {
     int i,j;
-    VARDECL(opus_val16, rnum);
+    VARDECL(oac_val16, rnum);
 
     __m128i vecNoA;
-    opus_int32 noA ;
+    oac_int32 noA ;
     SAVE_STACK;
 
-   ALLOC(rnum, ord, opus_val16);
+   ALLOC(rnum, ord, oac_val16);
    for(i=0;i<ord;i++)
       rnum[i] = num[ord-i-1];
    noA = EXTEND32(1) << SIG_SHIFT >> 1;
@@ -62,15 +62,15 @@ void celt_fir_sse4_1(const opus_val16 *x,
 
    for (i=0;i<N-3;i+=4)
    {
-      opus_val32 sums[4] = {0};
+      oac_val32 sums[4] = {0};
       __m128i vecSum, vecX;
-#if defined(OPUS_CHECK_ASM)
+#if defined(OAC_CHECK_ASM)
       {
-         opus_val32 sums_c[4] = {0};
+         oac_val32 sums_c[4] = {0};
          xcorr_kernel_c(rnum, x+i-ord, sums_c, ord);
 #endif
          xcorr_kernel(rnum, x+i-ord, sums, ord, arch);
-#if defined(OPUS_CHECK_ASM)
+#if defined(OAC_CHECK_ASM)
          celt_assert(memcmp(sums, sums_c, sizeof(sums)) == 0);
       }
 #endif
@@ -84,7 +84,7 @@ void celt_fir_sse4_1(const opus_val16 *x,
    }
    for (;i<N;i++)
    {
-      opus_val32 sum = 0;
+      oac_val32 sum = 0;
       for (j=0;j<ord;j++)
          sum = MAC16_16(sum, rnum[j], x[i+j-ord]);
       y[i] = SATURATE16(ADD32(EXTEND32(x[i]), PSHR32(sum, SIG_SHIFT)));

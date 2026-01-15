@@ -66,7 +66,7 @@ lace_setup = {
         'acorr_radius': 2,
         'num_bands_clean_spec': 64,
         'num_bands_noisy_spec': 18,
-        'noisy_spec_scale': 'opus',
+        'noisy_spec_scale': 'oac',
         'pitch_hangover': 0,
     },
     'training': {
@@ -350,7 +350,7 @@ nolace_setup = {
         'acorr_radius': 2,
         'num_bands_clean_spec': 64,
         'num_bands_noisy_spec': 18,
-        'noisy_spec_scale': 'opus',
+        'noisy_spec_scale': 'oac',
         'pitch_hangover': 0,
     },
     'training': {
@@ -408,7 +408,7 @@ nolace_setup_adv = {
         'acorr_radius': 2,
         'num_bands_clean_spec': 64,
         'num_bands_noisy_spec': 18,
-        'noisy_spec_scale': 'opus',
+        'noisy_spec_scale': 'oac',
         'pitch_hangover': 0,
     },
     'discriminator': {

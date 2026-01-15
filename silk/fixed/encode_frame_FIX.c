@@ -35,25 +35,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tuning_parameters.h"
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */
-static OPUS_INLINE void silk_LBRR_encode_FIX(
+static OAC_INLINE void silk_LBRR_encode_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Pointer to Silk FIX encoder control struct                                  */
-    const opus_int16                x16[],                                  /* I    Input signal                                                                */
-    opus_int                        condCoding                              /* I    The type of conditional coding used so far for this frame                   */
+    const oac_int16                x16[],                                  /* I    Input signal                                                                */
+    oac_int                        condCoding                              /* I    The type of conditional coding used so far for this frame                   */
 );
 
 void silk_encode_do_VAD_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
-    opus_int                        activity                                /* I    Decision of Opus voice activity detector                                    */
+    oac_int                        activity                                /* I    Decision of Oac voice activity detector                                    */
 )
 {
-    const opus_int activity_threshold = SILK_FIX_CONST( SPEECH_ACTIVITY_DTX_THRES, 8 );
+    const oac_int activity_threshold = SILK_FIX_CONST( SPEECH_ACTIVITY_DTX_THRES, 8 );
 
     /****************************/
     /* Voice Activity Detection */
     /****************************/
     silk_VAD_GetSA_Q8( &psEnc->sCmn, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.arch );
-    /* If Opus VAD is inactive and Silk VAD is active: lower Silk VAD to just under the threshold */
+    /* If Oac VAD is inactive and Silk VAD is active: lower Silk VAD to just under the threshold */
     if( activity == VAD_NO_ACTIVITY && psEnc->sCmn.speech_activity_Q8 >= activity_threshold ) {
         psEnc->sCmn.speech_activity_Q8 = activity_threshold - 1;
     }
@@ -82,30 +82,30 @@ void silk_encode_do_VAD_FIX(
 /****************/
 /* Encode frame */
 /****************/
-opus_int silk_encode_frame_FIX(
+oac_int silk_encode_frame_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
-    opus_int32                      *pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
+    oac_int32                      *pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
     ec_enc                          *psRangeEnc,                            /* I/O  compressor data structure                                                   */
-    opus_int                        condCoding,                             /* I    The type of conditional coding to use                                       */
-    opus_int                        maxBits,                                /* I    If > 0: maximum number of output bits                                       */
-    opus_int                        useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
+    oac_int                        condCoding,                             /* I    The type of conditional coding to use                                       */
+    oac_int                        maxBits,                                /* I    If > 0: maximum number of output bits                                       */
+    oac_int                        useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
 )
 {
     silk_encoder_control_FIX sEncCtrl;
-    opus_int     i, iter, maxIter, found_upper, found_lower, ret = 0;
-    opus_int16   *x_frame;
+    oac_int     i, iter, maxIter, found_upper, found_lower, ret = 0;
+    oac_int16   *x_frame;
     ec_enc       sRangeEnc_copy, sRangeEnc_copy2;
     VARDECL(silk_nsq_state, sNSQ_copy);
-    opus_int32   seed_copy, nBits, nBits_lower, nBits_upper, gainMult_lower, gainMult_upper;
-    opus_int32   gainsID, gainsID_lower, gainsID_upper;
-    opus_int16   gainMult_Q8;
-    opus_int16   ec_prevLagIndex_copy;
-    opus_int     ec_prevSignalType_copy;
-    opus_int8    LastGainIndex_copy2;
-    opus_int     gain_lock[ MAX_NB_SUBFR ] = {0};
-    opus_int16   best_gain_mult[ MAX_NB_SUBFR ];
-    opus_int     best_sum[ MAX_NB_SUBFR ];
-    opus_int     bits_margin;
+    oac_int32   seed_copy, nBits, nBits_lower, nBits_upper, gainMult_lower, gainMult_upper;
+    oac_int32   gainsID, gainsID_lower, gainsID_upper;
+    oac_int16   gainMult_Q8;
+    oac_int16   ec_prevLagIndex_copy;
+    oac_int     ec_prevSignalType_copy;
+    oac_int8    LastGainIndex_copy2;
+    oac_int     gain_lock[ MAX_NB_SUBFR ] = {0};
+    oac_int16   best_gain_mult[ MAX_NB_SUBFR ];
+    oac_int     best_sum[ MAX_NB_SUBFR ];
+    oac_int     bits_margin;
     SAVE_STACK;
 
     /* Using ALLOC() instead of a regular stack allocation to minimize real stack use when using the pseudostack.
@@ -133,16 +133,16 @@ opus_int silk_encode_frame_FIX(
     /*******************************************/
     /* Copy new frame to front of input buffer */
     /*******************************************/
-    silk_memcpy( x_frame + LA_SHAPE_MS * psEnc->sCmn.fs_kHz, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.frame_length * sizeof( opus_int16 ) );
+    silk_memcpy( x_frame + LA_SHAPE_MS * psEnc->sCmn.fs_kHz, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.frame_length * sizeof( oac_int16 ) );
 
     if( !psEnc->sCmn.prefillFlag ) {
-        VARDECL( opus_int16, res_pitch );
-        VARDECL( opus_uint8, ec_buf_copy );
-        opus_int16 *res_pitch_frame;
+        VARDECL( oac_int16, res_pitch );
+        VARDECL( oac_uint8, ec_buf_copy );
+        oac_int16 *res_pitch_frame;
 
         ALLOC( res_pitch,
                psEnc->sCmn.la_pitch + psEnc->sCmn.frame_length
-                   + psEnc->sCmn.ltp_mem_length, opus_int16 );
+                   + psEnc->sCmn.ltp_mem_length, oac_int16 );
         /* start of pitch LPC residual frame */
         res_pitch_frame = res_pitch + psEnc->sCmn.ltp_mem_length;
 
@@ -185,7 +185,7 @@ opus_int silk_encode_frame_FIX(
         seed_copy = psEnc->sCmn.indices.Seed;
         ec_prevLagIndex_copy = psEnc->sCmn.ec_prevLagIndex;
         ec_prevSignalType_copy = psEnc->sCmn.ec_prevSignalType;
-        ALLOC( ec_buf_copy, 1275, opus_uint8 );
+        ALLOC( ec_buf_copy, 1275, oac_uint8 );
         for( iter = 0; ; iter++ ) {
             if( gainsID == gainsID_lower ) {
                 nBits = nBits_lower;
@@ -342,7 +342,7 @@ opus_int silk_encode_frame_FIX(
             }
 
             for( i = 0; i < psEnc->sCmn.nb_subfr; i++ ) {
-                opus_int16 tmp;
+                oac_int16 tmp;
                 if ( gain_lock[i] ) {
                     tmp = best_gain_mult[i];
                 } else {
@@ -363,7 +363,7 @@ opus_int silk_encode_frame_FIX(
 
     /* Update input buffer */
     silk_memmove( psEnc->x_buf, &psEnc->x_buf[ psEnc->sCmn.frame_length ],
-        ( psEnc->sCmn.ltp_mem_length + LA_SHAPE_MS * psEnc->sCmn.fs_kHz ) * sizeof( opus_int16 ) );
+        ( psEnc->sCmn.ltp_mem_length + LA_SHAPE_MS * psEnc->sCmn.fs_kHz ) * sizeof( oac_int16 ) );
 
     /* Exit without entropy coding */
     if( psEnc->sCmn.prefillFlag ) {
@@ -389,14 +389,14 @@ opus_int silk_encode_frame_FIX(
 }
 
 /* Low-Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode excitation at lower bitrate  */
-static OPUS_INLINE void silk_LBRR_encode_FIX(
+static OAC_INLINE void silk_LBRR_encode_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Pointer to Silk FIX encoder control struct                                  */
-    const opus_int16                x16[],                                  /* I    Input signal                                                                */
-    opus_int                        condCoding                              /* I    The type of conditional coding used so far for this frame                   */
+    const oac_int16                x16[],                                  /* I    Input signal                                                                */
+    oac_int                        condCoding                              /* I    The type of conditional coding used so far for this frame                   */
 )
 {
-    opus_int32   TempGains_Q16[ MAX_NB_SUBFR ];
+    oac_int32   TempGains_Q16[ MAX_NB_SUBFR ];
     SideInfoIndices *psIndices_LBRR = &psEnc->sCmn.indices_LBRR[ psEnc->sCmn.nFramesEncoded ];
     VARDECL(silk_nsq_state, sNSQ_LBRR);
     SAVE_STACK;
@@ -416,7 +416,7 @@ static OPUS_INLINE void silk_LBRR_encode_FIX(
         silk_memcpy( psIndices_LBRR, &psEnc->sCmn.indices, sizeof( SideInfoIndices ) );
 
         /* Save original gains */
-        silk_memcpy( TempGains_Q16, psEncCtrl->Gains_Q16, psEnc->sCmn.nb_subfr * sizeof( opus_int32 ) );
+        silk_memcpy( TempGains_Q16, psEncCtrl->Gains_Q16, psEnc->sCmn.nb_subfr * sizeof( oac_int32 ) );
 
         if( psEnc->sCmn.nFramesEncoded == 0 || psEnc->sCmn.LBRR_flags[ psEnc->sCmn.nFramesEncoded - 1 ] == 0 ) {
             /* First frame in packet or previous frame not LBRR coded */
@@ -448,7 +448,7 @@ static OPUS_INLINE void silk_LBRR_encode_FIX(
         }
 
         /* Restore original gains */
-        silk_memcpy( psEncCtrl->Gains_Q16, TempGains_Q16, psEnc->sCmn.nb_subfr * sizeof( opus_int32 ) );
+        silk_memcpy( psEncCtrl->Gains_Q16, TempGains_Q16, psEnc->sCmn.nb_subfr * sizeof( oac_int32 ) );
     }
     RESTORE_STACK;
 }

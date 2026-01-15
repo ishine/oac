@@ -14,17 +14,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument('inputdir', type=str, help='Input folder with test items')
 parser.add_argument('outputdir', type=str, help='Output folder')
 parser.add_argument('bitrate', type=int, help='bitrate to test')
-parser.add_argument('--reference_opus_demo', type=str, default='./opus_demo', help='reference opus_demo binary for generating bitstreams and reference output')
+parser.add_argument('--reference_oac_demo', type=str, default='./oac_demo', help='reference oac_demo binary for generating bitstreams and reference output')
 parser.add_argument('--encoder_options', type=str, default="", help='encoder options (e.g. -complexity 5)')
-parser.add_argument('--test_opus_demo', type=str, default='./opus_demo', help='opus_demo binary under test')
-parser.add_argument('--test_opus_demo_options', type=str, default='-dec_complexity 7', help='options for test opus_demo (e.g. "-dec_complexity 7")')
+parser.add_argument('--test_oac_demo', type=str, default='./oac_demo', help='oac_demo binary under test')
+parser.add_argument('--test_oac_demo_options', type=str, default='-dec_complexity 7', help='options for test oac_demo (e.g. "-dec_complexity 7")')
 parser.add_argument('--dec_fs', type=int, default=16000, help='decoder sampling frequency (default: 16000)')
 parser.add_argument('--verbose', type=int, default=0, help='verbosity level: 0 for quiet (default), 1 for reporting individual test results, 2 for reporting per-item scores in failed tests')
 
-def run_opus_encoder(opus_demo_path, input_pcm_path, bitstream_path, application, fs, num_channels, bitrate, options=[], verbose=False):
+def run_oac_encoder(oac_demo_path, input_pcm_path, bitstream_path, application, fs, num_channels, bitrate, options=[], verbose=False):
 
     call_args = [
-        opus_demo_path,
+        oac_demo_path,
         "-e",
         application,
         str(fs),
@@ -53,10 +53,10 @@ def run_opus_encoder(opus_demo_path, input_pcm_path, bitstream_path, application
     return 0
 
 
-def run_opus_decoder(opus_demo_path, bitstream_path, output_pcm_path, fs, num_channels, options=[], verbose=False):
+def run_oac_decoder(oac_demo_path, bitstream_path, output_pcm_path, fs, num_channels, options=[], verbose=False):
 
     call_args = [
-        opus_demo_path,
+        oac_demo_path,
         "-d",
         str(fs),
         str(num_channels)
@@ -96,7 +96,7 @@ def sox(*call_args):
     except:
         return 1
 
-def process_clip_factory(ref_opus_demo, test_opus_demo, enc_options, test_options, dec_fs=16000):
+def process_clip_factory(ref_oac_demo, test_oac_demo, enc_options, test_options, dec_fs=16000):
     def process_clip(clip_path, processdir, bitrate):
         # derive paths
         clipname = os.path.splitext(os.path.split(clip_path)[1])[0]
@@ -109,11 +109,11 @@ def process_clip_factory(ref_opus_demo, test_opus_demo, enc_options, test_option
         sox(clip_path, pcm_path)
 
         # run encoder
-        run_opus_encoder(ref_opus_demo, pcm_path, bitstream_path, "voip", 16000, 1, bitrate, enc_options)
+        run_oac_encoder(ref_oac_demo, pcm_path, bitstream_path, "voip", 16000, 1, bitrate, enc_options)
 
         # run decoder
-        run_opus_decoder(ref_opus_demo, bitstream_path, ref_path, dec_fs, 1)
-        run_opus_decoder(test_opus_demo, bitstream_path, test_path, dec_fs, 1, options=test_options)
+        run_oac_decoder(ref_oac_demo, bitstream_path, ref_path, dec_fs, 1)
+        run_oac_decoder(test_oac_demo, bitstream_path, test_path, dec_fs, 1, options=test_options)
 
         # resample if dec_fs != 16000
         if dec_fs != 16000:
@@ -134,7 +134,7 @@ def process_clip_factory(ref_opus_demo, test_opus_demo, enc_options, test_option
 
     return process_clip
 
-def main(inputdir, outputdir, bitrate, reference_opus_demo, test_opus_demo, enc_option_string, test_option_string, dec_fs, verbose):
+def main(inputdir, outputdir, bitrate, reference_oac_demo, test_oac_demo, enc_option_string, test_option_string, dec_fs, verbose):
 
     # load clips list
     with open(os.path.join(inputdir, 'clips.yml'), "r") as f:
@@ -144,7 +144,7 @@ def main(inputdir, outputdir, bitrate, reference_opus_demo, test_opus_demo, enc_
     enc_options = enc_option_string.split()
     test_options = test_option_string.split()
 
-    process_clip = process_clip_factory(reference_opus_demo, test_opus_demo, enc_options, test_options, dec_fs=dec_fs)
+    process_clip = process_clip_factory(reference_oac_demo, test_oac_demo, enc_options, test_options, dec_fs=dec_fs)
 
     os.makedirs(outputdir, exist_ok=True)
     processdir = os.path.join(outputdir, 'process')
@@ -201,9 +201,9 @@ if __name__ == "__main__":
     main(args.inputdir,
          args.outputdir,
          args.bitrate,
-         args.reference_opus_demo,
-         args.test_opus_demo,
+         args.reference_oac_demo,
+         args.test_oac_demo,
          args.encoder_options,
-         args.test_opus_demo_options,
+         args.test_oac_demo_options,
          args.dec_fs,
          args.verbose)

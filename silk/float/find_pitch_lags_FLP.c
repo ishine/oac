@@ -41,7 +41,7 @@ void silk_find_pitch_lags_FLP(
     int                             arch                                /* I    Run-time architecture                       */
 )
 {
-    opus_int   buf_len;
+    oac_int   buf_len;
     silk_float thrhld, res_nrg;
     const silk_float *x_buf_ptr, *x_buf;
     silk_float auto_corr[ MAX_FIND_PITCH_LPC_ORDER + 1 ];

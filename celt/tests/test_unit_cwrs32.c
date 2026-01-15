@@ -96,11 +96,11 @@ int main(void){
     {
       int k;
 #if defined(SMALL_FOOTPRINT)
-      opus_uint32 uu[KMAX+2U];
+      oac_uint32 uu[KMAX+2U];
 #endif
-      opus_uint32 inc;
-      opus_uint32 nc;
-      opus_uint32 i;
+      oac_uint32 inc;
+      oac_uint32 nc;
+      oac_uint32 i;
       k=get_pulses(pseudo);
       if (k>pkmax[t])break;
       printf("Testing CWRS with N=%i, K=%i...\n",n,k);
@@ -113,12 +113,12 @@ int main(void){
       if(inc<1)inc=1;
       for(i=0;i<nc;i+=inc){
 #if defined(SMALL_FOOTPRINT)
-        opus_uint32 u[KMAX+2U];
+        oac_uint32 u[KMAX+2U];
 #endif
         int         y[NMAX];
         int         sy;
-        opus_uint32 v;
-        opus_uint32 ii;
+        oac_uint32 v;
+        oac_uint32 ii;
         int         j;
 #if defined(SMALL_FOOTPRINT)
         memcpy(u,uu,(k+2U)*sizeof(*u));

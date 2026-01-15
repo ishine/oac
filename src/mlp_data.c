@@ -6,7 +6,7 @@
 
 #include "mlp.h"
 
-static const opus_int8 layer0_weights[800] = {
+static const oac_int8 layer0_weights[800] = {
    -30, -9, 2, -12, 5, -1, 8, 9,
    9, 8, -13, 18, -17, -34, -5, 17,
    -11, 0, -4, 10, 2, 10, 15, -8,
@@ -109,14 +109,14 @@ static const opus_int8 layer0_weights[800] = {
    72, 66, 29, 7, -66, -56, -117, -128
 };
 
-static const opus_int8 layer0_bias[32] = {
+static const oac_int8 layer0_bias[32] = {
    51, -16, 1, 13, -5, -6, -16, -7,
    11, -6, 106, 26, 28, -14, 21, -29,
    7, 18, -18, -17, 21, -17, -9, 20,
    -25, -3, -34, 48, 11, -13, -31, -20
 };
 
-static const opus_int8 layer1_weights[2304] = {
+static const oac_int8 layer1_weights[2304] = {
    22, -1, -7, 7, 29, -27, -31, -17,
    -13, 33, 44, -8, 11, 33, 24, 78,
    15, 19, 30, -2, -24, 5, 49, 5,
@@ -407,7 +407,7 @@ static const opus_int8 layer1_weights[2304] = {
    27, -6, -15, -21, 4, -14, 18, -36
 };
 
-static const opus_int8 layer1_recur_weights[1728] = {
+static const oac_int8 layer1_recur_weights[1728] = {
    20, 67, -99, 12, 41, -25, 49, -44,
    35, 81, 110, 47, 34, -66, -14, 14,
    -60, 34, 29, -73, 10, 41, 35, 89,
@@ -626,7 +626,7 @@ static const opus_int8 layer1_recur_weights[1728] = {
    -6, 1, 22, -59, 0, 17, -39, 115
 };
 
-static const opus_int8 layer1_bias[72] = {
+static const oac_int8 layer1_bias[72] = {
    -42, 20, 16, 0, 105, 60, 1, -97,
    24, 60, 18, 13, 62, 25, 127, 34,
    79, 55, 118, 127, 95, 31, -4, 87,
@@ -638,7 +638,7 @@ static const opus_int8 layer1_bias[72] = {
    16, 10, -2, -14, 11, -4, 3, -11
 };
 
-static const opus_int8 layer2_weights[48] = {
+static const oac_int8 layer2_weights[48] = {
    -113, -88, 31, -128, -126, -61, 85, -35,
    118, -128, -61, 127, -128, -17, -128, 127,
    104, -9, -128, 33, 45, 127, 5, 83,
@@ -647,7 +647,7 @@ static const opus_int8 layer2_weights[48] = {
    -127, -68, -1, -89, -80, 32, 106, 7
 };
 
-static const opus_int8 layer2_bias[2] = {
+static const oac_int8 layer2_bias[2] = {
    14, 117
 };
 

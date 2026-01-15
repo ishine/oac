@@ -35,11 +35,11 @@
 #include "mdct.h"
 #include "pitch.h"
 
-#if defined(OPUS_HAVE_RTCD)
+#if defined(OAC_HAVE_RTCD)
 
 # if !defined(DISABLE_FLOAT_API)
-#  if defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
-void (*const CELT_FLOAT2INT16_IMPL[OPUS_ARCHMASK+1])(const float * OPUS_RESTRICT in, short * OPUS_RESTRICT out, int cnt) = {
+#  if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
+void (*const CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK+1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt) = {
   celt_float2int16_c,   /* ARMv4 */
   celt_float2int16_c,   /* EDSP */
   celt_float2int16_c,   /* Media */
@@ -47,18 +47,18 @@ void (*const CELT_FLOAT2INT16_IMPL[OPUS_ARCHMASK+1])(const float * OPUS_RESTRICT
   celt_float2int16_neon /* DOTPROD */
 };
 
-int (*const OPUS_LIMIT2_CHECKWITHIN1_IMPL[OPUS_ARCHMASK+1])(float * samples, int cnt) = {
-  opus_limit2_checkwithin1_c,   /* ARMv4 */
-  opus_limit2_checkwithin1_c,   /* EDSP */
-  opus_limit2_checkwithin1_c,   /* Media */
-  opus_limit2_checkwithin1_neon,/* NEON */
-  opus_limit2_checkwithin1_neon /* DOTPROD */
+int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK+1])(float * samples, int cnt) = {
+  oac_limit2_checkwithin1_c,   /* ARMv4 */
+  oac_limit2_checkwithin1_c,   /* EDSP */
+  oac_limit2_checkwithin1_c,   /* Media */
+  oac_limit2_checkwithin1_neon,/* NEON */
+  oac_limit2_checkwithin1_neon /* DOTPROD */
 };
 #  endif
 # endif
 
-# if defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
-opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, const opus_val16 *y, int N) = {
+# if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
+oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK+1])(const oac_val16 *x, const oac_val16 *y, int N) = {
   celt_inner_prod_c,   /* ARMv4 */
   celt_inner_prod_c,   /* EDSP */
   celt_inner_prod_c,   /* Media */
@@ -66,8 +66,8 @@ opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, c
   celt_inner_prod_neon /* DOTPROD */
 };
 
-void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, const opus_val16 *y01, const opus_val16 *y02,
-      int N, opus_val32 *xy1, opus_val32 *xy2) = {
+void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK+1])(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+      int N, oac_val32 *xy1, oac_val32 *xy2) = {
   dual_inner_prod_c,   /* ARMv4 */
   dual_inner_prod_c,   /* EDSP */
   dual_inner_prod_c,   /* Media */
@@ -77,11 +77,11 @@ void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *x, const o
 # endif
 
 # if defined(FIXED_POINT)
-#  if ((defined(OPUS_ARM_MAY_HAVE_NEON) && !defined(OPUS_ARM_PRESUME_NEON)) || \
-    (defined(OPUS_ARM_MAY_HAVE_MEDIA) && !defined(OPUS_ARM_PRESUME_MEDIA)) || \
-    (defined(OPUS_ARM_MAY_HAVE_EDSP) && !defined(OPUS_ARM_PRESUME_EDSP)))
-opus_val32 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-    const opus_val16 *, opus_val32 *, int, int, int) = {
+#  if ((defined(OAC_ARM_MAY_HAVE_NEON) && !defined(OAC_ARM_PRESUME_NEON)) || \
+    (defined(OAC_ARM_MAY_HAVE_MEDIA) && !defined(OAC_ARM_PRESUME_MEDIA)) || \
+    (defined(OAC_ARM_MAY_HAVE_EDSP) && !defined(OAC_ARM_PRESUME_EDSP)))
+oac_val32 (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK+1])(const oac_val16 *,
+    const oac_val16 *, oac_val32 *, int, int, int) = {
   celt_pitch_xcorr_c,               /* ARMv4 */
   MAY_HAVE_EDSP(celt_pitch_xcorr),  /* EDSP */
   MAY_HAVE_MEDIA(celt_pitch_xcorr), /* Media */
@@ -91,9 +91,9 @@ opus_val32 (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
 
 #  endif
 # else /* !FIXED_POINT */
-#  if defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
-void (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
-    const opus_val16 *, opus_val32 *, int, int, int) = {
+#  if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
+void (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK+1])(const oac_val16 *,
+    const oac_val16 *, oac_val32 *, int, int, int) = {
   celt_pitch_xcorr_c,              /* ARMv4 */
   celt_pitch_xcorr_c,              /* EDSP */
   celt_pitch_xcorr_c,              /* Media */
@@ -103,13 +103,13 @@ void (*const CELT_PITCH_XCORR_IMPL[OPUS_ARCHMASK+1])(const opus_val16 *,
 #  endif
 # endif /* FIXED_POINT */
 
-#if defined(FIXED_POINT) && defined(OPUS_HAVE_RTCD) && \
- defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
+#if defined(FIXED_POINT) && defined(OAC_HAVE_RTCD) && \
+ defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 
-void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
-         const opus_val16 *x,
-         const opus_val16 *y,
-         opus_val32       sum[4],
+void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+         const oac_val16 *x,
+         const oac_val16 *y,
+         oac_val32       sum[4],
          int              len
 ) = {
   xcorr_kernel_c,                /* ARMv4 */
@@ -121,50 +121,50 @@ void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
 
 #endif
 
-# if defined(OPUS_ARM_MAY_HAVE_NEON_INTR)
+# if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 #  if defined(HAVE_ARM_NE10)
 #   if defined(CUSTOM_MODES)
-int (*const OPUS_FFT_ALLOC_ARCH_IMPL[OPUS_ARCHMASK+1])(kiss_fft_state *st) = {
-   opus_fft_alloc_arch_c,        /* ARMv4 */
-   opus_fft_alloc_arch_c,        /* EDSP */
-   opus_fft_alloc_arch_c,        /* Media */
-   opus_fft_alloc_arm_neon,      /* Neon with NE10 library support */
-   opus_fft_alloc_arm_neon       /* DOTPROD with NE10 library support */
+int (*const OAC_FFT_ALLOC_ARCH_IMPL[OAC_ARCHMASK+1])(kiss_fft_state *st) = {
+   oac_fft_alloc_arch_c,        /* ARMv4 */
+   oac_fft_alloc_arch_c,        /* EDSP */
+   oac_fft_alloc_arch_c,        /* Media */
+   oac_fft_alloc_arm_neon,      /* Neon with NE10 library support */
+   oac_fft_alloc_arm_neon       /* DOTPROD with NE10 library support */
 };
 
-void (*const OPUS_FFT_FREE_ARCH_IMPL[OPUS_ARCHMASK+1])(kiss_fft_state *st) = {
-   opus_fft_free_arch_c,         /* ARMv4 */
-   opus_fft_free_arch_c,         /* EDSP */
-   opus_fft_free_arch_c,         /* Media */
-   opus_fft_free_arm_neon,       /* Neon with NE10 */
-   opus_fft_free_arm_neon        /* DOTPROD with NE10 */
+void (*const OAC_FFT_FREE_ARCH_IMPL[OAC_ARCHMASK+1])(kiss_fft_state *st) = {
+   oac_fft_free_arch_c,         /* ARMv4 */
+   oac_fft_free_arch_c,         /* EDSP */
+   oac_fft_free_arch_c,         /* Media */
+   oac_fft_free_arm_neon,       /* Neon with NE10 */
+   oac_fft_free_arm_neon        /* DOTPROD with NE10 */
 };
 #   endif /* CUSTOM_MODES */
 
-void (*const OPUS_FFT[OPUS_ARCHMASK+1])(const kiss_fft_state *cfg,
+void (*const OAC_FFT[OAC_ARCHMASK+1])(const kiss_fft_state *cfg,
                                         const kiss_fft_cpx *fin,
                                         kiss_fft_cpx *fout) = {
-   opus_fft_c,                   /* ARMv4 */
-   opus_fft_c,                   /* EDSP */
-   opus_fft_c,                   /* Media */
-   opus_fft_neon,                /* Neon with NE10 */
-   opus_fft_neon                 /* DOTPROD with NE10 */
+   oac_fft_c,                   /* ARMv4 */
+   oac_fft_c,                   /* EDSP */
+   oac_fft_c,                   /* Media */
+   oac_fft_neon,                /* Neon with NE10 */
+   oac_fft_neon                 /* DOTPROD with NE10 */
 };
 
-void (*const OPUS_IFFT[OPUS_ARCHMASK+1])(const kiss_fft_state *cfg,
+void (*const OAC_IFFT[OAC_ARCHMASK+1])(const kiss_fft_state *cfg,
                                          const kiss_fft_cpx *fin,
                                          kiss_fft_cpx *fout) = {
-   opus_ifft_c,                   /* ARMv4 */
-   opus_ifft_c,                   /* EDSP */
-   opus_ifft_c,                   /* Media */
-   opus_ifft_neon,                /* Neon with NE10 */
-   opus_ifft_neon                 /* DOTPROD with NE10 */
+   oac_ifft_c,                   /* ARMv4 */
+   oac_ifft_c,                   /* EDSP */
+   oac_ifft_c,                   /* Media */
+   oac_ifft_neon,                /* Neon with NE10 */
+   oac_ifft_neon                 /* DOTPROD with NE10 */
 };
 
-void (*const CLT_MDCT_FORWARD_IMPL[OPUS_ARCHMASK+1])(const mdct_lookup *l,
+void (*const CLT_MDCT_FORWARD_IMPL[OAC_ARCHMASK+1])(const mdct_lookup *l,
                                                      kiss_fft_scalar *in,
-                                                     kiss_fft_scalar * OPUS_RESTRICT out,
-                                                     const opus_val16 *window,
+                                                     kiss_fft_scalar * OAC_RESTRICT out,
+                                                     const oac_val16 *window,
                                                      int overlap, int shift,
                                                      int stride, int arch) = {
    clt_mdct_forward_c,           /* ARMv4 */
@@ -174,10 +174,10 @@ void (*const CLT_MDCT_FORWARD_IMPL[OPUS_ARCHMASK+1])(const mdct_lookup *l,
    clt_mdct_forward_neon         /* DOTPROD with NE10 */
 };
 
-void (*const CLT_MDCT_BACKWARD_IMPL[OPUS_ARCHMASK+1])(const mdct_lookup *l,
+void (*const CLT_MDCT_BACKWARD_IMPL[OAC_ARCHMASK+1])(const mdct_lookup *l,
                                                       kiss_fft_scalar *in,
-                                                      kiss_fft_scalar * OPUS_RESTRICT out,
-                                                      const opus_val16 *window,
+                                                      kiss_fft_scalar * OAC_RESTRICT out,
+                                                      const oac_val16 *window,
                                                       int overlap, int shift,
                                                       int stride, int arch) = {
    clt_mdct_backward_c,           /* ARMv4 */
@@ -188,6 +188,6 @@ void (*const CLT_MDCT_BACKWARD_IMPL[OPUS_ARCHMASK+1])(const mdct_lookup *l,
 };
 
 #  endif /* HAVE_ARM_NE10 */
-# endif /* OPUS_ARM_MAY_HAVE_NEON_INTR */
+# endif /* OAC_ARM_MAY_HAVE_NEON_INTR */
 
-#endif /* OPUS_HAVE_RTCD */
+#endif /* OAC_HAVE_RTCD */

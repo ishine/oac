@@ -39,7 +39,7 @@
 #include "dred_rdovae_stats_data.h"
 #include "dred_rdovae_constants.h"
 
-void dred_decode_latents(ec_dec *dec, float *x, const opus_uint8 *scale, const opus_uint8 *r, const opus_uint8 *p0, int dim) {
+void dred_decode_latents(ec_dec *dec, float *x, const oac_uint8 *scale, const oac_uint8 *r, const oac_uint8 *p0, int dim) {
     int i;
     for (i=0;i<dim;i++) {
         int q;
@@ -49,7 +49,7 @@ void dred_decode_latents(ec_dec *dec, float *x, const opus_uint8 *scale, const o
     }
 }
 
-int dred_ec_decode(OpusDRED *dec, const opus_uint8 *bytes, int num_bytes, int min_feature_frames, int dred_frame_offset)
+int dred_ec_decode(OacDRED *dec, const oac_uint8 *bytes, int num_bytes, int min_feature_frames, int dred_frame_offset)
 {
   ec_dec ec;
   int q_level;

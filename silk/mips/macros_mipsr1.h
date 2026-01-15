@@ -38,7 +38,7 @@ static inline int silk_SMULWB(int a, int b)
     long long ac;
     int c;
 
-    ac = __builtin_mips_mult(a, (opus_int32)(opus_int16)b);
+    ac = __builtin_mips_mult(a, (oac_int32)(oac_int16)b);
     c = __builtin_mips_extr_w(ac, 16);
 
     return c;
@@ -82,7 +82,7 @@ static inline int silk_SMULWB(int a, int b)
     return ac >> 32;
 }
 
-/* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
+/* a32 + (b32 * (oac_int32)((oac_int16)(c32))) >> 16 output have to be 32bit int */
 #undef silk_SMLAWB
 static inline int silk_SMLAWB(int a, int b, int c)
 {
@@ -95,23 +95,23 @@ static inline int silk_SMLAWB(int a, int b, int c)
 
 #if defined (__mips_isa_rev) /* MIPS32r1+ */
 
-static inline int mips_clz(opus_uint32 x)
+static inline int mips_clz(oac_uint32 x)
 {
     return x ? __builtin_clz(x) : 32;
 }
 
 #define OVERRIDE_silk_CLZ16
-static inline opus_int32 silk_CLZ16(opus_int16 in16)
+static inline oac_int32 silk_CLZ16(oac_int16 in16)
 {
     int re32;
-    opus_uint32 in32 = (opus_uint16)in16;
+    oac_uint32 in32 = (oac_uint16)in16;
     re32 = mips_clz(in32);
     re32 -= 16;
     return re32;
 }
 
 #define OVERRIDE_silk_CLZ32
-static inline opus_int32 silk_CLZ32(opus_int32 in32)
+static inline oac_int32 silk_CLZ32(oac_int32 in32)
 {
     int re32;
     re32 = mips_clz(in32);

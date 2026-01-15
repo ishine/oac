@@ -32,18 +32,18 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "NSQ.h"
 #include "SigProc_FIX.h"
 
-#if defined(OPUS_HAVE_RTCD)
+#if defined(OAC_HAVE_RTCD)
 
-# if (defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && \
- !defined(OPUS_ARM_PRESUME_NEON_INTR))
+# if (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && \
+ !defined(OAC_ARM_PRESUME_NEON_INTR))
 
-void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OPUS_ARCHMASK + 1])(
-        const opus_int16            *in,                /* I     input signal                                               */
-        const opus_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
-        const opus_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
-        opus_int32                  *S,                 /* I/O   State vector [4]                                           */
-        opus_int16                  *out,               /* O     output signal                                              */
-        const opus_int32            len                 /* I     signal length (must be even)                               */
+void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
+        const oac_int16            *in,                /* I     input signal                                               */
+        const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
+        const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
+        oac_int32                  *S,                 /* I/O   State vector [4]                                           */
+        oac_int16                  *out,               /* O     output signal                                              */
+        const oac_int32            len                 /* I     signal length (must be even)                               */
 ) = {
       silk_biquad_alt_stride2_c,    /* ARMv4 */
       silk_biquad_alt_stride2_c,    /* EDSP */
@@ -52,9 +52,9 @@ void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OPUS_ARCHMASK + 1])(
       silk_biquad_alt_stride2_neon, /* dotprod */
 };
 
-opus_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OPUS_ARCHMASK + 1])( /* O   Returns inverse prediction gain in energy domain, Q30        */
-        const opus_int16            *A_Q12,                             /* I   Prediction coefficients, Q12 [order]                         */
-        const opus_int              order                               /* I   Prediction order                                             */
+oac_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OAC_ARCHMASK + 1])( /* O   Returns inverse prediction gain in energy domain, Q30        */
+        const oac_int16            *A_Q12,                             /* I   Prediction coefficients, Q12 [order]                         */
+        const oac_int              order                               /* I   Prediction order                                             */
 ) = {
       silk_LPC_inverse_pred_gain_c,    /* ARMv4 */
       silk_LPC_inverse_pred_gain_c,    /* EDSP */
@@ -63,22 +63,22 @@ opus_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OPUS_ARCHMASK + 1])( /* O   R
       silk_LPC_inverse_pred_gain_neon, /* dotprod */
 };
 
-void  (*const SILK_NSQ_DEL_DEC_IMPL[OPUS_ARCHMASK + 1])(
+void  (*const SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
         const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
         silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
         SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
-        const opus_int16            x16[],                                      /* I    Input                           */
-        opus_int8                   pulses[],                                   /* O    Quantized pulse signal          */
-        const opus_int16            *PredCoef_Q12,                              /* I    Short term prediction coefs     */
-        const opus_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],    /* I    Long term prediction coefs      */
-        const opus_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I Noise shaping coefs              */
-        const opus_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],          /* I    Long term shaping coefs         */
-        const opus_int              Tilt_Q14[ MAX_NB_SUBFR ],                   /* I    Spectral tilt                   */
-        const opus_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                 /* I    Low frequency shaping coefs     */
-        const opus_int32            Gains_Q16[ MAX_NB_SUBFR ],                  /* I    Quantization step sizes         */
-        const opus_int              pitchL[ MAX_NB_SUBFR ],                     /* I    Pitch lags                      */
-        const opus_int              Lambda_Q10,                                 /* I    Rate/distortion tradeoff        */
-        const opus_int              LTP_scale_Q14                               /* I    LTP state scaling               */
+        const oac_int16            x16[],                                      /* I    Input                           */
+        oac_int8                   pulses[],                                   /* O    Quantized pulse signal          */
+        const oac_int16            *PredCoef_Q12,                              /* I    Short term prediction coefs     */
+        const oac_int16            LTPCoef_Q14[ LTP_ORDER * MAX_NB_SUBFR ],    /* I    Long term prediction coefs      */
+        const oac_int16            AR_Q13[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ], /* I Noise shaping coefs              */
+        const oac_int              HarmShapeGain_Q14[ MAX_NB_SUBFR ],          /* I    Long term shaping coefs         */
+        const oac_int              Tilt_Q14[ MAX_NB_SUBFR ],                   /* I    Spectral tilt                   */
+        const oac_int32            LF_shp_Q14[ MAX_NB_SUBFR ],                 /* I    Low frequency shaping coefs     */
+        const oac_int32            Gains_Q16[ MAX_NB_SUBFR ],                  /* I    Quantization step sizes         */
+        const oac_int              pitchL[ MAX_NB_SUBFR ],                     /* I    Pitch lags                      */
+        const oac_int              Lambda_Q10,                                 /* I    Rate/distortion tradeoff        */
+        const oac_int              LTP_scale_Q14                               /* I    LTP state scaling               */
 ) = {
       silk_NSQ_del_dec_c,    /* ARMv4 */
       silk_NSQ_del_dec_c,    /* EDSP */
@@ -92,10 +92,10 @@ void  (*const SILK_NSQ_DEL_DEC_IMPL[OPUS_ARCHMASK + 1])(
   Instead RTCD is done via if statements at the call sites.
   See NSQ_neon.h for details.*/
 
-opus_int32
- (*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OPUS_ARCHMASK+1])(
- const opus_int32 *data0, opus_int32 *data1, const opus_int16 *coef,
- opus_int order) = {
+oac_int32
+ (*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK+1])(
+ const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
+ oac_int order) = {
   silk_NSQ_noise_shape_feedback_loop_c,    /* ARMv4 */
   silk_NSQ_noise_shape_feedback_loop_c,    /* EDSP */
   silk_NSQ_noise_shape_feedback_loop_c,    /* Media */
@@ -106,15 +106,15 @@ opus_int32
 # endif
 
 # if defined(FIXED_POINT) && \
- defined(OPUS_ARM_MAY_HAVE_NEON_INTR) && !defined(OPUS_ARM_PRESUME_NEON_INTR)
+ defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 
-void (*const SILK_WARPED_AUTOCORRELATION_FIX_IMPL[OPUS_ARCHMASK + 1])(
-          opus_int32                *corr,                                  /* O    Result [order + 1]                                                          */
-          opus_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
-    const opus_int16                *input,                                 /* I    Input data to correlate                                                     */
-    const opus_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
-    const opus_int                  length,                                 /* I    Length of input                                                             */
-    const opus_int                  order                                   /* I    Correlation order (even)                                                    */
+void (*const SILK_WARPED_AUTOCORRELATION_FIX_IMPL[OAC_ARCHMASK + 1])(
+          oac_int32                *corr,                                  /* O    Result [order + 1]                                                          */
+          oac_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
+    const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
+    const oac_int                  warping_Q16,                            /* I    Warping coefficient                                                         */
+    const oac_int                  length,                                 /* I    Length of input                                                             */
+    const oac_int                  order                                   /* I    Correlation order (even)                                                    */
 ) = {
       silk_warped_autocorrelation_FIX_c,    /* ARMv4 */
       silk_warped_autocorrelation_FIX_c,    /* EDSP */
@@ -125,4 +125,4 @@ void (*const SILK_WARPED_AUTOCORRELATION_FIX_IMPL[OPUS_ARCHMASK + 1])(
 
 # endif
 
-#endif /* OPUS_HAVE_RTCD */
+#endif /* OAC_HAVE_RTCD */

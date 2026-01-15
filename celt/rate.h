@@ -45,12 +45,12 @@
 
 void compute_pulse_cache(CELTMode *m, int LM);
 
-static OPUS_INLINE int get_pulses(int i)
+static OAC_INLINE int get_pulses(int i)
 {
    return i<8 ? i : (8 + (i&7)) << ((i>>3)-1);
 }
 
-static OPUS_INLINE int bits2pulses(const CELTMode *m, int band, int LM, int bits)
+static OAC_INLINE int bits2pulses(const CELTMode *m, int band, int LM, int bits)
 {
    int i;
    int lo, hi;
@@ -77,7 +77,7 @@ static OPUS_INLINE int bits2pulses(const CELTMode *m, int band, int LM, int bits
       return hi;
 }
 
-static OPUS_INLINE int pulses2bits(const CELTMode *m, int band, int LM, int pulses)
+static OAC_INLINE int pulses2bits(const CELTMode *m, int band, int LM, int pulses)
 {
    const unsigned char *cache;
 
@@ -96,6 +96,6 @@ static OPUS_INLINE int pulses2bits(const CELTMode *m, int band, int LM, int puls
  @return Total number of bits allocated
 */
 int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim, int *intensity, int *dual_stereo,
-      opus_int32 total, opus_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth);
+      oac_int32 total, oac_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth);
 
 #endif

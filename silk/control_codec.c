@@ -39,38 +39,38 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "tuning_parameters.h"
 #include "pitch_est_defines.h"
 
-static opus_int silk_setup_resamplers(
+static oac_int silk_setup_resamplers(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
-    opus_int                        fs_kHz              /* I                        */
+    oac_int                        fs_kHz              /* I                        */
 );
 
-static opus_int silk_setup_fs(
+static oac_int silk_setup_fs(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
-    opus_int                        fs_kHz,             /* I                        */
-    opus_int                        PacketSize_ms       /* I                        */
+    oac_int                        fs_kHz,             /* I                        */
+    oac_int                        PacketSize_ms       /* I                        */
 );
 
-static opus_int silk_setup_complexity(
+static oac_int silk_setup_complexity(
     silk_encoder_state              *psEncC,            /* I/O                      */
-    opus_int                        Complexity          /* I                        */
+    oac_int                        Complexity          /* I                        */
 );
 
-static OPUS_INLINE opus_int silk_setup_LBRR(
+static OAC_INLINE oac_int silk_setup_LBRR(
     silk_encoder_state              *psEncC,            /* I/O                      */
     const silk_EncControlStruct     *encControl         /* I                        */
 );
 
 
 /* Control encoder */
-opus_int silk_control_encoder(
+oac_int silk_control_encoder(
     silk_encoder_state_Fxx          *psEnc,                                 /* I/O  Pointer to Silk encoder state                                               */
     silk_EncControlStruct           *encControl,                            /* I    Control structure                                                           */
-    const opus_int                  allow_bw_switch,                        /* I    Flag to allow switching audio bandwidth                                     */
-    const opus_int                  channelNb,                              /* I    Channel number                                                              */
-    const opus_int                  force_fs_kHz
+    const oac_int                  allow_bw_switch,                        /* I    Flag to allow switching audio bandwidth                                     */
+    const oac_int                  channelNb,                              /* I    Channel number                                                              */
+    const oac_int                  force_fs_kHz
 )
 {
-    opus_int   fs_kHz, ret = 0;
+    oac_int   fs_kHz, ret = 0;
 
     psEnc->sCmn.useDTX                 = encControl->useDTX;
     psEnc->sCmn.useCBR                 = encControl->useCBR;
@@ -131,12 +131,12 @@ opus_int silk_control_encoder(
     return ret;
 }
 
-static opus_int silk_setup_resamplers(
+static oac_int silk_setup_resamplers(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
-    opus_int                         fs_kHz              /* I                        */
+    oac_int                         fs_kHz              /* I                        */
 )
 {
-    opus_int   ret = SILK_NO_ERROR;
+    oac_int   ret = SILK_NO_ERROR;
     SAVE_STACK;
 
     if( psEnc->sCmn.fs_kHz != fs_kHz || psEnc->sCmn.prev_API_fs_Hz != psEnc->sCmn.API_fs_Hz )
@@ -145,17 +145,17 @@ static opus_int silk_setup_resamplers(
             /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
             ret += silk_resampler_init( &psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz, fs_kHz * 1000, 1 );
         } else {
-            VARDECL( opus_int16, x_buf_API_fs_Hz );
+            VARDECL( oac_int16, x_buf_API_fs_Hz );
             VARDECL( silk_resampler_state_struct, temp_resampler_state );
 #ifdef FIXED_POINT
-            opus_int16 *x_bufFIX = psEnc->x_buf;
+            oac_int16 *x_bufFIX = psEnc->x_buf;
 #else
-            VARDECL( opus_int16, x_bufFIX );
-            opus_int32 new_buf_samples;
+            VARDECL( oac_int16, x_bufFIX );
+            oac_int32 new_buf_samples;
 #endif
-            opus_int32 api_buf_samples;
-            opus_int32 old_buf_samples;
-            opus_int32 buf_length_ms;
+            oac_int32 api_buf_samples;
+            oac_int32 old_buf_samples;
+            oac_int32 buf_length_ms;
 
             buf_length_ms = silk_LSHIFT( psEnc->sCmn.nb_subfr * 5, 1 ) + LA_SHAPE_MS;
             old_buf_samples = buf_length_ms * psEnc->sCmn.fs_kHz;
@@ -163,7 +163,7 @@ static opus_int silk_setup_resamplers(
 #ifndef FIXED_POINT
             new_buf_samples = buf_length_ms * fs_kHz;
             ALLOC( x_bufFIX, silk_max( old_buf_samples, new_buf_samples ),
-                   opus_int16 );
+                   oac_int16 );
             silk_float2short_array( x_bufFIX, psEnc->x_buf, old_buf_samples );
 #endif
 
@@ -175,7 +175,7 @@ static opus_int silk_setup_resamplers(
             api_buf_samples = buf_length_ms * silk_DIV32_16( psEnc->sCmn.API_fs_Hz, 1000 );
 
             /* Temporary resampling of x_buf data to API_fs_Hz */
-            ALLOC( x_buf_API_fs_Hz, api_buf_samples, opus_int16 );
+            ALLOC( x_buf_API_fs_Hz, api_buf_samples, oac_int16 );
             ret += silk_resampler( temp_resampler_state, x_buf_API_fs_Hz, x_bufFIX, old_buf_samples );
 
             /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
@@ -196,13 +196,13 @@ static opus_int silk_setup_resamplers(
     return ret;
 }
 
-static opus_int silk_setup_fs(
+static oac_int silk_setup_fs(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
-    opus_int                        fs_kHz,             /* I                        */
-    opus_int                        PacketSize_ms       /* I                        */
+    oac_int                        fs_kHz,             /* I                        */
+    oac_int                        PacketSize_ms       /* I                        */
 )
 {
-    opus_int ret = SILK_NO_ERROR;
+    oac_int ret = SILK_NO_ERROR;
 
     /* Set packet size */
     if( PacketSize_ms != psEnc->sCmn.PacketSize_ms ) {
@@ -304,12 +304,12 @@ static opus_int silk_setup_fs(
     return ret;
 }
 
-static opus_int silk_setup_complexity(
+static oac_int silk_setup_complexity(
     silk_encoder_state              *psEncC,            /* I/O                      */
-    opus_int                        Complexity          /* I                        */
+    oac_int                        Complexity          /* I                        */
 )
 {
-    opus_int ret = 0;
+    oac_int ret = 0;
 
     /* Set encoding complexity */
     celt_assert( Complexity >= 0 && Complexity <= 10 );
@@ -400,12 +400,12 @@ static opus_int silk_setup_complexity(
     return ret;
 }
 
-static OPUS_INLINE opus_int silk_setup_LBRR(
+static OAC_INLINE oac_int silk_setup_LBRR(
     silk_encoder_state          *psEncC,            /* I/O                      */
     const silk_EncControlStruct *encControl         /* I                        */
 )
 {
-    opus_int   LBRR_in_previous_packet, ret = SILK_NO_ERROR;
+    oac_int   LBRR_in_previous_packet, ret = SILK_NO_ERROR;
 
     LBRR_in_previous_packet = psEncC->LBRR_enabled;
     psEncC->LBRR_enabled = encControl->LBRR_coded;
@@ -415,7 +415,7 @@ static OPUS_INLINE opus_int silk_setup_LBRR(
             /* Previous packet did not have LBRR, and was therefore coded at a higher bitrate */
             psEncC->LBRR_GainIncreases = 7;
         } else {
-            psEncC->LBRR_GainIncreases = silk_max_int( 7 - silk_SMULWB( (opus_int32)psEncC->PacketLoss_perc, SILK_FIX_CONST( 0.2, 16 ) ), 3 );
+            psEncC->LBRR_GainIncreases = silk_max_int( 7 - silk_SMULWB( (oac_int32)psEncC->PacketLoss_perc, SILK_FIX_CONST( 0.2, 16 ) ), 3 );
         }
     }
 

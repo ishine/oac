@@ -28,7 +28,7 @@
 #ifndef NNDSP_H
 #define NNDSP_H
 
-#include "opus_types.h"
+#include "oac_types.h"
 #include "nnet.h"
 #include <string.h>
 

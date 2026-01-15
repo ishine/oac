@@ -98,7 +98,7 @@ def rect_fb(band_limits, num_bins=None):
 
 
 def _compare(x, y, apply_vad=False, factor=1):
-    """ Modified version of opus_compare for 16 kHz mono signals
+    """ Modified version of oac_compare for 16 kHz mono signals
 
     Args:
         x (np.ndarray): reference input signal scaled to [-1, 1]

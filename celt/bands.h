@@ -36,7 +36,7 @@
 #include "entdec.h"
 #include "rate.h"
 
-opus_int16 bitexact_cos(opus_int16 x);
+oac_int16 bitexact_cos(oac_int16 x);
 int bitexact_log2tan(int isin,int icos);
 
 /** Compute the amplitude (sqrt energy) in each of the bands
@@ -46,7 +46,7 @@ int bitexact_log2tan(int isin,int icos);
  */
 void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *bandE, int end, int C, int LM, int arch);
 
-/*void compute_noise_energies(const CELTMode *m, const celt_sig *X, const opus_val16 *tonality, celt_ener *bandE);*/
+/*void compute_noise_energies(const CELTMode *m, const celt_sig *X, const oac_val16 *tonality, celt_ener *bandE);*/
 
 /** Normalise each band of X such that the energy in each band is
     equal to 1
@@ -54,15 +54,15 @@ void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *band
  * @param X Spectrum (returned normalised)
  * @param bandE Square root of the energy for each band
  */
-void normalise_bands(const CELTMode *m, const celt_sig * OPUS_RESTRICT freq, celt_norm * OPUS_RESTRICT X, const celt_ener *bandE, int end, int C, int M);
+void normalise_bands(const CELTMode *m, const celt_sig * OAC_RESTRICT freq, celt_norm * OAC_RESTRICT X, const celt_ener *bandE, int end, int C, int M);
 
 /** Denormalise each band of X to restore full amplitude
  * @param m Mode data
  * @param X Spectrum (returned de-normalised)
  * @param bandE Square root of the energy for each band
  */
-void denormalise_bands(const CELTMode *m, const celt_norm * OPUS_RESTRICT X,
-      celt_sig * OPUS_RESTRICT freq, const celt_glog *bandE, int start,
+void denormalise_bands(const CELTMode *m, const celt_norm * OAC_RESTRICT X,
+      celt_sig * OAC_RESTRICT freq, const celt_glog *bandE, int start,
       int end, int M, int downsample, int silence);
 
 #define SPREAD_NONE       (0)
@@ -101,23 +101,23 @@ void haar1(celt_norm *X, int N0, int stride);
  * @param LM log2() of the number of 2.5 subframes in the frame
  * @param codedBands Last band to receive bits + 1
  * @param seed Random generator seed
- * @param arch Run-time architecture (see opus_select_arch())
+ * @param arch Run-time architecture (see oac_select_arch())
  */
 void quant_all_bands(int encode, const CELTMode *m, int start, int end,
       celt_norm * X, celt_norm * Y, unsigned char *collapse_masks,
       const celt_ener *bandE, int *pulses, int shortBlocks, int spread,
-      int dual_stereo, int intensity, int *tf_res, opus_int32 total_bits,
-      opus_int32 balance, ec_ctx *ec, int M, int codedBands, opus_uint32 *seed,
+      int dual_stereo, int intensity, int *tf_res, oac_int32 total_bits,
+      oac_int32 balance, ec_ctx *ec, int M, int codedBands, oac_uint32 *seed,
       int complexity, int arch, int disable_inv);
 
 void anti_collapse(const CELTMode *m, celt_norm *X_,
       unsigned char *collapse_masks, int LM, int C, int size, int start,
       int end, const celt_glog *logE, const celt_glog *prev1logE,
-      const celt_glog *prev2logE, const int *pulses, opus_uint32 seed,
+      const celt_glog *prev2logE, const int *pulses, oac_uint32 seed,
       int encode, int arch);
 
-opus_uint32 celt_lcg_rand(opus_uint32 seed);
+oac_uint32 celt_lcg_rand(oac_uint32 seed);
 
-int hysteresis_decision(opus_val16 val, const opus_val16 *thresholds, const opus_val16 *hysteresis, int N, int prev);
+int hysteresis_decision(oac_val16 val, const oac_val16 *thresholds, const oac_val16 *hysteresis, int N, int prev);
 
 #endif /* BANDS_H */

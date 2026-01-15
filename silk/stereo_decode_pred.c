@@ -34,11 +34,11 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Decode mid/side predictors */
 void silk_stereo_decode_pred(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
-    opus_int32                  pred_Q13[]                      /* O    Predictors                                  */
+    oac_int32                  pred_Q13[]                      /* O    Predictors                                  */
 )
 {
-    opus_int   n, ix[ 2 ][ 3 ];
-    opus_int32 low_Q13, step_Q13;
+    oac_int   n, ix[ 2 ][ 3 ];
+    oac_int32 low_Q13, step_Q13;
 
     /* Entropy decoding */
     n = ec_dec_icdf( psRangeDec, silk_stereo_pred_joint_iCDF, 8 );
@@ -65,7 +65,7 @@ void silk_stereo_decode_pred(
 /* Decode mid-only flag */
 void silk_stereo_decode_mid_only(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
-    opus_int                    *decode_only_mid                /* O    Flag that only mid channel has been coded   */
+    oac_int                    *decode_only_mid                /* O    Flag that only mid channel has been coded   */
 )
 {
     /* Decode flag that only mid channel is coded */

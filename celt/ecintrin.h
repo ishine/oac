@@ -26,14 +26,14 @@
 */
 
 /*Some common macros for potential platform-specific optimization.*/
-#include "opus_types.h"
+#include "oac_types.h"
 #include <math.h>
 #include <limits.h>
 #include "arch.h"
 #if !defined(_ecintrin_H)
 # define _ecintrin_H (1)
 
-/*Some specific platforms may have optimized intrinsic or OPUS_INLINE assembly
+/*Some specific platforms may have optimized intrinsic or OAC_INLINE assembly
    versions of these functions which can substantially improve performance.
   We define macros for them to allow easy incorporation of these non-ANSI
    features.*/
@@ -85,7 +85,7 @@ static __inline int ec_bsr(unsigned long _x){
   When we need to, it can be special cased.*/
 # define EC_ILOG(_x) (EC_CLZ0-EC_CLZ(_x))
 #else
-int ec_ilog(opus_uint32 _v);
+int ec_ilog(oac_uint32 _v);
 # define EC_ILOG(_x) (ec_ilog(_x))
 #endif
 #endif
