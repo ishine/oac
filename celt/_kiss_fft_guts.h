@@ -97,9 +97,6 @@
 # if defined(OAC_ARM_INLINE_EDSP)
 #  include "arm/kiss_fft_armv5e.h"
 # endif
-# if defined(__mips)
-#  include "mips/kiss_fft_mipsr1.h"
-# endif
 
 #else  /* not FIXED_POINT*/
 
