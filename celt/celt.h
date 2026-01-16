@@ -219,7 +219,7 @@ static const unsigned char trim_icdf[11] = {119, 109, 85, 53, 30, 14, 6, 3, 2, 1
 /* Probs: NONE: 6.25%, LIGHT: 6.25%, NORMAL: 50%, AGGRESSIVE: 37.5% */
 static const unsigned char spread_icdf[4] = {30, 28, 12, 0};
 
-static const unsigned char tapset_icdf[3] = {2, 1, 0};
+static const unsigned char tapset_icdf[3] = {3, 2, 0};
 
 #if defined(CUSTOM_MODES) || defined(ENABLE_OAC_CUSTOM_API)
 static const unsigned char toOacTable[20] = {

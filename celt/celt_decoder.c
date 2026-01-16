@@ -1240,14 +1240,14 @@ int celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned char 
     postfilter_gain = 0;
     postfilter_pitch = 0;
     postfilter_tapset = 0;
-    if (start == 0 && tell + 16 <= total_bits) {
+    if (start == 0 && tell + 18 <= total_bits) {
         if (ec_dec_bit_logp(dec, 1)) {
             int qg, octave;
             octave = ec_dec_uint(dec, 6);
             postfilter_pitch = (16<<octave) + ec_dec_bits(dec, 4 + octave) - 1;
             qg = ec_dec_bits(dec, 3);
             if (ec_tell(dec) + 2 <= total_bits)
-                postfilter_tapset = ec_dec_icdf(dec, tapset_icdf, 2);
+                postfilter_tapset = ec_dec_icdf(dec, tapset_icdf, 4);
             postfilter_gain = QCONST16(.09375f, 15)*(qg + 1);
         }
         tell = ec_tell(dec);
