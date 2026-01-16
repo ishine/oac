@@ -1344,7 +1344,7 @@ int celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned char 
     }
 
     ALLOC(fine_quant, nbEBands, int);
-    alloc_trim = tell + (6<<BITRES) <= total_bits ?
+    alloc_trim = tell + (7<<BITRES) <= total_bits ?
                  ec_dec_icdf(dec, trim_icdf, 7) : 5;
 
     bits = (((oac_int32)len*8)<<BITRES) - (oac_int32)ec_tell_frac(dec) - 1;
