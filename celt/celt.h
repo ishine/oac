@@ -182,7 +182,7 @@ int celt_decode_with_ec(OacCustomDecoder * OAC_RESTRICT st, const unsigned char 
 # define OAC_CUSTOM_NOSTATIC static OAC_INLINE
 #endif
 
-static const unsigned char trim_icdf[11] = {126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0};
+static const unsigned char trim_icdf[11] = {119, 109, 85, 53, 30, 14, 6, 3, 2, 1, 0};
 /* Probs: NONE: 6.25%, LIGHT: 6.25%, NORMAL: 50%, AGGRESSIVE: 37.5% */
 static const unsigned char spread_icdf[4] = {30, 28, 12, 0};
 

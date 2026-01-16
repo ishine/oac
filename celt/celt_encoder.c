@@ -2242,7 +2242,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     }
 
     alloc_trim = 5;
-    if (tell + (6<<BITRES) <= total_bits - total_boost) {
+    if (tell + (7<<BITRES) <= total_bits - total_boost) {
         if (start > 0 || st->lfe) {
             st->stereo_saving = 0;
             alloc_trim = 5;
