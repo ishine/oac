@@ -1905,7 +1905,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             && (pitch_index > 1.26*st->prefilter_period || pitch_index < .79*st->prefilter_period))
             pitch_change = 1;
         if (pf_on == 0) {
-            if (!hybrid && tell + 16 <= total_bits)
+            if (!hybrid && tell + 18 <= total_bits)
                 ec_enc_bit_logp(enc, 0, 1);
         } else {
             /*This block is not gated by a total bits check only because
@@ -1918,7 +1918,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             ec_enc_bits(enc, pitch_index - (16<<octave), 4 + octave);
             pitch_index -= 1;
             ec_enc_bits(enc, qg, 3);
-            ec_enc_icdf(enc, prefilter_tapset, tapset_icdf, 2);
+            ec_enc_icdf(enc, prefilter_tapset, tapset_icdf, 4);
         }
     }
     if (LM > 0 && ec_tell(enc) + 3 <= total_bits) {
