@@ -54,11 +54,6 @@
 # define PACKAGE_VERSION "unknown"
 #endif
 
-#if defined(FIXED_POINT) && defined(__mips)
-# include "mips/celt_mipsr1.h"
-#endif
-
-
 int resampling_factor(oac_int32 rate) {
     int ret;
     switch (rate) {
