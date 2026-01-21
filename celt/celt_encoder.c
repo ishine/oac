@@ -1836,8 +1836,8 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
 
     ALLOC(in, CC*(N + overlap), celt_sig);
 
-    sample_max = MAX32(st->overlap_max, celt_maxabs_res(pcm, C*(N - overlap)/st->upsample));
-    st->overlap_max = celt_maxabs_res(pcm + C*(N - overlap)/st->upsample, C*overlap/st->upsample);
+    sample_max = MAX32(st->overlap_max, celt_maxabs_res(pcm, CC*(N - overlap)/st->upsample));
+    st->overlap_max = celt_maxabs_res(pcm + CC*(N - overlap)/st->upsample, CC*overlap/st->upsample);
     sample_max = MAX32(sample_max, st->overlap_max);
 #ifdef FIXED_POINT
     silence = (sample_max == 0);
