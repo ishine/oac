@@ -34,7 +34,7 @@
 #include "errors.h"
 
 /* Check encoder control struct */
-oac_int check_control_input(
+oac_int oaci_check_control_input(
     silk_EncControlStruct        *encControl                    /* I    Control structure                           */
     ) {
     celt_assert( encControl != NULL );

@@ -37,7 +37,7 @@
 
 #define MATRIX_INDEX(nb_rows, row, col) (nb_rows*col + row)
 
-oac_int32 mapping_matrix_get_size(int rows, int cols) {
+oac_int32 oaci_mapping_matrix_get_size(int rows, int cols) {
     oac_int32 size;
 
     /* Mapping Matrix must only support up to 255 channels in or out.
@@ -53,12 +53,12 @@ oac_int32 mapping_matrix_get_size(int rows, int cols) {
     return align(sizeof(MappingMatrix)) + align(size);
 }
 
-oac_int16 *mapping_matrix_get_data(const MappingMatrix *matrix) {
+oac_int16 *oaci_mapping_matrix_get_data(const MappingMatrix *matrix) {
     /* void* cast avoids clang -Wcast-align warning */
     return (oac_int16*)(void*)((char*)matrix + align(sizeof(MappingMatrix)));
 }
 
-void mapping_matrix_init(MappingMatrix * const matrix,
+void oaci_mapping_matrix_init(MappingMatrix * const matrix,
                          int rows, int cols, int gain, const oac_int16 *data, oac_int32 data_size) {
     int i;
     oac_int16 *ptr;
@@ -71,14 +71,14 @@ void mapping_matrix_init(MappingMatrix * const matrix,
     matrix->rows = rows;
     matrix->cols = cols;
     matrix->gain = gain;
-    ptr = mapping_matrix_get_data(matrix);
+    ptr = oaci_mapping_matrix_get_data(matrix);
     for (i = 0; i < rows*cols; i++) {
         ptr[i] = data[i];
     }
 }
 
 #ifndef DISABLE_FLOAT_API
-void mapping_matrix_multiply_channel_in_float(
+void oaci_mapping_matrix_multiply_channel_in_float(
     const MappingMatrix *matrix,
     const float *input,
     int input_rows,
@@ -92,7 +92,7 @@ void mapping_matrix_multiply_channel_in_float(
 
     celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
-    matrix_data = mapping_matrix_get_data(matrix);
+    matrix_data = oaci_mapping_matrix_get_data(matrix);
 
     for (i = 0; i < frame_size; i++) {
         float tmp = 0;
@@ -105,7 +105,7 @@ void mapping_matrix_multiply_channel_in_float(
     }
 }
 
-void mapping_matrix_multiply_channel_out_float(
+void oaci_mapping_matrix_multiply_channel_out_float(
     const MappingMatrix *matrix,
     const oac_res *input,
     int input_row,
@@ -120,7 +120,7 @@ void mapping_matrix_multiply_channel_out_float(
 
     celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
-    matrix_data = mapping_matrix_get_data(matrix);
+    matrix_data = oaci_mapping_matrix_get_data(matrix);
 
     for (i = 0; i < frame_size; i++) {
         input_sample = RES2FLOAT(input[input_rows*i]);
@@ -134,7 +134,7 @@ void mapping_matrix_multiply_channel_out_float(
 }
 #endif /* DISABLE_FLOAT_API */
 
-void mapping_matrix_multiply_channel_in_short(
+void oaci_mapping_matrix_multiply_channel_in_short(
     const MappingMatrix *matrix,
     const oac_int16 *input,
     int input_rows,
@@ -148,7 +148,7 @@ void mapping_matrix_multiply_channel_in_short(
 
     celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
-    matrix_data = mapping_matrix_get_data(matrix);
+    matrix_data = oaci_mapping_matrix_get_data(matrix);
 
     for (i = 0; i < frame_size; i++) {
         oac_val32 tmp = 0;
@@ -171,7 +171,7 @@ void mapping_matrix_multiply_channel_in_short(
     }
 }
 
-void mapping_matrix_multiply_channel_out_short(
+void oaci_mapping_matrix_multiply_channel_out_short(
     const MappingMatrix *matrix,
     const oac_res *input,
     int input_row,
@@ -186,7 +186,7 @@ void mapping_matrix_multiply_channel_out_short(
 
     celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
-    matrix_data = mapping_matrix_get_data(matrix);
+    matrix_data = oaci_mapping_matrix_get_data(matrix);
 
     for (i = 0; i < frame_size; i++) {
         input_sample = RES2INT16(input[input_rows*i]);
@@ -199,7 +199,7 @@ void mapping_matrix_multiply_channel_out_short(
     }
 }
 
-void mapping_matrix_multiply_channel_in_int24(
+void oaci_mapping_matrix_multiply_channel_in_int24(
     const MappingMatrix *matrix,
     const oac_int32 *input,
     int input_rows,
@@ -213,7 +213,7 @@ void mapping_matrix_multiply_channel_in_int24(
 
     celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
-    matrix_data = mapping_matrix_get_data(matrix);
+    matrix_data = oaci_mapping_matrix_get_data(matrix);
 
     for (i = 0; i < frame_size; i++) {
         oac_val64 tmp = 0;
@@ -230,7 +230,7 @@ void mapping_matrix_multiply_channel_in_int24(
     }
 }
 
-void mapping_matrix_multiply_channel_out_int24(
+void oaci_mapping_matrix_multiply_channel_out_int24(
     const MappingMatrix *matrix,
     const oac_res *input,
     int input_row,
@@ -245,7 +245,7 @@ void mapping_matrix_multiply_channel_out_int24(
 
     celt_assert(input_rows <= matrix->cols && output_rows <= matrix->rows);
 
-    matrix_data = mapping_matrix_get_data(matrix);
+    matrix_data = oaci_mapping_matrix_get_data(matrix);
 
     for (i = 0; i < frame_size; i++) {
         input_sample = RES2INT24(input[input_rows*i]);
@@ -259,8 +259,8 @@ void mapping_matrix_multiply_channel_out_int24(
 }
 
 
-const MappingMatrix mapping_matrix_foa_mixing = { 6, 6, 0 };
-const oac_int16 mapping_matrix_foa_mixing_data[36] = {
+const MappingMatrix oaci_mapping_matrix_foa_mixing = { 6, 6, 0 };
+const oac_int16 oaci_mapping_matrix_foa_mixing_data[36] = {
     16384,      0, -16384,  23170,      0,      0,  16384,  23170,
     16384,      0,      0,      0,  16384,      0, -16384, -23170,
     0,      0,  16384, -23170,  16384,      0,      0,      0,
@@ -268,8 +268,8 @@ const oac_int16 mapping_matrix_foa_mixing_data[36] = {
     0,      0,      0,  32767
 };
 
-const MappingMatrix mapping_matrix_soa_mixing = { 11, 11, 0 };
-const oac_int16 mapping_matrix_soa_mixing_data[121] = {
+const MappingMatrix oaci_mapping_matrix_soa_mixing = { 11, 11, 0 };
+const oac_int16 oaci_mapping_matrix_soa_mixing_data[121] = {
     10923,   7723,  13377, -13377,  11585,   9459,   7723, -16384,
     -6689,      0,      0,  10923,   7723,  13377,  13377, -11585,
     9459,   7723,  16384,  -6689,      0,      0,  10923, -15447,
@@ -288,8 +288,8 @@ const oac_int16 mapping_matrix_soa_mixing_data[121] = {
     32767
 };
 
-const MappingMatrix mapping_matrix_toa_mixing = { 18, 18, 0 };
-const oac_int16 mapping_matrix_toa_mixing_data[324] = {
+const MappingMatrix oaci_mapping_matrix_toa_mixing = { 18, 18, 0 };
+const oac_int16 oaci_mapping_matrix_toa_mixing_data[324] = {
     8208,      0,   -881,  14369,      0,      0,  -8192,  -4163,
     13218,      0,      0,      0,  11095,  -8836,  -6218,  14833,
     0,      0,   8208, -10161,    881,  10161, -13218,  -2944,
@@ -333,8 +333,8 @@ const oac_int16 mapping_matrix_toa_mixing_data[324] = {
     0,      0,      0,  32767
 };
 
-const MappingMatrix mapping_matrix_fourthoa_mixing = { 27, 27, 0 };
-const oac_int16 mapping_matrix_fourthoa_mixing_data[729] = {
+const MappingMatrix oaci_mapping_matrix_fourthoa_mixing = { 27, 27, 0 };
+const oac_int16 oaci_mapping_matrix_fourthoa_mixing_data[729] = {
     9243,      0,  16010,      0,      0,      0,  20669,      0,
     0,      0,      0,      0,  24456,      0,      0,      0,
     0,      0,      0,      0,  27731,      0,      0,      0,
@@ -429,8 +429,8 @@ const oac_int16 mapping_matrix_fourthoa_mixing_data[729] = {
     32767
 };
 
-const MappingMatrix mapping_matrix_fifthoa_mixing = { 38, 38, 0 };
-const oac_int16 mapping_matrix_fifthoa_mixing_data[1444] = {
+const MappingMatrix oaci_mapping_matrix_fifthoa_mixing = { 38, 38, 0 };
+const oac_int16 oaci_mapping_matrix_fifthoa_mixing_data[1444] = {
     9243,      0,  16010,      0,      0,      0,  20669,      0,
     0,      0,      0,      0,  24456,      0,      0,      0,
     0,      0,      0,      0,  27731,      0,      0,      0,
@@ -614,8 +614,8 @@ const oac_int16 mapping_matrix_fifthoa_mixing_data[1444] = {
     0,      0,      0,  32767
 };
 
-const MappingMatrix mapping_matrix_foa_demixing = { 6, 6, 0 };
-const oac_int16 mapping_matrix_foa_demixing_data[36] = {
+const MappingMatrix oaci_mapping_matrix_foa_demixing = { 6, 6, 0 };
+const oac_int16 oaci_mapping_matrix_foa_demixing_data[36] = {
     16384,  16384,  16384,  16384,      0,      0,      0,  23170,
     0, -23170,      0,      0, -16384,  16384, -16384,  16384,
     0,      0,  23170,      0, -23170,      0,      0,      0,
@@ -623,8 +623,8 @@ const oac_int16 mapping_matrix_foa_demixing_data[36] = {
     0,      0,      0,  32767
 };
 
-const MappingMatrix mapping_matrix_soa_demixing = { 11, 11, 3050 };
-const oac_int16 mapping_matrix_soa_demixing_data[121] = {
+const MappingMatrix oaci_mapping_matrix_soa_demixing = { 11, 11, 3050 };
+const oac_int16 oaci_mapping_matrix_soa_demixing_data[121] = {
     2771,   2771,   2771,   2771,   2771,   2771,   2771,   2771,
     2771,      0,      0,  10033,  10033, -20066,  10033,  14189,
     14189, -28378,  10033, -20066,      0,      0,   3393,   3393,
@@ -643,8 +643,8 @@ const oac_int16 mapping_matrix_soa_demixing_data[121] = {
     8312
 };
 
-const MappingMatrix mapping_matrix_toa_demixing = { 18, 18, 0 };
-const oac_int16 mapping_matrix_toa_demixing_data[324] = {
+const MappingMatrix oaci_mapping_matrix_toa_demixing = { 18, 18, 0 };
+const oac_int16 oaci_mapping_matrix_toa_demixing_data[324] = {
     8192,   8192,   8192,   8192,   8192,   8192,   8192,   8192,
     8192,   8192,   8192,   8192,   8192,   8192,   8192,   8192,
     0,      0,      0,  -9779,   9779,   6263,   8857,      0,
@@ -688,8 +688,8 @@ const oac_int16 mapping_matrix_toa_demixing_data[324] = {
     0,      0,      0,  32767
 };
 
-const MappingMatrix mapping_matrix_fourthoa_demixing = { 27, 27, 0 };
-const oac_int16 mapping_matrix_fourthoa_demixing_data[729] = {
+const MappingMatrix oaci_mapping_matrix_fourthoa_demixing = { 27, 27, 0 };
+const oac_int16 oaci_mapping_matrix_fourthoa_demixing_data[729] = {
     4870,   4484,   4870,   4347,   4440,   4726,   4683,   4821,
     4883,   4842,   4603,   4484,   4683,   4698,   4234,   4368,
     4603,   4783,   4783,   4820,   4821,   4347,   4820,   4440,
@@ -784,8 +784,8 @@ const oac_int16 mapping_matrix_fourthoa_demixing_data[729] = {
     32767
 };
 
-const MappingMatrix mapping_matrix_fifthoa_demixing = { 38, 38, 0 };
-const oac_int16 mapping_matrix_fifthoa_demixing_data[1444] = {
+const MappingMatrix oaci_mapping_matrix_fifthoa_demixing = { 38, 38, 0 };
+const oac_int16 oaci_mapping_matrix_fifthoa_demixing_data[1444] = {
     3188,   3247,   3268,   3368,   3368,   3138,   3268,   3099,
     3211,   3368,   3099,   3247,   3211,   3368,   3368,   3368,
     3149,   3268,   3247,   3211,   3099,   3188,   3138,   3149,

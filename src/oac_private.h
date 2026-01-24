@@ -120,10 +120,10 @@ int oac_multistream_encoder_ctl_va_list(struct OacMSEncoder *st, int request,
 int oac_multistream_decoder_ctl_va_list(struct OacMSDecoder *st, int request,
     va_list ap);
 
-int validate_layout(const ChannelLayout *layout);
-int get_left_channel(const ChannelLayout *layout, int stream_id, int prev);
-int get_right_channel(const ChannelLayout *layout, int stream_id, int prev);
-int get_mono_channel(const ChannelLayout *layout, int stream_id, int prev);
+int oaci_validate_layout(const ChannelLayout *layout);
+int oaci_get_left_channel(const ChannelLayout *layout, int stream_id, int prev);
+int oaci_get_right_channel(const ChannelLayout *layout, int stream_id, int prev);
+int oaci_get_mono_channel(const ChannelLayout *layout, int stream_id, int prev);
 
 typedef void (*oac_copy_channel_in_func)(
     oac_res *dst,
@@ -171,21 +171,21 @@ typedef void (*oac_copy_channel_out_func)(
 #define OAC_SET_FORCE_MODE(x) OAC_SET_FORCE_MODE_REQUEST, oac_check_int(x)
 
 typedef void (*downmix_func)(const void *, oac_val32 *, int, int, int, int, int);
-void downmix_float(const void *_x, oac_val32 *sub, int subframe, int offset, int c1, int c2, int C);
-void downmix_int(const void *_x, oac_val32 *sub, int subframe, int offset, int c1, int c2, int C);
-void downmix_int24(const void *_x, oac_val32 *sub, int subframe, int offset, int c1, int c2, int C);
-int is_digital_silence(const oac_res* pcm, int frame_size, int channels, int lsb_depth);
+void oaci_downmix_float(const void *_x, oac_val32 *sub, int subframe, int offset, int c1, int c2, int C);
+void oaci_downmix_int(const void *_x, oac_val32 *sub, int subframe, int offset, int c1, int c2, int C);
+void oaci_downmix_int24(const void *_x, oac_val32 *sub, int subframe, int offset, int c1, int c2, int C);
+int oaci_is_digital_silence(const oac_res* pcm, int frame_size, int channels, int lsb_depth);
 
 void oac_pcm_soft_clip_impl(float *_x, int N, int C, float *declip_mem, int arch);
 
-int encode_size(int size, unsigned char *data);
+int oaci_encode_size(int size, unsigned char *data);
 
-oac_int32 frame_size_select(int application, oac_int32 frame_size, int variable_duration, oac_int32 Fs);
+oac_int32 oaci_frame_size_select(int application, oac_int32 frame_size, int variable_duration, oac_int32 Fs);
 
 oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     unsigned char *data, oac_int32 out_data_bytes, int lsb_depth,
     const void *analysis_pcm, oac_int32 analysis_size, int c1, int c2,
-    int analysis_channels, downmix_func downmix, int float_api);
+    int analysis_channels, downmix_func oaci_downmix, int float_api);
 
 int oac_decode_native(OacDecoder *st, const unsigned char *data, oac_int32 len,
     oac_res *pcm, int frame_size, int decode_fec, int self_delimited,
@@ -222,7 +222,7 @@ int oac_multistream_encode_native(
     unsigned char *data,
     oac_int32 max_data_bytes,
     int lsb_depth,
-    downmix_func downmix,
+    downmix_func oaci_downmix,
     int float_api,
     void *user_data);
 

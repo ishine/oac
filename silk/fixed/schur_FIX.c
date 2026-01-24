@@ -33,7 +33,7 @@
 
 /* Faster than schur64(), but much less accurate.                       */
 /* uses SMLAWB(), requiring armv5E and higher.                          */
-oac_int32 silk_schur(                              /* O    Returns residual energy                                     */
+oac_int32 oaci_silk_schur(                              /* O    Returns residual energy                                     */
     oac_int16                  *rc_Q15,            /* O    reflection coefficients [order] Q15                         */
     const oac_int32            *c,                 /* I    correlations [order+1]                                      */
     const oac_int32 order                          /* I    prediction order                                            */

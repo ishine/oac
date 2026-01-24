@@ -43,7 +43,7 @@
 #include "cwrs.h"
 #include "modes.h"
 
-void compute_pulse_cache(CELTMode *m, int LM);
+void oaci_compute_pulse_cache(CELTMode *m, int LM);
 
 static OAC_INLINE int get_pulses(int i) {
     return i < 8 ? i : (8 + (i&7))<<((i>>3) - 1);
@@ -91,7 +91,7 @@ static OAC_INLINE int pulses2bits(const CELTMode *m, int band, int LM, int pulse
    @param pulses Number of pulses per band (returned)
    @return Total number of bits allocated
  */
-int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
+int oaci_clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
     int *intensity, int *dual_stereo,
     oac_int32 total, oac_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec,
     int encode, int prev, int signalBandwidth);

@@ -31,7 +31,7 @@
 
 #include "SigProc_FIX.h"
 
-oac_int32 silk_inner_prod_aligned_scale(
+oac_int32 oaci_silk_inner_prod_aligned_scale(
     const oac_int16 *const inVec1,                 /*    I input vector 1                                              */
     const oac_int16 *const inVec2,                 /*    I input vector 2                                              */
     const oac_int scale,                           /*    I number of bits to shift                                     */

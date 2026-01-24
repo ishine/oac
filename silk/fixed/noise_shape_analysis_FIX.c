@@ -109,7 +109,7 @@ static OAC_INLINE void limit_warped_coefs(
             silk_SMULWB( maxabs_Q20 - limit_Q20,
         silk_SMLABB( SILK_FIX_CONST( 0.8, 10 ), SILK_FIX_CONST( 0.1, 10 ), iter )),
             silk_MUL( maxabs_Q20, ind + 1 ), 22 );
-        silk_bwexpander_32( coefs_Q24, order, chirp_Q16 );
+        oaci_silk_bwexpander_32( coefs_Q24, order, chirp_Q16 );
 
         /* Convert to monic warped coefficients */
         lambda_Q16 = -lambda_Q16;
@@ -130,7 +130,7 @@ static OAC_INLINE void limit_warped_coefs(
 /**************************************************************/
 /* Compute noise shaping coefficients and initial gain values */
 /**************************************************************/
-void silk_noise_shape_analysis_FIX(
+void oaci_silk_noise_shape_analysis_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Encoder state FIX                                                           */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Encoder control FIX                                                         */
     const oac_int16                *pitch_res,                             /* I    LPC residual from pitch analysis                                            */
@@ -162,7 +162,7 @@ void silk_noise_shape_analysis_FIX(
         + psEnc->sCmn.input_quality_bands_Q15[ 1 ], 2 );
 
     /* Coding quality level, between 0.0_Q0 and 1.0_Q0, but in Q14 */
-    psEncCtrl->coding_quality_Q14 = silk_RSHIFT( silk_sigm_Q15( silk_RSHIFT_ROUND( SNR_adj_dB_Q7
+    psEncCtrl->coding_quality_Q14 = silk_RSHIFT( oaci_silk_sigm_Q15( silk_RSHIFT_ROUND( SNR_adj_dB_Q7
         - SILK_FIX_CONST( 20.0, 7 ), 4 )), 1 );
 
     /* Reduce coding SNR during low speech activity */
@@ -199,10 +199,10 @@ void silk_noise_shape_analysis_FIX(
         pitch_res_ptr = pitch_res;
         nSegs = silk_SMULBB( SUB_FRAME_LENGTH_MS, psEnc->sCmn.nb_subfr )/2;
         for (k = 0; k < nSegs; k++) {
-            silk_sum_sqr_shift( &nrg, &scale, pitch_res_ptr, nSamples );
+            oaci_silk_sum_sqr_shift( &nrg, &scale, pitch_res_ptr, nSamples );
             nrg += silk_RSHIFT( nSamples, scale );           /* Q(-scale)*/
 
-            log_energy_Q7 = silk_lin2log( nrg );
+            log_energy_Q7 = oaci_silk_lin2log( nrg );
             if (k > 0) {
                 energy_variation_Q7 += silk_abs( log_energy_Q7 - log_energy_prev_Q7 );
             }
@@ -244,22 +244,22 @@ void silk_noise_shape_analysis_FIX(
         flat_part = psEnc->sCmn.fs_kHz*3;
         slope_part = silk_RSHIFT( psEnc->sCmn.shapeWinLength - flat_part, 1 );
 
-        silk_apply_sine_window( x_windowed, x_ptr, 1, slope_part );
+        oaci_silk_apply_sine_window( x_windowed, x_ptr, 1, slope_part );
         shift = slope_part;
         silk_memcpy( x_windowed + shift, x_ptr + shift, flat_part*sizeof(oac_int16));
         shift += flat_part;
-        silk_apply_sine_window( x_windowed + shift, x_ptr + shift, 2, slope_part );
+        oaci_silk_apply_sine_window( x_windowed + shift, x_ptr + shift, 2, slope_part );
 
         /* Update pointer: next LPC analysis block */
         x_ptr += psEnc->sCmn.subfr_length;
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Calculate warped auto correlation */
-            silk_warped_autocorrelation_FIX( auto_corr, &scale, x_windowed, warping_Q16, psEnc->sCmn.shapeWinLength,
+            oaci_silk_warped_autocorrelation_FIX( auto_corr, &scale, x_windowed, warping_Q16, psEnc->sCmn.shapeWinLength,
             psEnc->sCmn.shapingLPCOrder, arch );
         } else {
             /* Calculate regular auto correlation */
-            silk_autocorr( auto_corr, &scale, x_windowed, psEnc->sCmn.shapeWinLength, psEnc->sCmn.shapingLPCOrder + 1,
+            oaci_silk_autocorr( auto_corr, &scale, x_windowed, psEnc->sCmn.shapeWinLength, psEnc->sCmn.shapingLPCOrder + 1,
             arch );
         }
 
@@ -268,11 +268,11 @@ void silk_noise_shape_analysis_FIX(
             SILK_FIX_CONST( SHAPE_WHITE_NOISE_FRACTION, 20 )), 1 ));
 
         /* Calculate the reflection coefficients using schur */
-        nrg = silk_schur64( refl_coef_Q16, auto_corr, psEnc->sCmn.shapingLPCOrder );
+        nrg = oaci_silk_schur64( refl_coef_Q16, auto_corr, psEnc->sCmn.shapingLPCOrder );
         silk_assert( nrg >= 0 );
 
         /* Convert reflection coefficients to prediction coefficients */
-        silk_k2a_Q16( AR_Q24, refl_coef_Q16, psEnc->sCmn.shapingLPCOrder );
+        oaci_silk_k2a_Q16( AR_Q24, refl_coef_Q16, psEnc->sCmn.shapingLPCOrder );
 
         Qnrg = -scale;          /* range: -12...30*/
         silk_assert( Qnrg >= -12 );
@@ -308,7 +308,7 @@ void silk_noise_shape_analysis_FIX(
         }
 
         /* Bandwidth expansion */
-        silk_bwexpander_32( AR_Q24, psEnc->sCmn.shapingLPCOrder, BWExp_Q16 );
+        oaci_silk_bwexpander_32( AR_Q24, psEnc->sCmn.shapingLPCOrder, BWExp_Q16 );
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Convert to monic warped prediction coefficients and limit absolute values */
@@ -320,7 +320,7 @@ void silk_noise_shape_analysis_FIX(
                 11 ));
             }
         } else {
-            silk_LPC_fit( &psEncCtrl->AR_Q13[ k*MAX_SHAPE_LPC_ORDER ], AR_Q24, 13, 24, psEnc->sCmn.shapingLPCOrder );
+            oaci_silk_LPC_fit( &psEncCtrl->AR_Q13[ k*MAX_SHAPE_LPC_ORDER ], AR_Q24, 13, 24, psEnc->sCmn.shapingLPCOrder );
         }
     }
 
@@ -328,8 +328,8 @@ void silk_noise_shape_analysis_FIX(
     /* Gain tweaking */
     /*****************/
     /* Increase gains during low speech activity and put lower limit on gains */
-    gain_mult_Q16 = silk_log2lin( -silk_SMLAWB( -SILK_FIX_CONST( 16.0, 7 ), SNR_adj_dB_Q7, SILK_FIX_CONST( 0.16, 16 )));
-    gain_add_Q16  = silk_log2lin(  silk_SMLAWB(  SILK_FIX_CONST( 16.0, 7 ), SILK_FIX_CONST( MIN_QGAIN_DB, 7 ),
+    gain_mult_Q16 = oaci_silk_log2lin( -silk_SMLAWB( -SILK_FIX_CONST( 16.0, 7 ), SNR_adj_dB_Q7, SILK_FIX_CONST( 0.16, 16 )));
+    gain_add_Q16  = oaci_silk_log2lin(  silk_SMLAWB(  SILK_FIX_CONST( 16.0, 7 ), SILK_FIX_CONST( MIN_QGAIN_DB, 7 ),
     SILK_FIX_CONST( 0.16, 16 )));
     silk_assert( gain_mult_Q16 > 0 );
     for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {

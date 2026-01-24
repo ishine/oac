@@ -31,7 +31,7 @@
 
 #include "SigProc_FLP.h"
 
-silk_float silk_schur_FLP(                  /* O    returns residual energy                                     */
+silk_float oaci_silk_schur_FLP(                  /* O    returns residual energy                                     */
     silk_float refl_coef[],                 /* O    reflection coefficients (length order)                      */
     const silk_float auto_corr[],           /* I    autocorrelation sequence (length order+1)                   */
     oac_int order                          /* I    order                                                       */

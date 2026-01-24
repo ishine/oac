@@ -42,7 +42,7 @@
 /*Compute floor(sqrt(_val)) with exact arithmetic.
    _val must be greater than 0.
    This has been tested on all possible 32-bit inputs greater than 0.*/
-unsigned isqrt32(oac_uint32 _val) {
+unsigned oaci_isqrt32(oac_uint32 _val) {
     unsigned b;
     unsigned g;
     int bshift;
@@ -68,22 +68,22 @@ unsigned isqrt32(oac_uint32 _val) {
 
 #ifdef FIXED_POINT
 
-oac_val32 frac_div32_q29(oac_val32 a, oac_val32 b) {
+oac_val32 oaci_frac_div32_q29(oac_val32 a, oac_val32 b) {
     oac_val16 rcp;
     oac_val32 result, rem;
     int shift = celt_ilog2(b) - 29;
     a = VSHR32(a, shift);
     b = VSHR32(b, shift);
     /* 16-bit reciprocal */
-    rcp = ROUND16(celt_rcp(ROUND16(b, 16)), 3);
+    rcp = ROUND16(oaci_celt_rcp(ROUND16(b, 16)), 3);
     result = MULT16_32_Q15(rcp, a);
     rem = PSHR32(a, 2) - MULT32_32_Q31(result, b);
     result = ADD32(result, SHL32(MULT16_32_Q15(rcp, rem), 2));
     return result;
 }
 
-oac_val32 frac_div32(oac_val32 a, oac_val32 b) {
-    oac_val32 result = frac_div32_q29(a, b);
+oac_val32 oaci_frac_div32(oac_val32 a, oac_val32 b) {
+    oac_val32 result = oaci_frac_div32_q29(a, b);
     if (result >= 536870912)      /*  2^29 */
         return 2147483647;        /*  2^31 - 1 */
     else if (result <= -536870912) /* -2^29 */
@@ -93,7 +93,7 @@ oac_val32 frac_div32(oac_val32 a, oac_val32 b) {
 }
 
 /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
-oac_val16 celt_rsqrt_norm(oac_val32 x) {
+oac_val16 oaci_celt_rsqrt_norm(oac_val32 x) {
     oac_val16 n;
     oac_val16 r;
     oac_val16 r2;
@@ -120,11 +120,11 @@ oac_val16 celt_rsqrt_norm(oac_val32 x) {
 }
 
 /** Reciprocal sqrt approximation in the range [0.25,1) (Q31 in, Q29 out) */
-oac_val32 celt_rsqrt_norm32(oac_val32 x) {
+oac_val32 oaci_celt_rsqrt_norm32(oac_val32 x) {
     oac_int32 tmp;
     /* Use the first-order Newton-Raphson method to refine the root estimate.
      * r = r * (1.5 - 0.5*x*r*r) */
-    oac_int32 r_q29 = SHL32(celt_rsqrt_norm(SHR32(x, 31 - 16)), 15);
+    oac_int32 r_q29 = SHL32(oaci_celt_rsqrt_norm(SHR32(x, 31 - 16)), 15);
     /* Split evaluation in steps to avoid exploding macro expansion. */
     tmp = MULT32_32_Q31(r_q29, r_q29);
     tmp = MULT32_32_Q31(1073741824 /* Q31 */, tmp);
@@ -133,7 +133,7 @@ oac_val32 celt_rsqrt_norm32(oac_val32 x) {
 }
 
 /** Sqrt approximation (QX input, QX/2 output) */
-oac_val32 celt_sqrt(oac_val32 x) {
+oac_val32 oaci_celt_sqrt(oac_val32 x) {
     int k;
     oac_val16 n;
     oac_val32 rt;
@@ -156,7 +156,7 @@ oac_val32 celt_sqrt(oac_val32 x) {
 
 /* Perform fixed-point arithmetic to approximate the square root. When the input
  * is in Qx format, the output will be in Q(x/2 + 16) format. */
-oac_val32 celt_sqrt32(oac_val32 x) {
+oac_val32 oaci_celt_sqrt32(oac_val32 x) {
     int k;
     oac_int32 x_frac;
     if (x == 0)
@@ -165,7 +165,7 @@ oac_val32 celt_sqrt32(oac_val32 x) {
         return 2147483647; /* 2^31 -1 */
     k = (celt_ilog2(x)>>1);
     x_frac = VSHR32(x, 2*(k - 14) - 1);
-    x_frac = MULT32_32_Q31(celt_rsqrt_norm32(x_frac), x_frac);
+    x_frac = MULT32_32_Q31(oaci_celt_rsqrt_norm32(x_frac), x_frac);
     if (k < 12) return PSHR32(x_frac, 12 - k);
     else return SHL32(x_frac, k - 12);
 }
@@ -189,7 +189,7 @@ static OAC_INLINE oac_val16 _celt_cos_pi_2(oac_val16 x) {
 # undef L3
 # undef L4
 
-oac_val16 celt_cos_norm(oac_val32 x) {
+oac_val16 oaci_celt_cos_norm(oac_val32 x) {
     x = x&0x0001ffff;
     if (x > SHL32(EXTEND32(1), 16))
         x = SUB32(SHL32(EXTEND32(1), 17), x);
@@ -211,7 +211,7 @@ oac_val16 celt_cos_norm(oac_val32 x) {
 
 /* Calculates the cosine of (PI*0.5*x) where the input x ranges from -1 to 1 and
  * is in Q30 format. The output will also be in Q31 format. */
-oac_val32 celt_cos_norm32(oac_val32 x) {
+oac_val32 oaci_celt_cos_norm32(oac_val32 x) {
     static const oac_val32 COS_NORM_COEFF_A0 = 134217720;  /* Q27 */
     static const oac_val32 COS_NORM_COEFF_A1 = -662336704; /* Q29 */
     static const oac_val32 COS_NORM_COEFF_A2 = 544710848;  /* Q31 */
@@ -232,7 +232,7 @@ oac_val32 celt_cos_norm32(oac_val32 x) {
 
 /* Computes a 16 bit approximate reciprocal (1/x) for a normalized Q15 input,
  * resulting in a Q15 output. */
-oac_val16 celt_rcp_norm16(oac_val16 x) {
+oac_val16 oaci_celt_rcp_norm16(oac_val16 x) {
     oac_val16 r;
     /* Start with a linear approximation:
        r = 1.8823529411764706-0.9411764705882353*n.
@@ -252,10 +252,10 @@ oac_val16 celt_rcp_norm16(oac_val16 x) {
 /* Computes a 32 bit approximated reciprocal (1/x) for a normalized Q31 input,
  * resulting in a Q30 output. The expected input range is [0.5f, 1.0f) in Q31
  * and the expected output range is [1.0f, 2.0f) in Q30. */
-oac_val32 celt_rcp_norm32(oac_val32 x) {
+oac_val32 oaci_celt_rcp_norm32(oac_val32 x) {
     oac_val32 r_q30;
     celt_sig_assert(x >= 1073741824);
-    r_q30 = SHL32(EXTEND32(celt_rcp_norm16(SHR32(x, 15) - 32768)), 16);
+    r_q30 = SHL32(EXTEND32(oaci_celt_rcp_norm16(SHR32(x, 15) - 32768)), 16);
     /* Solving f(y) = a - 1/y using the Newton Method
      * Note: f(y)' = 1/y^2
      * r = r - f(r)/f(r)' = r - (x * r*r - r)
@@ -272,14 +272,14 @@ oac_val32 celt_rcp_norm32(oac_val32 x) {
 }
 
 /** Reciprocal approximation (Q15 input, Q16 output) */
-oac_val32 celt_rcp(oac_val32 x) {
+oac_val32 oaci_celt_rcp(oac_val32 x) {
     int i;
     oac_val16 r;
     celt_sig_assert(x > 0);
     i = celt_ilog2(x);
 
     /* Compute the reciprocal of a Q15 number in the range [0, 1). */
-    r = celt_rcp_norm16(VSHR32(x, i - 15) - 32768);
+    r = oaci_celt_rcp_norm16(VSHR32(x, i - 15) - 32768);
 
     /* r is now the Q15 solution to 2/(n+1), with a maximum relative error
         of 7.05346E-5, a (relative) RMSE of 2.14418E-5, and a peak absolute
@@ -291,7 +291,7 @@ oac_val32 celt_rcp(oac_val32 x) {
 
 #ifndef DISABLE_FLOAT_API
 
-void celt_float2int16_c(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt) {
+void oaci_celt_float2int16_c(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt) {
     int i;
     for (i = 0; i < cnt; i++) {
         out[i] = FLOAT2INT16(in[i]);

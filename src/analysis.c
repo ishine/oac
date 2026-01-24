@@ -54,7 +54,7 @@
 
 # define TRANSITION_PENALTY 10
 
-static const float dct_table[128] = {
+static const float oaci_dct_table[128] = {
     0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f,
     0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f,
     0.351851f, 0.338330f, 0.311806f, 0.273300f, 0.224292f, 0.166664f, 0.102631f, 0.034654f,
@@ -161,7 +161,7 @@ static oac_val32 silk_resampler_down2_hp(
     return (oac_val32)hp_ener;
 }
 
-static oac_val32 downmix_and_resample(downmix_func downmix, const void *_x, oac_val32 *y, oac_val32 S[3], int subframe,
+static oac_val32 downmix_and_resample(downmix_func oaci_downmix, const void *_x, oac_val32 *y, oac_val32 S[3], int subframe,
                                       int offset, int c1, int c2, int C, int Fs) {
     VARDECL(oac_val32, tmp);
     int j;
@@ -178,7 +178,7 @@ static oac_val32 downmix_and_resample(downmix_func downmix, const void *_x, oac_
     } else if (Fs != 24000) celt_assert(0);
     ALLOC(tmp, subframe, oac_val32);
 
-    downmix(_x, tmp, subframe, offset, c1, c2, C);
+    oaci_downmix(_x, tmp, subframe, offset, c1, c2, C);
     if ((c2 == -2 && C == 2) || c2 > -1) {
         for (j = 0; j < subframe; j++) {
             tmp[j] = HALF32(tmp[j]);
@@ -208,21 +208,21 @@ static oac_val32 downmix_and_resample(downmix_func downmix, const void *_x, oac_
     return ret;
 }
 
-void tonality_analysis_init(TonalityAnalysisState *tonal, oac_int32 Fs) {
+void oaci_tonality_analysis_init(TonalityAnalysisState *tonal, oac_int32 Fs) {
     /* Initialize reusable fields. */
     tonal->arch = oac_select_arch();
     tonal->Fs = Fs;
     /* Clear remaining fields. */
-    tonality_analysis_reset(tonal);
+    oaci_tonality_analysis_reset(tonal);
 }
 
-void tonality_analysis_reset(TonalityAnalysisState *tonal) {
+void oaci_tonality_analysis_reset(TonalityAnalysisState *tonal) {
     /* Clear non-reusable fields. */
     char *start = (char*)&tonal->TONALITY_ANALYSIS_RESET_START;
     OAC_CLEAR(start, sizeof(TonalityAnalysisState) - (start - (char*)tonal));
 }
 
-void tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len) {
+void oaci_tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len) {
     int pos;
     int curr_lookahead;
     float tonality_max;
@@ -422,14 +422,14 @@ static int is_digital_silence32(const oac_val32* pcm, int frame_size, int channe
     return silence;
 }
 # else
-#  define is_digital_silence32(pcm, frame_size, channels, lsb_depth) is_digital_silence(pcm, frame_size, channels, \
+#  define is_digital_silence32(pcm, frame_size, channels, lsb_depth) oaci_is_digital_silence(pcm, frame_size, channels, \
     lsb_depth)
 # endif
 
 static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt_mode, const void *x, int len,
-                              int offset, int c1, int c2, int C, int lsb_depth, downmix_func downmix) {
+                              int offset, int c1, int c2, int C, int lsb_depth, downmix_func oaci_downmix) {
     int i, b;
-    const kiss_fft_state *kfft;
+    const kiss_fft_state *oaci_kfft;
     VARDECL(kiss_fft_cpx, in);
     VARDECL(kiss_fft_cpx, out);
     int N = 480, N2 = 240;
@@ -492,8 +492,8 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
         offset = 3*offset/2;
     }
 
-    kfft = celt_mode->mdct.kfft[0];
-    tonal->hp_ener_accum += (float)downmix_and_resample(downmix, x,
+    oaci_kfft = celt_mode->mdct.kfft[0];
+    tonal->hp_ener_accum += (float)downmix_and_resample(oaci_downmix, x,
           &tonal->inmem[tonal->mem_fill], tonal->downmix_state,
           IMIN(len, ANALYSIS_BUF_SIZE - tonal->mem_fill), offset, c1, c2, C, tonal->Fs);
     if (tonal->mem_fill + len < ANALYSIS_BUF_SIZE) {
@@ -522,7 +522,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     }
     OAC_MOVE(tonal->inmem, tonal->inmem + ANALYSIS_BUF_SIZE - 240, 240);
     remaining = len - (ANALYSIS_BUF_SIZE - tonal->mem_fill);
-    tonal->hp_ener_accum = (float)downmix_and_resample(downmix, x,
+    tonal->hp_ener_accum = (float)downmix_and_resample(oaci_downmix, x,
           &tonal->inmem[240], tonal->downmix_state, remaining,
           offset + ANALYSIS_BUF_SIZE - tonal->mem_fill, c1, c2, C, tonal->Fs);
     tonal->mem_fill = 240 + remaining;
@@ -535,7 +535,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
         RESTORE_STACK;
         return;
     }
-    oac_fft(kfft, in, out, tonal->arch);
+    oac_fft(oaci_kfft, in, out, tonal->arch);
 # ifndef FIXED_POINT
     /* If there's any NaN on the input, the entire output will be NaN, so we only need to check one value. */
     if (celt_isnan(out[0].r)) {
@@ -816,13 +816,13 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     for (i = 0; i < 8; i++) {
         float sum = 0;
         for (b = 0; b < 16; b++)
-            sum += dct_table[i*16 + b]*logE[b];
+            sum += oaci_dct_table[i*16 + b]*logE[b];
         BFCC[i] = sum;
     }
     for (i = 0; i < 8; i++) {
         float sum = 0;
         for (b = 0; b < 16; b++)
-            sum += dct_table[i*16 + b]*.5f*(tonal->highE[b] + tonal->lowE[b]);
+            sum += oaci_dct_table[i*16 + b]*.5f*(tonal->highE[b] + tonal->lowE[b]);
         midE[i] = sum;
     }
 
@@ -882,9 +882,9 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     features[23] = info->tonality_slope + 0.069216f;
     features[24] = tonal->lowECount - 0.067930f;
 
-    analysis_compute_dense(&layer0, layer_out, features);
-    analysis_compute_gru(&layer1, tonal->rnn_state, layer_out);
-    analysis_compute_dense(&layer2, frame_probs, tonal->rnn_state);
+    oaci_analysis_compute_dense(&oaci_layer0, layer_out, features);
+    oaci_analysis_compute_gru(&oaci_layer1, tonal->rnn_state, layer_out);
+    oaci_analysis_compute_dense(&oaci_layer2, frame_probs, tonal->rnn_state);
 
     /* Probability of speech or music vs noise */
     info->activity_probability = frame_probs[1];
@@ -905,9 +905,9 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     RESTORE_STACK;
 }
 
-void run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, const void *analysis_pcm,
+void oaci_run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, const void *analysis_pcm,
                   int analysis_frame_size, int frame_size, int c1, int c2, int C, oac_int32 Fs,
-                  int lsb_depth, downmix_func downmix, AnalysisInfo *analysis_info) {
+                  int lsb_depth, downmix_func oaci_downmix, AnalysisInfo *analysis_info) {
     int offset;
     int pcm_len;
 
@@ -920,7 +920,7 @@ void run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, co
         offset = analysis->analysis_offset;
         while (pcm_len > 0) {
             tonality_analysis(analysis, celt_mode, analysis_pcm, IMIN(Fs/50, pcm_len), offset, c1, c2, C, lsb_depth,
-            downmix);
+            oaci_downmix);
             offset += Fs/50;
             pcm_len -= Fs/50;
         }
@@ -929,7 +929,7 @@ void run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, co
         analysis->analysis_offset -= frame_size;
     }
 
-    tonality_get_info(analysis, analysis_info, frame_size);
+    oaci_tonality_get_info(analysis, analysis_info, frame_size);
 }
 
 #endif /* DISABLE_FLOAT_API */

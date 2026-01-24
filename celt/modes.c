@@ -375,12 +375,12 @@ CELTMode *oac_custom_mode_create(oac_int32 Fs, int frame_size, int *error) {
         goto failure;
 
     for (i = 0; i < mode->nbEBands; i++)
-        logN[i] = log2_frac(mode->eBands[i + 1] - mode->eBands[i], BITRES);
+        logN[i] = oaci_log2_frac(mode->eBands[i + 1] - mode->eBands[i], BITRES);
     mode->logN = logN;
 
-    compute_pulse_cache(mode, mode->maxLM);
+    oaci_compute_pulse_cache(mode, mode->maxLM);
 
-    if (clt_mdct_init(&mode->mdct, 2*mode->shortMdctSize*mode->nbShortMdcts,
+    if (oaci_clt_mdct_init(&mode->mdct, 2*mode->shortMdctSize*mode->nbShortMdcts,
            mode->maxLM, arch) == 0)
         goto failure;
 
@@ -423,7 +423,7 @@ void oac_custom_mode_destroy(CELTMode *mode) {
     oac_free((oac_int16*)mode->cache.index);
     oac_free((unsigned char*)mode->cache.bits);
     oac_free((unsigned char*)mode->cache.caps);
-    clt_mdct_clear(&mode->mdct, arch);
+    oaci_clt_mdct_clear(&mode->mdct, arch);
 
     oac_free((CELTMode *)mode);
 # else

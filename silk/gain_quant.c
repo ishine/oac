@@ -36,7 +36,7 @@
 #define INV_SCALE_Q16           ((65536*(((MAX_QGAIN_DB - MIN_QGAIN_DB)*128)/6))/(N_LEVELS_QGAIN - 1))
 
 /* Gain scalar quantization with hysteresis, uniform on log scale */
-void silk_gains_quant(
+void oaci_silk_gains_quant(
     oac_int8 ind[ MAX_NB_SUBFR ],                              /* O    gain indices                                */
     oac_int32 gain_Q16[ MAX_NB_SUBFR ],                        /* I/O  gains (quantized out)                       */
     oac_int8                   *prev_ind,                      /* I/O  last index in previous frame                */
@@ -47,7 +47,7 @@ void silk_gains_quant(
 
     for (k = 0; k < nb_subfr; k++) {
         /* Convert to log scale, scale, floor() */
-        ind[ k ] = silk_SMULWB( SCALE_Q16, silk_lin2log( gain_Q16[ k ] ) - OFFSET );
+        ind[ k ] = silk_SMULWB( SCALE_Q16, oaci_silk_lin2log( gain_Q16[ k ] ) - OFFSET );
 
         /* Round towards previous quantized gain (hysteresis) */
         if (ind[ k ] < *prev_ind) {
@@ -85,12 +85,12 @@ void silk_gains_quant(
         }
 
         /* Scale and convert to linear scale */
-        gain_Q16[ k ] = silk_log2lin( silk_min_32( silk_SMULWB( INV_SCALE_Q16, *prev_ind ) + OFFSET, 3967 ));  /* 3967 = 31 in Q7 */
+        gain_Q16[ k ] = oaci_silk_log2lin( silk_min_32( silk_SMULWB( INV_SCALE_Q16, *prev_ind ) + OFFSET, 3967 ));  /* 3967 = 31 in Q7 */
     }
 }
 
 /* Gains scalar dequantization, uniform on log scale */
-void silk_gains_dequant(
+void oaci_silk_gains_dequant(
     oac_int32 gain_Q16[ MAX_NB_SUBFR ],                        /* O    quantized gains                             */
     const oac_int8 ind[ MAX_NB_SUBFR ],                        /* I    gain indices                                */
     oac_int8                   *prev_ind,                      /* I/O  last index in previous frame                */
@@ -118,12 +118,12 @@ void silk_gains_dequant(
         *prev_ind = silk_LIMIT_int( *prev_ind, 0, N_LEVELS_QGAIN - 1 );
 
         /* Scale and convert to linear scale */
-        gain_Q16[ k ] = silk_log2lin( silk_min_32( silk_SMULWB( INV_SCALE_Q16, *prev_ind ) + OFFSET, 3967 ));  /* 3967 = 31 in Q7 */
+        gain_Q16[ k ] = oaci_silk_log2lin( silk_min_32( silk_SMULWB( INV_SCALE_Q16, *prev_ind ) + OFFSET, 3967 ));  /* 3967 = 31 in Q7 */
     }
 }
 
 /* Compute unique identifier of gain indices vector */
-oac_int32 silk_gains_ID(                                       /* O    returns unique identifier of gains          */
+oac_int32 oaci_silk_gains_ID(                                       /* O    returns unique identifier of gains          */
     const oac_int8 ind[ MAX_NB_SUBFR ],                        /* I    gain indices                                */
     const oac_int nb_subfr                                     /* I    number of subframes                         */
     ) {

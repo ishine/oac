@@ -155,7 +155,7 @@ OAC_EXPORT void oac_pcm_soft_clip(float *_x, int N, int C, float *declip_mem) {
 
 #endif
 
-int encode_size(int size, unsigned char *data) {
+int oaci_encode_size(int size, unsigned char *data) {
     if (size < 252) {
         data[0] = size;
         return 1;

@@ -41,7 +41,7 @@
 
 #ifndef FIXED_POINT
 
-oac_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch) {
+oac_val16 oaci_op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch) {
     int i, j;
     int pulsesLeft;
     float xy, yy;

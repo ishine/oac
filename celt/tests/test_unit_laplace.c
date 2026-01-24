@@ -57,7 +57,7 @@ int main(void) {
     int val[10000], decay[10000];
     ALLOC_STACK;
     ptr = (unsigned char *)malloc(DATA_SIZE);
-    ec_enc_init(&enc, ptr, DATA_SIZE);
+    oaci_ec_enc_init(&enc, ptr, DATA_SIZE);
 
     val[0] = 3; decay[0] = 6000;
     val[1] = 0; decay[1] = 5800;
@@ -67,15 +67,15 @@ int main(void) {
         decay[i] = rand()%11000 + 5000;
     }
     for (i = 0; i < 10000; i++)
-        ec_laplace_encode(&enc, &val[i],
+        oaci_ec_laplace_encode(&enc, &val[i],
             ec_laplace_get_start_freq(decay[i]), decay[i]);
 
-    ec_enc_done(&enc);
+    oaci_ec_enc_done(&enc);
 
-    ec_dec_init(&dec, ec_get_buffer(&enc), ec_range_bytes(&enc));
+    oaci_ec_dec_init(&dec, ec_get_buffer(&enc), ec_range_bytes(&enc));
 
     for (i = 0; i < 10000; i++) {
-        int d = ec_laplace_decode(&dec,
+        int d = oaci_ec_laplace_decode(&dec,
             ec_laplace_get_start_freq(decay[i]), decay[i]);
         if (d != val[i]) {
             fprintf (stderr, "Got %d instead of %d\n", d, val[i]);

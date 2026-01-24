@@ -59,7 +59,7 @@
 
 #ifdef CUSTOM_MODES
 
-int clt_mdct_init(mdct_lookup *l, int N, int maxshift, int arch) {
+int oaci_clt_mdct_init(mdct_lookup *l, int N, int maxshift, int arch) {
     int i;
     kiss_twiddle_scalar *trig;
     int shift;
@@ -96,7 +96,7 @@ int clt_mdct_init(mdct_lookup *l, int N, int maxshift, int arch) {
     return 1;
 }
 
-void clt_mdct_clear(mdct_lookup *l, int arch) {
+void oaci_clt_mdct_clear(mdct_lookup *l, int arch) {
     int i;
     for (i = 0; i <= l->maxshift; i++)
         oac_fft_free(l->kfft[i], arch);
@@ -106,8 +106,8 @@ void clt_mdct_clear(mdct_lookup *l, int arch) {
 #endif /* CUSTOM_MODES */
 
 /* Forward MDCT trashes the input array */
-#ifndef OVERRIDE_clt_mdct_forward
-void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar * OAC_RESTRICT out,
+#ifndef OVERRIDE_oaci_clt_mdct_forward
+void oaci_clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar * OAC_RESTRICT out,
                         const celt_coef *window, int overlap, int shift, int stride, int arch) {
     int i;
     int N, N2, N4;
@@ -231,10 +231,10 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
     }
     RESTORE_STACK;
 }
-#endif /* OVERRIDE_clt_mdct_forward */
+#endif /* OVERRIDE_oaci_clt_mdct_forward */
 
-#ifndef OVERRIDE_clt_mdct_backward
-void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar * OAC_RESTRICT out,
+#ifndef OVERRIDE_oaci_clt_mdct_backward
+void oaci_clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scalar * OAC_RESTRICT out,
                          const celt_coef * OAC_RESTRICT window, int overlap, int shift, int stride, int arch) {
     int i;
     int N, N2, N4;
@@ -351,4 +351,4 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_sca
         }
     }
 }
-#endif /* OVERRIDE_clt_mdct_backward */
+#endif /* OVERRIDE_oaci_clt_mdct_backward */

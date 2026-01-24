@@ -32,7 +32,7 @@
 #include "SigProc_FIX.h"
 
 /* Step up function, converts reflection coefficients to prediction coefficients */
-void silk_k2a_Q16(
+void oaci_silk_k2a_Q16(
     oac_int32                  *A_Q24,             /* O    Prediction coefficients [order] Q24                         */
     const oac_int32            *rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
     const oac_int32 order                          /* I    Prediction order                                            */

@@ -62,7 +62,7 @@ static OAC_INLINE void silk_NLSF2A_find_poly(
 }
 
 /* compute whitening filter coefficients from normalized line spectral frequencies */
-void silk_NLSF2A(
+void oaci_silk_NLSF2A(
     oac_int16                  *a_Q12,             /* O    monic whitening filter coefficients in Q12,  [ d ]          */
     const oac_int16            *NLSF,              /* I    normalized line spectral frequencies in Q15, [ d ]          */
     const oac_int d,                               /* I    filter order (should be even)                               */
@@ -101,8 +101,8 @@ void silk_NLSF2A(
         silk_assert(f_int < LSF_COS_TAB_SZ_FIX );
 
         /* Read start and end value from table */
-        cos_val = silk_LSFCosTab_FIX_Q12[ f_int ];                /* Q12 */
-        delta   = silk_LSFCosTab_FIX_Q12[ f_int + 1 ] - cos_val;  /* Q12, with a range of 0..200 */
+        cos_val = oaci_silk_LSFCosTab_FIX_Q12[ f_int ];                /* Q12 */
+        delta   = oaci_silk_LSFCosTab_FIX_Q12[ f_int + 1 ] - cos_val;  /* Q12, with a range of 0..200 */
 
         /* Linear interpolation */
         cos_LSF_QA[ordering[k]] = silk_RSHIFT_ROUND( silk_LSHIFT( cos_val, 8 ) + silk_MUL( delta, f_frac ), 20 - QA ); /* QA */
@@ -125,12 +125,12 @@ void silk_NLSF2A(
     }
 
     /* Convert int32 coefficients to Q12 int16 coefs */
-    silk_LPC_fit( a_Q12, a32_QA1, 12, QA + 1, d );
+    oaci_silk_LPC_fit( a_Q12, a32_QA1, 12, QA + 1, d );
 
-    for (i = 0; silk_LPC_inverse_pred_gain( a_Q12, d, arch ) == 0 && i < MAX_LPC_STABILIZE_ITERATIONS; i++) {
+    for (i = 0; oaci_silk_LPC_inverse_pred_gain( a_Q12, d, arch ) == 0 && i < MAX_LPC_STABILIZE_ITERATIONS; i++) {
         /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
         /* on the unscaled coefficients, convert to Q12 and measure again                   */
-        silk_bwexpander_32( a32_QA1, d, 65536 - silk_LSHIFT( 2, i ));
+        oaci_silk_bwexpander_32( a32_QA1, d, 65536 - silk_LSHIFT( 2, i ));
         for (k = 0; k < d; k++) {
             a_Q12[ k ] = (oac_int16)silk_RSHIFT_ROUND( a32_QA1[ k ], QA + 1 - 12 );            /* QA+1 -> Q12 */
         }

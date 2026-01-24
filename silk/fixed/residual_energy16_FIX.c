@@ -32,7 +32,7 @@
 #include "main_FIX.h"
 
 /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
-oac_int32 silk_residual_energy16_covar_FIX(
+oac_int32 oaci_silk_residual_energy16_covar_FIX(
     const oac_int16                *c,                                     /* I    Prediction vector                                                           */
     const oac_int32                *wXX,                                   /* I    Correlation matrix                                                          */
     const oac_int32                *wXx,                                   /* I    Correlation vector                                                          */

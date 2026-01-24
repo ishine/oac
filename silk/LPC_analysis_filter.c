@@ -39,14 +39,14 @@
 /* first d output samples are set to zero  */
 /*******************************************/
 
-/* OPT: Using celt_fir() for this function should be faster, but it may cause
+/* OPT: Using oaci_celt_fir() for this function should be faster, but it may cause
    integer overflows in intermediate values (not final results), which the
    current implementation silences by casting to unsigned. Enabling
    this should be safe in pretty much all cases, even though it is not technically
    C89-compliant. */
 #define USE_CELT_FIR 0
 
-void silk_LPC_analysis_filter(
+void oaci_silk_LPC_analysis_filter(
     oac_int16                  *out,               /* O    Output signal                                               */
     const oac_int16            *in,                /* I    Input signal                                                */
     const oac_int16            *B,                 /* I    MA prediction coefficients, Q12 [order]                     */
@@ -72,7 +72,7 @@ void silk_LPC_analysis_filter(
     for (j = 0; j < d; j++) {
         num[ j ] = -B[ j ];
     }
-    celt_fir( in + d, num, out + d, len - d, d, arch );
+    oaci_celt_fir( in + d, num, out + d, len - d, d, arch );
     for (j = 0; j < d; j++) {
         out[ j ] = 0;
     }

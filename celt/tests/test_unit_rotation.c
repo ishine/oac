@@ -51,14 +51,14 @@ void test_rotation(int N, int K) {
     celt_norm x1[MAX_SIZE];
     for (i = 0; i < N; i++)
         x1[i] = x0[i] = rand()%16777215 - 8388608;
-    exp_rotation(x1, N, 1, 1, K, SPREAD_NORMAL);
+    oaci_exp_rotation(x1, N, 1, 1, K, SPREAD_NORMAL);
     for (i = 0; i < N; i++) {
         err += (x0[i] - (double)x1[i])*(x0[i] - (double)x1[i]);
         ener += x0[i]*(double)x0[i];
     }
     snr0 = 20*log10(ener/err);
     err = ener = 0;
-    exp_rotation(x1, N, -1, 1, K, SPREAD_NORMAL);
+    oaci_exp_rotation(x1, N, -1, 1, K, SPREAD_NORMAL);
     for (i = 0; i < N; i++) {
         err += (x0[i] - (double)x1[i])*(x0[i] - (double)x1[i]);
         ener += x0[i]*(double)x0[i];

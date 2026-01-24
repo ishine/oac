@@ -40,7 +40,7 @@
 # include <xmmintrin.h>
 # include "arch.h"
 
-void xcorr_kernel_sse(const oac_val16 *x, const oac_val16 *y, oac_val32 sum[4], int len) {
+void oaci_xcorr_kernel_sse(const oac_val16 *x, const oac_val16 *y, oac_val32 sum[4], int len) {
     int j;
     __m128 xsum1, xsum2;
     xsum1 = _mm_loadu_ps(sum);
@@ -71,7 +71,7 @@ void xcorr_kernel_sse(const oac_val16 *x, const oac_val16 *y, oac_val32 sum[4], 
 }
 
 
-void dual_inner_prod_sse(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+void oaci_dual_inner_prod_sse(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
                          int N, oac_val32 *xy1, oac_val32 *xy2) {
     int i;
     __m128 xsum1, xsum2;
@@ -97,7 +97,7 @@ void dual_inner_prod_sse(const oac_val16 *x, const oac_val16 *y01, const oac_val
     }
 }
 
-oac_val32 celt_inner_prod_sse(const oac_val16 *x, const oac_val16 *y,
+oac_val32 oaci_celt_inner_prod_sse(const oac_val16 *x, const oac_val16 *y,
                               int N) {
     int i;
     float xy;
@@ -119,7 +119,7 @@ oac_val32 celt_inner_prod_sse(const oac_val16 *x, const oac_val16 *y,
     return xy;
 }
 
-void comb_filter_const_sse(oac_val32 *y, oac_val32 *x, int T, int N,
+void oaci_comb_filter_const_sse(oac_val32 *y, oac_val32 *x, int T, int N,
                            oac_val16 g10, oac_val16 g11, oac_val16 g12) {
     int i;
     __m128 x0v;

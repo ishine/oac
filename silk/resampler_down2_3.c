@@ -36,7 +36,7 @@
 #define ORDER_FIR                   4
 
 /* Downsample by a factor 2/3, low quality */
-void silk_resampler_down2_3(
+void oaci_silk_resampler_down2_3(
     oac_int32                  *S,                 /* I/O  State vector [ 6 ]                                          */
     oac_int16                  *out,               /* O    Output signal [ floor(2*inLen/3) ]                          */
     const oac_int16            *in,                /* I    Input signal [ inLen ]                                      */
@@ -57,26 +57,26 @@ void silk_resampler_down2_3(
         nSamplesIn = silk_min( inLen, RESAMPLER_MAX_BATCH_SIZE_IN );
 
         /* Second-order AR filter (output in Q8) */
-        silk_resampler_private_AR2( &S[ ORDER_FIR ], &buf[ ORDER_FIR ], in,
-            silk_Resampler_2_3_COEFS_LQ, nSamplesIn );
+        oaci_silk_resampler_private_AR2( &S[ ORDER_FIR ], &buf[ ORDER_FIR ], in,
+            oaci_silk_Resampler_2_3_COEFS_LQ, nSamplesIn );
 
         /* Interpolate filtered signal */
         buf_ptr = buf;
         counter = nSamplesIn;
         while (counter > 2) {
             /* Inner product */
-            res_Q6 = silk_SMULWB(         buf_ptr[ 0 ], silk_Resampler_2_3_COEFS_LQ[ 2 ] );
-            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 1 ], silk_Resampler_2_3_COEFS_LQ[ 3 ] );
-            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 2 ], silk_Resampler_2_3_COEFS_LQ[ 5 ] );
-            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 3 ], silk_Resampler_2_3_COEFS_LQ[ 4 ] );
+            res_Q6 = silk_SMULWB(         buf_ptr[ 0 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 2 ] );
+            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 1 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 3 ] );
+            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 2 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 5 ] );
+            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 3 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 4 ] );
 
             /* Scale down, saturate and store in output array */
             *out++ = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ));
 
-            res_Q6 = silk_SMULWB(         buf_ptr[ 1 ], silk_Resampler_2_3_COEFS_LQ[ 4 ] );
-            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 2 ], silk_Resampler_2_3_COEFS_LQ[ 5 ] );
-            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 3 ], silk_Resampler_2_3_COEFS_LQ[ 3 ] );
-            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 4 ], silk_Resampler_2_3_COEFS_LQ[ 2 ] );
+            res_Q6 = silk_SMULWB(         buf_ptr[ 1 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 4 ] );
+            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 2 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 5 ] );
+            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 3 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 3 ] );
+            res_Q6 = silk_SMLAWB( res_Q6, buf_ptr[ 4 ], oaci_silk_Resampler_2_3_COEFS_LQ[ 2 ] );
 
             /* Scale down, saturate and store in output array */
             *out++ = (oac_int16)silk_SAT16( silk_RSHIFT_ROUND( res_Q6, 6 ));

@@ -57,7 +57,7 @@ static oac_int silk_QueryEncoder(                      /* O    Returns error cod
 /* Encoder functions                    */
 /****************************************/
 
-oac_int silk_Get_Encoder_Size(                         /* O    Returns error code                              */
+oac_int oaci_silk_Get_Encoder_Size(                         /* O    Returns error code                              */
     oac_int                        *encSizeBytes,      /* O    Number of bytes in SILK encoder state           */
     oac_int channels                                   /* I    Number of channels                              */
     ) {
@@ -75,7 +75,7 @@ oac_int silk_Get_Encoder_Size(                         /* O    Returns error cod
 /*************************/
 /* Init or Reset encoder */
 /*************************/
-oac_int silk_InitEncoder(                              /* O    Returns error code                              */
+oac_int oaci_silk_InitEncoder(                              /* O    Returns error code                              */
     void                            *encState,          /* I/O  State                                           */
     int channels,                                       /* I    Number of channels                              */
     int arch,                                           /* I    Run-time architecture                           */
@@ -89,7 +89,7 @@ oac_int silk_InitEncoder(                              /* O    Returns error cod
     /* Reset encoder. Skip second encoder state for mono. */
     silk_memset( psEnc, 0, sizeof(silk_encoder) - (channels == 1)*sizeof(silk_encoder_state_Fxx));
     for (n = 0; n < channels; n++) {
-        if (ret += silk_init_encoder( &psEnc->state_Fxx[ n ], arch )) {
+        if (ret += oaci_silk_init_encoder( &psEnc->state_Fxx[ n ], arch )) {
             celt_assert( 0 );
         }
     }
@@ -144,7 +144,7 @@ static oac_int silk_QueryEncoder(                      /* O    Returns error cod
 /**************************/
 /* Note: if prefillFlag is set, the input must contain 10 ms of audio, irrespective of what                     */
 /* encControl->payloadSize_ms is set to                                                                         */
-oac_int silk_Encode(                                   /* O    Returns error code                              */
+oac_int oaci_silk_Encode(                                   /* O    Returns error code                              */
     void                            *encState,          /* I/O  State                                           */
     silk_EncControlStruct           *encControl,        /* I    Control status                                  */
     const oac_res                  *samplesIn,         /* I    Speech sample input vector                      */
@@ -175,7 +175,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
         psEnc->state_Fxx[ n ].sCmn.nFramesEncoded = 0;
     }
     /* Check values in encoder control structure */
-    if ((ret = check_control_input( encControl )) != 0) {
+    if ((ret = oaci_check_control_input( encControl )) != 0) {
         celt_assert( 0 );
         RESTORE_STACK;
         return ret;
@@ -185,7 +185,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
 
     if (encControl->nChannelsInternal > psEnc->nChannelsInternal) {
         /* Mono -> Stereo transition: init state of second channel and stereo state */
-        ret += silk_init_encoder( &psEnc->state_Fxx[ 1 ], psEnc->state_Fxx[ 0 ].sCmn.arch );
+        ret += oaci_silk_init_encoder( &psEnc->state_Fxx[ 1 ], psEnc->state_Fxx[ 0 ].sCmn.arch );
         silk_memset( psEnc->sStereo.pred_prev_Q13, 0, sizeof(psEnc->sStereo.pred_prev_Q13));
         silk_memset( psEnc->sStereo.sSide, 0, sizeof(psEnc->sStereo.sSide));
         psEnc->sStereo.mid_side_amp_Q0[ 0 ] = 0;
@@ -226,7 +226,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
         }
         /* Reset Encoder */
         for (n = 0; n < encControl->nChannelsInternal; n++) {
-            ret = silk_init_encoder( &psEnc->state_Fxx[ n ], psEnc->state_Fxx[ n ].sCmn.arch );
+            ret = oaci_silk_init_encoder( &psEnc->state_Fxx[ n ], psEnc->state_Fxx[ n ].sCmn.arch );
             /* Restore the variable LP state. */
             if (prefillFlag == 2) {
                 psEnc->state_Fxx[ n ].sCmn.sLP = save_LP;
@@ -259,7 +259,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
     for (n = 0; n < encControl->nChannelsInternal; n++) {
         /* Force the side channel to the same rate as the mid */
         oac_int force_fs_kHz = (n == 1) ? psEnc->state_Fxx[0].sCmn.fs_kHz : 0;
-        if ((ret = silk_control_encoder( &psEnc->state_Fxx[ n ], encControl, psEnc->allowBandwidthSwitch, n,
+        if ((ret = oaci_silk_control_encoder( &psEnc->state_Fxx[ n ], encControl, psEnc->allowBandwidthSwitch, n,
         force_fs_kHz )) != 0) {
             silk_assert( 0 );
             RESTORE_STACK;
@@ -301,7 +301,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                 sizeof(psEnc->state_Fxx[ 1 ].sCmn.resampler_state));
             }
 
-            ret += silk_resampler( &psEnc->state_Fxx[ 0 ].sCmn.resampler_state,
+            ret += oaci_silk_resampler( &psEnc->state_Fxx[ 0 ].sCmn.resampler_state,
                 &psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ psEnc->state_Fxx[ 0 ].sCmn.inputBufIx + 2 ], buf,
             nSamplesFromInput );
             psEnc->state_Fxx[ 0 ].sCmn.inputBufIx += nSamplesToBuffer;
@@ -311,7 +311,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
             for (n = 0; n < nSamplesFromInput; n++) {
                 buf[ n ] = RES2INT16(samplesIn[ 2*n + 1 ]);
             }
-            ret += silk_resampler( &psEnc->state_Fxx[ 1 ].sCmn.resampler_state,
+            ret += oaci_silk_resampler( &psEnc->state_Fxx[ 1 ].sCmn.resampler_state,
                 &psEnc->state_Fxx[ 1 ].sCmn.inputBuf[ psEnc->state_Fxx[ 1 ].sCmn.inputBufIx + 2 ], buf,
             nSamplesFromInput );
 
@@ -322,12 +322,12 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                 sum = RES2INT16(samplesIn[ 2*n ] + samplesIn[ 2*n + 1 ]);
                 buf[ n ] = (oac_int16)silk_RSHIFT_ROUND( sum,  1 );
             }
-            ret += silk_resampler( &psEnc->state_Fxx[ 0 ].sCmn.resampler_state,
+            ret += oaci_silk_resampler( &psEnc->state_Fxx[ 0 ].sCmn.resampler_state,
                 &psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ psEnc->state_Fxx[ 0 ].sCmn.inputBufIx + 2 ], buf,
             nSamplesFromInput );
             /* On the first mono frame, average the results for the two resampler states  */
             if (psEnc->nPrevChannelsInternal == 2 && psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded == 0) {
-                ret += silk_resampler( &psEnc->state_Fxx[ 1 ].sCmn.resampler_state,
+                ret += oaci_silk_resampler( &psEnc->state_Fxx[ 1 ].sCmn.resampler_state,
                    &psEnc->state_Fxx[ 1 ].sCmn.inputBuf[ psEnc->state_Fxx[ 1 ].sCmn.inputBufIx + 2 ], buf,
                 nSamplesFromInput );
                 for (n = 0; n < psEnc->state_Fxx[ 0 ].sCmn.frame_length; n++) {
@@ -342,7 +342,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
             for (n = 0; n < nSamplesFromInput; n++) {
                 buf[n] = RES2INT16(samplesIn[n]);
             }
-            ret += silk_resampler( &psEnc->state_Fxx[ 0 ].sCmn.resampler_state,
+            ret += oaci_silk_resampler( &psEnc->state_Fxx[ 0 ].sCmn.resampler_state,
                 &psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ psEnc->state_Fxx[ 0 ].sCmn.inputBufIx + 2 ], buf,
             nSamplesFromInput );
             psEnc->state_Fxx[ 0 ].sCmn.inputBufIx += nSamplesToBuffer;
@@ -367,7 +367,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                 oac_uint8 iCDF[ 2 ] = { 0, 0 };
                 iCDF[ 0 ] = 256 - silk_RSHIFT( 256,
                     (psEnc->state_Fxx[ 0 ].sCmn.nFramesPerPacket + 1)*encControl->nChannelsInternal );
-                ec_enc_icdf( psRangeEnc, 0, iCDF, 8 );
+                oaci_ec_enc_icdf( psRangeEnc, 0, iCDF, 8 );
                 curr_nBitsUsedLBRR = ec_tell( psRangeEnc );
 
                 /* Encode any LBRR data from previous packet */
@@ -379,8 +379,8 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                     }
                     psEnc->state_Fxx[ n ].sCmn.LBRR_flag = LBRR_symbol > 0 ? 1 : 0;
                     if (LBRR_symbol && psEnc->state_Fxx[ n ].sCmn.nFramesPerPacket > 1) {
-                        ec_enc_icdf( psRangeEnc, LBRR_symbol - 1,
-                        silk_LBRR_flags_iCDF_ptr[ psEnc->state_Fxx[ n ].sCmn.nFramesPerPacket - 2 ], 8 );
+                        oaci_ec_enc_icdf( psRangeEnc, LBRR_symbol - 1,
+                        oaci_silk_LBRR_flags_iCDF_ptr[ psEnc->state_Fxx[ n ].sCmn.nFramesPerPacket - 2 ], 8 );
                     }
                 }
 
@@ -391,10 +391,10 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                             oac_int condCoding;
 
                             if (encControl->nChannelsInternal == 2 && n == 0) {
-                                silk_stereo_encode_pred( psRangeEnc, psEnc->sStereo.predIx[ i ] );
+                                oaci_silk_stereo_encode_pred( psRangeEnc, psEnc->sStereo.predIx[ i ] );
                                 /* For LBRR data there's no need to code the mid-only flag if the side-channel LBRR flag is set */
                                 if (psEnc->state_Fxx[ 1 ].sCmn.LBRR_flags[ i ] == 0) {
-                                    silk_stereo_encode_mid_only( psRangeEnc, psEnc->sStereo.mid_only_flags[ i ] );
+                                    oaci_silk_stereo_encode_mid_only( psRangeEnc, psEnc->sStereo.mid_only_flags[ i ] );
                                 }
                             }
                             /* Use conditional coding if previous frame available */
@@ -403,8 +403,8 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                             } else {
                                 condCoding = CODE_INDEPENDENTLY;
                             }
-                            silk_encode_indices( &psEnc->state_Fxx[ n ].sCmn, psRangeEnc, i, 1, condCoding );
-                            silk_encode_pulses( psRangeEnc, psEnc->state_Fxx[ n ].sCmn.indices_LBRR[i].signalType,
+                            oaci_silk_encode_indices( &psEnc->state_Fxx[ n ].sCmn, psRangeEnc, i, 1, condCoding );
+                            oaci_silk_encode_pulses( psRangeEnc, psEnc->state_Fxx[ n ].sCmn.indices_LBRR[i].signalType,
                             psEnc->state_Fxx[ n ].sCmn.indices_LBRR[i].quantOffsetType,
                                 psEnc->state_Fxx[ n ].sCmn.pulses_LBRR[ i ], psEnc->state_Fxx[ n ].sCmn.frame_length );
                         }
@@ -419,7 +419,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                 curr_nBitsUsedLBRR = ec_tell( psRangeEnc ) - curr_nBitsUsedLBRR;
             }
 
-            silk_HP_variable_cutoff( psEnc->state_Fxx );
+            oaci_silk_HP_variable_cutoff( psEnc->state_Fxx );
 
             /* Total target bits for packet */
             nBits = silk_DIV32_16( silk_MUL( encControl->bitRate, encControl->payloadSize_ms ), 1000 );
@@ -458,7 +458,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
 
             /* Convert Left/Right to Mid/Side */
             if (encControl->nChannelsInternal == 2) {
-                silk_stereo_LR_to_MS( &psEnc->sStereo, &psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ 2 ],
+                oaci_silk_stereo_LR_to_MS( &psEnc->sStereo, &psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ 2 ],
                 &psEnc->state_Fxx[ 1 ].sCmn.inputBuf[ 2 ],
                     psEnc->sStereo.predIx[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ],
                 &psEnc->sStereo.mid_only_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ],
@@ -488,10 +488,10 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                     psEnc->state_Fxx[ 1 ].sCmn.VAD_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ] = 0;
                 }
                 if (!prefillFlag) {
-                    silk_stereo_encode_pred( psRangeEnc,
+                    oaci_silk_stereo_encode_pred( psRangeEnc,
                     psEnc->sStereo.predIx[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ] );
                     if (psEnc->state_Fxx[ 1 ].sCmn.VAD_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ] == 0) {
-                        silk_stereo_encode_mid_only( psRangeEnc,
+                        oaci_silk_stereo_encode_mid_only( psRangeEnc,
                         psEnc->sStereo.mid_only_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ] );
                     }
                 }
@@ -534,7 +534,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                 if (channelRate_bps > 0) {
                     oac_int condCoding;
 
-                    silk_control_SNR( &psEnc->state_Fxx[ n ].sCmn, channelRate_bps );
+                    oaci_silk_control_SNR( &psEnc->state_Fxx[ n ].sCmn, channelRate_bps );
 
                     /* Use independent coding if no previous frame available */
                     if (psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded - n <= 0) {
@@ -571,7 +571,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
                     flags |= psEnc->state_Fxx[ n ].sCmn.LBRR_flag;
                 }
                 if (!prefillFlag) {
-                    ec_enc_patch_initial_bits( psRangeEnc, flags,
+                    oaci_ec_enc_patch_initial_bits( psRangeEnc, flags,
                         (psEnc->state_Fxx[ 0 ].sCmn.nFramesPerPacket + 1)*encControl->nChannelsInternal );
                 }
 
@@ -625,7 +625,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
     }
 
     encControl->signalType = psEnc->state_Fxx[0].sCmn.indices.signalType;
-    encControl->offset = silk_Quantization_Offsets_Q10
+    encControl->offset = oaci_silk_Quantization_Offsets_Q10
                          [ psEnc->state_Fxx[0].sCmn.indices.signalType>>1 ]
                          [ psEnc->state_Fxx[0].sCmn.indices.quantOffsetType ];
     RESTORE_STACK;

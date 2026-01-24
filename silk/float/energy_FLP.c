@@ -32,7 +32,7 @@
 #include "SigProc_FLP.h"
 
 /* sum of squares of a silk_float array, with result as double */
-double silk_energy_FLP(
+double oaci_silk_energy_FLP(
     const silk_float    *data,
     oac_int dataSize)                                {
     oac_int i;

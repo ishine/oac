@@ -36,7 +36,7 @@
 #include "main_FIX.h"
 
 /* Calculates correlation vector X'*t */
-void silk_corrVector_FIX(
+void oaci_silk_corrVector_FIX(
     const oac_int16                *x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
     const oac_int16                *t,                                     /* I    Target vector [L]                                                           */
     const oac_int L,                                                       /* I    Length of vectors                                                           */
@@ -65,14 +65,14 @@ void silk_corrVector_FIX(
     } else {
         silk_assert( rshifts == 0 );
         for (lag = 0; lag < order; lag++) {
-            Xt[ lag ] = silk_inner_prod_aligned( ptr1, ptr2, L, arch ); /* X[:,lag]'*t */
+            Xt[ lag ] = oaci_silk_inner_prod_aligned( ptr1, ptr2, L, arch ); /* X[:,lag]'*t */
             ptr1--; /* Go to next column of X */
         }
     }
 }
 
 /* Calculates correlation matrix X'*X */
-void silk_corrMatrix_FIX(
+void oaci_silk_corrMatrix_FIX(
     const oac_int16                *x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
     const oac_int L,                                                       /* I    Length of vectors                                                           */
     const oac_int order,                                                   /* I    Max lag for correlation                                                     */
@@ -86,7 +86,7 @@ void silk_corrMatrix_FIX(
     const oac_int16 *ptr1, *ptr2;
 
     /* Calculate energy to find shift used to fit in 32 bits */
-    silk_sum_sqr_shift( nrg, rshifts, x, L + order - 1 );
+    oaci_silk_sum_sqr_shift( nrg, rshifts, x, L + order - 1 );
     energy = *nrg;
 
     /* Calculate energy of first column (0) of X: X[:,0]'*X[:,0] */
@@ -131,7 +131,7 @@ void silk_corrMatrix_FIX(
     } else {
         for (lag = 1; lag < order; lag++) {
             /* Inner product of column 0 and column lag: X[:,0]'*X[:,lag] */
-            energy = silk_inner_prod_aligned( ptr1, ptr2, L, arch );
+            energy = oaci_silk_inner_prod_aligned( ptr1, ptr2, L, arch );
             matrix_ptr( XX, lag, 0, order ) = energy;
             matrix_ptr( XX, 0, lag, order ) = energy;
             /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */

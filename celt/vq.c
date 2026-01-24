@@ -40,28 +40,28 @@
 #include "pitch.h"
 
 #if defined(FIXED_POINT)
-void norm_scaleup(celt_norm *X, int N, int shift) {
+void oaci_norm_scaleup(celt_norm *X, int N, int shift) {
     int i;
     celt_assert(shift >= 0);
     if (shift <= 0) return;
     for (i = 0; i < N; i++) X[i] = SHL32(X[i], shift);
 }
 
-void norm_scaledown(celt_norm *X, int N, int shift) {
+void oaci_norm_scaledown(celt_norm *X, int N, int shift) {
     int i;
     celt_assert(shift >= 0);
     if (shift <= 0) return;
     for (i = 0; i < N; i++) X[i] = PSHR32(X[i], shift);
 }
 
-oac_val32 celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch) {
+oac_val32 oaci_celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch) {
     int i;
     oac_val32 sum = 0;
     (void)arch;
     for (i = 0; i < len; i++) sum += x[i]*y[i];
     return sum;
 }
-oac_val32 celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch) {
+oac_val32 oaci_celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch) {
     int i;
     oac_val64 sum = 0;
     (void)arch;
@@ -77,7 +77,7 @@ static void exp_rotation1(celt_norm *X, int len, int stride, oac_val16 c, oac_va
     celt_norm *Xptr;
     Xptr = X;
     ms = NEG16(s);
-    norm_scaledown(X, len, NORM_SHIFT - 14);
+    oaci_norm_scaledown(X, len, NORM_SHIFT - 14);
     for (i = 0; i < len - stride; i++) {
         celt_norm x1, x2;
         x1 = Xptr[0];
@@ -93,11 +93,11 @@ static void exp_rotation1(celt_norm *X, int len, int stride, oac_val16 c, oac_va
         Xptr[stride] = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x2),  s, x1), 15));
         *Xptr--      = EXTRACT16(PSHR32(MAC16_16(MULT16_16(c, x1), ms, x2), 15));
     }
-    norm_scaleup(X, len, NORM_SHIFT - 14);
+    oaci_norm_scaleup(X, len, NORM_SHIFT - 14);
 }
 #endif /* OVERRIDE_vq_exp_rotation1 */
 
-void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread) {
+void oaci_exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread) {
     static const int SPREAD_FACTOR[3] = {15, 10, 5};
     int i;
     oac_val16 c, s;
@@ -109,11 +109,11 @@ void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread)
         return;
     factor = SPREAD_FACTOR[spread - 1];
 
-    gain = celt_div((oac_val32)MULT16_16(Q15_ONE, len), (oac_val32)(len + factor*K));
+    gain = oaci_celt_div((oac_val32)MULT16_16(Q15_ONE, len), (oac_val32)(len + factor*K));
     theta = HALF16(MULT16_16_Q15(gain, gain));
 
-    c = celt_cos_norm(EXTEND32(theta));
-    s = celt_cos_norm(EXTEND32(SUB16(Q15ONE, theta))); /*  sin(theta) */
+    c = oaci_celt_cos_norm(EXTEND32(theta));
+    s = oaci_celt_cos_norm(EXTEND32(SUB16(Q15ONE, theta))); /*  sin(theta) */
 
     if (len >= 8*stride) {
         stride2 = 1;
@@ -152,7 +152,7 @@ static void normalise_residual(int * OAC_RESTRICT iy, celt_norm * OAC_RESTRICT X
     k = celt_ilog2(Ryy)>>1;
 #endif
     t = VSHR32(Ryy, 2*(k - 7) - 15);
-    g = MULT32_32_Q31(celt_rsqrt_norm32(t), gain);
+    g = MULT32_32_Q31(oaci_celt_rsqrt_norm32(t), gain);
     i = 0;
     (void)shift;
 #if defined(FIXED_POINT)
@@ -178,7 +178,7 @@ static unsigned extract_collapse_mask(int *iy, int N, int B) {
     if (B <= 1)
         return 1;
     /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
-       exp_rotation().*/
+       oaci_exp_rotation().*/
     N0 = celt_udiv(N, B);
     collapse_mask = 0;
     i = 0; do {
@@ -192,7 +192,7 @@ static unsigned extract_collapse_mask(int *iy, int N, int B) {
     return collapse_mask;
 }
 
-oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
+oac_val16 oaci_op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
     VARDECL(celt_norm, y);
     VARDECL(int, signx);
     int i, j;
@@ -207,9 +207,9 @@ oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
     ALLOC(signx, N, int);
 #ifdef FIXED_POINT
     {
-        int shift = (celt_ilog2(1 + celt_inner_prod_norm_shift(X, X, N, arch)) + 1)/2;
+        int shift = (celt_ilog2(1 + oaci_celt_inner_prod_norm_shift(X, X, N, arch)) + 1)/2;
         shift = IMAX(0, shift + (NORM_SHIFT - 14) - 14);
-        norm_scaledown(X, N, shift);
+        oaci_norm_scaledown(X, N, shift);
     }
 #endif
     /* Get rid of the sign */
@@ -249,10 +249,10 @@ oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
             sum = QCONST16(1.f, 14);
         }
 #ifdef FIXED_POINT
-        rcp = EXTRACT16(MULT16_32_Q16(K, celt_rcp(sum)));
+        rcp = EXTRACT16(MULT16_32_Q16(K, oaci_celt_rcp(sum)));
 #else
         /* Using K+e with e < 1 guarantees we cannot get more than K pulses. */
-        rcp = EXTRACT16(MULT16_32_Q16(K + 0.8f, celt_rcp(sum)));
+        rcp = EXTRACT16(MULT16_32_Q16(K + 0.8f, oaci_celt_rcp(sum)));
 #endif
         j = 0; do {
 #ifdef FIXED_POINT
@@ -361,28 +361,28 @@ oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
 RESTORE_STACK;
 RESTORE_STACK;
 RESTORE_STACK;
-unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
+unsigned oaci_alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
                    oac_val32 gain, int resynth, int arch) {
     VARDECL(int, iy);
     oac_val32 yy;
     unsigned collapse_mask;
     SAVE_STACK;
 
-    celt_assert2(K > 0, "alg_quant() needs at least one pulse");
-    celt_assert2(N > 1, "alg_quant() needs at least two dimensions");
+    celt_assert2(K > 0, "oaci_alg_quant() needs at least one pulse");
+    celt_assert2(N > 1, "oaci_alg_quant() needs at least two dimensions");
 
     /* Covers vectorization by up to 4. */
     ALLOC(iy, N + 3, int);
 
-    exp_rotation(X, N, 1, B, K, spread);
+    oaci_exp_rotation(X, N, 1, B, K, spread);
 
-    yy = op_pvq_search(X, iy, K, N, arch);
+    yy = oaci_op_pvq_search(X, iy, K, N, arch);
     collapse_mask = extract_collapse_mask(iy, N, B);
-    encode_pulses(iy, N, K, enc);
+    oaci_encode_pulses(iy, N, K, enc);
     if (resynth) normalise_residual(iy, X, N, yy, gain, 0);
 
     if (resynth)
-        exp_rotation(X, N, -1, B, K, spread);
+        oaci_exp_rotation(X, N, -1, B, K, spread);
 
     RESTORE_STACK;
     return collapse_mask;
@@ -390,7 +390,7 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
 
 /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
-unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
+unsigned oaci_alg_unquant(celt_norm *X, int N, int K, int spread, int B,
                      ec_dec *dec, oac_val32 gain) {
     oac_val32 Ryy;
     unsigned collapse_mask;
@@ -398,19 +398,19 @@ unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
     int yy_shift = 0;
     SAVE_STACK;
 
-    celt_assert2(K > 0, "alg_unquant() needs at least one pulse");
-    celt_assert2(N > 1, "alg_unquant() needs at least two dimensions");
+    celt_assert2(K > 0, "oaci_alg_unquant() needs at least one pulse");
+    celt_assert2(N > 1, "oaci_alg_unquant() needs at least two dimensions");
     ALLOC(iy, N, int);
-    Ryy = decode_pulses(iy, N, K, dec);
+    Ryy = oaci_decode_pulses(iy, N, K, dec);
     normalise_residual(iy, X, N, Ryy, gain, yy_shift);
-    exp_rotation(X, N, -1, B, K, spread);
+    oaci_exp_rotation(X, N, -1, B, K, spread);
     collapse_mask = extract_collapse_mask(iy, N, B);
     RESTORE_STACK;
     return collapse_mask;
 }
 
-#ifndef OVERRIDE_renormalise_vector
-void renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch) {
+#ifndef OVERRIDE_oaci_renormalise_vector
+void oaci_renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch) {
     int i;
 # ifdef FIXED_POINT
     int k;
@@ -419,25 +419,25 @@ void renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch) {
     oac_val16 g;
     oac_val32 t;
     celt_norm *xptr;
-    norm_scaledown(X, N, NORM_SHIFT - 14);
-    E = EPSILON + celt_inner_prod_norm(X, X, N, arch);
+    oaci_norm_scaledown(X, N, NORM_SHIFT - 14);
+    E = EPSILON + oaci_celt_inner_prod_norm(X, X, N, arch);
 # ifdef FIXED_POINT
     k = celt_ilog2(E)>>1;
 # endif
     t = VSHR32(E, 2*(k - 7));
-    g = MULT32_32_Q31(celt_rsqrt_norm(t), gain);
+    g = MULT32_32_Q31(oaci_celt_rsqrt_norm(t), gain);
 
     xptr = X;
     for (i = 0; i < N; i++) {
         *xptr = EXTRACT16(PSHR32(MULT16_16(g, *xptr), k + 15 - 14));
         xptr++;
     }
-    norm_scaleup(X, N, NORM_SHIFT - 14);
-    /*return celt_sqrt(E);*/
+    oaci_norm_scaleup(X, N, NORM_SHIFT - 14);
+    /*return oaci_celt_sqrt(E);*/
 }
-#endif /* OVERRIDE_renormalise_vector */
+#endif /* OVERRIDE_oaci_renormalise_vector */
 
-oac_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch) {
+oac_int32 oaci_stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch) {
     int i;
     int itheta;
     oac_val32 mid, side;
@@ -453,11 +453,11 @@ oac_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int 
             Eside = MAC16_16(Eside, s, s);
         }
     } else {
-        Emid += celt_inner_prod_norm_shift(X, X, N, arch);
-        Eside += celt_inner_prod_norm_shift(Y, Y, N, arch);
+        Emid += oaci_celt_inner_prod_norm_shift(X, X, N, arch);
+        Eside += oaci_celt_inner_prod_norm_shift(Y, Y, N, arch);
     }
-    mid = celt_sqrt32(Emid);
-    side = celt_sqrt32(Eside);
+    mid = oaci_celt_sqrt32(Emid);
+    side = oaci_celt_sqrt32(Eside);
 #if defined(FIXED_POINT)
     itheta = celt_atan2p_norm(side, mid);
 #else
@@ -484,7 +484,7 @@ static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int s
     }
 #ifdef FIXED_POINT
     sum_shift = (29 - celt_ilog2(sum))>>1;
-    mag = celt_rsqrt_norm32(SHL32(sum, 2*sum_shift + 1));
+    mag = oaci_celt_rsqrt_norm32(SHL32(sum, 2*sum_shift + 1));
     for (i = 0; i < N; i++) {
         X[i] = VSHR32(MULT16_32_Q15(X[i], MULT32_32_Q31(mag, gain)), shift - sum_shift + 29 - NORM_SHIFT);
     }
@@ -496,7 +496,7 @@ static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int s
 #endif
 }
 
-unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_val32 gain, int resynth) {
+unsigned oaci_cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_val32 gain, int resynth) {
     int i;
     int face = 0;
     int K;
@@ -521,12 +521,12 @@ unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_val32
         }
     }
     sign = X[face] < 0;
-    ec_enc_uint(enc, face, N);
-    ec_enc_bits(enc, sign, 1);
+    oaci_ec_enc_uint(enc, face, N);
+    oaci_ec_enc_bits(enc, sign, 1);
 #ifdef FIXED_POINT
     if (faceval != 0) {
         int face_shift = 30 - celt_ilog2(faceval);
-        norm = celt_rcp_norm32(SHL32(faceval, face_shift));
+        norm = oaci_celt_rcp_norm32(SHL32(faceval, face_shift));
         norm = MULT16_32_Q15(K, norm);
         for (i = 0; i < N; i++) {
             /* By computing X[i]+faceval inside the shift, the result is guaranteed non-negative. */
@@ -542,7 +542,7 @@ unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_val32
     }
 #endif
     for (i = 0; i < N; i++) {
-        if (i != face) ec_enc_bits(enc, iy[i], res);
+        if (i != face) oaci_ec_enc_bits(enc, iy[i], res);
     }
     if (resynth) {
         cubic_synthesis(X, iy, N, K, face, sign, gain);
@@ -551,7 +551,7 @@ unsigned cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_val32
     return (1<<B) - 1;
 }
 
-unsigned cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, oac_val32 gain) {
+unsigned oaci_cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, oac_val32 gain) {
     int i;
     int face;
     int sign;
@@ -567,10 +567,10 @@ unsigned cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, oac_val
         RESTORE_STACK;
         return 0;
     }
-    face = ec_dec_uint(dec, N);
-    sign = ec_dec_bits(dec, 1);
+    face = oaci_ec_dec_uint(dec, N);
+    sign = oaci_ec_dec_bits(dec, 1);
     for (i = 0; i < N; i++) {
-        if (i != face) iy[i] = ec_dec_bits(dec, res);
+        if (i != face) iy[i] = oaci_ec_dec_bits(dec, res);
     }
     iy[face] = 0;
     cubic_synthesis(X, iy, N, K, face, sign, gain);

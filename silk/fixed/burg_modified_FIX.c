@@ -42,7 +42,7 @@
 #define MAX_RSHIFTS                 (32 - QA)
 
 /* Compute reflection coefficients from input signal */
-void silk_burg_modified_c(
+void oaci_silk_burg_modified_c(
     oac_int32                  *res_nrg,           /* O    Residual energy                                             */
     oac_int                    *res_nrg_Q,         /* O    Residual energy Q value                                     */
     oac_int32 A_Q16[],                             /* O    Prediction coefficients (length order)                      */
@@ -67,7 +67,7 @@ void silk_burg_modified_c(
     celt_assert( subfr_length*nb_subfr <= MAX_FRAME_SIZE );
 
     /* Compute autocorrelations, added over subframes */
-    C0_64 = silk_inner_prod16( x, x, subfr_length*nb_subfr, arch );
+    C0_64 = oaci_silk_inner_prod16( x, x, subfr_length*nb_subfr, arch );
     lz = silk_CLZ64(C0_64);
     rshifts = 32 + 1 + N_BITS_HEAD_ROOM - lz;
     if (rshifts > MAX_RSHIFTS) rshifts = MAX_RSHIFTS;
@@ -86,7 +86,7 @@ void silk_burg_modified_c(
             x_ptr = x + s*subfr_length;
             for (n = 1; n < D + 1; n++) {
                 C_first_row[ n - 1 ] += (oac_int32)silk_RSHIFT64(
-                    silk_inner_prod16( x_ptr, x_ptr + n, subfr_length - n, arch ), rshifts );
+                    oaci_silk_inner_prod16( x_ptr, x_ptr + n, subfr_length - n, arch ), rshifts );
             }
         }
     } else {
@@ -94,7 +94,7 @@ void silk_burg_modified_c(
             int i;
             oac_int32 d;
             x_ptr = x + s*subfr_length;
-            celt_pitch_xcorr(x_ptr, x_ptr + 1, xcorr, subfr_length - D, D, arch );
+            oaci_celt_pitch_xcorr(x_ptr, x_ptr + 1, xcorr, subfr_length - D, D, arch );
             for (n = 1; n < D + 1; n++) {
                 for (i = n + subfr_length - D, d = 0; i < subfr_length; i++)
                     d = MAC16_16( d, x_ptr[ i ], x_ptr[ i - n ] );
@@ -252,12 +252,12 @@ void silk_burg_modified_c(
         if (rshifts > 0) {
             for (s = 0; s < nb_subfr; s++) {
                 x_ptr = x + s*subfr_length;
-                C0 -= (oac_int32)silk_RSHIFT64( silk_inner_prod16( x_ptr, x_ptr, D, arch ), rshifts );
+                C0 -= (oac_int32)silk_RSHIFT64( oaci_silk_inner_prod16( x_ptr, x_ptr, D, arch ), rshifts );
             }
         } else {
             for (s = 0; s < nb_subfr; s++) {
                 x_ptr = x + s*subfr_length;
-                C0 -= silk_LSHIFT32( silk_inner_prod_aligned( x_ptr, x_ptr, D, arch), -rshifts);
+                C0 -= silk_LSHIFT32( oaci_silk_inner_prod_aligned( x_ptr, x_ptr, D, arch), -rshifts);
             }
         }
         /* Approximate residual energy */

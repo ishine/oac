@@ -39,7 +39,7 @@
  */
 
 /* Laroia low complexity NLSF weights */
-void silk_NLSF_VQ_weights_laroia(
+void oaci_silk_NLSF_VQ_weights_laroia(
     oac_int16                  *pNLSFW_Q_OUT,      /* O     Pointer to input vector weights [D]                        */
     const oac_int16            *pNLSF_Q15,         /* I     Pointer to input vector         [D]                        */
     const oac_int D                                /* I     Input vector dimension (even)                              */

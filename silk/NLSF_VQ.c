@@ -32,7 +32,7 @@
 #include "main.h"
 
 /* Compute quantization errors for an LPC_order element input vector for a VQ codebook */
-void silk_NLSF_VQ(
+void oaci_silk_NLSF_VQ(
     oac_int32 err_Q24[],                                       /* O    Quantization errors [K]                     */
     const oac_int16 in_Q15[],                                  /* I    Input vectors to be quantized [LPC_order]   */
     const oac_uint8 pCB_Q8[],                                  /* I    Codebook vectors [K*LPC_order]              */

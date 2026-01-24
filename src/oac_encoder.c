@@ -217,14 +217,14 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
         return OAC_BAD_ARG;
 
     /* Create SILK encoder */
-    ret = silk_Get_Encoder_Size( &silkEncSizeBytes, channels );
+    ret = oaci_silk_Get_Encoder_Size( &silkEncSizeBytes, channels );
     if (ret)
         return OAC_BAD_ARG;
     silkEncSizeBytes = align(silkEncSizeBytes);
     if (application == OAC_APPLICATION_RESTRICTED_CELT)
         silkEncSizeBytes = 0;
     if (application != OAC_APPLICATION_RESTRICTED_SILK)
-        celtEncSizeBytes = celt_encoder_get_size(channels);
+        celtEncSizeBytes = oaci_celt_encoder_get_size(channels);
     base_size = align(sizeof(OacEncoder));
     if (application == OAC_APPLICATION_RESTRICTED_SILK || application == OAC_APPLICATION_RESTRICTED_CELT) {
         base_size = align(base_size - MAX_ENCODER_BUFFER*2*sizeof(oac_res));
@@ -246,7 +246,7 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
 
     if (application != OAC_APPLICATION_RESTRICTED_CELT) {
         silk_enc = (char*)st + st->silk_enc_offset;
-        ret = silk_InitEncoder( silk_enc, st->channels, st->arch, &st->silk_mode );
+        ret = oaci_silk_InitEncoder( silk_enc, st->channels, st->arch, &st->silk_mode );
     }
     if (ret)return OAC_INTERNAL_ERROR;
 
@@ -271,7 +271,7 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
     /* Initialize CELT encoder */
     if (application != OAC_APPLICATION_RESTRICTED_SILK) {
         celt_enc = (CELTEncoder*)((char*)st + st->celt_enc_offset);
-        err = celt_encoder_init(celt_enc, Fs, channels, st->arch);
+        err = oaci_celt_encoder_init(celt_enc, Fs, channels, st->arch);
         if (err != OAC_OK) return OAC_INTERNAL_ERROR;
         celt_encoder_ctl(celt_enc, CELT_SET_SIGNALLING(0));
         celt_encoder_ctl(celt_enc, OAC_SET_COMPLEXITY(st->silk_mode.complexity));
@@ -279,7 +279,7 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
 
 #ifdef ENABLE_DRED
     /* Initialize DRED Encoder */
-    dred_encoder_init( &st->dred_encoder, Fs, channels );
+    oaci_dred_encoder_init( &st->dred_encoder, Fs, channels );
 #endif
 
     st->use_vbr = 1;
@@ -307,13 +307,13 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
 
     st->hybrid_stereo_width_Q14 = 1<<14;
     st->prev_HB_gain = Q15ONE;
-    st->variable_HP_smth2_Q15 = silk_LSHIFT( silk_lin2log( VARIABLE_HP_MIN_CUTOFF_HZ ), 8 );
+    st->variable_HP_smth2_Q15 = silk_LSHIFT( oaci_silk_lin2log( VARIABLE_HP_MIN_CUTOFF_HZ ), 8 );
     st->first = 1;
     st->mode = MODE_HYBRID;
     st->bandwidth = OAC_BANDWIDTH_FULLBAND;
 
 #ifndef DISABLE_FLOAT_API
-    tonality_analysis_init(&st->analysis, st->Fs);
+    oaci_tonality_analysis_init(&st->analysis, st->Fs);
     st->analysis.application = st->application;
 #endif
 
@@ -349,7 +349,7 @@ static unsigned char gen_toc(int mode, int framerate, int bandwidth, int channel
 
 #ifdef FIXED_POINT
 /* Second order ARMA filter, alternative implementation */
-void silk_biquad_res(
+void oaci_silk_biquad_res(
     const oac_res              *in,                /* I     input signal                                               */
     const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
     const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -385,7 +385,7 @@ void silk_biquad_res(
     }
 }
 #else
-static void silk_biquad_res(
+static void oaci_silk_biquad_res(
     const oac_res        *in,            /* I:    Input signal                   */
     const oac_int32      *B_Q28,         /* I:    MA coefficients [3]            */
     const oac_int32      *A_Q28,         /* I:    AR coefficients [2]            */
@@ -445,9 +445,9 @@ static void hp_cutoff(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_
     A_Q28[ 0 ] = silk_SMULWW( r_Q22, silk_SMULWW( Fc_Q19, Fc_Q19 ) - SILK_FIX_CONST( 2.0,  22 ));
     A_Q28[ 1 ] = silk_SMULWW( r_Q22, r_Q22 );
 
-    silk_biquad_res( in, B_Q28, A_Q28, hp_mem, out, len, channels );
+    oaci_silk_biquad_res( in, B_Q28, A_Q28, hp_mem, out, len, channels );
     if (channels == 2) {
-        silk_biquad_res( in + 1, B_Q28, A_Q28, hp_mem + 2, out + 1, len, channels );
+        oaci_silk_biquad_res( in + 1, B_Q28, A_Q28, hp_mem + 2, out + 1, len, channels );
     }
 }
 
@@ -631,7 +631,7 @@ static int estimate_dred_bitrate(int q0, int dQ, int qmax, int duration, oac_int
     dred_chunks = IMIN((duration + 5)/4, DRED_NUM_REDUNDANCY_FRAMES/2);
     if (target_chunks != NULL) *target_chunks = 0;
     for (i = 0; i < dred_chunks; i++) {
-        int q = compute_quantizer(q0, dQ, qmax, i);
+        int q = oaci_compute_quantizer(q0, dQ, qmax, i);
         bits += dred_bits_table[q];
         if (target_chunks != NULL && bits < target_bits) *target_chunks = i + 1;
     }
@@ -697,7 +697,7 @@ static oac_int32 user_bitrate_to_bitrate(OacEncoder *st, int frame_size, int max
 }
 
 #ifndef DISABLE_FLOAT_API
-void downmix_float(const void *_x, oac_val32 *y, int subframe, int offset, int c1, int c2, int C) {
+void oaci_downmix_float(const void *_x, oac_val32 *y, int subframe, int offset, int c1, int c2, int C) {
     const float *x;
     int j;
 
@@ -725,7 +725,7 @@ void downmix_float(const void *_x, oac_val32 *y, int subframe, int offset, int c
 }
 #endif
 
-void downmix_int(const void *_x, oac_val32 *y, int subframe, int offset, int c1, int c2, int C) {
+void oaci_downmix_int(const void *_x, oac_val32 *y, int subframe, int offset, int c1, int c2, int C) {
     const oac_int16 *x;
     int j;
 
@@ -744,7 +744,7 @@ void downmix_int(const void *_x, oac_val32 *y, int subframe, int offset, int c1,
     }
 }
 
-void downmix_int24(const void *_x, oac_val32 *y, int subframe, int offset, int c1, int c2, int C) {
+void oaci_downmix_int24(const void *_x, oac_val32 *y, int subframe, int offset, int c1, int c2, int C) {
     const oac_int32 *x;
     int j;
 
@@ -763,7 +763,7 @@ void downmix_int24(const void *_x, oac_val32 *y, int subframe, int offset, int c
     }
 }
 
-oac_int32 frame_size_select(int application, oac_int32 frame_size, int variable_duration, oac_int32 Fs) {
+oac_int32 oaci_frame_size_select(int application, oac_int32 frame_size, int variable_duration, oac_int32 Fs) {
     int new_size;
     if (frame_size < Fs/400)
         return -1;
@@ -787,7 +787,7 @@ oac_int32 frame_size_select(int application, oac_int32 frame_size, int variable_
     return new_size;
 }
 
-oac_val16 compute_stereo_width(const oac_res *pcm, int frame_size, oac_int32 Fs, StereoWidthState *mem) {
+oac_val16 oaci_compute_stereo_width(const oac_res *pcm, int frame_size, oac_int32 Fs, StereoWidthState *mem) {
     oac_val32 xx, xy, yy;
     oac_val16 sqrt_xx, sqrt_yy;
     oac_val16 qrrt_xx, qrrt_yy;
@@ -850,16 +850,16 @@ oac_val16 compute_stereo_width(const oac_res *pcm, int frame_size, oac_int32 Fs,
         oac_val16 corr;
         oac_val16 ldiff;
         oac_val16 width;
-        sqrt_xx = celt_sqrt(mem->XX);
-        sqrt_yy = celt_sqrt(mem->YY);
-        qrrt_xx = celt_sqrt(sqrt_xx);
-        qrrt_yy = celt_sqrt(sqrt_yy);
+        sqrt_xx = oaci_celt_sqrt(mem->XX);
+        sqrt_yy = oaci_celt_sqrt(mem->YY);
+        qrrt_xx = oaci_celt_sqrt(sqrt_xx);
+        qrrt_yy = oaci_celt_sqrt(sqrt_yy);
         /* Inter-channel correlation */
         mem->XY = MIN32(mem->XY, sqrt_xx*sqrt_yy);
-        corr = SHR32(frac_div32(mem->XY, EPSILON + MULT16_16(sqrt_xx, sqrt_yy)), 16);
+        corr = SHR32(oaci_frac_div32(mem->XY, EPSILON + MULT16_16(sqrt_xx, sqrt_yy)), 16);
         /* Approximate loudness difference */
         ldiff = MULT16_16(Q15ONE, ABS16(qrrt_xx - qrrt_yy))/(EPSILON + qrrt_xx + qrrt_yy);
-        width = MULT16_16_Q15(MIN16(Q15ONE, celt_sqrt(QCONST32(1.f, 30) - MULT16_16(corr, corr))), ldiff);
+        width = MULT16_16_Q15(MIN16(Q15ONE, oaci_celt_sqrt(QCONST32(1.f, 30) - MULT16_16(corr, corr))), ldiff);
         /* Smoothing over one second */
         mem->smoothed_width += (width - mem->smoothed_width)/frame_rate;
         /* Peak follower */
@@ -982,7 +982,7 @@ static oac_int32 compute_equiv_rate(oac_int32 bitrate, int channels,
     return equiv;
 }
 
-int is_digital_silence(const oac_res* pcm, int frame_size, int channels, int lsb_depth) {
+int oaci_is_digital_silence(const oac_res* pcm, int frame_size, int channels, int lsb_depth) {
     int silence = 0;
     oac_val32 sample_max = 0;
 #ifdef MLP_TRAINING
@@ -1029,7 +1029,7 @@ static oac_val32 compute_frame_energy(const oac_res *pcm, int frame_size, int ch
 #else
 static oac_val32 compute_frame_energy(const oac_val16 *pcm, int frame_size, int channels, int arch) {
     int len = frame_size*channels;
-    return celt_inner_prod(pcm, pcm, len, arch)/len;
+    return oaci_celt_inner_prod(pcm, pcm, len, arch)/len;
 }
 #endif
 
@@ -1099,7 +1099,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
                             unsigned char *data, oac_int32 out_data_bytes, int lsb_depth,
                             const void *analysis_pcm, oac_int32 analysis_size, int c1, int c2,
-                            int analysis_channels, downmix_func downmix, int float_api) {
+                            int analysis_channels, downmix_func oaci_downmix, int float_api) {
     void *silk_enc = NULL;
     CELTEncoder *celt_enc = NULL;
     int i;
@@ -1153,7 +1153,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
 
     if (st->application != OAC_APPLICATION_RESTRICTED_SILK)
         celt_encoder_ctl(celt_enc, CELT_GET_MODE(&celt_mode));
-    is_silence = is_digital_silence(pcm, frame_size, st->channels, lsb_depth);
+    is_silence = oaci_is_digital_silence(pcm, frame_size, st->channels, lsb_depth);
 #ifndef DISABLE_FLOAT_API
     analysis_info.valid = 0;
 # ifdef FIXED_POINT
@@ -1166,12 +1166,12 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     {
         analysis_read_pos_bak = st->analysis.read_pos;
         analysis_read_subframe_bak = st->analysis.read_subframe;
-        run_analysis(&st->analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
+        oaci_run_analysis(&st->analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
              c1, c2, analysis_channels, st->Fs,
-             lsb_depth, downmix, &analysis_info);
+             lsb_depth, oaci_downmix, &analysis_info);
 
     } else if (st->analysis.initialized) {
-        tonality_analysis_reset(&st->analysis);
+        oaci_tonality_analysis_reset(&st->analysis);
     }
 #else
     (void)analysis_pcm;
@@ -1179,7 +1179,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     (void)c1;
     (void)c2;
     (void)analysis_channels;
-    (void)downmix;
+    (void)oaci_downmix;
 #endif
 
     /* Reset voice_ratio if this frame is not silent or if analysis is disabled.
@@ -1228,7 +1228,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
         }
     }
     if (st->channels == 2 && st->force_channels != 1)
-        stereo_width = compute_stereo_width(pcm, frame_size, st->Fs, &st->width_mem);
+        stereo_width = oaci_compute_stereo_width(pcm, frame_size, st->Fs, &st->width_mem);
     else
         stereo_width = 0;
     st->bitrate_bps = user_bitrate_to_bitrate(st, frame_size, max_data_bytes);
@@ -1454,7 +1454,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
      * is processed above as the requested mode shouldn't interrupt stereo->mono transition. */
     if (st->stream_channels == 1 && st->prev_channels == 2 && st->silk_mode.toMono == 0
         && st->mode != MODE_CELT_ONLY && st->prev_mode != MODE_CELT_ONLY) {
-        /* Delay stereo->mono transition by two frames so that SILK can do a smooth downmix */
+        /* Delay stereo->mono transition by two frames so that SILK can do a smooth oaci_downmix */
         st->silk_mode.toMono = 1;
         st->stream_channels = 2;
     } else {
@@ -1467,7 +1467,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
 
     if (st->mode != MODE_CELT_ONLY && st->prev_mode == MODE_CELT_ONLY) {
         silk_EncControlStruct dummy;
-        silk_InitEncoder( silk_enc, st->channels, st->arch, &dummy);
+        oaci_silk_InitEncoder( silk_enc, st->channels, st->arch, &dummy);
         prefill = 1;
     }
 
@@ -1667,10 +1667,10 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
 #ifndef DISABLE_FLOAT_API
             if (analysis_read_pos_bak != -1) {
                 /* Get analysis for current frame. */
-                tonality_get_info(&st->analysis, &analysis_info, enc_frame_size);
+                oaci_tonality_get_info(&st->analysis, &analysis_info, enc_frame_size);
             }
 #endif
-            is_silence = is_digital_silence(pcm + i*(st->channels*enc_frame_size), enc_frame_size, st->channels,
+            is_silence = oaci_is_digital_silence(pcm + i*(st->channels*enc_frame_size), enc_frame_size, st->channels,
             lsb_depth);
 
             tmp_len = oac_encode_frame_native(st, pcm + i*(st->channels*enc_frame_size), enc_frame_size, curr_data,
@@ -1826,13 +1826,13 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 
     data += 1;
 
-    ec_enc_init(&enc, data, orig_max_data_bytes - 1);
+    oaci_ec_enc_init(&enc, data, orig_max_data_bytes - 1);
 
     ALLOC(pcm_buf, (total_buffer + frame_size)*st->channels, oac_res);
     OAC_COPY(pcm_buf, &st->delay_buffer[(st->encoder_buffer - total_buffer)*st->channels], total_buffer*st->channels);
 
     if (st->mode == MODE_CELT_ONLY)
-        hp_freq_smth1 = silk_LSHIFT( silk_lin2log( VARIABLE_HP_MIN_CUTOFF_HZ ), 8 );
+        hp_freq_smth1 = silk_LSHIFT( oaci_silk_lin2log( VARIABLE_HP_MIN_CUTOFF_HZ ), 8 );
     else
         hp_freq_smth1 = ((silk_encoder*)silk_enc)->state_Fxx[0].sCmn.variable_HP_smth1_Q15;
 
@@ -1840,7 +1840,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
           hp_freq_smth1 - st->variable_HP_smth2_Q15, SILK_FIX_CONST( VARIABLE_HP_SMTH_COEF2, 16 ));
 
     /* convert from log scale to Hertz */
-    cutoff_Hz = silk_log2lin( silk_RSHIFT( st->variable_HP_smth2_Q15, 8 ));
+    cutoff_Hz = oaci_silk_log2lin( silk_RSHIFT( st->variable_HP_smth2_Q15, 8 ));
 
     if (st->application == OAC_APPLICATION_VOIP) {
         hp_cutoff(pcm, cutoff_Hz, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs,
@@ -1868,7 +1868,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 #ifndef FIXED_POINT
     if (float_api) {
         oac_val32 sum;
-        sum = celt_inner_prod(&pcm_buf[total_buffer*st->channels], &pcm_buf[total_buffer*st->channels],
+        sum = oaci_celt_inner_prod(&pcm_buf[total_buffer*st->channels], &pcm_buf[total_buffer*st->channels],
         frame_size*st->channels, st->arch);
         /* This should filter out both NaNs and ridiculous signals that could
            cause NaNs further down. */
@@ -1886,7 +1886,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     if (st->dred_duration > 0 && st->dred_encoder.loaded) {
         int frame_size_400Hz;
         /* DRED Encoder */
-        dred_compute_latents( &st->dred_encoder, &pcm_buf[total_buffer*st->channels], frame_size, total_buffer,
+        oaci_dred_compute_latents( &st->dred_encoder, &pcm_buf[total_buffer*st->channels], frame_size, total_buffer,
         st->arch );
         frame_size_400Hz = frame_size*400/st->Fs;
         OAC_MOVE(&st->activity_mem[frame_size_400Hz], st->activity_mem, 4*DRED_MAX_FRAMES - frame_size_400Hz);
@@ -2047,13 +2047,13 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
                   0, Q15ONE, celt_mode->overlap, st->Fs/400, st->channels, celt_mode->window, st->Fs);
             OAC_CLEAR(st->delay_buffer, prefill_offset);
             pcm_silk = st->delay_buffer;
-            silk_Encode( silk_enc, &st->silk_mode, pcm_silk, st->encoder_buffer, NULL, &zero, prefill, activity );
+            oaci_silk_Encode( silk_enc, &st->silk_mode, pcm_silk, st->encoder_buffer, NULL, &zero, prefill, activity );
             /* Prevent a second switch in the real encode call. */
             st->silk_mode.oacCanSwitch = 0;
         }
 
         pcm_silk = pcm_buf + total_buffer*st->channels;
-        ret = silk_Encode( silk_enc, &st->silk_mode, pcm_silk, frame_size, &enc, &nBytes, 0, activity );
+        ret = oaci_silk_Encode( silk_enc, &st->silk_mode, pcm_silk, frame_size, &enc, &nBytes, 0, activity );
         if (ret) {
             /*fprintf (stderr, "SILK encode error: %d\n", ret);*/
             /* Handle error */
@@ -2189,10 +2189,10 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     if (st->mode != MODE_CELT_ONLY && ec_tell(&enc) + 17 + 20*(st->mode == MODE_HYBRID) <= 8*(max_data_bytes - 1)) {
         /* For SILK mode, the redundancy is inferred from the length */
         if (st->mode == MODE_HYBRID)
-            ec_enc_bit_logp(&enc, redundancy, 12);
+            oaci_ec_enc_bit_logp(&enc, redundancy, 12);
         if (redundancy) {
             int max_redundancy;
-            ec_enc_bit_logp(&enc, celt_to_silk, 1);
+            oaci_ec_enc_bit_logp(&enc, celt_to_silk, 1);
             if (st->mode == MODE_HYBRID) {
                 /* Reserve the 8 bits needed for the redundancy length,
                    and at least a few bits for CELT if possible */
@@ -2204,7 +2204,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             redundancy_bytes = IMIN(max_redundancy, redundancy_bytes);
             redundancy_bytes = IMIN(257, IMAX(2, redundancy_bytes));
             if (st->mode == MODE_HYBRID)
-                ec_enc_uint(&enc, redundancy_bytes - 2, 256);
+                oaci_ec_enc_uint(&enc, redundancy_bytes - 2, 256);
         }
     } else {
         redundancy = 0;
@@ -2218,7 +2218,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 
     if (st->mode == MODE_SILK_ONLY) {
         ret = (ec_tell(&enc) + 7)>>3;
-        ec_enc_done(&enc);
+        oaci_ec_enc_done(&enc);
         nb_compr_bytes = ret;
     } else {
         nb_compr_bytes = (max_data_bytes - 1) - redundancy_bytes;
@@ -2235,7 +2235,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             nb_compr_bytes = IMIN(nb_compr_bytes, max_celt_bytes);
         }
 #endif
-        ec_enc_shrink(&enc, nb_compr_bytes);
+        oaci_ec_enc_shrink(&enc, nb_compr_bytes);
     }
 
 #ifndef DISABLE_FLOAT_API
@@ -2255,7 +2255,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         celt_encoder_ctl(celt_enc, CELT_SET_START_BAND(0));
         celt_encoder_ctl(celt_enc, OAC_SET_VBR(0));
         celt_encoder_ctl(celt_enc, OAC_SET_BITRATE(OAC_BITRATE_MAX));
-        err = celt_encode_with_ec(celt_enc, pcm_buf, st->Fs/200, data + nb_compr_bytes, redundancy_bytes, NULL);
+        err = oaci_celt_encode_with_ec(celt_enc, pcm_buf, st->Fs/200, data + nb_compr_bytes, redundancy_bytes, NULL);
         if (err < 0) {
             RESTORE_STACK;
             return OAC_INTERNAL_ERROR;
@@ -2299,12 +2299,12 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             celt_encoder_ctl(celt_enc, OAC_RESET_STATE);
 
             /* Prefilling */
-            celt_encode_with_ec(celt_enc, tmp_prefill, st->Fs/400, dummy, 2, NULL);
+            oaci_celt_encode_with_ec(celt_enc, tmp_prefill, st->Fs/400, dummy, 2, NULL);
             celt_encoder_ctl(celt_enc, CELT_SET_PREDICTION(0));
         }
         /* If false, we already busted the budget and we'll end up with a "PLC frame" */
         if (ec_tell(&enc) <= 8*nb_compr_bytes) {
-            ret = celt_encode_with_ec(celt_enc, pcm_buf, frame_size, NULL, nb_compr_bytes, &enc);
+            ret = oaci_celt_encode_with_ec(celt_enc, pcm_buf, frame_size, NULL, nb_compr_bytes, &enc);
             if (ret < 0) {
                 RESTORE_STACK;
                 return OAC_INTERNAL_ERROR;
@@ -2337,12 +2337,12 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         if (st->mode == MODE_HYBRID) {
             /* Shrink packet to what the encoder actually used. */
             nb_compr_bytes = ret;
-            ec_enc_shrink(&enc, nb_compr_bytes);
+            oaci_ec_enc_shrink(&enc, nb_compr_bytes);
         }
         /* NOTE: We could speed this up slightly (at the expense of code size) by just adding a function that prefills the buffer */
-        celt_encode_with_ec(celt_enc, pcm_buf + st->channels*(frame_size - N2 - N4), N4, dummy, 2, NULL);
+        oaci_celt_encode_with_ec(celt_enc, pcm_buf + st->channels*(frame_size - N2 - N4), N4, dummy, 2, NULL);
 
-        err = celt_encode_with_ec(celt_enc, pcm_buf + st->channels*(frame_size - N2), N2, data + nb_compr_bytes,
+        err = oaci_celt_encode_with_ec(celt_enc, pcm_buf + st->channels*(frame_size - N2), N2, data + nb_compr_bytes,
         redundancy_bytes, NULL);
         if (err < 0) {
             RESTORE_STACK;
@@ -2423,7 +2423,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             buf[0] = 'D';
             buf[1] = DRED_EXPERIMENTAL_VERSION;
 # endif
-            dred_bytes = dred_encode_silk_frame(&st->dred_encoder, buf + DRED_EXPERIMENTAL_BYTES, dred_chunks,
+            dred_bytes = oaci_dred_encode_silk_frame(&st->dred_encoder, buf + DRED_EXPERIMENTAL_BYTES, dred_chunks,
             dred_bytes_left - DRED_EXPERIMENTAL_BYTES,
                                                st->dred_q0, st->dred_dQ, st->dred_qmax, st->activity_mem, st->arch);
             if (dred_bytes > 0) {
@@ -2465,7 +2465,7 @@ oac_int32 oac_encode(OacEncoder *st, const oac_int16 *pcm, int analysis_frame_si
     VARDECL(oac_res, in);
     ALLOC_STACK;
 
-    frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
+    frame_size = oaci_frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
     if (frame_size <= 0) {
         RESTORE_STACK;
         return OAC_BAD_ARG;
@@ -2475,7 +2475,7 @@ oac_int32 oac_encode(OacEncoder *st, const oac_int16 *pcm, int analysis_frame_si
     for (i = 0; i < frame_size*st->channels; i++)
         in[i] = INT16TORES(pcm[i]);
     ret = oac_encode_native(st, in, frame_size, data, max_data_bytes, 16,
-                            pcm, analysis_frame_size, 0, -2, st->channels, downmix_int, 1);
+                            pcm, analysis_frame_size, 0, -2, st->channels, oaci_downmix_int, 1);
     RESTORE_STACK;
     return ret;
 }
@@ -2484,9 +2484,9 @@ oac_int32 oac_encode(OacEncoder *st, const oac_int16 *pcm, int analysis_frame_si
 oac_int32 oac_encode24(OacEncoder *st, const oac_int32 *pcm, int analysis_frame_size,
                        unsigned char *data, oac_int32 max_data_bytes) {
     int frame_size;
-    frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
+    frame_size = oaci_frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
     return oac_encode_native(st, pcm, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH,
-                             pcm, analysis_frame_size, 0, -2, st->channels, downmix_int24, 0);
+                             pcm, analysis_frame_size, 0, -2, st->channels, oaci_downmix_int24, 0);
 }
 #else
 oac_int32 oac_encode24(OacEncoder *st, const oac_int32 *pcm, int analysis_frame_size,
@@ -2496,7 +2496,7 @@ oac_int32 oac_encode24(OacEncoder *st, const oac_int32 *pcm, int analysis_frame_
     VARDECL(oac_res, in);
     ALLOC_STACK;
 
-    frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
+    frame_size = oaci_frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
     if (frame_size <= 0) {
         RESTORE_STACK;
         return OAC_BAD_ARG;
@@ -2506,7 +2506,7 @@ oac_int32 oac_encode24(OacEncoder *st, const oac_int32 *pcm, int analysis_frame_
     for (i = 0; i < frame_size*st->channels; i++)
         in[i] = INT24TORES(pcm[i]);
     ret = oac_encode_native(st, in, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH,
-                            pcm, analysis_frame_size, 0, -2, st->channels, downmix_int24, 1);
+                            pcm, analysis_frame_size, 0, -2, st->channels, oaci_downmix_int24, 1);
     RESTORE_STACK;
     return ret;
 }
@@ -2519,9 +2519,9 @@ oac_int32 oac_encode24(OacEncoder *st, const oac_int32 *pcm, int analysis_frame_
 oac_int32 oac_encode_float(OacEncoder *st, const float *pcm, int analysis_frame_size,
                            unsigned char *data, oac_int32 out_data_bytes) {
     int frame_size;
-    frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
+    frame_size = oaci_frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
     return oac_encode_native(st, pcm, frame_size, data, out_data_bytes, MAX_ENCODING_DEPTH,
-                             pcm, analysis_frame_size, 0, -2, st->channels, downmix_float, 1);
+                             pcm, analysis_frame_size, 0, -2, st->channels, oaci_downmix_float, 1);
 }
 # else
 oac_int32 oac_encode_float(OacEncoder *st, const float *pcm, int analysis_frame_size,
@@ -2531,7 +2531,7 @@ oac_int32 oac_encode_float(OacEncoder *st, const float *pcm, int analysis_frame_
     VARDECL(oac_res, in);
     ALLOC_STACK;
 
-    frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
+    frame_size = oaci_frame_size_select(st->application, analysis_frame_size, st->variable_duration, st->Fs);
     if (frame_size <= 0) {
         RESTORE_STACK;
         return OAC_BAD_ARG;
@@ -2541,7 +2541,7 @@ oac_int32 oac_encode_float(OacEncoder *st, const float *pcm, int analysis_frame_
     for (i = 0; i < frame_size*st->channels; i++)
         in[i] = FLOAT2RES(pcm[i]);
     ret = oac_encode_native(st, in, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH,
-                            pcm, analysis_frame_size, 0, -2, st->channels, downmix_float, 1);
+                            pcm, analysis_frame_size, 0, -2, st->channels, oaci_downmix_float, 1);
     RESTORE_STACK;
     return ret;
 }
@@ -2968,7 +2968,7 @@ int oac_encoder_ctl(OacEncoder *st, int request, ...) {
             char *start;
             silk_enc = (char*)st + st->silk_enc_offset;
 #ifndef DISABLE_FLOAT_API
-            tonality_analysis_reset(&st->analysis);
+            oaci_tonality_analysis_reset(&st->analysis);
 #endif
 
             start = (char*)&st->OAC_ENCODER_RESET_START;
@@ -2977,10 +2977,10 @@ int oac_encoder_ctl(OacEncoder *st, int request, ...) {
             if (st->application != OAC_APPLICATION_RESTRICTED_SILK)
                 celt_encoder_ctl(celt_enc, OAC_RESET_STATE);
             if (st->application != OAC_APPLICATION_RESTRICTED_CELT)
-                silk_InitEncoder( silk_enc, st->channels, st->arch, &dummy );
+                oaci_silk_InitEncoder( silk_enc, st->channels, st->arch, &dummy );
 #ifdef ENABLE_DRED
             /* Initialize DRED Encoder */
-            dred_encoder_reset( &st->dred_encoder );
+            oaci_dred_encoder_reset( &st->dred_encoder );
 #endif
             st->stream_channels = st->channels;
             st->hybrid_stereo_width_Q14 = 1<<14;
@@ -2988,7 +2988,7 @@ int oac_encoder_ctl(OacEncoder *st, int request, ...) {
             st->first = 1;
             st->mode = MODE_HYBRID;
             st->bandwidth = OAC_BANDWIDTH_FULLBAND;
-            st->variable_HP_smth2_Q15 = silk_LSHIFT( silk_lin2log( VARIABLE_HP_MIN_CUTOFF_HZ ), 8 );
+            st->variable_HP_smth2_Q15 = silk_LSHIFT( oaci_silk_lin2log( VARIABLE_HP_MIN_CUTOFF_HZ ), 8 );
         }
         break;
         case OAC_SET_FORCE_MODE_REQUEST:
@@ -3047,7 +3047,7 @@ int oac_encoder_ctl(OacEncoder *st, int request, ...) {
                 goto bad_arg;
             }
 # ifdef ENABLE_DRED
-            ret = dred_encoder_load_model(&st->dred_encoder, data, len);
+            ret = oaci_dred_encoder_load_model(&st->dred_encoder, data, len);
 # endif
         }
         break;

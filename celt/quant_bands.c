@@ -41,7 +41,7 @@
 
 #ifdef FIXED_POINT
 /* Mean energy in each band quantized in Q4 */
-const signed char eMeans[25] = {
+const signed char oaci_eMeans[25] = {
     103, 100, 92, 85, 81,
     77, 72, 70, 78, 75,
     73, 71, 78, 74, 69,
@@ -50,7 +50,7 @@ const signed char eMeans[25] = {
 };
 #else
 /* Mean energy in each band quantized in Q4 and converted back to float */
-const oac_val16 eMeans[25] = {
+const oac_val16 oaci_eMeans[25] = {
     6.437500f, 6.250000f, 5.750000f, 5.312500f, 5.062500f,
     4.812500f, 4.500000f, 4.375000f, 4.875000f, 4.687500f,
     4.562500f, 4.437500f, 4.875000f, 4.625000f, 4.312500f,
@@ -163,7 +163,7 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
     oac_val16 beta;
 
     if (tell + 3 <= budget)
-        ec_enc_bit_logp(enc, intra, 3);
+        oaci_ec_enc_bit_logp(enc, intra, 3);
     if (intra) {
         coef = 0;
         beta = beta_intra;
@@ -219,14 +219,14 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
             if (budget - tell >= 15) {
                 int pi;
                 pi = 2*IMIN(i, 20);
-                ec_laplace_encode(enc, &qi,
+                oaci_ec_laplace_encode(enc, &qi,
                   prob_model[pi]<<7, prob_model[pi + 1]<<6);
             } else if (budget - tell >= 2) {
                 qi = IMAX(-1, IMIN(qi, 1));
-                ec_enc_icdf(enc, 2*qi^-(qi < 0), small_energy_icdf, 2);
+                oaci_ec_enc_icdf(enc, 2*qi^-(qi < 0), small_energy_icdf, 2);
             } else if (budget - tell >= 1) {
                 qi = IMIN(0, qi);
-                ec_enc_bit_logp(enc, -qi, 1);
+                oaci_ec_enc_bit_logp(enc, -qi, 1);
             } else
                 qi = -1;
             error[i + c*m->nbEBands] = f - SHL32(qi, DB_SHIFT);
@@ -244,7 +244,7 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
     return lfe ? 0 : badness;
 }
 
-void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
+void oaci_quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
                          const celt_glog *eBands, celt_glog *oldEBands, oac_uint32 budget,
                          celt_glog *error, ec_enc *enc, int C, int LM, int nbAvailableBytes,
                          int force_intra, oac_val32 *delayedIntra, int two_pass, int loss_rate, int lfe) {
@@ -298,7 +298,7 @@ void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
         int badness2;
         VARDECL(unsigned char, intra_bits);
 
-        tell_intra = ec_tell_frac(enc);
+        tell_intra = oaci_ec_tell_frac(enc);
 
         enc_intra_state = *enc;
 
@@ -319,7 +319,7 @@ void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
 
         if (two_pass
             && (badness1 < badness2
-                || (badness1 == badness2 && ((oac_int32)ec_tell_frac(enc)) + intra_bias > tell_intra))) {
+                || (badness1 == badness2 && ((oac_int32)oaci_ec_tell_frac(enc)) + intra_bias > tell_intra))) {
             *enc = enc_intra_state;
             /* Copy intra bits to bit-stream */
             OAC_COPY(intra_buf, intra_bits, nintra_bytes - nstart_bytes);
@@ -341,7 +341,7 @@ void quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
     RESTORE_STACK;
 }
 
-void quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error, int *prev_quant,
+void oaci_quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error, int *prev_quant,
                        int *extra_quant, ec_enc *enc, int C) {
     int i, c;
     /* Encode finer resolution */
@@ -366,7 +366,7 @@ void quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBan
                 q2 = extra - 1;
             if (q2 < 0)
                 q2 = 0;
-            ec_enc_bits(enc, q2, extra_quant[i]);
+            oaci_ec_enc_bits(enc, q2, extra_quant[i]);
 #ifdef FIXED_POINT
             offset = SUB32(VSHR32(2*q2 + 1, extra_quant[i] - DB_SHIFT + 1), GCONST(.5f));
             offset = SHR32(offset, prev);
@@ -381,7 +381,7 @@ void quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBan
     }
 }
 
-void quant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error,
+void oaci_quant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, celt_glog *error,
                            int *fine_quant, int *fine_priority, int bits_left, ec_enc *enc, int C) {
     int i, prio, c;
 
@@ -395,7 +395,7 @@ void quant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *old
                 int q2;
                 celt_glog offset;
                 q2 = error[i + c*m->nbEBands] < 0 ? 0 : 1;
-                ec_enc_bits(enc, q2, 1);
+                oaci_ec_enc_bits(enc, q2, 1);
 #ifdef FIXED_POINT
                 offset = SHR32(SHL32(q2, DB_SHIFT) - GCONST(.5f), fine_quant[i] + 1);
 #else
@@ -409,7 +409,7 @@ void quant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *old
     }
 }
 
-void unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int intra, ec_dec *dec, int C,
+void oaci_unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int intra, ec_dec *dec, int C,
                            int LM) {
     const unsigned char *prob_model = e_prob_model[LM][intra];
     int i, c;
@@ -444,13 +444,13 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog *old
             if (budget - tell >= 15) {
                 int pi;
                 pi = 2*IMIN(i, 20);
-                qi = ec_laplace_decode(dec,
+                qi = oaci_ec_laplace_decode(dec,
                   prob_model[pi]<<7, prob_model[pi + 1]<<6);
             } else if (budget - tell >= 2) {
-                qi = ec_dec_icdf(dec, small_energy_icdf, 2);
+                qi = oaci_ec_dec_icdf(dec, small_energy_icdf, 2);
                 qi = (qi>>1)^-(qi&1);
             } else if (budget - tell >= 1) {
-                qi = -ec_dec_bit_logp(dec, 1);
+                qi = -oaci_ec_dec_bit_logp(dec, 1);
             } else
                 qi = -1;
             q = (oac_val32)SHL32(EXTEND32(qi), DB_SHIFT);
@@ -466,7 +466,7 @@ void unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog *old
     }
 }
 
-void unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *prev_quant, int *extra_quant,
+void oaci_unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *prev_quant, int *extra_quant,
                          ec_dec *dec, int C) {
     int i, c;
     /* Decode finer resolution */
@@ -481,7 +481,7 @@ void unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEB
         do {
             int q2;
             celt_glog offset;
-            q2 = ec_dec_bits(dec, extra);
+            q2 = oaci_ec_dec_bits(dec, extra);
 #ifdef FIXED_POINT
             offset = SUB32(VSHR32(2*q2 + 1, extra - DB_SHIFT + 1), GCONST(.5f));
             offset = SHR32(offset, prev);
@@ -494,7 +494,7 @@ void unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *oldEB
     }
 }
 
-void unquant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *fine_quant,
+void oaci_unquant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *oldEBands, int *fine_quant,
                              int *fine_priority, int bits_left, ec_dec *dec, int C) {
     int i, prio, c;
 
@@ -507,7 +507,7 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *o
             do {
                 int q2;
                 celt_glog offset;
-                q2 = ec_dec_bits(dec, 1);
+                q2 = oaci_ec_dec_bits(dec, 1);
 #ifdef FIXED_POINT
                 offset = SHR32(SHL32(q2, DB_SHIFT) - GCONST(.5f), fine_quant[i] + 1);
 #else
@@ -520,7 +520,7 @@ void unquant_energy_finalise(const CELTMode *m, int start, int end, celt_glog *o
     }
 }
 
-void amp2Log2(const CELTMode *m, int effEnd, int end,
+void oaci_amp2Log2(const CELTMode *m, int effEnd, int end,
               celt_ener *bandE, celt_glog *bandLogE, int C) {
     int c, i;
     c = 0;
@@ -528,7 +528,7 @@ void amp2Log2(const CELTMode *m, int effEnd, int end,
         for (i = 0; i < effEnd; i++) {
             bandLogE[i + c*m->nbEBands] =
                 celt_log2_db(bandE[i + c*m->nbEBands])
-                - SHL32((celt_glog)eMeans[i], DB_SHIFT - 4);
+                - SHL32((celt_glog)oaci_eMeans[i], DB_SHIFT - 4);
 #ifdef FIXED_POINT
             /* Compensate for bandE[] being Q12 but celt_log2() taking a Q14 input. */
             bandLogE[i + c*m->nbEBands] += GCONST(2.f);

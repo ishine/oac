@@ -35,7 +35,7 @@
 /* Upsample by a factor 2, high quality */
 /* Uses 2nd order allpass filters for the 2x upsampling, followed by a      */
 /* notch filter just above Nyquist.                                         */
-void silk_resampler_private_up2_HQ(
+void oaci_silk_resampler_private_up2_HQ(
     oac_int32                      *S,             /* I/O  Resampler state [ 6 ]       */
     oac_int16                      *out,           /* O    Output signal [ 2 * len ]   */
     const oac_int16                *in,            /* I    Input signal [ len ]        */
@@ -100,12 +100,12 @@ void silk_resampler_private_up2_HQ(
     }
 }
 
-void silk_resampler_private_up2_HQ_wrapper(
+void oaci_silk_resampler_private_up2_HQ_wrapper(
     void                            *SS,            /* I/O  Resampler state (unused)    */
     oac_int16                      *out,           /* O    Output signal [ 2 * len ]   */
     const oac_int16                *in,            /* I    Input signal [ len ]        */
     oac_int32 len                                  /* I    Number of input samples     */
     ) {
     silk_resampler_state_struct *S = (silk_resampler_state_struct *)SS;
-    silk_resampler_private_up2_HQ( S->sIIR, out, in, len );
+    oaci_silk_resampler_private_up2_HQ( S->sIIR, out, in, len );
 }

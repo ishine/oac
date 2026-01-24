@@ -46,15 +46,15 @@ static const oac_int16 silk_resampler_up2_hq_0[ 3 ] = { 1746, 14986, 39083 - 655
 static const oac_int16 silk_resampler_up2_hq_1[ 3 ] = { 6854, 25769, 55542 - 65536 };
 
 /* Tables with IIR and FIR coefficients for fractional downsamplers */
-extern const oac_int16 silk_Resampler_3_4_COEFS[ 2 + 3*RESAMPLER_DOWN_ORDER_FIR0/2 ];
-extern const oac_int16 silk_Resampler_2_3_COEFS[ 2 + 2*RESAMPLER_DOWN_ORDER_FIR0/2 ];
-extern const oac_int16 silk_Resampler_1_2_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR1/2 ];
-extern const oac_int16 silk_Resampler_1_3_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR2/2 ];
-extern const oac_int16 silk_Resampler_1_4_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR2/2 ];
-extern const oac_int16 silk_Resampler_1_6_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR2/2 ];
-extern const oac_int16 silk_Resampler_2_3_COEFS_LQ[ 2 + 2*2 ];
+extern const oac_int16 oaci_silk_Resampler_3_4_COEFS[ 2 + 3*RESAMPLER_DOWN_ORDER_FIR0/2 ];
+extern const oac_int16 oaci_silk_Resampler_2_3_COEFS[ 2 + 2*RESAMPLER_DOWN_ORDER_FIR0/2 ];
+extern const oac_int16 oaci_silk_Resampler_1_2_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR1/2 ];
+extern const oac_int16 oaci_silk_Resampler_1_3_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR2/2 ];
+extern const oac_int16 oaci_silk_Resampler_1_4_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR2/2 ];
+extern const oac_int16 oaci_silk_Resampler_1_6_COEFS[ 2 +     RESAMPLER_DOWN_ORDER_FIR2/2 ];
+extern const oac_int16 oaci_silk_Resampler_2_3_COEFS_LQ[ 2 + 2*2 ];
 
 /* Table with interplation fractions of 1/24, 3/24, ..., 23/24 */
-extern const oac_int16 silk_resampler_frac_FIR_12[ 12 ][ RESAMPLER_ORDER_FIR_12/2 ];
+extern const oac_int16 oaci_silk_resampler_frac_FIR_12[ 12 ][ RESAMPLER_ORDER_FIR_12/2 ];
 
 #endif /* SILK_FIX_RESAMPLER_ROM_H */

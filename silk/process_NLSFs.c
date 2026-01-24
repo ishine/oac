@@ -32,7 +32,7 @@
 #include "main.h"
 
 /* Limit, stabilize, convert and quantize NLSFs */
-void silk_process_NLSFs(
+void oaci_silk_process_NLSFs(
     silk_encoder_state          *psEncC,                            /* I/O  Encoder state                               */
     oac_int16 PredCoef_Q12[ 2 ][ MAX_LPC_ORDER ],                  /* O    Prediction coefficients                     */
     oac_int16 pNLSF_Q15[         MAX_LPC_ORDER ],                  /* I/O  Normalized LSFs (quant out) (0 - (2^15-1))  */
@@ -63,17 +63,17 @@ void silk_process_NLSFs(
     silk_assert( NLSF_mu_Q20 <= SILK_FIX_CONST( 0.005, 20 ));
 
     /* Calculate NLSF weights */
-    silk_NLSF_VQ_weights_laroia( pNLSFW_QW, pNLSF_Q15, psEncC->predictLPCOrder );
+    oaci_silk_NLSF_VQ_weights_laroia( pNLSFW_QW, pNLSF_Q15, psEncC->predictLPCOrder );
 
     /* Update NLSF weights for interpolated NLSFs */
     doInterpolate = (psEncC->useInterpolatedNLSFs == 1) && (psEncC->indices.NLSFInterpCoef_Q2 < 4);
     if (doInterpolate) {
         /* Calculate the interpolated NLSF vector for the first half */
-        silk_interpolate( pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
+        oaci_silk_interpolate( pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
             psEncC->indices.NLSFInterpCoef_Q2, psEncC->predictLPCOrder );
 
         /* Calculate first half NLSF weights for the interpolated NLSFs */
-        silk_NLSF_VQ_weights_laroia( pNLSFW0_temp_QW, pNLSF0_temp_Q15, psEncC->predictLPCOrder );
+        oaci_silk_NLSF_VQ_weights_laroia( pNLSFW0_temp_QW, pNLSF0_temp_Q15, psEncC->predictLPCOrder );
 
         /* Update NLSF weights with contribution from first half */
         i_sqr_Q15 = silk_LSHIFT( silk_SMULBB( psEncC->indices.NLSFInterpCoef_Q2, psEncC->indices.NLSFInterpCoef_Q2 ),
@@ -85,19 +85,19 @@ void silk_process_NLSFs(
         }
     }
 
-    silk_NLSF_encode( psEncC->indices.NLSFIndices, pNLSF_Q15, psEncC->psNLSF_CB, pNLSFW_QW,
+    oaci_silk_NLSF_encode( psEncC->indices.NLSFIndices, pNLSF_Q15, psEncC->psNLSF_CB, pNLSFW_QW,
         NLSF_mu_Q20, psEncC->NLSF_MSVQ_Survivors, psEncC->indices.signalType );
 
     /* Convert quantized NLSFs back to LPC coefficients */
-    silk_NLSF2A( PredCoef_Q12[ 1 ], pNLSF_Q15, psEncC->predictLPCOrder, psEncC->arch );
+    oaci_silk_NLSF2A( PredCoef_Q12[ 1 ], pNLSF_Q15, psEncC->predictLPCOrder, psEncC->arch );
 
     if (doInterpolate) {
         /* Calculate the interpolated, quantized LSF vector for the first half */
-        silk_interpolate( pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
+        oaci_silk_interpolate( pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
             psEncC->indices.NLSFInterpCoef_Q2, psEncC->predictLPCOrder );
 
         /* Convert back to LPC coefficients */
-        silk_NLSF2A( PredCoef_Q12[ 0 ], pNLSF0_temp_Q15, psEncC->predictLPCOrder, psEncC->arch );
+        oaci_silk_NLSF2A( PredCoef_Q12[ 0 ], pNLSF0_temp_Q15, psEncC->predictLPCOrder, psEncC->arch );
 
     } else {
         /* Copy LPC coefficients for first half from second half */

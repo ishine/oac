@@ -64,7 +64,7 @@
 
 #if defined(OVERRIDE_CELT_INNER_PROD)
 
-static OAC_INLINE oac_val32 celt_inner_prod(const oac_val16 *x,
+static OAC_INLINE oac_val32 oaci_celt_inner_prod(const oac_val16 *x,
                                             const oac_val16 *y, int N, int arch) {
     int j;
     accumulator_t acc = 0;
@@ -158,7 +158,7 @@ fallback:
 #endif /* OVERRIDE_CELT_INNER_PROD */
 
 #if defined(OVERRIDE_DUAL_INNER_PROD)
-static inline void dual_inner_prod(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+static inline void oaci_dual_inner_prod(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
                                    int N, oac_val32 *xy1, oac_val32 *xy2, int arch) {
     int j;
     accumulator_t acc1 = 0;
@@ -246,7 +246,7 @@ fallback:
 
 #if defined(OVERRIDE_XCORR_KERNEL)
 
-static inline void xcorr_kernel_mips(const oac_val16 * x,
+static inline void oaci_xcorr_kernel_mips(const oac_val16 * x,
                                      const oac_val16 * y, oac_val32 sum[4], int len) {
     int j;
     oac_val16 y_0, y_1, y_2, y_3;
@@ -340,8 +340,8 @@ static inline void xcorr_kernel_mips(const oac_val16 * x,
     sum[3] = (oac_val32)sum_3;
 }
 
-# define xcorr_kernel(x, y, sum, len, arch) \
-        ((void)(arch), xcorr_kernel_mips(x, y, sum, len))
+# define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((void)(arch), oaci_xcorr_kernel_mips(x, y, sum, len))
 
 # undef accumulator_t
 # undef MIPS_MAC

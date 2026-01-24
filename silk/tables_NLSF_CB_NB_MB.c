@@ -178,7 +178,7 @@ static const oac_int16 silk_NLSF_DELTA_MIN_NB_MB_Q15[ 11 ] = {
     3,      3,    461
 };
 
-const silk_NLSF_CB_struct silk_NLSF_CB_NB_MB =
+const silk_NLSF_CB_struct oaci_silk_NLSF_CB_NB_MB =
 {
     32,
     10,

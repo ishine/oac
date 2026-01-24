@@ -33,7 +33,7 @@
 
 /* Compute number of bits to right shift the sum of squares of a vector */
 /* of int16s to make it fit in an int32                                 */
-void silk_sum_sqr_shift(
+void oaci_silk_sum_sqr_shift(
     oac_int32                  *energy,            /* O   Energy of x, after shifting to the right                     */
     oac_int                    *shift,             /* O   Number of bits right shift applied to energy                 */
     const oac_int16            *x,                 /* I   Input vector                                                 */

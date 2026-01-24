@@ -128,11 +128,11 @@ int oac_decoder_get_size(int channels) {
     int ret;
     if (channels < 1 || channels > 2)
         return 0;
-    ret = silk_Get_Decoder_Size( &silkDecSizeBytes );
+    ret = oaci_silk_Get_Decoder_Size( &silkDecSizeBytes );
     if (ret)
         return 0;
     silkDecSizeBytes = align(silkDecSizeBytes);
-    celtDecSizeBytes = celt_decoder_get_size(channels);
+    celtDecSizeBytes = oaci_celt_decoder_get_size(channels);
     return align(sizeof(OacDecoder)) + silkDecSizeBytes + celtDecSizeBytes;
 }
 
@@ -151,7 +151,7 @@ int oac_decoder_init(OacDecoder *st, oac_int32 Fs, int channels) {
 
     OAC_CLEAR((char*)st, oac_decoder_get_size(channels));
     /* Initialize SILK decoder */
-    ret = silk_Get_Decoder_Size(&silkDecSizeBytes);
+    ret = oaci_silk_Get_Decoder_Size(&silkDecSizeBytes);
     if (ret)
         return OAC_INTERNAL_ERROR;
 
@@ -168,11 +168,11 @@ int oac_decoder_init(OacDecoder *st, oac_int32 Fs, int channels) {
     st->DecControl.nChannelsAPI      = st->channels;
 
     /* Reset decoder */
-    ret = silk_InitDecoder( silk_dec );
+    ret = oaci_silk_InitDecoder( silk_dec );
     if (ret) return OAC_INTERNAL_ERROR;
 
     /* Initialize CELT decoder */
-    ret = celt_decoder_init(celt_dec, Fs, channels);
+    ret = oaci_celt_decoder_init(celt_dec, Fs, channels);
     if (ret != OAC_OK) return OAC_INTERNAL_ERROR;
 
     celt_decoder_ctl(celt_dec, CELT_SET_SIGNALLING(0));
@@ -180,7 +180,7 @@ int oac_decoder_init(OacDecoder *st, oac_int32 Fs, int channels) {
     st->prev_mode = 0;
     st->frame_size = Fs/400;
 #ifdef ENABLE_DEEP_PLC
-    lpcnet_plc_init( &st->lpcnet);
+    oaci_lpcnet_plc_init( &st->lpcnet);
 #endif
     st->arch = oac_select_arch();
     return OAC_OK;
@@ -293,7 +293,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
         audiosize = st->frame_size;
         mode = st->mode;
         bandwidth = st->bandwidth;
-        ec_dec_init(&dec, (unsigned char*)data, len);
+        oaci_ec_dec_init(&dec, (unsigned char*)data, len);
     } else {
         audiosize = frame_size;
         /* Run PLC using last used mode (CELT if we ended with CELT redundancy) */
@@ -377,7 +377,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
             pcm_ptr = pcm;
 
         if (st->prev_mode == MODE_CELT_ONLY)
-            silk_ResetDecoder( silk_dec );
+            oaci_silk_ResetDecoder( silk_dec );
 
         /* The SILK PLC cannot produce frames of less than 10 ms */
         st->DecControl.payloadSize_ms = IMAX(10, 1000*audiosize/st->Fs);
@@ -435,7 +435,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
         do {
             /* Call SILK decoder */
             int first_frame = decoded_samples == 0;
-            silk_ret = silk_Decode( silk_dec, &st->DecControl,
+            silk_ret = oaci_silk_Decode( silk_dec, &st->DecControl,
                                 lost_flag, first_frame, &dec, pcm_ptr, &silk_frame_size,
 #ifdef ENABLE_DEEP_PLC
                                 &st->lpcnet,
@@ -465,15 +465,15 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
         && ec_tell(&dec) + 17 + 20*(mode == MODE_HYBRID) <= 8*len) {
         /* Check if we have a redundant 0-8 kHz band */
         if (mode == MODE_HYBRID)
-            redundancy = ec_dec_bit_logp(&dec, 12);
+            redundancy = oaci_ec_dec_bit_logp(&dec, 12);
         else
             redundancy = 1;
         if (redundancy) {
-            celt_to_silk = ec_dec_bit_logp(&dec, 1);
+            celt_to_silk = oaci_ec_dec_bit_logp(&dec, 1);
             /* redundancy_bytes will be at least two, in the non-hybrid
                case due to the ec_tell() check above */
             redundancy_bytes = mode == MODE_HYBRID ?
-                               (oac_int32)ec_dec_uint(&dec, 256) + 2 :
+                               (oac_int32)oaci_ec_dec_uint(&dec, 256) + 2 :
                                len - ((ec_tell(&dec) + 7)>>3);
             len -= redundancy_bytes;
             /* This is a sanity check. It should never happen for a valid
@@ -540,7 +540,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
            the final range is still needed (for testing), so the redundancy is
            always decoded but the decoded audio may not be used */
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
-        celt_decode_with_ec(celt_dec, data + len, redundancy_bytes,
+        oaci_celt_decode_with_ec(celt_dec, data + len, redundancy_bytes,
                           redundant_audio, F5, NULL, 0);
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, OAC_GET_FINAL_RANGE(&redundant_rng)));
     }
@@ -559,7 +559,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
         if (mode != st->prev_mode && st->prev_mode > 0 && !st->prev_redundancy)
             MUST_SUCCEED(celt_decoder_ctl(celt_dec, OAC_RESET_STATE));
         /* Decode CELT */
-        celt_ret = celt_decode_with_ec_dred(celt_dec, decode_fec ? NULL : data,
+        celt_ret = oaci_celt_decode_with_ec_dred(celt_dec, decode_fec ? NULL : data,
                                      len, pcm, celt_frame_size, &dec, celt_accum
 #ifdef ENABLE_DEEP_PLC
             , &st->lpcnet
@@ -576,7 +576,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
            do a fade-out by decoding a silence frame */
         if (st->prev_mode == MODE_HYBRID && !(redundancy && celt_to_silk && st->prev_redundancy)) {
             MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
-            celt_decode_with_ec(celt_dec, silence, 2, pcm, F2_5, NULL, celt_accum);
+            oaci_celt_decode_with_ec(celt_dec, silence, 2, pcm, F2_5, NULL, celt_accum);
         }
         st->rangeFinal = dec.rng;
     }
@@ -592,7 +592,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, OAC_RESET_STATE));
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, CELT_SET_START_BAND(0)));
 
-        celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
+        oaci_celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, OAC_GET_FINAL_RANGE(&redundant_rng)));
         smooth_fade(pcm + st->channels*(frame_size - F2_5), redundant_audio + st->channels*F2_5,
                   pcm + st->channels*(frame_size - F2_5), F2_5, st->channels, window, st->Fs);
@@ -680,7 +680,7 @@ int oac_decode_native(OacDecoder *st, const unsigned char *data,
         int features_per_frame;
         int needed_feature_frames;
         int init_frames;
-        lpcnet_plc_fec_clear(&st->lpcnet);
+        oaci_lpcnet_plc_fec_clear(&st->lpcnet);
         F10 = st->Fs/100;
         /* if blend==0, the last PLC call was "update" and we need to feed two extra 10-ms frames. */
         init_frames = (st->lpcnet.blend == 0) ? 2 : 0;
@@ -691,9 +691,9 @@ int oac_decode_native(OacDecoder *st, const unsigned char *data,
             /* We floor instead of rounding because 5-ms overlap compensates for the missing 0.5 rounding offset. */
             feature_offset = init_frames - i - 2 + (int)floor(((float)dred_offset + dred->dred_offset*F10/4)/F10);
             if (feature_offset <= 4*dred->nb_latents - 1 && feature_offset >= 0) {
-                lpcnet_plc_fec_add(&st->lpcnet, dred->fec_features + feature_offset*DRED_NUM_FEATURES);
+                oaci_lpcnet_plc_fec_add(&st->lpcnet, dred->fec_features + feature_offset*DRED_NUM_FEATURES);
             } else {
-                if (feature_offset >= 0) lpcnet_plc_fec_add(&st->lpcnet, NULL);
+                if (feature_offset >= 0) oaci_lpcnet_plc_fec_add(&st->lpcnet, NULL);
             }
 
         }
@@ -834,7 +834,7 @@ int oac_decode(OacDecoder *st, const unsigned char *data,
         for (i = 0; i < ret*st->channels; i++)
             pcm[i] = RES2INT16(out[i]);
 #else
-        celt_float2int16(out, pcm, ret*st->channels, st->arch);
+        oaci_celt_float2int16(out, pcm, ret*st->channels, st->arch);
 #endif
     }
     RESTORE_STACK;
@@ -1004,11 +1004,11 @@ int oac_decoder_ctl(OacDecoder *st, int request, ...) {
                 - ((char*)&st->OAC_DECODER_RESET_START - (char*)st));
 
             celt_decoder_ctl(celt_dec, OAC_RESET_STATE);
-            silk_ResetDecoder( silk_dec );
+            oaci_silk_ResetDecoder( silk_dec );
             st->stream_channels = st->channels;
             st->frame_size = st->Fs/400;
 #ifdef ENABLE_DEEP_PLC
-            lpcnet_plc_reset( &st->lpcnet );
+            oaci_lpcnet_plc_reset( &st->lpcnet );
 #endif
         }
         break;
@@ -1104,8 +1104,8 @@ int oac_decoder_ctl(OacDecoder *st, int request, ...) {
             if (len < 0 || data == NULL) {
                 goto bad_arg;
             }
-            ret = lpcnet_plc_load_model(&st->lpcnet, data, len);
-            ret = silk_LoadOSCEModels(silk_dec, data, len) || ret;
+            ret = oaci_lpcnet_plc_load_model(&st->lpcnet, data, len);
+            ret = oaci_silk_LoadOSCEModels(silk_dec, data, len) || ret;
         }
         break;
 #endif
@@ -1236,11 +1236,11 @@ int oac_dred_decoder_get_size(void) {
 }
 
 #ifdef ENABLE_DRED
-int dred_decoder_load_model(OacDREDDecoder *dec, const unsigned char *data, int len) {
+int oaci_dred_decoder_load_model(OacDREDDecoder *dec, const unsigned char *data, int len) {
     WeightArray *list;
     int ret;
-    parse_weights(&list, data, len);
-    ret = init_rdovaedec(&dec->model, list);
+    oaci_parse_weights(&list, data, len);
+    ret = oaci_init_rdovaedec(&dec->model, list);
     oac_free(list);
     if (ret == 0) dec->loaded = 1;
     return (ret == 0) ? OAC_OK : OAC_BAD_ARG;
@@ -1251,7 +1251,7 @@ int oac_dred_decoder_init(OacDREDDecoder *dec) {
     int ret = 0;
     dec->loaded = 0;
 #if defined(ENABLE_DRED) && !defined(USE_WEIGHTS_FILE)
-    ret = init_rdovaedec(&dec->model, rdovaedec_arrays);
+    ret = oaci_init_rdovaedec(&dec->model, oaci_rdovaedec_arrays);
     if (ret == 0) dec->loaded = 1;
 #endif
     dec->arch = oac_select_arch();
@@ -1300,7 +1300,7 @@ int oac_dred_decoder_ctl(OacDREDDecoder *dred_dec, int request, ...) {
             if (len < 0 || data == NULL) {
                 goto bad_arg;
             }
-            return dred_decoder_load_model(dred_dec, data, len);
+            return oaci_dred_decoder_load_model(dred_dec, data, len);
         }
         break;
 # endif
@@ -1419,7 +1419,7 @@ int oac_dred_parse(OacDREDDecoder *dred_dec, OacDRED *dred, const unsigned char 
         int min_feature_frames;
         offset = 100*max_dred_samples/sampling_rate;
         min_feature_frames = IMIN(2 + offset, 2*DRED_NUM_REDUNDANCY_FRAMES);
-        dred_ec_decode(dred, payload, payload_len, min_feature_frames, dred_frame_offset);
+        oaci_dred_ec_decode(dred, payload, payload_len, min_feature_frames, dred_frame_offset);
         if (!defer_processing)
             oac_dred_process(dred_dec, dred, dred);
         if (dred_end) *dred_end = IMAX(0, -dred->dred_offset*sampling_rate/400);
@@ -1450,7 +1450,7 @@ int oac_dred_process(OacDREDDecoder *dred_dec, const OacDRED *src, OacDRED *dst)
         OAC_COPY(dst, src, 1);
     if (dst->process_stage == 2)
         return OAC_OK;
-    DRED_rdovae_decode_all(&dred_dec->model, dst->fec_features, dst->state, dst->latents, dst->nb_latents,
+    oaci_DRED_rdovae_decode_all(&dred_dec->model, dst->fec_features, dst->state, dst->latents, dst->nb_latents,
     dred_dec->arch);
     dst->process_stage = 2;
     return OAC_OK;

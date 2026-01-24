@@ -31,17 +31,17 @@
   GET    celt/arm/armopts.s
 
 IF OAC_ARM_MAY_HAVE_EDSP
-  EXPORT celt_pitch_xcorr_edsp
+  EXPORT oaci_celt_pitch_xcorr_edsp
 ENDIF
 
 IF OAC_ARM_MAY_HAVE_NEON
-  EXPORT celt_pitch_xcorr_neon
+  EXPORT oaci_celt_pitch_xcorr_neon
 ENDIF
 
 IF OAC_ARM_MAY_HAVE_NEON
 
 ; Compute sum[k]=sum(x[j]*y[j+k],j=0...len-1), k=0...3
-xcorr_kernel_neon PROC
+oaci_xcorr_kernel_neon PROC
 xcorr_kernel_neon_start
   ; input:
   ;   r3     = int         len
@@ -152,9 +152,9 @@ xcorr_kernel_neon_process1
   MOV          pc, lr
   ENDP
 
-; oac_val32 celt_pitch_xcorr_neon(oac_val16 *_x, oac_val16 *_y,
+; oac_val32 oaci_celt_pitch_xcorr_neon(oac_val16 *_x, oac_val16 *_y,
 ;  oac_val32 *xcorr, int len, int max_pitch, int arch)
-celt_pitch_xcorr_neon PROC
+oaci_celt_pitch_xcorr_neon PROC
   ; input:
   ;   r0  = oac_val16 *_x
   ;   r1  = oac_val16 *_y
@@ -259,7 +259,7 @@ IF OAC_ARM_MAY_HAVE_EDSP
 
 ; This will get used on ARMv7 devices without NEON, so it has been optimized
 ; to take advantage of dual-issuing where possible.
-xcorr_kernel_edsp PROC
+oaci_xcorr_kernel_edsp PROC
 xcorr_kernel_edsp_start
   ; input:
   ;   r3      = int         len
@@ -343,7 +343,7 @@ xcorr_kernel_edsp_done
   LDMFD        sp!, {r2,r4,r5,pc}
   ENDP
 
-celt_pitch_xcorr_edsp PROC
+oaci_celt_pitch_xcorr_edsp PROC
   ; input:
   ;   r0  = oac_val16 *_x (must be 32-bit aligned)
   ;   r1  = oac_val16 *_y (only needs to be 16-bit aligned)

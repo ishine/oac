@@ -88,7 +88,7 @@ typedef struct {
     /* I:   Maximum number of bits allowed for the frame                                    */
     oac_int maxBits;
 
-    /* I:   Causes a smooth downmix to mono                                                 */
+    /* I:   Causes a smooth oaci_downmix to mono                                                 */
     oac_int toMono;
 
     /* I:   Oac encoder is allowing us to switch bandwidth                                 */

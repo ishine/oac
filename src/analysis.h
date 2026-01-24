@@ -86,18 +86,18 @@ typedef struct {
  * not be repeated every analysis step. No allocated memory is retained
  * by the state struct, so no cleanup call is required.
  */
-void tonality_analysis_init(TonalityAnalysisState *analysis, oac_int32 Fs);
+void oaci_tonality_analysis_init(TonalityAnalysisState *analysis, oac_int32 Fs);
 
 /** Reset a TonalityAnalysisState struct.
  *
  * Call this when there's a discontinuity in the data.
  */
-void tonality_analysis_reset(TonalityAnalysisState *analysis);
+void oaci_tonality_analysis_reset(TonalityAnalysisState *analysis);
 
-void tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len);
+void oaci_tonality_get_info(TonalityAnalysisState *tonal, AnalysisInfo *info_out, int len);
 
-void run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, const void *analysis_pcm,
+void oaci_run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mode, const void *analysis_pcm,
     int analysis_frame_size, int frame_size, int c1, int c2, int C, oac_int32 Fs,
-    int lsb_depth, downmix_func downmix, AnalysisInfo *analysis_info);
+    int lsb_depth, downmix_func oaci_downmix, AnalysisInfo *analysis_info);
 
 #endif

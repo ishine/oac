@@ -56,7 +56,7 @@ static OAC_INLINE oac_int combine_and_check(    /* return ok                    
 }
 
 /* Encode quantization indices of excitation */
-void silk_encode_pulses(
+void oaci_silk_encode_pulses(
     ec_enc                      *psRangeEnc,                    /* I/O  compressor data structure                   */
     const oac_int signalType,                                  /* I    Signal type                                 */
     const oac_int quantOffsetType,                             /* I    quantOffsetType                             */
@@ -108,13 +108,13 @@ void silk_encode_pulses(
 
         while (1) {
             /* 1+1 -> 2 */
-            scale_down = combine_and_check( pulses_comb, abs_pulses_ptr, silk_max_pulses_table[ 0 ], 8 );
+            scale_down = combine_and_check( pulses_comb, abs_pulses_ptr, oaci_silk_max_pulses_table[ 0 ], 8 );
             /* 2+2 -> 4 */
-            scale_down += combine_and_check( pulses_comb, pulses_comb, silk_max_pulses_table[ 1 ], 4 );
+            scale_down += combine_and_check( pulses_comb, pulses_comb, oaci_silk_max_pulses_table[ 1 ], 4 );
             /* 4+4 -> 8 */
-            scale_down += combine_and_check( pulses_comb, pulses_comb, silk_max_pulses_table[ 2 ], 2 );
+            scale_down += combine_and_check( pulses_comb, pulses_comb, oaci_silk_max_pulses_table[ 2 ], 2 );
             /* 8+8 -> 16 */
-            scale_down += combine_and_check( &sum_pulses[ i ], pulses_comb, silk_max_pulses_table[ 3 ], 1 );
+            scale_down += combine_and_check( &sum_pulses[ i ], pulses_comb, oaci_silk_max_pulses_table[ 3 ], 1 );
 
             if (scale_down) {
                 /* We need to downscale the quantization signal */
@@ -136,8 +136,8 @@ void silk_encode_pulses(
     /* find rate level that leads to fewest bits for coding of pulses per block info */
     minSumBits_Q5 = silk_int32_MAX;
     for (k = 0; k < N_RATE_LEVELS - 1; k++) {
-        nBits_ptr  = silk_pulses_per_block_BITS_Q5[ k ];
-        sumBits_Q5 = silk_rate_levels_BITS_Q5[ signalType>>1 ][ k ];
+        nBits_ptr  = oaci_silk_pulses_per_block_BITS_Q5[ k ];
+        sumBits_Q5 = oaci_silk_rate_levels_BITS_Q5[ signalType>>1 ][ k ];
         for (i = 0; i < iter; i++) {
             if (nRshifts[ i ] > 0) {
                 sumBits_Q5 += nBits_ptr[ SILK_MAX_PULSES + 1 ];
@@ -150,21 +150,21 @@ void silk_encode_pulses(
             RateLevelIndex = k;
         }
     }
-    ec_enc_icdf( psRangeEnc, RateLevelIndex, silk_rate_levels_iCDF[ signalType>>1 ], 8 );
+    oaci_ec_enc_icdf( psRangeEnc, RateLevelIndex, oaci_silk_rate_levels_iCDF[ signalType>>1 ], 8 );
 
     /***************************************************/
     /* Sum-Weighted-Pulses Encoding                    */
     /***************************************************/
-    cdf_ptr = silk_pulses_per_block_iCDF[ RateLevelIndex ];
+    cdf_ptr = oaci_silk_pulses_per_block_iCDF[ RateLevelIndex ];
     for (i = 0; i < iter; i++) {
         if (nRshifts[ i ] == 0) {
-            ec_enc_icdf( psRangeEnc, sum_pulses[ i ], cdf_ptr, 8 );
+            oaci_ec_enc_icdf( psRangeEnc, sum_pulses[ i ], cdf_ptr, 8 );
         } else {
-            ec_enc_icdf( psRangeEnc, SILK_MAX_PULSES + 1, cdf_ptr, 8 );
+            oaci_ec_enc_icdf( psRangeEnc, SILK_MAX_PULSES + 1, cdf_ptr, 8 );
             for (k = 0; k < nRshifts[ i ] - 1; k++) {
-                ec_enc_icdf( psRangeEnc, SILK_MAX_PULSES + 1, silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
+                oaci_ec_enc_icdf( psRangeEnc, SILK_MAX_PULSES + 1, oaci_silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
             }
-            ec_enc_icdf( psRangeEnc, sum_pulses[ i ], silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
+            oaci_ec_enc_icdf( psRangeEnc, sum_pulses[ i ], oaci_silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1 ], 8 );
         }
     }
 
@@ -173,7 +173,7 @@ void silk_encode_pulses(
     /******************/
     for (i = 0; i < iter; i++) {
         if (sum_pulses[ i ] > 0) {
-            silk_shell_encoder( psRangeEnc, &abs_pulses[ i*SHELL_CODEC_FRAME_LENGTH ] );
+            oaci_silk_shell_encoder( psRangeEnc, &abs_pulses[ i*SHELL_CODEC_FRAME_LENGTH ] );
         }
     }
 
@@ -188,10 +188,10 @@ void silk_encode_pulses(
                 abs_q = (oac_int8)silk_abs( pulses_ptr[ k ] );
                 for (j = nLS; j > 0; j--) {
                     bit = silk_RSHIFT( abs_q, j )&1;
-                    ec_enc_icdf( psRangeEnc, bit, silk_lsb_iCDF, 8 );
+                    oaci_ec_enc_icdf( psRangeEnc, bit, oaci_silk_lsb_iCDF, 8 );
                 }
                 bit = abs_q&1;
-                ec_enc_icdf( psRangeEnc, bit, silk_lsb_iCDF, 8 );
+                oaci_ec_enc_icdf( psRangeEnc, bit, oaci_silk_lsb_iCDF, 8 );
             }
         }
     }
@@ -199,6 +199,6 @@ void silk_encode_pulses(
     /****************/
     /* Encode signs */
     /****************/
-    silk_encode_signs( psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses );
+    oaci_silk_encode_signs( psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses );
     RESTORE_STACK;
 }

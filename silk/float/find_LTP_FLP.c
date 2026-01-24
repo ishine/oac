@@ -32,7 +32,7 @@
 #include "main_FLP.h"
 #include "tuning_parameters.h"
 
-void silk_find_LTP_FLP(
+void oaci_silk_find_LTP_FLP(
     silk_float XX[ MAX_NB_SUBFR*LTP_ORDER*LTP_ORDER ],                          /* O    Weight for LTP quantization         */
     silk_float xX[ MAX_NB_SUBFR*LTP_ORDER ],                            /* O    Weight for LTP quantization                 */
     const silk_float r_ptr[],                                           /* I    LPC residual                                */
@@ -49,12 +49,12 @@ void silk_find_LTP_FLP(
     XX_ptr = XX;
     for (k = 0; k < nb_subfr; k++) {
         lag_ptr = r_ptr - (lag[ k ] + LTP_ORDER/2);
-        silk_corrMatrix_FLP( lag_ptr, subfr_length, LTP_ORDER, XX_ptr, arch );
-        silk_corrVector_FLP( lag_ptr, r_ptr, subfr_length, LTP_ORDER, xX_ptr, arch );
-        xx = ( silk_float )silk_energy_FLP( r_ptr, subfr_length + LTP_ORDER );
+        oaci_silk_corrMatrix_FLP( lag_ptr, subfr_length, LTP_ORDER, XX_ptr, arch );
+        oaci_silk_corrVector_FLP( lag_ptr, r_ptr, subfr_length, LTP_ORDER, xX_ptr, arch );
+        xx = ( silk_float )oaci_silk_energy_FLP( r_ptr, subfr_length + LTP_ORDER );
         temp = 1.0f/silk_max( xx, LTP_CORR_INV_MAX*0.5f*(XX_ptr[ 0 ] + XX_ptr[ 24 ]) + 1.0f );
-        silk_scale_vector_FLP( XX_ptr, temp, LTP_ORDER*LTP_ORDER );
-        silk_scale_vector_FLP( xX_ptr, temp, LTP_ORDER );
+        oaci_silk_scale_vector_FLP( XX_ptr, temp, LTP_ORDER*LTP_ORDER );
+        oaci_silk_scale_vector_FLP( xX_ptr, temp, LTP_ORDER );
 
         r_ptr  += subfr_length;
         XX_ptr += LTP_ORDER*LTP_ORDER;

@@ -33,7 +33,7 @@
 
 /* Slower than schur(), but more accurate.                              */
 /* Uses SMULL(), available on armv4                                     */
-oac_int32 silk_schur64(                            /* O    returns residual energy                                     */
+oac_int32 oaci_silk_schur64(                            /* O    returns residual energy                                     */
     oac_int32 rc_Q16[],                            /* O    Reflection coefficients [order] Q16                         */
     const oac_int32 c[],                           /* I    Correlations [order+1]                                      */
     oac_int32 order                                /* I    Prediction order                                            */

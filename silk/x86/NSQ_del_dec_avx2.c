@@ -331,7 +331,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_avx2(
     oac_int decisionDelay                      /* I                                       */
     );
 
-void silk_NSQ_del_dec_avx2(
+void oaci_silk_NSQ_del_dec_avx2(
     const silk_encoder_state *psEncC,                            /* I    Encoder State               */
     silk_nsq_state *NSQ,                                         /* I/O  NSQ state                   */
     SideInfoIndices *psIndices,                                  /* I/O  Quantization Indices        */
@@ -357,13 +357,13 @@ void silk_NSQ_del_dec_avx2(
     silk_memcpy(&NSQ_c, NSQ, sizeof(NSQ_c));
     silk_memcpy(&psIndices_c, psIndices, sizeof(psIndices_c));
     silk_memcpy(pulses_c, pulses, sizeof(pulses_c));
-    silk_NSQ_del_dec_c(psEncC, &NSQ_c, &psIndices_c, x16, pulses_c, PredCoef_Q12, LTPCoef_Q14, AR_Q13,
+    oaci_silk_NSQ_del_dec_c(psEncC, &NSQ_c, &psIndices_c, x16, pulses_c, PredCoef_Q12, LTPCoef_Q14, AR_Q13,
     HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16,
                        pitchL, Lambda_Q10, LTP_scale_Q14);
 #endif
 
     if (!verify_assumptions(psEncC)) {
-        silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,
+        oaci_silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,
         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14);
         return;
     }
@@ -405,7 +405,7 @@ void silk_NSQ_del_dec_avx2(
         psDelDec.sAR2_Q14[i] = _mm_set1_epi32(NSQ->sAR2_Q14[i]);
     }
 
-    offset_Q10 = silk_Quantization_Offsets_Q10[psIndices->signalType>>1][psIndices->quantOffsetType];
+    offset_Q10 = oaci_silk_Quantization_Offsets_Q10[psIndices->signalType>>1][psIndices->quantOffsetType];
     smpl_buf_idx = 0; /* index of oldest samples */
 
     decisionDelay = silk_min_int(DECISION_DELAY, psEncC->subfr_length);

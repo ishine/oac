@@ -35,7 +35,7 @@
 #define REGULARIZATION_FACTOR               1e-8f
 
 /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
-silk_float silk_residual_energy_covar_FLP(                              /* O    Weighted residual energy                    */
+silk_float oaci_silk_residual_energy_covar_FLP(                              /* O    Weighted residual energy                    */
     const silk_float                *c,                                 /* I    Filter coefficients                         */
     silk_float                      *wXX,                               /* I/O  Weighted correlation matrix, reg. out       */
     const silk_float                *wXx,                               /* I    Weighted correlation vector                 */
@@ -87,7 +87,7 @@ silk_float silk_residual_energy_covar_FLP(                              /* O    
 
 /* Calculates residual energies of input subframes where all subframes have LPC_order   */
 /* of preceding samples                                                                 */
-void silk_residual_energy_FLP(
+void oaci_silk_residual_energy_FLP(
     silk_float nrgs[ MAX_NB_SUBFR ],                                    /* O    Residual energy per subframe                */
     const silk_float x[],                                               /* I    Input signal                                */
     silk_float a[ 2 ][ MAX_LPC_ORDER ],                                 /* I    AR coefs for each frame half                */
@@ -103,13 +103,13 @@ void silk_residual_energy_FLP(
     shift = LPC_order + subfr_length;
 
     /* Filter input to create the LPC residual for each frame half, and measure subframe energies */
-    silk_LPC_analysis_filter_FLP( LPC_res, a[ 0 ], x + 0*shift, 2*shift, LPC_order );
-    nrgs[ 0 ] = ( silk_float )(gains[ 0 ]*gains[ 0 ]*silk_energy_FLP( LPC_res_ptr + 0*shift, subfr_length ));
-    nrgs[ 1 ] = ( silk_float )(gains[ 1 ]*gains[ 1 ]*silk_energy_FLP( LPC_res_ptr + 1*shift, subfr_length ));
+    oaci_silk_LPC_analysis_filter_FLP( LPC_res, a[ 0 ], x + 0*shift, 2*shift, LPC_order );
+    nrgs[ 0 ] = ( silk_float )(gains[ 0 ]*gains[ 0 ]*oaci_silk_energy_FLP( LPC_res_ptr + 0*shift, subfr_length ));
+    nrgs[ 1 ] = ( silk_float )(gains[ 1 ]*gains[ 1 ]*oaci_silk_energy_FLP( LPC_res_ptr + 1*shift, subfr_length ));
 
     if (nb_subfr == MAX_NB_SUBFR) {
-        silk_LPC_analysis_filter_FLP( LPC_res, a[ 1 ], x + 2*shift, 2*shift, LPC_order );
-        nrgs[ 2 ] = ( silk_float )(gains[ 2 ]*gains[ 2 ]*silk_energy_FLP( LPC_res_ptr + 0*shift, subfr_length ));
-        nrgs[ 3 ] = ( silk_float )(gains[ 3 ]*gains[ 3 ]*silk_energy_FLP( LPC_res_ptr + 1*shift, subfr_length ));
+        oaci_silk_LPC_analysis_filter_FLP( LPC_res, a[ 1 ], x + 2*shift, 2*shift, LPC_order );
+        nrgs[ 2 ] = ( silk_float )(gains[ 2 ]*gains[ 2 ]*oaci_silk_energy_FLP( LPC_res_ptr + 0*shift, subfr_length ));
+        nrgs[ 3 ] = ( silk_float )(gains[ 3 ]*gains[ 3 ]*oaci_silk_energy_FLP( LPC_res_ptr + 1*shift, subfr_length ));
     }
 }

@@ -31,9 +31,9 @@
 
 #include "SigProc_FIX.h"
 
-/* Approximation of 2^() (very close inverse of silk_lin2log()) */
+/* Approximation of 2^() (very close inverse of oaci_silk_lin2log()) */
 /* Convert input to a linear scale    */
-oac_int32 silk_log2lin(
+oac_int32 oaci_silk_log2lin(
     const oac_int32 inLog_Q7                       /* I  input on log scale                                            */
     ) {
     oac_int32 out, frac_Q7;

@@ -98,7 +98,7 @@ int main(void) {
        so we get wider coverage. */
     srand(0);
 
-    printf("Testing silk_LPC_inverse_pred_gain() optimization ...\n");
+    printf("Testing oaci_silk_LPC_inverse_pred_gain() optimization ...\n");
     for (count = 0; count < loop_num; count++) {
         unsigned int i;
         oac_int order;
@@ -111,8 +111,8 @@ int main(void) {
                 for (i = 0; i < SILK_MAX_ORDER_LPC; i++) {
                     A_Q12[i] = ((oac_int16)rand())>>shift;
                 }
-                gain = silk_LPC_inverse_pred_gain(A_Q12, order, arch);
-                /* Look for filters that silk_LPC_inverse_pred_gain() thinks are
+                gain = oaci_silk_LPC_inverse_pred_gain(A_Q12, order, arch);
+                /* Look for filters that oaci_silk_LPC_inverse_pred_gain() thinks are
                    stable but definitely aren't. */
                 if (gain != 0 && !check_stability(A_Q12, order)) {
                     fprintf(stderr, "**Loop %4d failed!**\n", count);
@@ -124,7 +124,7 @@ int main(void) {
             printf("Loop %4d passed\n", count);
         }
     }
-    printf("silk_LPC_inverse_pred_gain() optimization passed\n");
+    printf("oaci_silk_LPC_inverse_pred_gain() optimization passed\n");
     RESTORE_STACK;
     return 0;
 }

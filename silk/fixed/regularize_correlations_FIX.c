@@ -32,7 +32,7 @@
 #include "main_FIX.h"
 
 /* Add noise to matrix diagonal */
-void silk_regularize_correlations_FIX(
+void oaci_silk_regularize_correlations_FIX(
     oac_int32                      *XX,                                    /* I/O  Correlation matrices                                                        */
     oac_int32                      *xx,                                    /* I/O  Correlation values                                                          */
     oac_int32 noise,                                                       /* I    Noise to add                                                                */

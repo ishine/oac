@@ -97,7 +97,7 @@ static OAC_INLINE void warped_true2monic_coefs(
 
         /* Apply bandwidth expansion */
         chirp = 0.99f - (0.8f + 0.1f*iter)*(maxabs - limit)/(maxabs*(ind + 1));
-        silk_bwexpander_FLP( coefs, order, chirp );
+        oaci_silk_bwexpander_FLP( coefs, order, chirp );
 
         /* Convert to monic warped coefficients */
         for (i = order - 1; i > 0; i--) {
@@ -135,13 +135,13 @@ static OAC_INLINE void limit_coefs(
 
         /* Apply bandwidth expansion */
         chirp = 0.99f - (0.8f + 0.1f*iter)*(maxabs - limit)/(maxabs*(ind + 1));
-        silk_bwexpander_FLP( coefs, order, chirp );
+        oaci_silk_bwexpander_FLP( coefs, order, chirp );
     }
     silk_assert( 0 );
 }
 
 /* Compute noise shaping coefficients and initial gain values */
-void silk_noise_shape_analysis_FLP(
+void oaci_silk_noise_shape_analysis_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     const silk_float                *pitch_res,                         /* I    LPC residual from pitch analysis            */
@@ -202,7 +202,7 @@ void silk_noise_shape_analysis_FLP(
         pitch_res_ptr = pitch_res;
         nSegs = silk_SMULBB( SUB_FRAME_LENGTH_MS, psEnc->sCmn.nb_subfr )/2;
         for (k = 0; k < nSegs; k++) {
-            nrg = ( silk_float )nSamples + ( silk_float )silk_energy_FLP( pitch_res_ptr, nSamples );
+            nrg = ( silk_float )nSamples + ( silk_float )oaci_silk_energy_FLP( pitch_res_ptr, nSamples );
             log_energy = silk_log2( nrg );
             if (k > 0) {
                 energy_variation += silk_abs_float( log_energy - log_energy_prev );
@@ -238,22 +238,22 @@ void silk_noise_shape_analysis_FLP(
         flat_part = psEnc->sCmn.fs_kHz*3;
         slope_part = (psEnc->sCmn.shapeWinLength - flat_part)/2;
 
-        silk_apply_sine_window_FLP( x_windowed, x_ptr, 1, slope_part );
+        oaci_silk_apply_sine_window_FLP( x_windowed, x_ptr, 1, slope_part );
         shift = slope_part;
         silk_memcpy( x_windowed + shift, x_ptr + shift, flat_part*sizeof(silk_float));
         shift += flat_part;
-        silk_apply_sine_window_FLP( x_windowed + shift, x_ptr + shift, 2, slope_part );
+        oaci_silk_apply_sine_window_FLP( x_windowed + shift, x_ptr + shift, 2, slope_part );
 
         /* Update pointer: next LPC analysis block */
         x_ptr += psEnc->sCmn.subfr_length;
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Calculate warped auto correlation */
-            silk_warped_autocorrelation_FLP( auto_corr, x_windowed, warping,
+            oaci_silk_warped_autocorrelation_FLP( auto_corr, x_windowed, warping,
                 psEnc->sCmn.shapeWinLength, psEnc->sCmn.shapingLPCOrder );
         } else {
             /* Calculate regular auto correlation */
-            silk_autocorrelation_FLP( auto_corr, x_windowed, psEnc->sCmn.shapeWinLength,
+            oaci_silk_autocorrelation_FLP( auto_corr, x_windowed, psEnc->sCmn.shapeWinLength,
             psEnc->sCmn.shapingLPCOrder + 1, psEnc->sCmn.arch );
         }
 
@@ -261,8 +261,8 @@ void silk_noise_shape_analysis_FLP(
         auto_corr[ 0 ] += auto_corr[ 0 ]*SHAPE_WHITE_NOISE_FRACTION + 1.0f;
 
         /* Convert correlations to prediction coefficients, and compute residual energy */
-        nrg = silk_schur_FLP( rc, auto_corr, psEnc->sCmn.shapingLPCOrder );
-        silk_k2a_FLP( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], rc, psEnc->sCmn.shapingLPCOrder );
+        nrg = oaci_silk_schur_FLP( rc, auto_corr, psEnc->sCmn.shapingLPCOrder );
+        oaci_silk_k2a_FLP( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], rc, psEnc->sCmn.shapingLPCOrder );
         psEncCtrl->Gains[ k ] = ( silk_float )sqrt( nrg );
 
         if (psEnc->sCmn.warping_Q16 > 0) {
@@ -272,7 +272,7 @@ void silk_noise_shape_analysis_FLP(
         }
 
         /* Bandwidth expansion for synthesis filter shaping */
-        silk_bwexpander_FLP( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder, BWExp );
+        oaci_silk_bwexpander_FLP( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], psEnc->sCmn.shapingLPCOrder, BWExp );
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Convert to monic warped prediction coefficients and limit absolute values */

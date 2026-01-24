@@ -42,7 +42,7 @@ static OAC_INLINE void silk_LBRR_encode_FIX(
     oac_int condCoding                                                     /* I    The type of conditional coding used so far for this frame                   */
     );
 
-void silk_encode_do_VAD_FIX(
+void oaci_silk_encode_do_VAD_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     oac_int activity                                                       /* I    Decision of Oac voice activity detector                                    */
     ) {
@@ -51,7 +51,7 @@ void silk_encode_do_VAD_FIX(
     /****************************/
     /* Voice Activity Detection */
     /****************************/
-    silk_VAD_GetSA_Q8( &psEnc->sCmn, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.arch );
+    oaci_silk_VAD_GetSA_Q8( &psEnc->sCmn, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.arch );
     /* If Oac VAD is inactive and Silk VAD is active: lower Silk VAD to just under the threshold */
     if (activity == VAD_NO_ACTIVITY && psEnc->sCmn.speech_activity_Q8 >= activity_threshold) {
         psEnc->sCmn.speech_activity_Q8 = activity_threshold - 1;
@@ -81,7 +81,7 @@ void silk_encode_do_VAD_FIX(
 /****************/
 /* Encode frame */
 /****************/
-oac_int silk_encode_frame_FIX(
+oac_int oaci_silk_encode_frame_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     oac_int32                      *pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
     ec_enc                          *psRangeEnc,                            /* I/O  compressor data structure                                                   */
@@ -126,7 +126,7 @@ oac_int silk_encode_frame_FIX(
     /***************************************/
     /* Ensure smooth bandwidth transitions */
     /***************************************/
-    silk_LP_variable_cutoff( &psEnc->sCmn.sLP, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.frame_length );
+    oaci_silk_LP_variable_cutoff( &psEnc->sCmn.sLP, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.frame_length );
 
     /*******************************************/
     /* Copy new frame to front of input buffer */
@@ -148,22 +148,22 @@ oac_int silk_encode_frame_FIX(
         /*****************************************/
         /* Find pitch lags, initial LPC analysis */
         /*****************************************/
-        silk_find_pitch_lags_FIX( psEnc, &sEncCtrl, res_pitch, x_frame - psEnc->sCmn.ltp_mem_length, psEnc->sCmn.arch );
+        oaci_silk_find_pitch_lags_FIX( psEnc, &sEncCtrl, res_pitch, x_frame - psEnc->sCmn.ltp_mem_length, psEnc->sCmn.arch );
 
         /************************/
         /* Noise shape analysis */
         /************************/
-        silk_noise_shape_analysis_FIX( psEnc, &sEncCtrl, res_pitch_frame, x_frame, psEnc->sCmn.arch );
+        oaci_silk_noise_shape_analysis_FIX( psEnc, &sEncCtrl, res_pitch_frame, x_frame, psEnc->sCmn.arch );
 
         /***************************************************/
         /* Find linear prediction coefficients (LPC + LTP) */
         /***************************************************/
-        silk_find_pred_coefs_FIX( psEnc, &sEncCtrl, res_pitch_frame, x_frame, condCoding );
+        oaci_silk_find_pred_coefs_FIX( psEnc, &sEncCtrl, res_pitch_frame, x_frame, condCoding );
 
         /****************************************/
         /* Process gains                        */
         /****************************************/
-        silk_process_gains_FIX( psEnc, &sEncCtrl, condCoding );
+        oaci_silk_process_gains_FIX( psEnc, &sEncCtrl, condCoding );
 
         /****************************************/
         /* Low Bitrate Redundant Encoding       */
@@ -175,7 +175,7 @@ oac_int silk_encode_frame_FIX(
         gainMult_Q8 = SILK_FIX_CONST( 1, 8 );
         found_lower = 0;
         found_upper = 0;
-        gainsID = silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
+        gainsID = oaci_silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
         gainsID_lower = -1;
         gainsID_upper = -1;
         /* Copy part of the input state */
@@ -204,7 +204,7 @@ oac_int silk_encode_frame_FIX(
                 /* Noise shaping quantization            */
                 /*****************************************/
                 if (psEnc->sCmn.nStatesDelayedDecision > 1 || psEnc->sCmn.warping_Q16 > 0) {
-                    silk_NSQ_del_dec( &psEnc->sCmn, &psEnc->sCmn.sNSQ, &psEnc->sCmn.indices, x_frame,
+                    oaci_silk_NSQ_del_dec( &psEnc->sCmn, &psEnc->sCmn.sNSQ, &psEnc->sCmn.indices, x_frame,
                     psEnc->sCmn.pulses,
                            sEncCtrl.PredCoef_Q12[ 0 ], sEncCtrl.LTPCoef_Q14, sEncCtrl.AR_Q13,
                     sEncCtrl.HarmShapeGain_Q14,
@@ -212,7 +212,7 @@ oac_int silk_encode_frame_FIX(
                     sEncCtrl.Lambda_Q10, sEncCtrl.LTP_scale_Q14,
                            psEnc->sCmn.arch );
                 } else {
-                    silk_NSQ( &psEnc->sCmn, &psEnc->sCmn.sNSQ, &psEnc->sCmn.indices, x_frame, psEnc->sCmn.pulses,
+                    oaci_silk_NSQ( &psEnc->sCmn, &psEnc->sCmn.sNSQ, &psEnc->sCmn.indices, x_frame, psEnc->sCmn.pulses,
                             sEncCtrl.PredCoef_Q12[ 0 ], sEncCtrl.LTPCoef_Q14, sEncCtrl.AR_Q13,
                     sEncCtrl.HarmShapeGain_Q14,
                             sEncCtrl.Tilt_Q14, sEncCtrl.LF_shp_Q14, sEncCtrl.Gains_Q16, sEncCtrl.pitchL,
@@ -227,12 +227,12 @@ oac_int silk_encode_frame_FIX(
                 /****************************************/
                 /* Encode Parameters                    */
                 /****************************************/
-                silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
+                oaci_silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
 
                 /****************************************/
                 /* Encode Excitation Signal             */
                 /****************************************/
-                silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
+                oaci_silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                     psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
 
                 nBits = ec_tell( psRangeEnc );
@@ -256,9 +256,9 @@ oac_int silk_encode_frame_FIX(
                         psEnc->sCmn.pulses[ i ] = 0;
                     }
 
-                    silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
+                    oaci_silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
 
-                    silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
+                    oaci_silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                         psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
 
                     nBits = ec_tell( psRangeEnc );
@@ -358,11 +358,11 @@ oac_int silk_encode_frame_FIX(
 
             /* Quantize gains */
             psEnc->sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
-            silk_gains_quant( psEnc->sCmn.indices.GainsIndices, sEncCtrl.Gains_Q16,
+            oaci_silk_gains_quant( psEnc->sCmn.indices.GainsIndices, sEncCtrl.Gains_Q16,
                   &psEnc->sShape.LastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
             /* Unique identifier of gains vector */
-            gainsID = silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
+            gainsID = oaci_silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
         }
     }
 
@@ -433,21 +433,21 @@ static OAC_INLINE void silk_LBRR_encode_FIX(
 
         /* Decode to get gains in sync with decoder         */
         /* Overwrite unquantized gains with quantized gains */
-        silk_gains_dequant( psEncCtrl->Gains_Q16, psIndices_LBRR->GainsIndices,
+        oaci_silk_gains_dequant( psEncCtrl->Gains_Q16, psIndices_LBRR->GainsIndices,
             &psEnc->sCmn.LBRRprevLastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
         /*****************************************/
         /* Noise shaping quantization            */
         /*****************************************/
         if (psEnc->sCmn.nStatesDelayedDecision > 1 || psEnc->sCmn.warping_Q16 > 0) {
-            silk_NSQ_del_dec( &psEnc->sCmn, &sNSQ_LBRR[0], psIndices_LBRR, x16,
+            oaci_silk_NSQ_del_dec( &psEnc->sCmn, &sNSQ_LBRR[0], psIndices_LBRR, x16,
                 psEnc->sCmn.pulses_LBRR[ psEnc->sCmn.nFramesEncoded ], psEncCtrl->PredCoef_Q12[ 0 ],
             psEncCtrl->LTPCoef_Q14,
                 psEncCtrl->AR_Q13, psEncCtrl->HarmShapeGain_Q14, psEncCtrl->Tilt_Q14, psEncCtrl->LF_shp_Q14,
                 psEncCtrl->Gains_Q16, psEncCtrl->pitchL, psEncCtrl->Lambda_Q10, psEncCtrl->LTP_scale_Q14,
             psEnc->sCmn.arch );
         } else {
-            silk_NSQ( &psEnc->sCmn, &sNSQ_LBRR[0], psIndices_LBRR, x16,
+            oaci_silk_NSQ( &psEnc->sCmn, &sNSQ_LBRR[0], psIndices_LBRR, x16,
                 psEnc->sCmn.pulses_LBRR[ psEnc->sCmn.nFramesEncoded ], psEncCtrl->PredCoef_Q12[ 0 ],
             psEncCtrl->LTPCoef_Q14,
                 psEncCtrl->AR_Q13, psEncCtrl->HarmShapeGain_Q14, psEncCtrl->Tilt_Q14, psEncCtrl->LF_shp_Q14,

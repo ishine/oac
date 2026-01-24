@@ -140,7 +140,7 @@ static OAC_INLINE oac_int16 *silk_resampler_private_down_FIR_INTERPOL(
 }
 
 /* Resample with a 2nd order AR filter followed by FIR interpolation */
-void silk_resampler_private_down_FIR(
+void oaci_silk_resampler_private_down_FIR(
     void                            *SS,            /* I/O  Resampler state             */
     oac_int16 out[],                               /* O    Output signal               */
     const oac_int16 in[],                          /* I    Input signal                */
@@ -166,7 +166,7 @@ void silk_resampler_private_down_FIR(
         nSamplesIn = silk_min( inLen, S->batchSize );
 
         /* Second-order AR filter (output in Q8) */
-        silk_resampler_private_AR2( S->sIIR, &buf[ S->FIR_Order ], in, S->Coefs, nSamplesIn );
+        oaci_silk_resampler_private_AR2( S->sIIR, &buf[ S->FIR_Order ], in, S->Coefs, nSamplesIn );
 
         max_index_Q16 = silk_LSHIFT32( nSamplesIn, 16 );
 

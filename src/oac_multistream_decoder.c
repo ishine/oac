@@ -41,7 +41,7 @@
 
 #if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
 static void validate_ms_decoder(OacMSDecoder *st) {
-    validate_layout(&st->layout);
+    oaci_validate_layout(&st->layout);
 }
 # define VALIDATE_MS_DECODER(st) validate_ms_decoder(st)
 #else
@@ -83,7 +83,7 @@ int oac_multistream_decoder_init(
 
     for (i = 0; i < st->layout.nb_channels; i++)
         st->layout.mapping[i] = mapping[i];
-    if (!validate_layout(&st->layout))
+    if (!oaci_validate_layout(&st->layout))
         return OAC_BAD_ARG;
 
     ptr = (char*)st + align(sizeof(OacMSDecoder));
@@ -242,14 +242,14 @@ int oac_multistream_decode_native(
             int chan, prev;
             prev = -1;
             /* Copy "left" audio to the channel(s) where it belongs */
-            while ((chan = get_left_channel(&st->layout, s, prev)) != -1) {
+            while ((chan = oaci_get_left_channel(&st->layout, s, prev)) != -1) {
                 (*copy_channel_out)(pcm, st->layout.nb_channels, chan,
                buf, 2, frame_size, user_data);
                 prev = chan;
             }
             prev = -1;
             /* Copy "right" audio to the channel(s) where it belongs */
-            while ((chan = get_right_channel(&st->layout, s, prev)) != -1) {
+            while ((chan = oaci_get_right_channel(&st->layout, s, prev)) != -1) {
                 (*copy_channel_out)(pcm, st->layout.nb_channels, chan,
                buf + 1, 2, frame_size, user_data);
                 prev = chan;
@@ -258,7 +258,7 @@ int oac_multistream_decode_native(
             int chan, prev;
             prev = -1;
             /* Copy audio to the channel(s) where it belongs */
-            while ((chan = get_mono_channel(&st->layout, s, prev)) != -1) {
+            while ((chan = oaci_get_mono_channel(&st->layout, s, prev)) != -1) {
                 (*copy_channel_out)(pcm, st->layout.nb_channels, chan,
                buf, 1, frame_size, user_data);
                 prev = chan;

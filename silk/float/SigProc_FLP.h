@@ -39,7 +39,7 @@
 /********************************************************************/
 
 /* Chirp (bw expand) LP AR filter */
-void silk_bwexpander_FLP(
+void oaci_silk_bwexpander_FLP(
     silk_float          *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     const oac_int d,                       /* I    length of ar                                                */
     const silk_float chirp                  /* I    chirp factor (typically in range (0..1) )                   */
@@ -48,32 +48,32 @@ void silk_bwexpander_FLP(
 /* compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
 /* this code is based on silk_FLP_a2k()                                 */
-silk_float silk_LPC_inverse_pred_gain_FLP(  /* O    return inverse prediction gain, energy domain               */
+silk_float oaci_silk_LPC_inverse_pred_gain_FLP(  /* O    return inverse prediction gain, energy domain               */
     const silk_float    *A,                 /* I    prediction coefficients [order]                             */
     oac_int32 order                        /* I    prediction order                                            */
     );
 
-silk_float silk_schur_FLP(                  /* O    returns residual energy                                     */
+silk_float oaci_silk_schur_FLP(                  /* O    returns residual energy                                     */
     silk_float refl_coef[],                 /* O    reflection coefficients (length order)                      */
     const silk_float auto_corr[],           /* I    autocorrelation sequence (length order+1)                   */
     oac_int order                          /* I    order                                                       */
     );
 
-void silk_k2a_FLP(
+void oaci_silk_k2a_FLP(
     silk_float          *A,                 /* O     prediction coefficients [order]                            */
     const silk_float    *rc,                /* I     reflection coefficients [order]                            */
     oac_int32 order                        /* I     prediction order                                           */
     );
 
 /* compute autocorrelation */
-void silk_autocorrelation_FLP(
+void oaci_silk_autocorrelation_FLP(
     silk_float          *results,           /* O    result (length correlationCount)                            */
     const silk_float    *inputData,         /* I    input data to correlate                                     */
     oac_int inputDataSize,                 /* I    length of input                                             */
     oac_int correlationCount,               /* I    number of correlation taps to compute                       */
     int arch);
 
-oac_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
+oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
     const silk_float    *frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
     oac_int            *pitch_out,         /* O    Pitch lag values [nb_subfr]                                 */
     oac_int16          *lagIndex,          /* O    Lag Index                                                   */
@@ -88,7 +88,7 @@ oac_int silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voiced, 1
     int arch                                /* I    Run-time architecture                                       */
     );
 
-void silk_insertion_sort_decreasing_FLP(
+void oaci_silk_insertion_sort_decreasing_FLP(
     silk_float          *a,                 /* I/O  Unsorted / Sorted vector                                    */
     oac_int            *idx,               /* O    Index vector for the sorted elements                        */
     const oac_int L,                       /* I    Vector length                                               */
@@ -96,7 +96,7 @@ void silk_insertion_sort_decreasing_FLP(
     );
 
 /* Compute reflection coefficients from input signal */
-silk_float silk_burg_modified_FLP(          /* O    returns residual energy                                     */
+silk_float oaci_silk_burg_modified_FLP(          /* O    returns residual energy                                     */
     silk_float A[],                         /* O    prediction coefficients (length order)                      */
     const silk_float x[],                   /* I    input signal, length: nb_subfr*(D+L_sub)                    */
     const silk_float minInvGain,            /* I    minimum inverse prediction gain                             */
@@ -106,32 +106,32 @@ silk_float silk_burg_modified_FLP(          /* O    returns residual energy     
     int arch);
 
 /* multiply a vector by a constant */
-void silk_scale_vector_FLP(
+void oaci_silk_scale_vector_FLP(
     silk_float          *data1,
     silk_float gain,
     oac_int dataSize);
 
 /* copy and multiply a vector by a constant */
-void silk_scale_copy_vector_FLP(
+void oaci_silk_scale_copy_vector_FLP(
     silk_float          *data_out,
     const silk_float    *data_in,
     silk_float gain,
     oac_int dataSize);
 
 /* inner product of two silk_float arrays, with result as double */
-double silk_inner_product_FLP_c(
+double oaci_silk_inner_product_FLP_c(
     const silk_float    *data1,
     const silk_float    *data2,
     oac_int dataSize);
 
 #ifndef OVERRIDE_inner_product_FLP
-# define silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch, \
-                                                               silk_inner_product_FLP_c(data1, data2, dataSize))
+# define oaci_silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch, \
+                                                               oaci_silk_inner_product_FLP_c(data1, data2, dataSize))
 #endif
 
 
 /* sum of squares of a silk_float array, with result as double */
-double silk_energy_FLP(
+double oaci_silk_energy_FLP(
     const silk_float    *data,
     oac_int dataSize);
 

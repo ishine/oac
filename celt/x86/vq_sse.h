@@ -29,13 +29,13 @@
 
 #if defined(OAC_X86_MAY_HAVE_SSE2) && !defined(FIXED_POINT)
 
-oac_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
+oac_val16 oaci_op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
 
 # if defined(OAC_X86_PRESUME_SSE2)
 
 #  define OVERRIDE_OP_PVQ_SEARCH
-#  define op_pvq_search(x, iy, K, N, arch) \
-        (op_pvq_search_sse2(x, iy, K, N, arch))
+#  define oaci_op_pvq_search(x, iy, K, N, arch) \
+        (oaci_op_pvq_search_sse2(x, iy, K, N, arch))
 
 # elif defined(OAC_HAVE_RTCD)
 
@@ -43,7 +43,7 @@ oac_val16 op_pvq_search_sse2(celt_norm *_X, int *iy, int K, int N, int arch);
 extern oac_val16 (*const OP_PVQ_SEARCH_IMPL[OAC_ARCHMASK + 1])(
       celt_norm *_X, int *iy, int K, int N, int arch);
 
-#  define op_pvq_search(X, iy, K, N, arch) \
+#  define oaci_op_pvq_search(X, iy, K, N, arch) \
         ((*OP_PVQ_SEARCH_IMPL[(arch)&OAC_ARCHMASK])(X, iy, K, N, arch))
 
 # endif

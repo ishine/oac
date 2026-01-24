@@ -46,7 +46,7 @@ static const oac_int32 sigm_LUT_neg_Q15[ 6 ] = {
     16384, 8812, 3906, 1554, 589, 219
 };
 
-oac_int silk_sigm_Q15(
+oac_int oaci_silk_sigm_Q15(
     oac_int in_Q5                                  /* I                                                                */
     ) {
     oac_int ind;

@@ -32,7 +32,7 @@
 #include "SigProc_FLP.h"
 
 /* inner product of two silk_float arrays, with result as double */
-double silk_inner_product_FLP_c(
+double oaci_silk_inner_product_FLP_c(
     const silk_float    *data1,
     const silk_float    *data2,
     oac_int dataSize)                                {

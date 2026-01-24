@@ -36,7 +36,7 @@
 #include "main_FLP.h"
 
 /* Calculates correlation vector X'*t */
-void silk_corrVector_FLP(
+void oaci_silk_corrVector_FLP(
     const silk_float                *x,                                 /* I    x vector [L+order-1] used to create X       */
     const silk_float                *t,                                 /* I    Target vector [L]                           */
     const oac_int L,                                                   /* I    Length of vecors                            */
@@ -49,13 +49,13 @@ void silk_corrVector_FLP(
     ptr1 = &x[ Order - 1 ];                     /* Points to first sample of column 0 of X: X[:,0] */
     for (lag = 0; lag < Order; lag++) {
         /* Calculate X[:,lag]'*t */
-        Xt[ lag ] = (silk_float)silk_inner_product_FLP( ptr1, t, L, arch );
+        Xt[ lag ] = (silk_float)oaci_silk_inner_product_FLP( ptr1, t, L, arch );
         ptr1--;                                 /* Next column of X */
     }
 }
 
 /* Calculates correlation matrix X'*X */
-void silk_corrMatrix_FLP(
+void oaci_silk_corrMatrix_FLP(
     const silk_float                *x,                                 /* I    x vector [ L+order-1 ] used to create X     */
     const oac_int L,                                                   /* I    Length of vectors                           */
     const oac_int Order,                                               /* I    Max lag for correlation                     */
@@ -66,7 +66,7 @@ void silk_corrMatrix_FLP(
     const silk_float *ptr1, *ptr2;
 
     ptr1 = &x[ Order - 1 ];                     /* First sample of column 0 of X */
-    energy = silk_energy_FLP( ptr1, L );  /* X[:,0]'*X[:,0] */
+    energy = oaci_silk_energy_FLP( ptr1, L );  /* X[:,0]'*X[:,0] */
     matrix_ptr( XX, 0, 0, Order ) = ( silk_float )energy;
     for (j = 1; j < Order; j++) {
         /* Calculate X[:,j]'*X[:,j] */
@@ -77,7 +77,7 @@ void silk_corrMatrix_FLP(
     ptr2 = &x[ Order - 2 ];                     /* First sample of column 1 of X */
     for (lag = 1; lag < Order; lag++) {
         /* Calculate X[:,0]'*X[:,lag] */
-        energy = silk_inner_product_FLP( ptr1, ptr2, L, arch );
+        energy = oaci_silk_inner_product_FLP( ptr1, ptr2, L, arch );
         matrix_ptr( XX, lag, 0, Order ) = ( silk_float )energy;
         matrix_ptr( XX, 0, lag, Order ) = ( silk_float )energy;
         /* Calculate X[:,j]'*X[:,j + lag] */

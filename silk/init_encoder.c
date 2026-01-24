@@ -43,7 +43,7 @@
 /*********************************/
 /* Initialize Silk Encoder state */
 /*********************************/
-oac_int silk_init_encoder(
+oac_int oaci_silk_init_encoder(
     silk_encoder_state_Fxx          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     int arch                                                                /* I    Run-time architecture                                                       */
     ) {
@@ -54,7 +54,7 @@ oac_int silk_init_encoder(
 
     psEnc->sCmn.arch = arch;
 
-    psEnc->sCmn.variable_HP_smth1_Q15 = silk_LSHIFT( silk_lin2log( SILK_FIX_CONST( VARIABLE_HP_MIN_CUTOFF_HZ,
+    psEnc->sCmn.variable_HP_smth1_Q15 = silk_LSHIFT( oaci_silk_lin2log( SILK_FIX_CONST( VARIABLE_HP_MIN_CUTOFF_HZ,
     16 )) - (16<<7), 8 );
     psEnc->sCmn.variable_HP_smth2_Q15 = psEnc->sCmn.variable_HP_smth1_Q15;
 
@@ -62,7 +62,7 @@ oac_int silk_init_encoder(
     psEnc->sCmn.first_frame_after_reset = 1;
 
     /* Initialize Silk VAD */
-    ret += silk_VAD_Init( &psEnc->sCmn.sVAD );
+    ret += oaci_silk_VAD_Init( &psEnc->sCmn.sVAD );
 
     return ret;
 }

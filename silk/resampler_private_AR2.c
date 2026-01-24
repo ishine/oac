@@ -33,7 +33,7 @@
 #include "resampler_private.h"
 
 /* Second order AR filter with single delay elements */
-void silk_resampler_private_AR2(
+void oaci_silk_resampler_private_AR2(
     oac_int32 S[],                                 /* I/O  State vector [ 2 ]          */
     oac_int32 out_Q8[],                            /* O    Output signal               */
     const oac_int16 in[],                          /* I    Input signal                */

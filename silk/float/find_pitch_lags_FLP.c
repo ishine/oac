@@ -33,7 +33,7 @@
 #include "main_FLP.h"
 #include "tuning_parameters.h"
 
-void silk_find_pitch_lags_FLP(
+void oaci_silk_find_pitch_lags_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     silk_float res[],                                                   /* O    Residual                                    */
@@ -68,7 +68,7 @@ void silk_find_pitch_lags_FLP(
     /* First LA_LTP samples */
     x_buf_ptr = x_buf + buf_len - psEnc->sCmn.pitch_LPC_win_length;
     Wsig_ptr  = Wsig;
-    silk_apply_sine_window_FLP( Wsig_ptr, x_buf_ptr, 1, psEnc->sCmn.la_pitch );
+    oaci_silk_apply_sine_window_FLP( Wsig_ptr, x_buf_ptr, 1, psEnc->sCmn.la_pitch );
 
     /* Middle non-windowed samples */
     Wsig_ptr  += psEnc->sCmn.la_pitch;
@@ -79,31 +79,31 @@ void silk_find_pitch_lags_FLP(
     /* Last LA_LTP samples */
     Wsig_ptr  += psEnc->sCmn.pitch_LPC_win_length - (psEnc->sCmn.la_pitch<<1);
     x_buf_ptr += psEnc->sCmn.pitch_LPC_win_length - (psEnc->sCmn.la_pitch<<1);
-    silk_apply_sine_window_FLP( Wsig_ptr, x_buf_ptr, 2, psEnc->sCmn.la_pitch );
+    oaci_silk_apply_sine_window_FLP( Wsig_ptr, x_buf_ptr, 2, psEnc->sCmn.la_pitch );
 
     /* Calculate autocorrelation sequence */
-    silk_autocorrelation_FLP( auto_corr, Wsig, psEnc->sCmn.pitch_LPC_win_length,
+    oaci_silk_autocorrelation_FLP( auto_corr, Wsig, psEnc->sCmn.pitch_LPC_win_length,
     psEnc->sCmn.pitchEstimationLPCOrder + 1, arch );
 
     /* Add white noise, as a fraction of the energy */
     auto_corr[ 0 ] += auto_corr[ 0 ]*FIND_PITCH_WHITE_NOISE_FRACTION + 1;
 
     /* Calculate the reflection coefficients using Schur */
-    res_nrg = silk_schur_FLP( refl_coef, auto_corr, psEnc->sCmn.pitchEstimationLPCOrder );
+    res_nrg = oaci_silk_schur_FLP( refl_coef, auto_corr, psEnc->sCmn.pitchEstimationLPCOrder );
 
     /* Prediction gain */
     psEncCtrl->predGain = auto_corr[ 0 ]/silk_max_float( res_nrg, 1.0f );
 
     /* Convert reflection coefficients to prediction coefficients */
-    silk_k2a_FLP( A, refl_coef, psEnc->sCmn.pitchEstimationLPCOrder );
+    oaci_silk_k2a_FLP( A, refl_coef, psEnc->sCmn.pitchEstimationLPCOrder );
 
     /* Bandwidth expansion */
-    silk_bwexpander_FLP( A, psEnc->sCmn.pitchEstimationLPCOrder, FIND_PITCH_BANDWIDTH_EXPANSION );
+    oaci_silk_bwexpander_FLP( A, psEnc->sCmn.pitchEstimationLPCOrder, FIND_PITCH_BANDWIDTH_EXPANSION );
 
     /*****************************************/
     /* LPC analysis filtering                */
     /*****************************************/
-    silk_LPC_analysis_filter_FLP( res, A, x_buf, buf_len, psEnc->sCmn.pitchEstimationLPCOrder );
+    oaci_silk_LPC_analysis_filter_FLP( res, A, x_buf, buf_len, psEnc->sCmn.pitchEstimationLPCOrder );
 
     if (psEnc->sCmn.indices.signalType != TYPE_NO_VOICE_ACTIVITY && psEnc->sCmn.first_frame_after_reset == 0) {
         /* Threshold for pitch estimator */
@@ -116,7 +116,7 @@ void silk_find_pitch_lags_FLP(
         /*****************************************/
         /* Call Pitch estimator                  */
         /*****************************************/
-        if (silk_pitch_analysis_core_FLP( res, psEncCtrl->pitchL, &psEnc->sCmn.indices.lagIndex,
+        if (oaci_silk_pitch_analysis_core_FLP( res, psEncCtrl->pitchL, &psEnc->sCmn.indices.lagIndex,
             &psEnc->sCmn.indices.contourIndex, &psEnc->LTPCorr, psEnc->sCmn.prevLag,
         psEnc->sCmn.pitchEstimationThreshold_Q16/65536.0f,
             thrhld, psEnc->sCmn.fs_kHz, psEnc->sCmn.pitchEstimationComplexity, psEnc->sCmn.nb_subfr, arch ) == 0) {

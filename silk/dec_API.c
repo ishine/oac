@@ -61,11 +61,11 @@ typedef struct {
 
 
 
-oac_int silk_LoadOSCEModels(void *decState, const unsigned char *data, int len) {
+oac_int oaci_silk_LoadOSCEModels(void *decState, const unsigned char *data, int len) {
 #ifdef ENABLE_OSCE
     oac_int ret = SILK_NO_ERROR;
 
-    ret = osce_load_models(&((silk_decoder *)decState)->osce_model, data, len);
+    ret = oaci_osce_load_models(&((silk_decoder *)decState)->osce_model, data, len);
     ((silk_decoder *)decState)->osce_model.loaded = (ret == 0);
     return ret;
 #else
@@ -76,7 +76,7 @@ oac_int silk_LoadOSCEModels(void *decState, const unsigned char *data, int len) 
 #endif
 }
 
-oac_int silk_Get_Decoder_Size(                         /* O    Returns error code                              */
+oac_int oaci_silk_Get_Decoder_Size(                         /* O    Returns error code                              */
     oac_int                        *decSizeBytes       /* O    Number of bytes in SILK decoder state           */
     ) {
     oac_int ret = SILK_NO_ERROR;
@@ -87,14 +87,14 @@ oac_int silk_Get_Decoder_Size(                         /* O    Returns error cod
 }
 
 /* Reset decoder state */
-oac_int silk_ResetDecoder(                              /* O    Returns error code                              */
+oac_int oaci_silk_ResetDecoder(                              /* O    Returns error code                              */
     void                            *decState           /* I/O  State                                           */
     ) {
     oac_int n, ret = SILK_NO_ERROR;
     silk_decoder_state *channel_state = ((silk_decoder *)decState)->channel_state;
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
-        ret  = silk_reset_decoder( &channel_state[ n ] );
+        ret  = oaci_silk_reset_decoder( &channel_state[ n ] );
     }
     silk_memset(&((silk_decoder *)decState)->sStereo, 0, sizeof(((silk_decoder *)decState)->sStereo));
     /* Not strictly needed, but it's cleaner that way */
@@ -104,7 +104,7 @@ oac_int silk_ResetDecoder(                              /* O    Returns error co
 }
 
 
-oac_int silk_InitDecoder(                              /* O    Returns error code                              */
+oac_int oaci_silk_InitDecoder(                              /* O    Returns error code                              */
     void                            *decState           /* I/O  State                                           */
     ) {
     oac_int n, ret = SILK_NO_ERROR;
@@ -114,11 +114,11 @@ oac_int silk_InitDecoder(                              /* O    Returns error cod
 #endif
 #ifndef USE_WEIGHTS_FILE
     /* load osce models */
-    silk_LoadOSCEModels(decState, NULL, 0);
+    oaci_silk_LoadOSCEModels(decState, NULL, 0);
 #endif
 
     for (n = 0; n < DECODER_NUM_CHANNELS; n++) {
-        ret  = silk_init_decoder( &channel_state[ n ] );
+        ret  = oaci_silk_init_decoder( &channel_state[ n ] );
     }
     silk_memset(&((silk_decoder *)decState)->sStereo, 0, sizeof(((silk_decoder *)decState)->sStereo));
     /* Not strictly needed, but it's cleaner that way */
@@ -128,7 +128,7 @@ oac_int silk_InitDecoder(                              /* O    Returns error cod
 }
 
 /* Decode a frame */
-oac_int silk_Decode(                                   /* O    Returns error code                              */
+oac_int oaci_silk_Decode(                                   /* O    Returns error code                              */
     void*                           decState,           /* I/O  State                                           */
     silk_DecControlStruct*          decControl,         /* I/O  Control Structure                               */
     oac_int lostFlag,                                  /* I    0: no loss, 1 loss, 2 decode fec                */
@@ -170,7 +170,7 @@ oac_int silk_Decode(                                   /* O    Returns error cod
 
     /* If Mono -> Stereo transition in bitstream: init state of second channel */
     if (decControl->nChannelsInternal > psDec->nChannelsInternal) {
-        ret += silk_init_decoder( &channel_state[ 1 ] );
+        ret += oaci_silk_init_decoder( &channel_state[ 1 ] );
     }
 
     stereo_to_mono = decControl->nChannelsInternal == 1 && psDec->nChannelsInternal == 2
@@ -206,7 +206,7 @@ oac_int silk_Decode(                                   /* O    Returns error cod
                 RESTORE_STACK;
                 return SILK_DEC_INVALID_SAMPLING_FREQUENCY;
             }
-            ret += silk_decoder_set_fs( &channel_state[ n ], fs_kHz_dec, decControl->API_sampleRate );
+            ret += oaci_silk_decoder_set_fs( &channel_state[ n ], fs_kHz_dec, decControl->API_sampleRate );
         }
     }
 
@@ -231,9 +231,9 @@ oac_int silk_Decode(                                   /* O    Returns error cod
         /* Decode VAD flags and LBRR flag */
         for (n = 0; n < decControl->nChannelsInternal; n++) {
             for (i = 0; i < channel_state[ n ].nFramesPerPacket; i++) {
-                channel_state[ n ].VAD_flags[ i ] = ec_dec_bit_logp(psRangeDec, 1);
+                channel_state[ n ].VAD_flags[ i ] = oaci_ec_dec_bit_logp(psRangeDec, 1);
             }
-            channel_state[ n ].LBRR_flag = ec_dec_bit_logp(psRangeDec, 1);
+            channel_state[ n ].LBRR_flag = oaci_ec_dec_bit_logp(psRangeDec, 1);
         }
         /* Decode LBRR flags */
         for (n = 0; n < decControl->nChannelsInternal; n++) {
@@ -242,8 +242,8 @@ oac_int silk_Decode(                                   /* O    Returns error cod
                 if (channel_state[ n ].nFramesPerPacket == 1) {
                     channel_state[ n ].LBRR_flags[ 0 ] = 1;
                 } else {
-                    LBRR_symbol = ec_dec_icdf( psRangeDec,
-                    silk_LBRR_flags_iCDF_ptr[ channel_state[ n ].nFramesPerPacket - 2 ], 8 ) + 1;
+                    LBRR_symbol = oaci_ec_dec_icdf( psRangeDec,
+                    oaci_silk_LBRR_flags_iCDF_ptr[ channel_state[ n ].nFramesPerPacket - 2 ], 8 ) + 1;
                     for (i = 0; i < channel_state[ n ].nFramesPerPacket; i++) {
                         channel_state[ n ].LBRR_flags[ i ] = silk_RSHIFT( LBRR_symbol, i )&1;
                     }
@@ -260,9 +260,9 @@ oac_int silk_Decode(                                   /* O    Returns error cod
                         oac_int condCoding;
 
                         if (decControl->nChannelsInternal == 2 && n == 0) {
-                            silk_stereo_decode_pred( psRangeDec, MS_pred_Q13 );
+                            oaci_silk_stereo_decode_pred( psRangeDec, MS_pred_Q13 );
                             if (channel_state[ 1 ].LBRR_flags[ i ] == 0) {
-                                silk_stereo_decode_mid_only( psRangeDec, &decode_only_middle );
+                                oaci_silk_stereo_decode_mid_only( psRangeDec, &decode_only_middle );
                             }
                         }
                         /* Use conditional coding if previous frame available */
@@ -271,8 +271,8 @@ oac_int silk_Decode(                                   /* O    Returns error cod
                         } else {
                             condCoding = CODE_INDEPENDENTLY;
                         }
-                        silk_decode_indices( &channel_state[ n ], psRangeDec, i, 1, condCoding );
-                        silk_decode_pulses( psRangeDec, pulses, channel_state[ n ].indices.signalType,
+                        oaci_silk_decode_indices( &channel_state[ n ], psRangeDec, i, 1, condCoding );
+                        oaci_silk_decode_pulses( psRangeDec, pulses, channel_state[ n ].indices.signalType,
                             channel_state[ n ].indices.quantOffsetType, channel_state[ n ].frame_length );
                     }
                 }
@@ -285,13 +285,13 @@ oac_int silk_Decode(                                   /* O    Returns error cod
         if (lostFlag == FLAG_DECODE_NORMAL
             || (lostFlag == FLAG_DECODE_LBRR
                 && channel_state[ 0 ].LBRR_flags[ channel_state[ 0 ].nFramesDecoded ] == 1)) {
-            silk_stereo_decode_pred( psRangeDec, MS_pred_Q13 );
+            oaci_silk_stereo_decode_pred( psRangeDec, MS_pred_Q13 );
             /* For LBRR data, decode mid-only flag only if side-channel's LBRR flag is false */
             if ((lostFlag == FLAG_DECODE_NORMAL
                  && channel_state[ 1 ].VAD_flags[ channel_state[ 0 ].nFramesDecoded ] == 0)
                 || (lostFlag == FLAG_DECODE_LBRR
                     && channel_state[ 1 ].LBRR_flags[ channel_state[ 0 ].nFramesDecoded ] == 0)) {
-                silk_stereo_decode_mid_only( psRangeDec, &decode_only_middle );
+                oaci_silk_stereo_decode_mid_only( psRangeDec, &decode_only_middle );
             } else {
                 decode_only_middle = 0;
             }
@@ -349,10 +349,10 @@ oac_int silk_Decode(                                   /* O    Returns error cod
             }
 #ifdef ENABLE_OSCE
             if (channel_state[n].osce.method != decControl->osce_method) {
-                osce_reset( &channel_state[n].osce, decControl->osce_method );
+                oaci_osce_reset( &channel_state[n].osce, decControl->osce_method );
             }
 #endif
-            ret += silk_decode_frame( &channel_state[ n ], psRangeDec, &samplesOut1_tmp[ n ][ 2 ], &nSamplesOutDec,
+            ret += oaci_silk_decode_frame( &channel_state[ n ], psRangeDec, &samplesOut1_tmp[ n ][ 2 ], &nSamplesOutDec,
             lostFlag, condCoding,
 #ifdef ENABLE_DEEP_PLC
                 n == 0 ? lpcnet : NULL,
@@ -369,7 +369,7 @@ oac_int silk_Decode(                                   /* O    Returns error cod
 
     if (decControl->nChannelsAPI == 2 && decControl->nChannelsInternal == 2) {
         /* Convert Mid/Side to Left/Right */
-        silk_stereo_MS_to_LR( &psDec->sStereo, samplesOut1_tmp[ 0 ], samplesOut1_tmp[ 1 ], MS_pred_Q13,
+        oaci_silk_stereo_MS_to_LR( &psDec->sStereo, samplesOut1_tmp[ 0 ], samplesOut1_tmp[ 1 ], MS_pred_Q13,
         channel_state[ 0 ].fs_kHz, nSamplesOutDec );
     } else {
         /* Buffering */
@@ -398,33 +398,33 @@ oac_int silk_Decode(                                   /* O    Returns error cod
 
             if (decControl->prev_osce_extended_mode != OSCE_MODE_SILK_BBWE) {
                 /* Reset the BWE state */
-                osce_bwe_reset( &channel_state[ n ].osce_bwe );
+                oaci_osce_bwe_reset( &channel_state[ n ].osce_bwe );
             }
 
-            osce_bwe(&psDec->osce_model, &channel_state[ n ].osce_bwe,
+            oaci_osce_bwe(&psDec->osce_model, &channel_state[ n ].osce_bwe,
                 resample_out_ptr, &samplesOut1_tmp[ n ][ 1 ], nSamplesOutDec, arch);
 
             if (decControl->prev_osce_extended_mode == OSCE_MODE_SILK_ONLY
                 || decControl->prev_osce_extended_mode == OSCE_MODE_HYBRID) {
                 /* cross-fade with upsampled signal */
-                silk_resampler( &channel_state[ n ].resampler_state, resamp_buffer, &samplesOut1_tmp[ n ][ 1 ],
+                oaci_silk_resampler( &channel_state[ n ].resampler_state, resamp_buffer, &samplesOut1_tmp[ n ][ 1 ],
                 nSamplesOutDec );
-                osce_bwe_cross_fade_10ms(resample_out_ptr, resamp_buffer, 480);
+                oaci_osce_bwe_cross_fade_10ms(resample_out_ptr, resamp_buffer, 480);
             }
         } else {
-            ret += silk_resampler( &channel_state[ n ].resampler_state, resample_out_ptr, &samplesOut1_tmp[ n ][ 1 ],
+            ret += oaci_silk_resampler( &channel_state[ n ].resampler_state, resample_out_ptr, &samplesOut1_tmp[ n ][ 1 ],
             nSamplesOutDec );
             if (decControl->prev_osce_extended_mode == OSCE_MODE_SILK_BBWE && decControl->internalSampleRate == 16000) {
                 /* fade out if internal sample rate did not change */
-                osce_bwe(&psDec->osce_model, &channel_state[ n ].osce_bwe,
+                oaci_osce_bwe(&psDec->osce_model, &channel_state[ n ].osce_bwe,
                     resamp_buffer, &samplesOut1_tmp[ n ][ 1 ], nSamplesOutDec, arch);
                 /* cross-fade with upsampled signal */
-                osce_bwe_cross_fade_10ms(resample_out_ptr, resamp_buffer, 480);
+                oaci_osce_bwe_cross_fade_10ms(resample_out_ptr, resamp_buffer, 480);
             }
         }
 #else
         /* Resample decoded signal to API_sampleRate */
-        ret += silk_resampler( &channel_state[ n ].resampler_state, resample_out_ptr, &samplesOut1_tmp[ n ][ 1 ],
+        ret += oaci_silk_resampler( &channel_state[ n ].resampler_state, resample_out_ptr, &samplesOut1_tmp[ n ][ 1 ],
         nSamplesOutDec );
 #endif
         /* Interleave if stereo output and stereo stream */
@@ -448,7 +448,7 @@ oac_int silk_Decode(                                   /* O    Returns error cod
         if (stereo_to_mono) {
             /* Resample right channel for newly collapsed stereo just in case
                we weren't doing collapsing when switching to mono */
-            ret += silk_resampler( &channel_state[ 1 ].resampler_state, resample_out_ptr, &samplesOut1_tmp[ 0 ][ 1 ],
+            ret += oaci_silk_resampler( &channel_state[ 1 ].resampler_state, resample_out_ptr, &samplesOut1_tmp[ 0 ][ 1 ],
             nSamplesOutDec );
 
             for (i = 0; i < *nSamplesOut; i++) {

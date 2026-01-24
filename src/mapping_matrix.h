@@ -43,11 +43,11 @@ typedef struct MappingMatrix {
     /* Matrix cell data goes here using col-wise ordering. */
 } MappingMatrix;
 
-oac_int32 mapping_matrix_get_size(int rows, int cols);
+oac_int32 oaci_mapping_matrix_get_size(int rows, int cols);
 
-oac_int16 *mapping_matrix_get_data(const MappingMatrix *matrix);
+oac_int16 *oaci_mapping_matrix_get_data(const MappingMatrix *matrix);
 
-void mapping_matrix_init(
+void oaci_mapping_matrix_init(
     MappingMatrix * const matrix,
     int rows,
     int cols,
@@ -56,7 +56,7 @@ void mapping_matrix_init(
     oac_int32 data_size);
 
 #ifndef DISABLE_FLOAT_API
-void mapping_matrix_multiply_channel_in_float(
+void oaci_mapping_matrix_multiply_channel_in_float(
     const MappingMatrix *matrix,
     const float *input,
     int input_rows,
@@ -65,7 +65,7 @@ void mapping_matrix_multiply_channel_in_float(
     int output_rows,
     int frame_size);
 
-void mapping_matrix_multiply_channel_out_float(
+void oaci_mapping_matrix_multiply_channel_out_float(
     const MappingMatrix *matrix,
     const oac_res *input,
     int input_row,
@@ -75,7 +75,7 @@ void mapping_matrix_multiply_channel_out_float(
     int frame_size);
 #endif /* DISABLE_FLOAT_API */
 
-void mapping_matrix_multiply_channel_in_short(
+void oaci_mapping_matrix_multiply_channel_in_short(
     const MappingMatrix *matrix,
     const oac_int16 *input,
     int input_rows,
@@ -84,7 +84,7 @@ void mapping_matrix_multiply_channel_in_short(
     int output_rows,
     int frame_size);
 
-void mapping_matrix_multiply_channel_out_short(
+void oaci_mapping_matrix_multiply_channel_out_short(
     const MappingMatrix *matrix,
     const oac_res *input,
     int input_row,
@@ -94,7 +94,7 @@ void mapping_matrix_multiply_channel_out_short(
     int frame_size);
 
 
-void mapping_matrix_multiply_channel_in_int24(
+void oaci_mapping_matrix_multiply_channel_in_int24(
     const MappingMatrix *matrix,
     const oac_int32 *input,
     int input_rows,
@@ -103,7 +103,7 @@ void mapping_matrix_multiply_channel_in_int24(
     int output_rows,
     int frame_size);
 
-void mapping_matrix_multiply_channel_out_int24(
+void oaci_mapping_matrix_multiply_channel_out_int24(
     const MappingMatrix *matrix,
     const oac_res *input,
     int input_row,
@@ -116,34 +116,34 @@ void mapping_matrix_multiply_channel_out_int24(
  *   soa: second-order ambisonics
  *   toa: third-order ambisonics
  */
-extern const MappingMatrix mapping_matrix_foa_mixing;
-extern const oac_int16 mapping_matrix_foa_mixing_data[36];
+extern const MappingMatrix oaci_mapping_matrix_foa_mixing;
+extern const oac_int16 oaci_mapping_matrix_foa_mixing_data[36];
 
-extern const MappingMatrix mapping_matrix_soa_mixing;
-extern const oac_int16 mapping_matrix_soa_mixing_data[121];
+extern const MappingMatrix oaci_mapping_matrix_soa_mixing;
+extern const oac_int16 oaci_mapping_matrix_soa_mixing_data[121];
 
-extern const MappingMatrix mapping_matrix_toa_mixing;
-extern const oac_int16 mapping_matrix_toa_mixing_data[324];
+extern const MappingMatrix oaci_mapping_matrix_toa_mixing;
+extern const oac_int16 oaci_mapping_matrix_toa_mixing_data[324];
 
-extern const MappingMatrix mapping_matrix_fourthoa_mixing;
-extern const oac_int16 mapping_matrix_fourthoa_mixing_data[729];
+extern const MappingMatrix oaci_mapping_matrix_fourthoa_mixing;
+extern const oac_int16 oaci_mapping_matrix_fourthoa_mixing_data[729];
 
-extern const MappingMatrix mapping_matrix_fifthoa_mixing;
-extern const oac_int16 mapping_matrix_fifthoa_mixing_data[1444];
+extern const MappingMatrix oaci_mapping_matrix_fifthoa_mixing;
+extern const oac_int16 oaci_mapping_matrix_fifthoa_mixing_data[1444];
 
-extern const MappingMatrix mapping_matrix_foa_demixing;
-extern const oac_int16 mapping_matrix_foa_demixing_data[36];
+extern const MappingMatrix oaci_mapping_matrix_foa_demixing;
+extern const oac_int16 oaci_mapping_matrix_foa_demixing_data[36];
 
-extern const MappingMatrix mapping_matrix_soa_demixing;
-extern const oac_int16 mapping_matrix_soa_demixing_data[121];
+extern const MappingMatrix oaci_mapping_matrix_soa_demixing;
+extern const oac_int16 oaci_mapping_matrix_soa_demixing_data[121];
 
-extern const MappingMatrix mapping_matrix_toa_demixing;
-extern const oac_int16 mapping_matrix_toa_demixing_data[324];
+extern const MappingMatrix oaci_mapping_matrix_toa_demixing;
+extern const oac_int16 oaci_mapping_matrix_toa_demixing_data[324];
 
-extern const MappingMatrix mapping_matrix_fourthoa_demixing;
-extern const oac_int16 mapping_matrix_fourthoa_demixing_data[729];
+extern const MappingMatrix oaci_mapping_matrix_fourthoa_demixing;
+extern const oac_int16 oaci_mapping_matrix_fourthoa_demixing_data[729];
 
-extern const MappingMatrix mapping_matrix_fifthoa_demixing;
-extern const oac_int16 mapping_matrix_fifthoa_demixing_data[1444];
+extern const MappingMatrix oaci_mapping_matrix_fifthoa_demixing;
+extern const oac_int16 oaci_mapping_matrix_fifthoa_demixing_data[1444];
 
 #endif /* MAPPING_MATRIX_H */

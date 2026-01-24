@@ -31,27 +31,27 @@
 #include "armcpu.h"
 
 #if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-oac_val32 celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N);
-void dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01,
+oac_val32 oaci_celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N);
+void oaci_dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01,
     const oac_val16 *y02, int N, oac_val32 *xy1, oac_val32 *xy2);
 
 # if !defined(OAC_HAVE_RTCD) && defined(OAC_ARM_PRESUME_NEON)
 #  define OVERRIDE_CELT_INNER_PROD (1)
 #  define OVERRIDE_DUAL_INNER_PROD (1)
-#  define celt_inner_prod(x, y, N, arch) ((void)(arch), PRESUME_NEON(celt_inner_prod)(x, y, N))
-#  define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch), \
-                                                           PRESUME_NEON(dual_inner_prod)(x, y01, y02, N, xy1, xy2))
+#  define oaci_celt_inner_prod(x, y, N, arch) ((void)(arch), PRESUME_NEON(oaci_celt_inner_prod)(x, y, N))
+#  define oaci_dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch), \
+                                                           PRESUME_NEON(oaci_dual_inner_prod)(x, y01, y02, N, xy1, xy2))
 # endif
 #endif
 
 #if !defined(OVERRIDE_CELT_INNER_PROD)
 # if defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
-extern oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N);
+extern oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N);
 #  define OVERRIDE_CELT_INNER_PROD (1)
-#  define celt_inner_prod(x, y, N, arch) ((*CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
+#  define oaci_celt_inner_prod(x, y, N, arch) ((*oaci_CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #  define OVERRIDE_CELT_INNER_PROD (1)
-#  define celt_inner_prod(x, y, N, arch) ((void)(arch), celt_inner_prod_neon(x, y, N))
+#  define oaci_celt_inner_prod(x, y, N, arch) ((void)(arch), oaci_celt_inner_prod_neon(x, y, N))
 # endif
 #endif
 
@@ -60,27 +60,27 @@ extern oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16
 extern void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x,
         const oac_val16 *y01, const oac_val16 *y02, int N, oac_val32 *xy1, oac_val32 *xy2);
 #  define OVERRIDE_DUAL_INNER_PROD (1)
-#  define dual_inner_prod(x, y01, y02, N, xy1, xy2, \
+#  define oaci_dual_inner_prod(x, y01, y02, N, xy1, xy2, \
                           arch) ((*DUAL_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y01, y02, N, xy1, xy2))
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #  define OVERRIDE_DUAL_INNER_PROD (1)
-#  define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch), dual_inner_prod_neon(x, y01, y02, N, xy1, xy2))
+#  define oaci_dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) ((void)(arch), oaci_dual_inner_prod_neon(x, y01, y02, N, xy1, xy2))
 # endif
 #endif
 
 #if defined(FIXED_POINT)
 
 # if defined(OAC_ARM_MAY_HAVE_NEON)
-oac_val32 celt_pitch_xcorr_neon(const oac_val16 *_x, const oac_val16 *_y,
+oac_val32 oaci_celt_pitch_xcorr_neon(const oac_val16 *_x, const oac_val16 *_y,
     oac_val32 *xcorr, int len, int max_pitch, int arch);
 # endif
 
 # if defined(OAC_ARM_MAY_HAVE_MEDIA)
-#  define celt_pitch_xcorr_media MAY_HAVE_EDSP(celt_pitch_xcorr)
+#  define oaci_celt_pitch_xcorr_media MAY_HAVE_EDSP(oaci_celt_pitch_xcorr)
 # endif
 
 # if defined(OAC_ARM_MAY_HAVE_EDSP)
-oac_val32 celt_pitch_xcorr_edsp(const oac_val16 *_x, const oac_val16 *_y,
+oac_val32 oaci_celt_pitch_xcorr_edsp(const oac_val16 *_x, const oac_val16 *_y,
     oac_val32 *xcorr, int len, int max_pitch, int arch);
 # endif
 
@@ -92,7 +92,7 @@ extern oac_val32
 (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *,
       const oac_val16 *, oac_val32 *, int, int, int);
 #  define OVERRIDE_PITCH_XCORR (1)
-#  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
+#  define oaci_celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
         ((*CELT_PITCH_XCORR_IMPL[(arch)&OAC_ARCHMASK])(_x, _y, \
                                                        xcorr, len, max_pitch, arch))
 
@@ -100,12 +100,12 @@ extern oac_val32
     defined(OAC_ARM_PRESUME_MEDIA) || \
     defined(OAC_ARM_PRESUME_NEON)
 #  define OVERRIDE_PITCH_XCORR (1)
-#  define celt_pitch_xcorr (PRESUME_NEON(celt_pitch_xcorr))
+#  define oaci_celt_pitch_xcorr (PRESUME_NEON(oaci_celt_pitch_xcorr))
 
 # endif
 
 # if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-void xcorr_kernel_neon_fixed(
+void oaci_xcorr_kernel_neon_fixed(
     const oac_val16 *x,
     const oac_val16 *y,
     oac_val32 sum[4],
@@ -115,27 +115,27 @@ void xcorr_kernel_neon_fixed(
 # if defined(OAC_HAVE_RTCD) && \
     (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
 
-extern void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y,
                     oac_val32 sum[4],
                     int len);
 
 #  define OVERRIDE_XCORR_KERNEL (1)
-#  define xcorr_kernel(x, y, sum, len, arch) \
-        ((*XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
+#  define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((*oaci_XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
 
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #  define OVERRIDE_XCORR_KERNEL (1)
-#  define xcorr_kernel(x, y, sum, len, arch) \
-        ((void)arch, xcorr_kernel_neon_fixed(x, y, sum, len))
+#  define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((void)arch, oaci_xcorr_kernel_neon_fixed(x, y, sum, len))
 
 # endif
 
 #else /* Start !FIXED_POINT */
 /* Float case */
 # if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-void celt_pitch_xcorr_float_neon(const oac_val16 *_x, const oac_val16 *_y,
+void oaci_celt_pitch_xcorr_float_neon(const oac_val16 *_x, const oac_val16 *_y,
     oac_val32 *xcorr, int len, int max_pitch, int arch);
 # endif
 
@@ -146,14 +146,14 @@ extern void
       const oac_val16 *, oac_val32 *, int, int, int);
 
 #  define OVERRIDE_PITCH_XCORR (1)
-#  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
+#  define oaci_celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
         ((*CELT_PITCH_XCORR_IMPL[(arch)&OAC_ARCHMASK])(_x, _y, \
                                                        xcorr, len, max_pitch, arch))
 
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 
 #  define OVERRIDE_PITCH_XCORR (1)
-#  define celt_pitch_xcorr celt_pitch_xcorr_float_neon
+#  define oaci_celt_pitch_xcorr oaci_celt_pitch_xcorr_float_neon
 
 # endif
 

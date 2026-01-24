@@ -47,7 +47,7 @@
 #endif
 
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */
-void silk_stereo_LR_to_MS(
+void oaci_silk_stereo_LR_to_MS(
     stereo_enc_state            *state,                         /* I/O  State                                       */
     oac_int16 x1[],                                            /* I/O  Left input signal, becomes mid signal       */
     oac_int16 x2[],                                            /* I/O  Right input signal, becomes side signal     */
@@ -62,7 +62,7 @@ void silk_stereo_LR_to_MS(
     );
 
 /* Convert adaptive Mid/Side representation to Left/Right stereo signal */
-void silk_stereo_MS_to_LR(
+void oaci_silk_stereo_MS_to_LR(
     stereo_dec_state            *state,                         /* I/O  State                                       */
     oac_int16 x1[],                                            /* I/O  Left input signal, becomes mid signal       */
     oac_int16 x2[],                                            /* I/O  Right input signal, becomes side signal     */
@@ -72,7 +72,7 @@ void silk_stereo_MS_to_LR(
     );
 
 /* Find least-squares prediction gain for one signal based on another and quantize it */
-oac_int32 silk_stereo_find_predictor(                          /* O    Returns predictor in Q13                    */
+oac_int32 oaci_silk_stereo_find_predictor(                          /* O    Returns predictor in Q13                    */
     oac_int32                  *ratio_Q14,                     /* O    Ratio of residual and mid energies          */
     const oac_int16 x[],                                       /* I    Basis signal                                */
     const oac_int16 y[],                                       /* I    Target signal                               */
@@ -82,36 +82,36 @@ oac_int32 silk_stereo_find_predictor(                          /* O    Returns p
     );
 
 /* Quantize mid/side predictors */
-void silk_stereo_quant_pred(
+void oaci_silk_stereo_quant_pred(
     oac_int32 pred_Q13[],                                      /* I/O  Predictors (out: quantized)                 */
     oac_int8 ix[ 2 ][ 3 ]                                      /* O    Quantization indices                        */
     );
 
 /* Entropy code the mid/side quantization indices */
-void silk_stereo_encode_pred(
+void oaci_silk_stereo_encode_pred(
     ec_enc                      *psRangeEnc,                    /* I/O  Compressor data structure                   */
     oac_int8 ix[ 2 ][ 3 ]                                      /* I    Quantization indices                        */
     );
 
 /* Entropy code the mid-only flag */
-void silk_stereo_encode_mid_only(
+void oaci_silk_stereo_encode_mid_only(
     ec_enc                      *psRangeEnc,                    /* I/O  Compressor data structure                   */
     oac_int8 mid_only_flag);
 
 /* Decode mid/side predictors */
-void silk_stereo_decode_pred(
+void oaci_silk_stereo_decode_pred(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int32 pred_Q13[]                                       /* O    Predictors                                  */
     );
 
 /* Decode mid-only flag */
-void silk_stereo_decode_mid_only(
+void oaci_silk_stereo_decode_mid_only(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int                    *decode_only_mid                /* O    Flag that only mid channel has been coded   */
     );
 
 /* Encodes signs of excitation */
-void silk_encode_signs(
+void oaci_silk_encode_signs(
     ec_enc                      *psRangeEnc,                        /* I/O  Compressor data structure               */
     const oac_int8 pulses[],                                       /* I    pulse signal                            */
     oac_int length,                                                /* I    length of input                         */
@@ -121,7 +121,7 @@ void silk_encode_signs(
     );
 
 /* Decodes signs of excitation */
-void silk_decode_signs(
+void oaci_silk_decode_signs(
     ec_dec                      *psRangeDec,                        /* I/O  Compressor data structure               */
     oac_int16 pulses[],                                            /* I/O  pulse signal                            */
     oac_int length,                                                /* I    length of input                         */
@@ -131,18 +131,18 @@ void silk_decode_signs(
     );
 
 /* Check encoder control struct */
-oac_int check_control_input(
+oac_int oaci_check_control_input(
     silk_EncControlStruct        *encControl                    /* I    Control structure                           */
     );
 
 /* Control internal sampling rate */
-oac_int silk_control_audio_bandwidth(
+oac_int oaci_silk_control_audio_bandwidth(
     silk_encoder_state          *psEncC,                        /* I/O  Pointer to Silk encoder state               */
     silk_EncControlStruct       *encControl                     /* I    Control structure                           */
     );
 
 /* Control SNR of residual quantizer */
-oac_int silk_control_SNR(
+oac_int oaci_silk_control_SNR(
     silk_encoder_state          *psEncC,                        /* I/O  Pointer to Silk encoder state               */
     oac_int32 TargetRate_bps                                   /* I    Target max bitrate (bps)                    */
     );
@@ -152,7 +152,7 @@ oac_int silk_control_SNR(
 /***************/
 
 /* Encode quantization indices of excitation */
-void silk_encode_pulses(
+void oaci_silk_encode_pulses(
     ec_enc                      *psRangeEnc,                    /* I/O  compressor data structure                   */
     const oac_int signalType,                                  /* I    Signal type                                 */
     const oac_int quantOffsetType,                             /* I    quantOffsetType                             */
@@ -161,20 +161,20 @@ void silk_encode_pulses(
     );
 
 /* Shell encoder, operates on one shell code frame of 16 pulses */
-void silk_shell_encoder(
+void oaci_silk_shell_encoder(
     ec_enc                      *psRangeEnc,                    /* I/O  compressor data structure                   */
     const oac_int              *pulses0                        /* I    data: nonnegative pulse amplitudes          */
     );
 
 /* Shell decoder, operates on one shell code frame of 16 pulses */
-void silk_shell_decoder(
+void oaci_silk_shell_decoder(
     oac_int16                  *pulses0,                       /* O    data: nonnegative pulse amplitudes          */
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     const oac_int pulses4                                      /* I    number of pulses per pulse-subframe         */
     );
 
 /* Gain scalar quantization with hysteresis, uniform on log scale */
-void silk_gains_quant(
+void oaci_silk_gains_quant(
     oac_int8 ind[ MAX_NB_SUBFR ],                              /* O    gain indices                                */
     oac_int32 gain_Q16[ MAX_NB_SUBFR ],                        /* I/O  gains (quantized out)                       */
     oac_int8                   *prev_ind,                      /* I/O  last index in previous frame                */
@@ -183,7 +183,7 @@ void silk_gains_quant(
     );
 
 /* Gains scalar dequantization, uniform on log scale */
-void silk_gains_dequant(
+void oaci_silk_gains_dequant(
     oac_int32 gain_Q16[ MAX_NB_SUBFR ],                        /* O    quantized gains                             */
     const oac_int8 ind[ MAX_NB_SUBFR ],                        /* I    gain indices                                */
     oac_int8                   *prev_ind,                      /* I/O  last index in previous frame                */
@@ -192,13 +192,13 @@ void silk_gains_dequant(
     );
 
 /* Compute unique identifier of gain indices vector */
-oac_int32 silk_gains_ID(                                       /* O    returns unique identifier of gains          */
+oac_int32 oaci_silk_gains_ID(                                       /* O    returns unique identifier of gains          */
     const oac_int8 ind[ MAX_NB_SUBFR ],                        /* I    gain indices                                */
     const oac_int nb_subfr                                     /* I    number of subframes                         */
     );
 
 /* Interpolate two vectors */
-void silk_interpolate(
+void oaci_silk_interpolate(
     oac_int16 xi[ MAX_LPC_ORDER ],                             /* O    interpolated vector                         */
     const oac_int16 x0[ MAX_LPC_ORDER ],                       /* I    first vector                                */
     const oac_int16 x1[ MAX_LPC_ORDER ],                       /* I    second vector                               */
@@ -207,7 +207,7 @@ void silk_interpolate(
     );
 
 /* LTP tap quantizer */
-void silk_quant_LTP_gains(
+void oaci_silk_quant_LTP_gains(
     oac_int16 B_Q14[ MAX_NB_SUBFR*LTP_ORDER ],                             /* O    Quantized LTP gains             */
     oac_int8 cbk_index[ MAX_NB_SUBFR ],                                    /* O    Codebook Index                  */
     oac_int8                   *periodicity_index,                         /* O    Periodicity Index               */
@@ -221,7 +221,7 @@ void silk_quant_LTP_gains(
     );
 
 /* Entropy constrained matrix-weighted VQ, for a single input data vector */
-void silk_VQ_WMat_EC_c(
+void oaci_silk_VQ_WMat_EC_c(
     oac_int8                   *ind,                           /* O    index of best codebook vector               */
     oac_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
     oac_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
@@ -236,11 +236,11 @@ void silk_VQ_WMat_EC_c(
     const oac_int L                                            /* I    number of vectors in codebook               */
     );
 
-#if !defined(OVERRIDE_silk_VQ_WMat_EC)
-# define silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, subfr_len, \
+#if !defined(OVERRIDE_oaci_silk_VQ_WMat_EC)
+# define oaci_silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, subfr_len, \
                          max_gain_Q7, L, arch) \
         ((void)(arch), \
-         silk_VQ_WMat_EC_c(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, subfr_len, \
+         oaci_silk_VQ_WMat_EC_c(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, subfr_len, \
     max_gain_Q7, L))
 #endif
 
@@ -248,7 +248,7 @@ void silk_VQ_WMat_EC_c(
 /* Noise shaping quantization (NSQ) */
 /************************************/
 
-void silk_NSQ_c(
+void oaci_silk_NSQ_c(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -266,15 +266,15 @@ void silk_NSQ_c(
     const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
     );
 
-#if !defined(OVERRIDE_silk_NSQ)
-# define silk_NSQ(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+#if !defined(OVERRIDE_oaci_silk_NSQ)
+# define oaci_silk_NSQ(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                   HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-        ((void)(arch), silk_NSQ_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+        ((void)(arch), oaci_silk_NSQ_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                    HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 #endif
 
 /* Noise shaping using delayed decision */
-void silk_NSQ_del_dec_c(
+void oaci_silk_NSQ_del_dec_c(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -292,10 +292,10 @@ void silk_NSQ_del_dec_c(
     const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
     );
 
-#if !defined(OVERRIDE_silk_NSQ_del_dec)
-# define silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+#if !defined(OVERRIDE_oaci_silk_NSQ_del_dec)
+# define oaci_silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                           HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-        ((void)(arch), silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
+        ((void)(arch), oaci_silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14))
 #endif
 
@@ -303,24 +303,24 @@ void silk_NSQ_del_dec_c(
 /* Silk VAD */
 /************/
 /* Initialize the Silk VAD */
-oac_int silk_VAD_Init(                                         /* O    Return value, 0 if success                  */
+oac_int oaci_silk_VAD_Init(                                         /* O    Return value, 0 if success                  */
     silk_VAD_state              *psSilk_VAD                     /* I/O  Pointer to Silk VAD state                   */
     );
 
 /* Get speech activity level in Q8 */
-oac_int silk_VAD_GetSA_Q8_c(                                   /* O    Return value, 0 if success                  */
+oac_int oaci_silk_VAD_GetSA_Q8_c(                                   /* O    Return value, 0 if success                  */
     silk_encoder_state          *psEncC,                        /* I/O  Encoder state                               */
     const oac_int16 pIn[]                                      /* I    PCM input                                   */
     );
 
-#if !defined(OVERRIDE_silk_VAD_GetSA_Q8)
-# define silk_VAD_GetSA_Q8(psEnC, pIn, arch) ((void)(arch), silk_VAD_GetSA_Q8_c(psEnC, pIn))
+#if !defined(OVERRIDE_oaci_silk_VAD_GetSA_Q8)
+# define oaci_silk_VAD_GetSA_Q8(psEnC, pIn, arch) ((void)(arch), oaci_silk_VAD_GetSA_Q8_c(psEnC, pIn))
 #endif
 
 /* Low-pass filter with variable cutoff frequency based on  */
 /* piece-wise linear interpolation between elliptic filters */
 /* Start by setting transition_frame_no = 1;                */
-void silk_LP_variable_cutoff(
+void oaci_silk_LP_variable_cutoff(
     silk_LP_state               *psLP,                          /* I/O  LP filter state                             */
     oac_int16                  *frame,                         /* I/O  Low-pass filtered output signal             */
     const oac_int frame_length                                 /* I    Frame length                                */
@@ -330,14 +330,14 @@ void silk_LP_variable_cutoff(
 /* NLSF Quantizer */
 /******************/
 /* Limit, stabilize, convert and quantize NLSFs */
-void silk_process_NLSFs(
+void oaci_silk_process_NLSFs(
     silk_encoder_state          *psEncC,                            /* I/O  Encoder state                               */
     oac_int16 PredCoef_Q12[ 2 ][ MAX_LPC_ORDER ],                  /* O    Prediction coefficients                     */
     oac_int16 pNLSF_Q15[         MAX_LPC_ORDER ],                  /* I/O  Normalized LSFs (quant out) (0 - (2^15-1))  */
     const oac_int16 prev_NLSFq_Q15[    MAX_LPC_ORDER ]             /* I    Previous Normalized LSFs (0 - (2^15-1))     */
     );
 
-oac_int32 silk_NLSF_encode(                                    /* O    Returns RD value in Q25                     */
+oac_int32 oaci_silk_NLSF_encode(                                    /* O    Returns RD value in Q25                     */
     oac_int8             *NLSFIndices,                         /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
     oac_int16            *pNLSF_Q15,                           /* I/O  Quantized NLSF vector [ LPC_ORDER ]         */
     const silk_NLSF_CB_struct   *psNLSF_CB,                     /* I    Codebook object                             */
@@ -348,7 +348,7 @@ oac_int32 silk_NLSF_encode(                                    /* O    Returns R
     );
 
 /* Compute quantization errors for an LPC_order element input vector for a VQ codebook */
-void silk_NLSF_VQ(
+void oaci_silk_NLSF_VQ(
     oac_int32 err_Q26[],                                       /* O    Quantization errors [K]                     */
     const oac_int16 in_Q15[],                                  /* I    Input vectors to be quantized [LPC_order]   */
     const oac_uint8 pCB_Q8[],                                  /* I    Codebook vectors [K*LPC_order]              */
@@ -358,7 +358,7 @@ void silk_NLSF_VQ(
     );
 
 /* Delayed-decision quantizer for NLSF residuals */
-oac_int32 silk_NLSF_del_dec_quant(                             /* O    Returns RD value in Q25                     */
+oac_int32 oaci_silk_NLSF_del_dec_quant(                             /* O    Returns RD value in Q25                     */
     oac_int8 indices[],                                        /* O    Quantization indices [ order ]              */
     const oac_int16 x_Q10[],                                   /* I    Input [ order ]                             */
     const oac_int16 w_Q5[],                                    /* I    Weights [ order ]                           */
@@ -372,7 +372,7 @@ oac_int32 silk_NLSF_del_dec_quant(                             /* O    Returns R
     );
 
 /* Unpack predictor values and indices for entropy coding tables */
-void silk_NLSF_unpack(
+void oaci_silk_NLSF_unpack(
     oac_int16 ec_ix[],                                         /* O    Indices to entropy tables [ LPC_ORDER ]     */
     oac_uint8 pred_Q8[],                                       /* O    LSF predictor [ LPC_ORDER ]                 */
     const silk_NLSF_CB_struct   *psNLSF_CB,                     /* I    Codebook object                             */
@@ -382,7 +382,7 @@ void silk_NLSF_unpack(
 /***********************/
 /* NLSF vector decoder */
 /***********************/
-void silk_NLSF_decode(
+void oaci_silk_NLSF_decode(
     oac_int16            *pNLSF_Q15,                           /* O    Quantized NLSF vector [ LPC_ORDER ]         */
     oac_int8             *NLSFIndices,                         /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
     const silk_NLSF_CB_struct   *psNLSF_CB                      /* I    Codebook object                             */
@@ -391,16 +391,16 @@ void silk_NLSF_decode(
 /****************************************************/
 /* Decoder Functions                                */
 /****************************************************/
-oac_int silk_reset_decoder(
+oac_int oaci_silk_reset_decoder(
     silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
     );
 
-oac_int silk_init_decoder(
+oac_int oaci_silk_init_decoder(
     silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
     );
 
 /* Set decoder sampling rate */
-oac_int silk_decoder_set_fs(
+oac_int oaci_silk_decoder_set_fs(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state pointer                       */
     oac_int fs_kHz,                                            /* I    Sampling frequency (kHz)                    */
     oac_int32 fs_API_Hz                                        /* I    API Sampling frequency (Hz)                 */
@@ -409,7 +409,7 @@ oac_int silk_decoder_set_fs(
 /****************/
 /* Decode frame */
 /****************/
-oac_int silk_decode_frame(
+oac_int oaci_silk_decode_frame(
     silk_decoder_state*psDec,                                   /* I/O  Pointer to Silk decoder state               */
     ec_dec*psRangeDec,                                          /* I/O  Compressor data structure                   */
     oac_int16 pOut[],                                          /* O    Pointer to output speech frame              */
@@ -426,7 +426,7 @@ oac_int silk_decode_frame(
     );
 
 /* Decode indices from bitstream */
-void silk_decode_indices(
+void oaci_silk_decode_indices(
     silk_decoder_state          *psDec,                         /* I/O  State                                       */
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int FrameIndex,                                        /* I    Frame number                                */
@@ -435,14 +435,14 @@ void silk_decode_indices(
     );
 
 /* Decode parameters from payload */
-void silk_decode_parameters(
+void oaci_silk_decode_parameters(
     silk_decoder_state          *psDec,                         /* I/O  State                                       */
     silk_decoder_control        *psDecCtrl,                     /* I/O  Decoder control                             */
     oac_int condCoding                                         /* I    The type of conditional coding to use       */
     );
 
 /* Core decoder. Performs inverse NSQ operation LTP + LPC */
-void silk_decode_core(
+void oaci_silk_decode_core(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state                               */
     silk_decoder_control        *psDecCtrl,                     /* I    Decoder control                             */
     oac_int16 xq[],                                            /* O    Decoded speech                              */
@@ -451,7 +451,7 @@ void silk_decode_core(
     );
 
 /* Decode quantization indices of excitation (Shell coding) */
-void silk_decode_pulses(
+void oaci_silk_decode_pulses(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int16 pulses[],                                        /* O    Excitation signal                           */
     const oac_int signalType,                                  /* I    Sigtype                                     */
@@ -464,12 +464,12 @@ void silk_decode_pulses(
 /******************/
 
 /* Reset CNG */
-void silk_CNG_Reset(
+void oaci_silk_CNG_Reset(
     silk_decoder_state          *psDec                          /* I/O  Decoder state                               */
     );
 
 /* Updates CNG estimate, and applies the CNG when packet was lost */
-void silk_CNG(
+void oaci_silk_CNG(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state                               */
     silk_decoder_control        *psDecCtrl,                     /* I/O  Decoder control                             */
     oac_int16 frame[],                                         /* I/O  Signal                                      */
@@ -477,7 +477,7 @@ void silk_CNG(
     );
 
 /* Encoding of various parameters */
-void silk_encode_indices(
+void oaci_silk_encode_indices(
     silk_encoder_state          *psEncC,                        /* I/O  Encoder state                               */
     ec_enc                      *psRangeEnc,                    /* I/O  Compressor data structure                   */
     oac_int FrameIndex,                                        /* I    Frame number                                */

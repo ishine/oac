@@ -39,7 +39,7 @@
 #include "pitch.h"
 
 #if defined(OAC_X86_MAY_HAVE_SSE2) && defined(FIXED_POINT)
-oac_val32 celt_inner_prod_sse2(const oac_val16 *x, const oac_val16 *y,
+oac_val32 oaci_celt_inner_prod_sse2(const oac_val16 *x, const oac_val16 *y,
                                int N) {
     oac_int i, dataSize16;
     oac_int32 sum;

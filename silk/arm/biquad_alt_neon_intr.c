@@ -36,7 +36,7 @@
 #endif
 #include "SigProc_FIX.h"
 
-static inline void silk_biquad_alt_stride2_kernel( const int32x4_t A_L_s32x4, const int32x4_t A_U_s32x4,
+static inline void oaci_silk_biquad_alt_stride2_kernel( const int32x4_t A_L_s32x4, const int32x4_t A_U_s32x4,
                                                    const int32x4_t B_Q28_s32x4, const int32x2_t t_s32x2,
                                                    const int32x4_t in_s32x4, int32x4_t *S_s32x4,
                                                    int32x2_t *out32_Q14_s32x2 ) {
@@ -54,7 +54,7 @@ static inline void silk_biquad_alt_stride2_kernel( const int32x4_t A_L_s32x4, co
     *S_s32x4         = vaddq_s32( *S_s32x4, t_s32x4 );                             /* S0 = silk_SMLAWB( S0, B_Q28[ {1,1,2,2} ], in{0,1,0,1} );                        */
 }
 
-void silk_biquad_alt_stride2_neon(
+void oaci_silk_biquad_alt_stride2_neon(
     const oac_int16            *in,                /* I     input signal                                               */
     const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
     const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -79,7 +79,7 @@ void silk_biquad_alt_stride2_neon(
     ALLOC( out_c, 2*len, oac_int16 );
 
     silk_memcpy( &S_c, S, sizeof(S_c));
-    silk_biquad_alt_stride2_c( in, B_Q28, A_Q28, S_c, out_c, len );
+    oaci_silk_biquad_alt_stride2_c( in, B_Q28, A_Q28, S_c, out_c, len );
 #endif
 
     /* Negate A_Q28 values and split in two parts */
@@ -113,9 +113,9 @@ void silk_biquad_alt_stride2_neon(
         t_s32x4       = vqdmulhq_lane_s32( in_s32x4[ 0 ], B_Q28_s32x2, 0 );                             /* silk_SMULWB( B_Q28[ 0 ], in{0,1,2,3} ) */
         in_s32x4[ 1 ] = vcombine_s32( vget_high_s32( in_s32x4[ 0 ] ), vget_high_s32( in_s32x4[ 0 ] ));  /* in{2,3,2,3} << 15                      */
         in_s32x4[ 0 ] = vcombine_s32( vget_low_s32 ( in_s32x4[ 0 ] ), vget_low_s32 ( in_s32x4[ 0 ] ));  /* in{0,1,0,1} << 15                      */
-        silk_biquad_alt_stride2_kernel( A_L_s32x4, A_U_s32x4, B_Q28_s32x4, vget_low_s32 ( t_s32x4 ), in_s32x4[ 0 ],
+        oaci_silk_biquad_alt_stride2_kernel( A_L_s32x4, A_U_s32x4, B_Q28_s32x4, vget_low_s32 ( t_s32x4 ), in_s32x4[ 0 ],
         &S_s32x4, &out32_Q14_s32x2[ 0 ] );
-        silk_biquad_alt_stride2_kernel( A_L_s32x4, A_U_s32x4, B_Q28_s32x4, vget_high_s32( t_s32x4 ), in_s32x4[ 1 ],
+        oaci_silk_biquad_alt_stride2_kernel( A_L_s32x4, A_U_s32x4, B_Q28_s32x4, vget_high_s32( t_s32x4 ), in_s32x4[ 1 ],
         &S_s32x4, &out32_Q14_s32x2[ 1 ] );
 
         /* Scale back to Q0 and saturate */
@@ -136,7 +136,7 @@ void silk_biquad_alt_stride2_neon(
         in_s32x4     = vshll_n_s16( in_s16x4, 15 );                                                     /* in{0,1} << 15                      */
         t_s32x2      = vqdmulh_lane_s32( vget_low_s32( in_s32x4 ), B_Q28_s32x2, 0 );                    /* silk_SMULWB( B_Q28[ 0 ], in{0,1} ) */
         in_s32x4     = vcombine_s32( vget_low_s32( in_s32x4 ), vget_low_s32( in_s32x4 ));               /* in{0,1,0,1} << 15                  */
-        silk_biquad_alt_stride2_kernel( A_L_s32x4, A_U_s32x4, B_Q28_s32x4, t_s32x2, in_s32x4, &S_s32x4,
+        oaci_silk_biquad_alt_stride2_kernel( A_L_s32x4, A_U_s32x4, B_Q28_s32x4, t_s32x2, in_s32x4, &S_s32x4,
         &out32_Q14_s32x2 );
 
         /* Scale back to Q0 and saturate */

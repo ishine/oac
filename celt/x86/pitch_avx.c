@@ -35,8 +35,8 @@
 
 #if defined(OAC_X86_MAY_HAVE_AVX2) && !defined(FIXED_POINT)
 
-/* Like the "regular" xcorr_kernel(), but computes 8 results at a time. */
-static void xcorr_kernel_avx(const float *x, const float *y, float sum[8], int len) {
+/* Like the "regular" oaci_xcorr_kernel(), but computes 8 results at a time. */
+static void oaci_xcorr_kernel_avx(const float *x, const float *y, float sum[8], int len) {
     __m256 xsum0, xsum1, xsum2, xsum3, xsum4, xsum5, xsum6, xsum7;
     xsum7 = xsum6 = xsum5 = xsum4 = xsum3 = xsum2 = xsum1 = xsum0 = _mm256_setzero_ps();
     int i;
@@ -81,15 +81,15 @@ static void xcorr_kernel_avx(const float *x, const float *y, float sum[8], int l
     _mm256_storeu_ps(sum, xsum0);
 }
 
-void celt_pitch_xcorr_avx2(const float *_x, const float *_y, float *xcorr, int len, int max_pitch, int arch) {
+void oaci_celt_pitch_xcorr_avx2(const float *_x, const float *_y, float *xcorr, int len, int max_pitch, int arch) {
     int i;
     celt_assert(max_pitch > 0);
     (void)arch;
     for (i = 0; i < max_pitch - 7; i += 8) {
-        xcorr_kernel_avx(_x, _y + i, &xcorr[i], len);
+        oaci_xcorr_kernel_avx(_x, _y + i, &xcorr[i], len);
     }
     for (; i < max_pitch; i++) {
-        xcorr[i] = celt_inner_prod(_x, _y + i, len, arch);
+        xcorr[i] = oaci_celt_inner_prod(_x, _y + i, len, arch);
     }
 }
 

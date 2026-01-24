@@ -32,7 +32,7 @@
 #include "main.h"
 
 /* Decode side-information parameters from payload */
-void silk_decode_indices(
+void oaci_silk_decode_indices(
     silk_decoder_state          *psDec,                         /* I/O  State                                       */
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int FrameIndex,                                        /* I    Frame number                                */
@@ -48,9 +48,9 @@ void silk_decode_indices(
     /* Decode signal type and quantizer offset */
     /*******************************************/
     if (decode_LBRR || psDec->VAD_flags[ FrameIndex ]) {
-        Ix = ec_dec_icdf( psRangeDec, silk_type_offset_VAD_iCDF, 8 ) + 2;
+        Ix = oaci_ec_dec_icdf( psRangeDec, oaci_silk_type_offset_VAD_iCDF, 8 ) + 2;
     } else {
-        Ix = ec_dec_icdf( psRangeDec, silk_type_offset_no_VAD_iCDF, 8 );
+        Ix = oaci_ec_dec_icdf( psRangeDec, oaci_silk_type_offset_no_VAD_iCDF, 8 );
     }
     psDec->indices.signalType      = (oac_int8)silk_RSHIFT( Ix, 1 );
     psDec->indices.quantOffsetType = (oac_int8)(Ix&1);
@@ -61,39 +61,39 @@ void silk_decode_indices(
     /* First subframe */
     if (condCoding == CODE_CONDITIONALLY) {
         /* Conditional coding */
-        psDec->indices.GainsIndices[ 0 ] = (oac_int8)ec_dec_icdf( psRangeDec, silk_delta_gain_iCDF, 8 );
+        psDec->indices.GainsIndices[ 0 ] = (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_delta_gain_iCDF, 8 );
     } else {
         /* Independent coding, in two stages: MSB bits followed by 3 LSBs */
-        psDec->indices.GainsIndices[ 0 ]  = (oac_int8)silk_LSHIFT( ec_dec_icdf( psRangeDec,
-        silk_gain_iCDF[ psDec->indices.signalType ], 8 ), 3 );
-        psDec->indices.GainsIndices[ 0 ] += (oac_int8)ec_dec_icdf( psRangeDec, silk_uniform8_iCDF, 8 );
+        psDec->indices.GainsIndices[ 0 ]  = (oac_int8)silk_LSHIFT( oaci_ec_dec_icdf( psRangeDec,
+        oaci_silk_gain_iCDF[ psDec->indices.signalType ], 8 ), 3 );
+        psDec->indices.GainsIndices[ 0 ] += (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_uniform8_iCDF, 8 );
     }
 
     /* Remaining subframes */
     for (i = 1; i < psDec->nb_subfr; i++) {
-        psDec->indices.GainsIndices[ i ] = (oac_int8)ec_dec_icdf( psRangeDec, silk_delta_gain_iCDF, 8 );
+        psDec->indices.GainsIndices[ i ] = (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_delta_gain_iCDF, 8 );
     }
 
     /**********************/
     /* Decode LSF Indices */
     /**********************/
-    psDec->indices.NLSFIndices[ 0 ] = (oac_int8)ec_dec_icdf( psRangeDec,
+    psDec->indices.NLSFIndices[ 0 ] = (oac_int8)oaci_ec_dec_icdf( psRangeDec,
     &psDec->psNLSF_CB->CB1_iCDF[ (psDec->indices.signalType>>1)*psDec->psNLSF_CB->nVectors ], 8 );
-    silk_NLSF_unpack( ec_ix, pred_Q8, psDec->psNLSF_CB, psDec->indices.NLSFIndices[ 0 ] );
+    oaci_silk_NLSF_unpack( ec_ix, pred_Q8, psDec->psNLSF_CB, psDec->indices.NLSFIndices[ 0 ] );
     celt_assert( psDec->psNLSF_CB->order == psDec->LPC_order );
     for (i = 0; i < psDec->psNLSF_CB->order; i++) {
-        Ix = ec_dec_icdf( psRangeDec, &psDec->psNLSF_CB->ec_iCDF[ ec_ix[ i ] ], 8 );
+        Ix = oaci_ec_dec_icdf( psRangeDec, &psDec->psNLSF_CB->ec_iCDF[ ec_ix[ i ] ], 8 );
         if (Ix == 0) {
-            Ix -= ec_dec_icdf( psRangeDec, silk_NLSF_EXT_iCDF, 8 );
+            Ix -= oaci_ec_dec_icdf( psRangeDec, oaci_silk_NLSF_EXT_iCDF, 8 );
         } else if (Ix == 2*NLSF_QUANT_MAX_AMPLITUDE) {
-            Ix += ec_dec_icdf( psRangeDec, silk_NLSF_EXT_iCDF, 8 );
+            Ix += oaci_ec_dec_icdf( psRangeDec, oaci_silk_NLSF_EXT_iCDF, 8 );
         }
         psDec->indices.NLSFIndices[ i + 1 ] = (oac_int8)(Ix - NLSF_QUANT_MAX_AMPLITUDE);
     }
 
     /* Decode LSF interpolation factor */
     if (psDec->nb_subfr == MAX_NB_SUBFR) {
-        psDec->indices.NLSFInterpCoef_Q2 = (oac_int8)ec_dec_icdf( psRangeDec, silk_NLSF_interpolation_factor_iCDF, 8 );
+        psDec->indices.NLSFInterpCoef_Q2 = (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_NLSF_interpolation_factor_iCDF, 8 );
     } else {
         psDec->indices.NLSFInterpCoef_Q2 = 4;
     }
@@ -106,7 +106,7 @@ void silk_decode_indices(
         decode_absolute_lagIndex = 1;
         if (condCoding == CODE_CONDITIONALLY && psDec->ec_prevSignalType == TYPE_VOICED) {
             /* Decode Delta index */
-            delta_lagIndex = (oac_int16)ec_dec_icdf( psRangeDec, silk_pitch_delta_iCDF, 8 );
+            delta_lagIndex = (oac_int16)oaci_ec_dec_icdf( psRangeDec, oaci_silk_pitch_delta_iCDF, 8 );
             if (delta_lagIndex > 0) {
                 delta_lagIndex = delta_lagIndex - 9;
                 psDec->indices.lagIndex = (oac_int16)(psDec->ec_prevLagIndex + delta_lagIndex);
@@ -115,31 +115,31 @@ void silk_decode_indices(
         }
         if (decode_absolute_lagIndex) {
             /* Absolute decoding */
-            psDec->indices.lagIndex  = (oac_int16)ec_dec_icdf( psRangeDec, silk_pitch_lag_iCDF,
+            psDec->indices.lagIndex  = (oac_int16)oaci_ec_dec_icdf( psRangeDec, oaci_silk_pitch_lag_iCDF,
             8 )*silk_RSHIFT( psDec->fs_kHz, 1 );
-            psDec->indices.lagIndex += (oac_int16)ec_dec_icdf( psRangeDec, psDec->pitch_lag_low_bits_iCDF, 8 );
+            psDec->indices.lagIndex += (oac_int16)oaci_ec_dec_icdf( psRangeDec, psDec->pitch_lag_low_bits_iCDF, 8 );
         }
         psDec->ec_prevLagIndex = psDec->indices.lagIndex;
 
         /* Get contour index */
-        psDec->indices.contourIndex = (oac_int8)ec_dec_icdf( psRangeDec, psDec->pitch_contour_iCDF, 8 );
+        psDec->indices.contourIndex = (oac_int8)oaci_ec_dec_icdf( psRangeDec, psDec->pitch_contour_iCDF, 8 );
 
         /********************/
         /* Decode LTP gains */
         /********************/
         /* Decode PERIndex value */
-        psDec->indices.PERIndex = (oac_int8)ec_dec_icdf( psRangeDec, silk_LTP_per_index_iCDF, 8 );
+        psDec->indices.PERIndex = (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_LTP_per_index_iCDF, 8 );
 
         for (k = 0; k < psDec->nb_subfr; k++) {
-            psDec->indices.LTPIndex[ k ] = (oac_int8)ec_dec_icdf( psRangeDec,
-            silk_LTP_gain_iCDF_ptrs[ psDec->indices.PERIndex ], 8 );
+            psDec->indices.LTPIndex[ k ] = (oac_int8)oaci_ec_dec_icdf( psRangeDec,
+            oaci_silk_LTP_gain_iCDF_ptrs[ psDec->indices.PERIndex ], 8 );
         }
 
         /**********************/
         /* Decode LTP scaling */
         /**********************/
         if (condCoding == CODE_INDEPENDENTLY) {
-            psDec->indices.LTP_scaleIndex = (oac_int8)ec_dec_icdf( psRangeDec, silk_LTPscale_iCDF, 8 );
+            psDec->indices.LTP_scaleIndex = (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_LTPscale_iCDF, 8 );
         } else {
             psDec->indices.LTP_scaleIndex = 0;
         }
@@ -149,5 +149,5 @@ void silk_decode_indices(
     /***************/
     /* Decode seed */
     /***************/
-    psDec->indices.Seed = (oac_int8)ec_dec_icdf( psRangeDec, silk_uniform4_iCDF, 8 );
+    psDec->indices.Seed = (oac_int8)oaci_ec_dec_icdf( psRangeDec, oaci_silk_uniform4_iCDF, 8 );
 }

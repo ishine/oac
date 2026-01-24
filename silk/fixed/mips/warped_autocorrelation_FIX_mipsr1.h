@@ -39,7 +39,7 @@
 # define MIPS_MADD __builtin_mips_madd
 # define MIPS_SHILO __builtin_mips_shilo
 
-# define OVERRIDE_silk_warped_autocorrelation_FIX_c
+# define OVERRIDE_oaci_silk_warped_autocorrelation_FIX_c
 
 #elif defined (__mips_isa_rev) && __mips == 32
 
@@ -51,12 +51,12 @@ static inline long long MIPS_SHILO(long long acc, int sh) {
     return (sh >= 0) ? (acc>>sh) : (acc<< -sh);
 }
 
-# define OVERRIDE_silk_warped_autocorrelation_FIX_c
+# define OVERRIDE_oaci_silk_warped_autocorrelation_FIX_c
 
 #endif
 
 /* Autocorrelations for a warped frequency axis */
-#if defined (OVERRIDE_silk_warped_autocorrelation_FIX_c)
+#if defined (OVERRIDE_oaci_silk_warped_autocorrelation_FIX_c)
 
 # undef QC
 # define QC  10
@@ -64,7 +64,7 @@ static inline long long MIPS_SHILO(long long acc, int sh) {
 # undef QS
 # define QS  14
 
-void silk_warped_autocorrelation_FIX_c(
+void oaci_silk_warped_autocorrelation_FIX_c(
     oac_int32                *corr,                                        /* O    Result [order + 1]                                                          */
     oac_int                  *scale,                                       /* O    Scaling of the correlation vector                                           */
     const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
@@ -184,6 +184,6 @@ void silk_warped_autocorrelation_FIX_c(
 
     silk_assert( corr_QC[ 0 ] >= 0 );  /* If breaking, decrease QC*/
 }
-#endif /* OVERRIDE_silk_warped_autocorrelation_FIX_c */
+#endif /* OVERRIDE_oaci_silk_warped_autocorrelation_FIX_c */
 
 #endif /* __WARPED_AUTOCORRELATION_FIX_MIPSR1_H__ */

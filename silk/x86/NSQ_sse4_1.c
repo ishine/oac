@@ -71,7 +71,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_10_16_sse4_1(
     oac_int32 table[][4]                       /* I                                    */
     );
 
-void silk_NSQ_sse4_1(
+void oaci_silk_NSQ_sse4_1(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -117,7 +117,7 @@ void silk_NSQ_sse4_1(
     silk_assert( psEncC->nb_subfr*psEncC->subfr_length <= MAX_FRAME_LENGTH );
     silk_memcpy( pulses_c, pulses, psEncC->nb_subfr*psEncC->subfr_length*sizeof(pulses[0]));
 
-    silk_NSQ_c(
+    oaci_silk_NSQ_c(
         psEncC,
         &NSQ_c,
         &psIndices_c,
@@ -143,7 +143,7 @@ void silk_NSQ_sse4_1(
 
     silk_assert( NSQ->prev_gain_Q16 != 0 );
 
-    offset_Q10 = silk_Quantization_Offsets_Q10[ psIndices->signalType>>1 ][ psIndices->quantOffsetType ];
+    offset_Q10 = oaci_silk_Quantization_Offsets_Q10[ psIndices->signalType>>1 ][ psIndices->quantOffsetType ];
 
     /* 0 */
     q1_Q10  = offset_Q10;
@@ -231,7 +231,7 @@ void silk_NSQ_sse4_1(
                 start_idx = psEncC->ltp_mem_length - lag - psEncC->predictLPCOrder - LTP_ORDER/2;
                 celt_assert( start_idx > 0 );
 
-                silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k*psEncC->subfr_length ],
+                oaci_silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k*psEncC->subfr_length ],
                     A_Q12, psEncC->ltp_mem_length - start_idx, psEncC->predictLPCOrder, psEncC->arch );
 
                 NSQ->rewhite_flag = 1;
@@ -248,7 +248,7 @@ void silk_NSQ_sse4_1(
                 AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ], Gains_Q16[ k ], Lambda_Q10,
                 offset_Q10, psEncC->subfr_length, &(table[32]));
         } else {
-            silk_noise_shape_quantizer( NSQ, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15, A_Q12, B_Q14,
+            oaci_silk_noise_shape_quantizer( NSQ, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15, A_Q12, B_Q14,
                 AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ], Gains_Q16[ k ], Lambda_Q10,
                 offset_Q10, psEncC->subfr_length, psEncC->shapingLPCOrder, psEncC->predictLPCOrder, psEncC->arch );
         }

@@ -34,7 +34,7 @@
 /*********************************************/
 /* Decode quantization indices of excitation */
 /*********************************************/
-void silk_decode_pulses(
+void oaci_silk_decode_pulses(
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int16 pulses[],                                        /* O    Excitation signal                           */
     const oac_int signalType,                                  /* I    Sigtype                                     */
@@ -49,7 +49,7 @@ void silk_decode_pulses(
     /*********************/
     /* Decode rate level */
     /*********************/
-    RateLevelIndex = ec_dec_icdf( psRangeDec, silk_rate_levels_iCDF[ signalType>>1 ], 8 );
+    RateLevelIndex = oaci_ec_dec_icdf( psRangeDec, oaci_silk_rate_levels_iCDF[ signalType>>1 ], 8 );
 
     /* Calculate number of shell blocks */
     silk_assert( 1<<LOG2_SHELL_CODEC_FRAME_LENGTH == SHELL_CODEC_FRAME_LENGTH );
@@ -62,17 +62,17 @@ void silk_decode_pulses(
     /***************************************************/
     /* Sum-Weighted-Pulses Decoding                    */
     /***************************************************/
-    cdf_ptr = silk_pulses_per_block_iCDF[ RateLevelIndex ];
+    cdf_ptr = oaci_silk_pulses_per_block_iCDF[ RateLevelIndex ];
     for (i = 0; i < iter; i++) {
         nLshifts[ i ] = 0;
-        sum_pulses[ i ] = ec_dec_icdf( psRangeDec, cdf_ptr, 8 );
+        sum_pulses[ i ] = oaci_ec_dec_icdf( psRangeDec, cdf_ptr, 8 );
 
         /* LSB indication */
         while (sum_pulses[ i ] == SILK_MAX_PULSES + 1) {
             nLshifts[ i ]++;
             /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
-            sum_pulses[ i ] = ec_dec_icdf( psRangeDec,
-                    silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1] + (nLshifts[ i ] == 10), 8 );
+            sum_pulses[ i ] = oaci_ec_dec_icdf( psRangeDec,
+                    oaci_silk_pulses_per_block_iCDF[ N_RATE_LEVELS - 1] + (nLshifts[ i ] == 10), 8 );
         }
     }
 
@@ -81,7 +81,7 @@ void silk_decode_pulses(
     /***************************************************/
     for (i = 0; i < iter; i++) {
         if (sum_pulses[ i ] > 0) {
-            silk_shell_decoder( &pulses[ silk_SMULBB( i, SHELL_CODEC_FRAME_LENGTH ) ], psRangeDec, sum_pulses[ i ] );
+            oaci_silk_shell_decoder( &pulses[ silk_SMULBB( i, SHELL_CODEC_FRAME_LENGTH ) ], psRangeDec, sum_pulses[ i ] );
         } else {
             silk_memset( &pulses[ silk_SMULBB( i, SHELL_CODEC_FRAME_LENGTH ) ], 0,
             SHELL_CODEC_FRAME_LENGTH*sizeof(pulses[0]));
@@ -99,7 +99,7 @@ void silk_decode_pulses(
                 abs_q = pulses_ptr[ k ];
                 for (j = 0; j < nLS; j++) {
                     abs_q = silk_LSHIFT( abs_q, 1 );
-                    abs_q += ec_dec_icdf( psRangeDec, silk_lsb_iCDF, 8 );
+                    abs_q += oaci_ec_dec_icdf( psRangeDec, oaci_silk_lsb_iCDF, 8 );
                 }
                 pulses_ptr[ k ] = abs_q;
             }
@@ -111,5 +111,5 @@ void silk_decode_pulses(
     /****************************************/
     /* Decode and add signs to pulse signal */
     /****************************************/
-    silk_decode_signs( psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses );
+    oaci_silk_decode_signs( psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses );
 }

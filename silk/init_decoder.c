@@ -40,7 +40,7 @@
 /************************/
 /* Reset Decoder State  */
 /************************/
-oac_int silk_reset_decoder(
+oac_int oaci_silk_reset_decoder(
     silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
     ) {
     /* Clear the entire encoder state, except anything copied */
@@ -53,14 +53,14 @@ oac_int silk_reset_decoder(
     psDec->arch = oac_select_arch();
 
     /* Reset CNG state */
-    silk_CNG_Reset( psDec );
+    oaci_silk_CNG_Reset( psDec );
 
     /* Reset PLC state */
-    silk_PLC_Reset( psDec );
+    oaci_silk_PLC_Reset( psDec );
 
 #ifdef ENABLE_OSCE
     /* Reset OSCE state and method */
-    osce_reset(&psDec->osce, OSCE_DEFAULT_METHOD);
+    oaci_osce_reset(&psDec->osce, OSCE_DEFAULT_METHOD);
 #endif
 
     return 0;
@@ -70,13 +70,13 @@ oac_int silk_reset_decoder(
 /************************/
 /* Init Decoder State   */
 /************************/
-oac_int silk_init_decoder(
+oac_int oaci_silk_init_decoder(
     silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
     ) {
     /* Clear the entire encoder state, except anything copied */
     silk_memset( psDec, 0, sizeof(silk_decoder_state));
 
-    silk_reset_decoder( psDec );
+    oaci_silk_reset_decoder( psDec );
 
     return 0;
 }

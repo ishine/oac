@@ -32,7 +32,7 @@
 #include "main.h"
 
 /* Interpolate two vectors */
-void silk_interpolate(
+void oaci_silk_interpolate(
     oac_int16 xi[ MAX_LPC_ORDER ],                             /* O    interpolated vector                         */
     const oac_int16 x0[ MAX_LPC_ORDER ],                       /* I    first vector                                */
     const oac_int16 x1[ MAX_LPC_ORDER ],                       /* I    second vector                               */

@@ -49,7 +49,7 @@
 /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
 #define FRAC_MUL16(a, b) ((16384 + ((oac_int32)(oac_int16)(a)*(oac_int16)(b)))>>15)
 
-unsigned isqrt32(oac_uint32 _val);
+unsigned oaci_isqrt32(oac_uint32 _val);
 
 /* CELT doesn't need it for fixed-point, by analysis.c does. */
 #if !defined(FIXED_POINT) || defined(ANALYSIS_C)
@@ -210,16 +210,16 @@ static OAC_INLINE float celt_cos_norm2(float x) {
 
 #ifndef FIXED_POINT
 
-# define celt_sqrt(x) ((float)sqrt(x))
-# define celt_sqrt32(x) ((float)sqrt(x))
-# define celt_rsqrt(x) (1.f/celt_sqrt(x))
-# define celt_rsqrt_norm(x) (celt_rsqrt(x))
-# define celt_rsqrt_norm32(x) (celt_rsqrt(x))
-# define celt_cos_norm(x) ((float)cos((.5f*PI)*(x)))
-# define celt_rcp(x) (1.f/(x))
-# define celt_div(a, b) ((a)/(b))
-# define frac_div32(a, b) ((float)(a)/(b))
-# define frac_div32_q29(a, b) frac_div32(a, b)
+# define oaci_celt_sqrt(x) ((float)sqrt(x))
+# define oaci_celt_sqrt32(x) ((float)sqrt(x))
+# define oaci_celt_rsqrt(x) (1.f/oaci_celt_sqrt(x))
+# define oaci_celt_rsqrt_norm(x) (oaci_celt_rsqrt(x))
+# define oaci_celt_rsqrt_norm32(x) (oaci_celt_rsqrt(x))
+# define oaci_celt_cos_norm(x) ((float)cos((.5f*PI)*(x)))
+# define oaci_celt_rcp(x) (1.f/(x))
+# define oaci_celt_div(a, b) ((a)/(b))
+# define oaci_frac_div32(a, b) ((float)(a)/(b))
+# define oaci_frac_div32_q29(a, b) oaci_frac_div32(a, b)
 
 # ifdef FLOAT_APPROX
 /* Calculates the base-2 logarithm (log2(x)) of a number. It is designed for
@@ -360,17 +360,17 @@ static OAC_INLINE oac_int16 celt_zlog2(oac_val32 x) {
     return x <= 0 ? 0 : celt_ilog2(x);
 }
 
-oac_val16 celt_rsqrt_norm(oac_val32 x);
+oac_val16 oaci_celt_rsqrt_norm(oac_val32 x);
 
-oac_val32 celt_rsqrt_norm32(oac_val32 x);
+oac_val32 oaci_celt_rsqrt_norm32(oac_val32 x);
 
-oac_val32 celt_sqrt(oac_val32 x);
+oac_val32 oaci_celt_sqrt(oac_val32 x);
 
-oac_val32 celt_sqrt32(oac_val32 x);
+oac_val32 oaci_celt_sqrt32(oac_val32 x);
 
-oac_val16 celt_cos_norm(oac_val32 x);
+oac_val16 oaci_celt_cos_norm(oac_val32 x);
 
-oac_val32 celt_cos_norm32(oac_val32 x);
+oac_val32 oaci_celt_cos_norm32(oac_val32 x);
 
 /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
 static OAC_INLINE oac_val16 celt_log2(oac_val32 x) {
@@ -506,13 +506,13 @@ static OAC_INLINE oac_val32 celt_exp2_db(oac_val32 x) {
 
 
 
-oac_val32 celt_rcp(oac_val32 x);
-oac_val32 celt_rcp_norm32(oac_val32 x);
+oac_val32 oaci_celt_rcp(oac_val32 x);
+oac_val32 oaci_celt_rcp_norm32(oac_val32 x);
 
-# define celt_div(a, b) MULT32_32_Q31((oac_val32)(a), celt_rcp(b))
+# define oaci_celt_div(a, b) MULT32_32_Q31((oac_val32)(a), oaci_celt_rcp(b))
 
-oac_val32 frac_div32_q29(oac_val32 a, oac_val32 b);
-oac_val32 frac_div32(oac_val32 a, oac_val32 b);
+oac_val32 oaci_frac_div32_q29(oac_val32 a, oac_val32 b);
+oac_val32 oaci_frac_div32(oac_val32 a, oac_val32 b);
 
 /* Computes atan(x) multiplied by 2/PI. The input value (x) should be within the
  * range of -1 to 1 and represented in Q30 format. The function will return the
@@ -564,11 +564,11 @@ static OAC_INLINE oac_val32 celt_atan2p_norm(oac_val32 y, oac_val32 x) {
     if (y == 0 && x == 0) {
         return 0;
     } else if (y < x) {
-        return celt_atan_norm(SHR32(frac_div32(y, x), 1));
+        return celt_atan_norm(SHR32(oaci_frac_div32(y, x), 1));
     } else {
         celt_sig_assert(y > 0);
         return 1073741824 /* 1.0f Q30 */
-               - celt_atan_norm(SHR32(frac_div32(x, y), 1));
+               - celt_atan_norm(SHR32(oaci_frac_div32(x, y), 1));
     }
 }
 
@@ -594,13 +594,13 @@ static OAC_INLINE oac_val16 celt_atan2p(oac_val16 y, oac_val16 x) {
         return 0;
     } else if (y < x) {
         oac_val32 arg;
-        arg = celt_div(SHL32(EXTEND32(y), 15), x);
+        arg = oaci_celt_div(SHL32(EXTEND32(y), 15), x);
         if (arg >= 32767)
             arg = 32767;
         return SHR16(celt_atan01(EXTRACT16(arg)), 1);
     } else {
         oac_val32 arg;
-        arg = celt_div(SHL32(EXTEND32(x), 15), y);
+        arg = oaci_celt_div(SHL32(EXTEND32(x), 15), y);
         if (arg >= 32767)
             arg = 32767;
         return 25736 - SHR16(celt_atan01(EXTRACT16(arg)), 1);
@@ -611,10 +611,10 @@ static OAC_INLINE oac_val16 celt_atan2p(oac_val16 y, oac_val16 x) {
 
 #ifndef DISABLE_FLOAT_API
 
-void celt_float2int16_c(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
+void oaci_celt_float2int16_c(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
 
 # ifndef OVERRIDE_FLOAT2INT16
-#  define celt_float2int16(in, out, cnt, arch) ((void)(arch), celt_float2int16_c(in, out, cnt))
+#  define oaci_celt_float2int16(in, out, cnt, arch) ((void)(arch), oaci_celt_float2int16_c(in, out, cnt))
 # endif
 
 int oac_limit2_checkwithin1_c(float *samples, int cnt);

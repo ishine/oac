@@ -111,7 +111,7 @@ static int validate_ambisonics(int nb_channels, int *nb_streams, int *nb_coupled
     if (nb_channels < 1 || nb_channels > 227)
         return 0;
 
-    order_plus_one = isqrt32(nb_channels);
+    order_plus_one = oaci_isqrt32(nb_channels);
     acn_channels = order_plus_one*order_plus_one;
     nondiegetic_channels = nb_channels - acn_channels;
 
@@ -129,12 +129,12 @@ static int validate_encoder_layout(const ChannelLayout *layout) {
     int s;
     for (s = 0; s < layout->nb_streams; s++) {
         if (s < layout->nb_coupled_streams) {
-            if (get_left_channel(layout, s, -1) == -1)
+            if (oaci_get_left_channel(layout, s, -1) == -1)
                 return 0;
-            if (get_right_channel(layout, s, -1) == -1)
+            if (oaci_get_right_channel(layout, s, -1) == -1)
                 return 0;
         } else {
-            if (get_mono_channel(layout, s, -1) == -1)
+            if (oaci_get_mono_channel(layout, s, -1) == -1)
                 return 0;
         }
     }
@@ -211,7 +211,7 @@ oac_val16 logSum(oac_val16 a, oac_val16 b) {
 }
 #endif
 
-void surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glog *bandLogE, oac_val32 *mem,
+void oaci_surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glog *bandLogE, oac_val32 *mem,
                        oac_val32 *preemph_mem,
                        int len, int overlap, int channels, int rate, oac_copy_channel_in_func copy_channel_in,
                        int arch) {
@@ -230,7 +230,7 @@ void surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glog *ba
     VARDECL(oac_val32, freq);
     SAVE_STACK;
 
-    upsample = resampling_factor(rate);
+    upsample = oaci_resampling_factor(rate);
     frame_size = len*upsample;
 
     /* LM = log2(frame_size / 120) */
@@ -256,11 +256,11 @@ void surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glog *ba
         celt_assert(nb_frames*freq_size == frame_size);
         OAC_COPY(in, mem + c*overlap, overlap);
         (*copy_channel_in)(x, 1, pcm, channels, c, len, NULL);
-        celt_preemphasis(x, in + overlap, frame_size, 1, upsample, celt_mode->preemph, preemph_mem + c, 0);
+        oaci_celt_preemphasis(x, in + overlap, frame_size, 1, upsample, celt_mode->preemph, preemph_mem + c, 0);
 #ifndef FIXED_POINT
         {
             oac_val32 sum;
-            sum = celt_inner_prod(in, in, frame_size + overlap, 0);
+            sum = oaci_celt_inner_prod(in, in, frame_size + overlap, 0);
             /* This should filter out both NaNs and ridiculous signals that could
                cause NaNs further down. */
             if (!(sum < 1e18f) || celt_isnan(sum)) {
@@ -272,7 +272,7 @@ void surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glog *ba
         OAC_CLEAR(bandE, 21);
         for (frame = 0; frame < nb_frames; frame++) {
             oac_val32 tmpE[21];
-            clt_mdct_forward(&celt_mode->mdct, in + freq_size*frame, freq, celt_mode->window,
+            oaci_clt_mdct_forward(&celt_mode->mdct, in + freq_size*frame, freq, celt_mode->window,
                overlap, celt_mode->maxLM - LM, 1, arch);
             if (upsample != 1) {
                 int bound = freq_size/upsample;
@@ -282,12 +282,12 @@ void surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glog *ba
                     freq[i] = 0;
             }
 
-            compute_band_energies(celt_mode, freq, tmpE, 21, 1, LM, arch);
+            oaci_compute_band_energies(celt_mode, freq, tmpE, 21, 1, LM, arch);
             /* If we have multiple frames, take the max energy. */
             for (i = 0; i < 21; i++)
                 bandE[i] = MAX32(bandE[i], tmpE[i]);
         }
-        amp2Log2(celt_mode, 21, 21, bandE, bandLogE + 21*c, 1);
+        oaci_amp2Log2(celt_mode, 21, 21, bandE, bandLogE + 21*c, 1);
         /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
         for (i = 1; i < 21; i++)
             bandLogE[21*c + i] = MAXG(bandLogE[21*c + i], bandLogE[21*c + i - 1] - GCONST(1.f));
@@ -444,7 +444,7 @@ static int oac_multistream_encoder_init_impl(
     st->variable_duration = OAC_FRAMESIZE_ARG;
     for (i = 0; i < st->layout.nb_channels; i++)
         st->layout.mapping[i] = mapping[i];
-    if (!validate_layout(&st->layout))
+    if (!oaci_validate_layout(&st->layout))
         return OAC_BAD_ARG;
     if (!validate_encoder_layout(&st->layout))
         return OAC_BAD_ARG;
@@ -766,7 +766,7 @@ int oac_multistream_encode_native
     unsigned char *data,
     oac_int32 max_data_bytes,
     int lsb_depth,
-    downmix_func downmix,
+    downmix_func oaci_downmix,
     int float_api,
     void *user_data) {
     oac_int32 Fs;
@@ -801,7 +801,7 @@ int oac_multistream_encode_native
     if (st->application != OAC_APPLICATION_RESTRICTED_SILK)
         oac_encoder_ctl((OacEncoder*)ptr, CELT_GET_MODE(&celt_mode));
 
-    frame_size = frame_size_select(st->application, analysis_frame_size, st->variable_duration, Fs);
+    frame_size = oaci_frame_size_select(st->application, analysis_frame_size, st->variable_duration, Fs);
     if (frame_size <= 0) {
         RESTORE_STACK;
         return OAC_BAD_ARG;
@@ -822,7 +822,7 @@ int oac_multistream_encode_native
 
     ALLOC(bandSMR, 21*st->layout.nb_channels, celt_glog);
     if (st->mapping_type == MAPPING_TYPE_SURROUND && st->application != OAC_APPLICATION_RESTRICTED_SILK) {
-        surround_analysis(celt_mode, pcm, bandSMR, mem, preemph_mem, frame_size, celt_mode->overlap,
+        oaci_surround_analysis(celt_mode, pcm, bandSMR, mem, preemph_mem, frame_size, celt_mode->overlap,
         st->layout.nb_channels, Fs, copy_channel_in, st->arch);
     }
 
@@ -884,8 +884,8 @@ int oac_multistream_encode_native
         if (s < st->layout.nb_coupled_streams) {
             int i;
             int left, right;
-            left = get_left_channel(&st->layout, s, -1);
-            right = get_right_channel(&st->layout, s, -1);
+            left = oaci_get_left_channel(&st->layout, s, -1);
+            right = oaci_get_right_channel(&st->layout, s, -1);
             (*copy_channel_in)(buf, 2,
             pcm, st->layout.nb_channels, left, frame_size, user_data);
             (*copy_channel_in)(buf + 1, 2,
@@ -901,7 +901,7 @@ int oac_multistream_encode_native
             c2 = right;
         } else {
             int i;
-            int chan = get_mono_channel(&st->layout, s, -1);
+            int chan = oaci_get_mono_channel(&st->layout, s, -1);
             (*copy_channel_in)(buf, 1,
             pcm, st->layout.nb_channels, chan, frame_size, user_data);
             ptr += align(mono_size);
@@ -927,7 +927,7 @@ int oac_multistream_encode_native
         if (!vbr && s == st->layout.nb_streams - 1)
             oac_encoder_ctl(enc, OAC_SET_BITRATE(bits_to_bitrate(curr_max*8, Fs, frame_size)));
         len = oac_encode_native(enc, buf, frame_size, tmp_data, curr_max, lsb_depth,
-            pcm, analysis_frame_size, c1, c2, st->layout.nb_channels, downmix, float_api);
+            pcm, analysis_frame_size, c1, c2, st->layout.nb_channels, oaci_downmix, float_api);
         if (len < 0) {
             RESTORE_STACK;
             return len;
@@ -1010,7 +1010,7 @@ int oac_multistream_encode(
     unsigned char *data,
     oac_int32 max_data_bytes) {
     return oac_multistream_encode_native(st, oac_copy_channel_in_short,
-      pcm, frame_size, data, max_data_bytes, 16, downmix_int, 0, NULL);
+      pcm, frame_size, data, max_data_bytes, 16, oaci_downmix_int, 0, NULL);
 }
 
 int oac_multistream_encode24(
@@ -1020,7 +1020,7 @@ int oac_multistream_encode24(
     unsigned char *data,
     oac_int32 max_data_bytes) {
     return oac_multistream_encode_native(st, oac_copy_channel_in_int24,
-      pcm, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH, downmix_int24, 0, NULL);
+      pcm, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH, oaci_downmix_int24, 0, NULL);
 }
 
 #ifndef DISABLE_FLOAT_API
@@ -1031,7 +1031,7 @@ int oac_multistream_encode_float(
     unsigned char *data,
     oac_int32 max_data_bytes) {
     return oac_multistream_encode_native(st, oac_copy_channel_in_float,
-      pcm, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH, downmix_float, 1, NULL);
+      pcm, frame_size, data, max_data_bytes, MAX_ENCODING_DEPTH, oaci_downmix_float, 1, NULL);
 }
 #endif
 

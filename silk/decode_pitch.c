@@ -35,7 +35,7 @@
 #include "SigProc_FIX.h"
 #include "pitch_est_defines.h"
 
-void silk_decode_pitch(
+void oaci_silk_decode_pitch(
     oac_int16 lagIndex,                            /* I                                                                */
     oac_int8 contourIndex,                         /* O                                                                */
     oac_int pitch_lags[],                          /* O    4 pitch values                                              */
@@ -47,20 +47,20 @@ void silk_decode_pitch(
 
     if (Fs_kHz == 8) {
         if (nb_subfr == PE_MAX_NB_SUBFR) {
-            Lag_CB_ptr = &silk_CB_lags_stage2[ 0 ][ 0 ];
+            Lag_CB_ptr = &oaci_silk_CB_lags_stage2[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE2_EXT;
         } else {
             celt_assert( nb_subfr == PE_MAX_NB_SUBFR>>1 );
-            Lag_CB_ptr = &silk_CB_lags_stage2_10_ms[ 0 ][ 0 ];
+            Lag_CB_ptr = &oaci_silk_CB_lags_stage2_10_ms[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE2_10MS;
         }
     } else {
         if (nb_subfr == PE_MAX_NB_SUBFR) {
-            Lag_CB_ptr = &silk_CB_lags_stage3[ 0 ][ 0 ];
+            Lag_CB_ptr = &oaci_silk_CB_lags_stage3[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE3_MAX;
         } else {
             celt_assert( nb_subfr == PE_MAX_NB_SUBFR>>1 );
-            Lag_CB_ptr = &silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
+            Lag_CB_ptr = &oaci_silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
             cbk_size   = PE_NB_CBKS_STAGE3_10MS;
         }
     }

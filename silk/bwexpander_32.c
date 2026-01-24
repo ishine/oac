@@ -32,8 +32,8 @@
 #include "SigProc_FIX.h"
 
 /* Chirp (bandwidth expand) LP AR filter.
-   This logic is reused in _celt_lpc(). Any bug fixes should also be applied there. */
-void silk_bwexpander_32(
+   This logic is reused in oaci_celt_lpc(). Any bug fixes should also be applied there. */
+void oaci_silk_bwexpander_32(
     oac_int32                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     const oac_int d,                               /* I    Length of ar                                                */
     oac_int32 chirp_Q16                            /* I    Chirp factor in Q16                                         */

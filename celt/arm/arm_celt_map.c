@@ -41,11 +41,11 @@
 #  if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 void (*const CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK + 1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out,
 int cnt) = {
-    celt_float2int16_c, /* ARMv4 */
-    celt_float2int16_c, /* EDSP */
-    celt_float2int16_c, /* Media */
-    celt_float2int16_neon,/* NEON */
-    celt_float2int16_neon /* DOTPROD */
+    oaci_celt_float2int16_c, /* ARMv4 */
+    oaci_celt_float2int16_c, /* EDSP */
+    oaci_celt_float2int16_c, /* Media */
+    oaci_celt_float2int16_neon,/* NEON */
+    oaci_celt_float2int16_neon /* DOTPROD */
 };
 
 int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK + 1])(float * samples, int cnt) = {
@@ -59,21 +59,21 @@ int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK + 1])(float * samples, int
 # endif
 
 # if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
-oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N) = {
-    celt_inner_prod_c, /* ARMv4 */
-    celt_inner_prod_c, /* EDSP */
-    celt_inner_prod_c, /* Media */
-    celt_inner_prod_neon,/* NEON */
-    celt_inner_prod_neon /* DOTPROD */
+oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N) = {
+    oaci_celt_inner_prod_c, /* ARMv4 */
+    oaci_celt_inner_prod_c, /* EDSP */
+    oaci_celt_inner_prod_c, /* Media */
+    oaci_celt_inner_prod_neon,/* NEON */
+    oaci_celt_inner_prod_neon /* DOTPROD */
 };
 
 void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
       int N, oac_val32 *xy1, oac_val32 *xy2) = {
-    dual_inner_prod_c, /* ARMv4 */
-    dual_inner_prod_c, /* EDSP */
-    dual_inner_prod_c, /* Media */
-    dual_inner_prod_neon,/* NEON */
-    dual_inner_prod_neon /* DOTPROD */
+    oaci_dual_inner_prod_c, /* ARMv4 */
+    oaci_dual_inner_prod_c, /* EDSP */
+    oaci_dual_inner_prod_c, /* Media */
+    oaci_dual_inner_prod_neon,/* NEON */
+    oaci_dual_inner_prod_neon /* DOTPROD */
 };
 # endif
 
@@ -83,11 +83,11 @@ void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const o
     (defined(OAC_ARM_MAY_HAVE_EDSP) && !defined(OAC_ARM_PRESUME_EDSP)))
 oac_val32 (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *,
     const oac_val16 *, oac_val32 *, int, int, int) = {
-    celt_pitch_xcorr_c,             /* ARMv4 */
-    MAY_HAVE_EDSP(celt_pitch_xcorr), /* EDSP */
-    MAY_HAVE_MEDIA(celt_pitch_xcorr), /* Media */
-    MAY_HAVE_NEON(celt_pitch_xcorr), /* NEON */
-    MAY_HAVE_NEON(celt_pitch_xcorr) /* DOTPROD */
+    oaci_celt_pitch_xcorr_c,             /* ARMv4 */
+    MAY_HAVE_EDSP(oaci_celt_pitch_xcorr), /* EDSP */
+    MAY_HAVE_MEDIA(oaci_celt_pitch_xcorr), /* Media */
+    MAY_HAVE_NEON(oaci_celt_pitch_xcorr), /* NEON */
+    MAY_HAVE_NEON(oaci_celt_pitch_xcorr) /* DOTPROD */
 };
 
 #  endif
@@ -95,11 +95,11 @@ oac_val32 (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *,
 #  if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 void (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *,
     const oac_val16 *, oac_val32 *, int, int, int) = {
-    celt_pitch_xcorr_c,            /* ARMv4 */
-    celt_pitch_xcorr_c,            /* EDSP */
-    celt_pitch_xcorr_c,            /* Media */
-    celt_pitch_xcorr_float_neon,   /* Neon */
-    celt_pitch_xcorr_float_neon    /* DOTPROD */
+    oaci_celt_pitch_xcorr_c,            /* ARMv4 */
+    oaci_celt_pitch_xcorr_c,            /* EDSP */
+    oaci_celt_pitch_xcorr_c,            /* Media */
+    oaci_celt_pitch_xcorr_float_neon,   /* Neon */
+    oaci_celt_pitch_xcorr_float_neon    /* DOTPROD */
 };
 #  endif
 # endif /* FIXED_POINT */
@@ -107,17 +107,17 @@ void (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *,
 # if defined(FIXED_POINT) && defined(OAC_HAVE_RTCD) && \
     defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 
-void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
          oac_val32 sum[4],
          int len
     ) = {
-    xcorr_kernel_c,              /* ARMv4 */
-    xcorr_kernel_c,              /* EDSP */
-    xcorr_kernel_c,              /* Media */
-    xcorr_kernel_neon_fixed,     /* Neon */
-    xcorr_kernel_neon_fixed      /* DOTPROD */
+    oaci_xcorr_kernel_c,              /* ARMv4 */
+    oaci_xcorr_kernel_c,              /* EDSP */
+    oaci_xcorr_kernel_c,              /* Media */
+    oaci_xcorr_kernel_neon_fixed,     /* Neon */
+    oaci_xcorr_kernel_neon_fixed      /* DOTPROD */
 };
 
 # endif
@@ -168,11 +168,11 @@ void (*const CLT_MDCT_FORWARD_IMPL[OAC_ARCHMASK + 1])(const mdct_lookup *l,
                                                      const oac_val16 *window,
                                                      int overlap, int shift,
                                                      int stride, int arch) = {
-    clt_mdct_forward_c,          /* ARMv4 */
-    clt_mdct_forward_c,          /* EDSP */
-    clt_mdct_forward_c,          /* Media */
-    clt_mdct_forward_neon,       /* Neon with NE10 */
-    clt_mdct_forward_neon        /* DOTPROD with NE10 */
+    oaci_clt_mdct_forward_c,          /* ARMv4 */
+    oaci_clt_mdct_forward_c,          /* EDSP */
+    oaci_clt_mdct_forward_c,          /* Media */
+    oaci_clt_mdct_forward_neon,       /* Neon with NE10 */
+    oaci_clt_mdct_forward_neon        /* DOTPROD with NE10 */
 };
 
 void (*const CLT_MDCT_BACKWARD_IMPL[OAC_ARCHMASK + 1])(const mdct_lookup *l,
@@ -181,11 +181,11 @@ void (*const CLT_MDCT_BACKWARD_IMPL[OAC_ARCHMASK + 1])(const mdct_lookup *l,
                                                       const oac_val16 *window,
                                                       int overlap, int shift,
                                                       int stride, int arch) = {
-    clt_mdct_backward_c,          /* ARMv4 */
-    clt_mdct_backward_c,          /* EDSP */
-    clt_mdct_backward_c,          /* Media */
-    clt_mdct_backward_neon,       /* Neon with NE10 */
-    clt_mdct_backward_neon        /* DOTPROD with NE10 */
+    oaci_clt_mdct_backward_c,          /* ARMv4 */
+    oaci_clt_mdct_backward_c,          /* EDSP */
+    oaci_clt_mdct_backward_c,          /* Media */
+    oaci_clt_mdct_backward_neon,       /* Neon with NE10 */
+    oaci_clt_mdct_backward_neon        /* DOTPROD with NE10 */
 };
 
 #  endif /* HAVE_ARM_NE10 */

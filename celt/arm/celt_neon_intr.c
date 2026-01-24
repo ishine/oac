@@ -46,7 +46,7 @@
 
 #if !defined(DISABLE_FLOAT_API) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
-void celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt) {
+void oaci_celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt) {
     int i = 0;
 
 # if defined(__ARM_NEON)
@@ -160,7 +160,7 @@ int oac_limit2_checkwithin1_neon(float *samples, int cnt) {
 #if defined(FIXED_POINT)
 # include <string.h>
 
-void xcorr_kernel_neon_fixed(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[4], int len) {
+void oaci_xcorr_kernel_neon_fixed(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[4], int len) {
     int j;
     int32x4_t a = vld1q_s32(sum);
     /* Load y[0...3] */
@@ -277,11 +277,11 @@ void xcorr_kernel_neon_fixed(const oac_val16 * x, const oac_val16 * y, oac_val32
 
 
 /*
- * Function: xcorr_kernel_neon_float
+ * Function: oaci_xcorr_kernel_neon_float
  * ---------------------------------
  * Computes 4 correlation values and stores them in sum[4]
  */
-static void xcorr_kernel_neon_float(const float32_t *x, const float32_t *y,
+static void oaci_xcorr_kernel_neon_float(const float32_t *x, const float32_t *y,
                                     float32_t sum[4], int len) {
     float32x4_t YY[3];
     float32x4_t YEXT[3];
@@ -370,7 +370,7 @@ static void xcorr_kernel_neon_float(const float32_t *x, const float32_t *y,
     vst1q_f32(sum, SUMM);
 }
 
-void celt_pitch_xcorr_float_neon(const oac_val16 *_x, const oac_val16 *_y,
+void oaci_celt_pitch_xcorr_float_neon(const oac_val16 *_x, const oac_val16 *_y,
                                  oac_val32 *xcorr, int len, int max_pitch, int arch) {
     int i;
     (void)arch;
@@ -378,13 +378,13 @@ void celt_pitch_xcorr_float_neon(const oac_val16 *_x, const oac_val16 *_y,
     celt_sig_assert((((size_t)_x)&3) == 0);
 
     for (i = 0; i < (max_pitch - 3); i += 4) {
-        xcorr_kernel_neon_float((const float32_t *)_x, (const float32_t *)_y + i,
+        oaci_xcorr_kernel_neon_float((const float32_t *)_x, (const float32_t *)_y + i,
             (float32_t *)xcorr + i, len);
     }
 
     /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
     for (; i < max_pitch; i++) {
-        xcorr[i] = celt_inner_prod_neon(_x, _y + i, len);
+        xcorr[i] = oaci_celt_inner_prod_neon(_x, _y + i, len);
     }
 }
 #endif

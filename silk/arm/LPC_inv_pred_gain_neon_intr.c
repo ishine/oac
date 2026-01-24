@@ -52,7 +52,7 @@
 
 /* Compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
-static OAC_INLINE oac_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns inverse prediction gain in energy domain, Q30    */
+static OAC_INLINE oac_int32 oaci_LPC_inverse_pred_gain_QA_neon( /* O   Returns inverse prediction gain in energy domain, Q30    */
     oac_int32 A_QA[ SILK_MAX_ORDER_LPC ],                   /* I   Prediction coefficients                                  */
     const oac_int order                                     /* I   Prediction order                                         */
     ) {
@@ -186,17 +186,17 @@ static OAC_INLINE oac_int32 LPC_inverse_pred_gain_QA_neon( /* O   Returns invers
 }
 
 /* For input in Q12 domain */
-oac_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse prediction gain in energy domain, Q30        */
+oac_int32 oaci_silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse prediction gain in energy domain, Q30        */
     const oac_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
     const oac_int order                            /* I   Prediction order                                             */
     ) {
 #ifdef OAC_CHECK_ASM
-    const oac_int32 invGain_Q30_c = silk_LPC_inverse_pred_gain_c( A_Q12, order );
+    const oac_int32 invGain_Q30_c = oaci_silk_LPC_inverse_pred_gain_c( A_Q12, order );
 #endif
 
     oac_int32 invGain_Q30;
     if ((SILK_MAX_ORDER_LPC != 24) || (order&1)) {
-        invGain_Q30 = silk_LPC_inverse_pred_gain_c( A_Q12, order );
+        invGain_Q30 = oaci_silk_LPC_inverse_pred_gain_c( A_Q12, order );
     } else   {
         oac_int32 Atmp_QA[ SILK_MAX_ORDER_LPC ];
         oac_int32 DC_resp;
@@ -271,7 +271,7 @@ oac_int32 silk_LPC_inverse_pred_gain_neon(         /* O   Returns inverse predic
         if (DC_resp >= 4096) {
             invGain_Q30 = 0;
         } else {
-            invGain_Q30 = LPC_inverse_pred_gain_QA_neon( Atmp_QA, order );
+            invGain_Q30 = oaci_LPC_inverse_pred_gain_QA_neon( Atmp_QA, order );
         }
     }
 

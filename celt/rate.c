@@ -70,7 +70,7 @@ static int fits_in32(int _n, int _k) {
     }
 }
 
-void compute_pulse_cache(CELTMode *m, int LM) {
+void oaci_compute_pulse_cache(CELTMode *m, int LM) {
     int C;
     int i;
     int j;
@@ -124,7 +124,7 @@ void compute_pulse_cache(CELTMode *m, int LM) {
     for (i = 0; i < nbEntries; i++) {
         unsigned char *ptr = bits + entryI[i];
         oac_int16 tmp[CELT_MAX_PULSES + 1];
-        get_required_bits(tmp, entryN[i], get_pulses(entryK[i]), BITRES);
+        oaci_get_required_bits(tmp, entryN[i], get_pulses(entryK[i]), BITRES);
         for (j = 1; j <= entryK[i]; j++)
             ptr[j] = tmp[get_pulses(j)] - 1;
         ptr[0] = entryK[i];
@@ -342,11 +342,11 @@ static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, 
                     || (band_bits > (depth_threshold*band_width<<LM<<BITRES)>>4 && j <= signalBandwidth))
 #endif
                 {
-                    ec_enc_bit_logp(ec, 1, 1);
+                    oaci_ec_enc_bit_logp(ec, 1, 1);
                     break;
                 }
-                ec_enc_bit_logp(ec, 0, 1);
-            } else if (ec_dec_bit_logp(ec, 1)) {
+                oaci_ec_enc_bit_logp(ec, 0, 1);
+            } else if (oaci_ec_dec_bit_logp(ec, 1)) {
                 break;
             }
             /*We used a bit to skip this band.*/
@@ -373,9 +373,9 @@ static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, 
     if (intensity_rsv > 0) {
         if (encode) {
             *intensity = IMIN(*intensity, codedBands);
-            ec_enc_uint(ec, *intensity - start, codedBands + 1 - start);
+            oaci_ec_enc_uint(ec, *intensity - start, codedBands + 1 - start);
         } else
-            *intensity = start + ec_dec_uint(ec, codedBands + 1 - start);
+            *intensity = start + oaci_ec_dec_uint(ec, codedBands + 1 - start);
     } else
         *intensity = 0;
     if (*intensity <= start) {
@@ -384,9 +384,9 @@ static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, 
     }
     if (dual_stereo_rsv > 0) {
         if (encode)
-            ec_enc_bit_logp(ec, *dual_stereo, 1);
+            oaci_ec_enc_bit_logp(ec, *dual_stereo, 1);
         else
-            *dual_stereo = ec_dec_bit_logp(ec, 1);
+            *dual_stereo = oaci_ec_dec_bit_logp(ec, 1);
     } else
         *dual_stereo = 0;
 
@@ -466,7 +466,7 @@ static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, 
         }
 
         /* Fine energy can't take advantage of the re-balancing in
-            quant_all_bands().
+            oaci_quant_all_bands().
            Instead, do the re-balancing here.*/
         if (excess > 0) {
             int extra_fine;
@@ -483,7 +483,7 @@ static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, 
         celt_assert(ebits[j] >= 0);
     }
     /* Save any remaining bits over the cap for the rebalancing in
-        quant_all_bands(). */
+        oaci_quant_all_bands(). */
     *_balance = balance;
 
     /* The skipped bands use all their bits for fine energy. */
@@ -497,7 +497,7 @@ static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, 
     return codedBands;
 }
 
-int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
+int oaci_clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim,
                            int *intensity, int *dual_stereo,
                            oac_int32 total, oac_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C,
                            int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth) {

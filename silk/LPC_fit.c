@@ -32,8 +32,8 @@
 #include "SigProc_FIX.h"
 
 /* Convert int32 coefficients to int16 coefs and make sure there's no wrap-around.
-   This logic is reused in _celt_lpc(). Any bug fixes should also be applied there. */
-void silk_LPC_fit(
+   This logic is reused in oaci_celt_lpc(). Any bug fixes should also be applied there. */
+void oaci_silk_LPC_fit(
     oac_int16                  *a_QOUT,            /* O    Output signal                                               */
     oac_int32                    *a_QIN,             /* I/O  Input signal                                                */
     const oac_int QOUT,                            /* I    Input Q domain                                              */
@@ -61,7 +61,7 @@ void silk_LPC_fit(
             maxabs = silk_min( maxabs, 163838 );  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
             chirp_Q16 = SILK_FIX_CONST( 0.999, 16 ) - silk_DIV32( silk_LSHIFT( maxabs - silk_int16_MAX, 14 ),
                                         silk_RSHIFT32( silk_MUL( maxabs, idx + 1), 2 ));
-            silk_bwexpander_32( a_QIN, d, chirp_Q16 );
+            oaci_silk_bwexpander_32( a_QIN, d, chirp_Q16 );
         } else {
             break;
         }

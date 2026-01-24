@@ -79,7 +79,7 @@ static const unsigned char silk_TargetRate_WB_21[201 - 10] = {
 };
 
 /* Control SNR of residual quantizer */
-oac_int silk_control_SNR(
+oac_int oaci_silk_control_SNR(
     silk_encoder_state          *psEncC,                        /* I/O  Pointer to Silk encoder state               */
     oac_int32 TargetRate_bps                                   /* I    Target max bitrate (bps)                    */
     ) {
