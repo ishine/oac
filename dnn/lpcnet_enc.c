@@ -137,7 +137,7 @@ static void biquad(float *y, float mem[2], const float *x, const float *b, const
     mem[1] = mem1;
 }
 
-#define celt_log10(x) (0.3010299957f*celt_log2(x))
+#define celt_log10(x) (0.3010299957f*oaci_celt_log2(x))
 
 void oaci_compute_frame_features(LPCNetEncState *st, const float *in, int arch) {
     float aligned_in[FRAME_SIZE];
@@ -241,7 +241,7 @@ void oaci_preemphasis(float *y, float *mem, const float *x, float coef, int N) {
     }
 }
 
-static int lpcnet_compute_single_frame_features_impl(LPCNetEncState *st, float *x, float features[NB_TOTAL_FEATURES],
+static int oaci_lpcnet_compute_single_frame_features_impl(LPCNetEncState *st, float *x, float features[NB_TOTAL_FEATURES],
                                                      int arch) {
     oaci_preemphasis(x, &st->mem_preemph, x, PREEMPHASIS, FRAME_SIZE);
     oaci_compute_frame_features(st, x, arch);
@@ -254,7 +254,7 @@ int oaci_lpcnet_compute_single_frame_features(LPCNetEncState *st, const oac_int1
     int i;
     float x[FRAME_SIZE];
     for (i = 0; i < FRAME_SIZE; i++) x[i] = pcm[i];
-    lpcnet_compute_single_frame_features_impl(st, x, features, arch);
+    oaci_lpcnet_compute_single_frame_features_impl(st, x, features, arch);
     return 0;
 }
 
@@ -263,6 +263,6 @@ int oaci_lpcnet_compute_single_frame_features_float(LPCNetEncState *st, const fl
     int i;
     float x[FRAME_SIZE];
     for (i = 0; i < FRAME_SIZE; i++) x[i] = pcm[i];
-    lpcnet_compute_single_frame_features_impl(st, x, features, arch);
+    oaci_lpcnet_compute_single_frame_features_impl(st, x, features, arch);
     return 0;
 }

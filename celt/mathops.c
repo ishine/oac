@@ -104,7 +104,7 @@ unsigned oaci_isqrt32(oac_uint32 _val) {
 oac_val32 oaci_frac_div32_q29(oac_val32 a, oac_val32 b) {
     oac_val16 rcp;
     oac_val32 result, rem;
-    int shift = celt_ilog2(b) - 29;
+    int shift = oaci_celt_ilog2(b) - 29;
     a = VSHR32(a, shift);
     b = VSHR32(b, shift);
     /* 16-bit reciprocal */
@@ -178,7 +178,7 @@ oac_val32 oaci_celt_sqrt(oac_val32 x) {
         return 0;
     else if (x >= 1073741824)
         return 32767;
-    k = (celt_ilog2(x)>>1) - 7;
+    k = (oaci_celt_ilog2(x)>>1) - 7;
     x = VSHR32(x, 2*k);
     n = x - 32768;
     rt = ADD32(C[0], MULT16_16_Q15(n, ADD16(C[1], MULT16_16_Q15(n, ADD16(C[2],
@@ -196,7 +196,7 @@ oac_val32 oaci_celt_sqrt32(oac_val32 x) {
         return 0;
     else if (x >= 1073741824)
         return 2147483647; /* 2^31 -1 */
-    k = (celt_ilog2(x)>>1);
+    k = (oaci_celt_ilog2(x)>>1);
     x_frac = VSHR32(x, 2*(k - 14) - 1);
     x_frac = MULT32_32_Q31(oaci_celt_rsqrt_norm32(x_frac), x_frac);
     if (k < 12) return PSHR32(x_frac, 12 - k);
@@ -208,7 +208,7 @@ oac_val32 oaci_celt_sqrt32(oac_val32 x) {
 # define L3 8277
 # define L4 -626
 
-static OAC_INLINE oac_val16 _celt_cos_pi_2(oac_val16 x) {
+static OAC_INLINE oac_val16 oaci_celt_cos_pi_2(oac_val16 x) {
     oac_val16 x2;
 
     x2 = MULT16_16_P15(x, x);
@@ -228,9 +228,9 @@ oac_val16 oaci_celt_cos_norm(oac_val32 x) {
         x = SUB32(SHL32(EXTEND32(1), 17), x);
     if (x&0x00007fff) {
         if (x < SHL32(EXTEND32(1), 15)) {
-            return _celt_cos_pi_2(EXTRACT16(x));
+            return oaci_celt_cos_pi_2(EXTRACT16(x));
         } else {
-            return NEG16(_celt_cos_pi_2(EXTRACT16(65536 - x)));
+            return NEG16(oaci_celt_cos_pi_2(EXTRACT16(65536 - x)));
         }
     } else {
         if (x&0x0000ffff)
@@ -309,7 +309,7 @@ oac_val32 oaci_celt_rcp(oac_val32 x) {
     int i;
     oac_val16 r;
     celt_sig_assert(x > 0);
-    i = celt_ilog2(x);
+    i = oaci_celt_ilog2(x);
 
     /* Compute the reciprocal of a Q15 number in the range [0, 1). */
     r = oaci_celt_rcp_norm16(VSHR32(x, i - 15) - 32768);

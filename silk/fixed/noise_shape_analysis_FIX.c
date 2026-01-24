@@ -88,7 +88,7 @@ static OAC_INLINE oac_int32 warped_gain( /* gain in Q16*/
 
 /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
 /* amplitude of monic warped coefficients by using bandwidth expansion on the true coefficients */
-static OAC_INLINE void limit_warped_coefs(
+static OAC_INLINE void oaci_limit_warped_coefs(
     oac_int32           *coefs_Q24,
     oac_int lambda_Q16,
     oac_int32 limit_Q24,
@@ -345,7 +345,7 @@ void oaci_silk_noise_shape_analysis_FIX(
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Convert to monic warped prediction coefficients and limit absolute values */
-            limit_warped_coefs( AR_Q24, warping_Q16, SILK_FIX_CONST( 3.999, 24 ), psEnc->sCmn.shapingLPCOrder );
+            oaci_limit_warped_coefs( AR_Q24, warping_Q16, SILK_FIX_CONST( 3.999, 24 ), psEnc->sCmn.shapingLPCOrder );
 
             /* Convert from Q24 to Q13 and store in int16 */
             for (i = 0; i < psEnc->sCmn.shapingLPCOrder; i++) {

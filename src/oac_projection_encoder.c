@@ -115,7 +115,7 @@ static void oac_projection_copy_channel_in_int24(
         (const oac_int32*)src, src_stride, dst, src_channel, dst_stride, frame_size);
 }
 
-static int get_order_plus_one_from_channels(int channels, int *order_plus_one) {
+static int oaci_get_order_plus_one_from_channels(int channels, int *order_plus_one) {
     int order_plus_one_;
     int acn_channels;
     int nondiegetic_channels;
@@ -141,7 +141,7 @@ static int get_streams_from_channels(int channels, int mapping_family,
                                      int *streams, int *coupled_streams,
                                      int *order_plus_one) {
     if (mapping_family == 3) {
-        if (get_order_plus_one_from_channels(channels, order_plus_one) != OAC_OK)
+        if (oaci_get_order_plus_one_from_channels(channels, order_plus_one) != OAC_OK)
             return OAC_BAD_ARG;
         if (streams)
             *streams = (channels + 1)/2;
@@ -165,7 +165,7 @@ static MappingMatrix *get_enc_demixing_matrix(OacProjectionEncoder *st) {
                                         + st->mixing_matrix_size_in_bytes));
 }
 
-static OacMSEncoder *get_multistream_encoder(OacProjectionEncoder *st) {
+static OacMSEncoder *oaci_get_multistream_encoder(OacProjectionEncoder *st) {
     /* void* cast avoids clang -Wcast-align warning */
     return (OacMSEncoder *)(void*)((char*)st
                                    + align(sizeof(OacProjectionEncoder)
@@ -341,7 +341,7 @@ int oac_projection_ambisonics_encoder_init(OacProjectionEncoder *st, oac_int32 F
         mapping[i] = i;
 
     /* Initialize multistream encoder with provided settings. */
-    ms_encoder = get_multistream_encoder(st);
+    ms_encoder = oaci_get_multistream_encoder(st);
     ret = oac_multistream_encoder_init(ms_encoder, Fs, channels, *streams,
                                       *coupled_streams, mapping, application);
     return ret;
@@ -383,7 +383,7 @@ OacProjectionEncoder *oac_projection_ambisonics_encoder_create(
 int oac_projection_encode(OacProjectionEncoder *st, const oac_int16 *pcm,
                           int frame_size, unsigned char *data,
                           oac_int32 max_data_bytes) {
-    return oac_multistream_encode_native(get_multistream_encoder(st),
+    return oac_multistream_encode_native(oaci_get_multistream_encoder(st),
     oac_projection_copy_channel_in_short, pcm, frame_size, data,
     max_data_bytes, 16, oaci_downmix_int, 0, get_mixing_matrix(st));
 }
@@ -391,7 +391,7 @@ int oac_projection_encode(OacProjectionEncoder *st, const oac_int16 *pcm,
 int oac_projection_encode24(OacProjectionEncoder *st, const oac_int32 *pcm,
                             int frame_size, unsigned char *data,
                             oac_int32 max_data_bytes) {
-    return oac_multistream_encode_native(get_multistream_encoder(st),
+    return oac_multistream_encode_native(oaci_get_multistream_encoder(st),
     oac_projection_copy_channel_in_int24, pcm, frame_size, data,
     max_data_bytes, MAX_ENCODING_DEPTH, oaci_downmix_int, 0, get_mixing_matrix(st));
 }
@@ -400,7 +400,7 @@ int oac_projection_encode24(OacProjectionEncoder *st, const oac_int32 *pcm,
 int oac_projection_encode_float(OacProjectionEncoder *st, const float *pcm,
                                 int frame_size, unsigned char *data,
                                 oac_int32 max_data_bytes) {
-    return oac_multistream_encode_native(get_multistream_encoder(st),
+    return oac_multistream_encode_native(oaci_get_multistream_encoder(st),
     oac_projection_copy_channel_in_float, pcm, frame_size, data,
     max_data_bytes, MAX_ENCODING_DEPTH, oaci_downmix_float, 1, get_mixing_matrix(st));
 }
@@ -416,7 +416,7 @@ int oac_projection_encoder_ctl(OacProjectionEncoder *st, int request, ...) {
     OacMSEncoder *ms_encoder;
     int ret = OAC_OK;
 
-    ms_encoder = get_multistream_encoder(st);
+    ms_encoder = oaci_get_multistream_encoder(st);
     demixing_matrix = get_enc_demixing_matrix(st);
 
     va_start(ap, request);

@@ -145,7 +145,7 @@ static MappingMatrix *get_dec_demixing_matrix(OacProjectionDecoder *st) {
                                    + align(sizeof(OacProjectionDecoder)));
 }
 
-static OacMSDecoder *get_multistream_decoder(OacProjectionDecoder *st) {
+static OacMSDecoder *oaci_get_multistream_decoder(OacProjectionDecoder *st) {
     /* void* cast avoids clang -Wcast-align warning */
     return (OacMSDecoder*)(void*)((char*)st
                                   + align(sizeof(OacProjectionDecoder)
@@ -211,7 +211,7 @@ int oac_projection_decoder_init(OacProjectionDecoder *st, oac_int32 Fs,
         mapping[i] = i;
 
     ret = oac_multistream_decoder_init(
-    get_multistream_decoder(st), Fs, channels, streams, coupled_streams, mapping);
+    oaci_get_multistream_decoder(st), Fs, channels, streams, coupled_streams, mapping);
     RESTORE_STACK;
     return ret;
 }
@@ -258,7 +258,7 @@ OacProjectionDecoder *oac_projection_decoder_create(
 int oac_projection_decode(OacProjectionDecoder *st, const unsigned char *data,
                           oac_int32 len, oac_int16 *pcm, int frame_size,
                           int decode_fec) {
-    return oac_multistream_decode_native(get_multistream_decoder(st), data, len,
+    return oac_multistream_decode_native(oaci_get_multistream_decoder(st), data, len,
     pcm, oac_projection_copy_channel_out_short, frame_size, decode_fec, OPTIONAL_CLIP,
     get_dec_demixing_matrix(st));
 }
@@ -266,7 +266,7 @@ int oac_projection_decode(OacProjectionDecoder *st, const unsigned char *data,
 int oac_projection_decode24(OacProjectionDecoder *st, const unsigned char *data,
                             oac_int32 len, oac_int32 *pcm, int frame_size,
                             int decode_fec) {
-    return oac_multistream_decode_native(get_multistream_decoder(st), data, len,
+    return oac_multistream_decode_native(oaci_get_multistream_decoder(st), data, len,
     pcm, oac_projection_copy_channel_out_int24, frame_size, decode_fec, 0,
     get_dec_demixing_matrix(st));
 }
@@ -274,7 +274,7 @@ int oac_projection_decode24(OacProjectionDecoder *st, const unsigned char *data,
 #ifndef DISABLE_FLOAT_API
 int oac_projection_decode_float(OacProjectionDecoder *st, const unsigned char *data,
                                 oac_int32 len, float *pcm, int frame_size, int decode_fec) {
-    return oac_multistream_decode_native(get_multistream_decoder(st), data, len,
+    return oac_multistream_decode_native(oaci_get_multistream_decoder(st), data, len,
     pcm, oac_projection_copy_channel_out_float, frame_size, decode_fec, 0,
     get_dec_demixing_matrix(st));
 }
@@ -285,7 +285,7 @@ int oac_projection_decoder_ctl(OacProjectionDecoder *st, int request, ...) {
     int ret = OAC_OK;
 
     va_start(ap, request);
-    ret = oac_multistream_decoder_ctl_va_list(get_multistream_decoder(st),
+    ret = oac_multistream_decoder_ctl_va_list(oaci_get_multistream_decoder(st),
     request, ap);
     va_end(ap);
     return ret;

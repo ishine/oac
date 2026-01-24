@@ -66,7 +66,7 @@
 #include "resampler_private.h"
 #include "stack_alloc.h"
 
-static OAC_INLINE oac_int16 *silk_resampler_private_down_FIR_INTERPOL(
+static OAC_INLINE oac_int16 *oaci_silk_resampler_private_down_FIR_INTERPOL(
     oac_int16          *out,
     oac_int32          *buf,
     const oac_int16    *FIR_Coefs,
@@ -204,7 +204,7 @@ void oaci_silk_resampler_private_down_FIR(
         max_index_Q16 = silk_LSHIFT32( nSamplesIn, 16 );
 
         /* Interpolate filtered signal */
-        out = silk_resampler_private_down_FIR_INTERPOL( out, buf, FIR_Coefs, S->FIR_Order,
+        out = oaci_silk_resampler_private_down_FIR_INTERPOL( out, buf, FIR_Coefs, S->FIR_Order,
             S->FIR_Fracs, max_index_Q16, index_increment_Q16 );
 
         in += nSamplesIn;

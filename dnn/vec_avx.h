@@ -427,7 +427,7 @@ static inline void vector_ps_to_epi8(unsigned char *x, const float *_x, int len)
    reciprocal approximation (the max error of the rational function is
    around 6e-5).
  */
-static inline __m256 tanh8_approx(__m256 X) {
+static inline __m256 oaci_tanh8_approx(__m256 X) {
     const __m256 N0 = _mm256_set1_ps(952.52801514f);
     const __m256 N1 = _mm256_set1_ps(96.39235687f);
     const __m256 N2 = _mm256_set1_ps(0.60863042f);
@@ -454,7 +454,7 @@ static inline __m256 tanh8_approx(__m256 X) {
    and is dominated by the reciprocal approximation (the max error of the
    rational function is around 3e-5).
  */
-static inline __m256 sigmoid8_approx(__m256 X) {
+static inline __m256 oaci_sigmoid8_approx(__m256 X) {
     const __m256 N0 = _mm256_set1_ps(238.13200378f);
     const __m256 N1 = _mm256_set1_ps(6.02452230f);
     const __m256 N2 = _mm256_set1_ps(0.00950985f);
@@ -474,27 +474,27 @@ static inline __m256 sigmoid8_approx(__m256 X) {
     return _mm256_max_ps(min_out, _mm256_min_ps(max_out, num));
 }
 
-static inline float tanh_approx(float x) {
+static inline float oaci_tanh_approx(float x) {
     float out[8];
     __m256 X, Y;
     X = _mm256_set1_ps(x);
-    Y = tanh8_approx(X);
+    Y = oaci_tanh8_approx(X);
     _mm256_storeu_ps(out, Y);
     return out[0];
 }
 
-static inline float sigmoid_approx(float x) {
+static inline float oaci_sigmoid_approx(float x) {
     float out[8];
     __m256 X, Y;
     X = _mm256_set1_ps(x);
-    Y = sigmoid8_approx(X);
+    Y = oaci_sigmoid8_approx(X);
     _mm256_storeu_ps(out, Y);
     return out[0];
 }
 
 #else
 
-static inline __m128 tanh4_approx(__m128 X) {
+static inline __m128 oaci_tanh4_approx(__m128 X) {
     const __m128 N0 = _mm_set1_ps(952.52801514f);
     const __m128 N1 = _mm_set1_ps(96.39235687f);
     const __m128 N2 = _mm_set1_ps(0.60863042f);
@@ -513,7 +513,7 @@ static inline __m128 tanh4_approx(__m128 X) {
     return _mm_max_ps(min_out, _mm_min_ps(max_out, num));
 }
 
-static inline __m128 sigmoid4_approx(__m128 X) {
+static inline __m128 oaci_sigmoid4_approx(__m128 X) {
     const __m128 N0 = _mm_set1_ps(238.13200378f);
     const __m128 N1 = _mm_set1_ps(6.02452230f);
     const __m128 N2 = _mm_set1_ps(0.00950985f);
@@ -533,27 +533,27 @@ static inline __m128 sigmoid4_approx(__m128 X) {
     return _mm_max_ps(min_out, _mm_min_ps(max_out, num));
 }
 
-static inline float tanh_approx(float x) {
+static inline float oaci_tanh_approx(float x) {
     float out[4];
     __m128 X, Y;
     X = _mm_set1_ps(x);
-    Y = tanh4_approx(X);
+    Y = oaci_tanh4_approx(X);
     _mm_storeu_ps(out, Y);
     return out[0];
 }
 
-static inline float sigmoid_approx(float x) {
+static inline float oaci_sigmoid_approx(float x) {
     float out[4];
     __m128 X, Y;
     X = _mm_set1_ps(x);
-    Y = sigmoid4_approx(X);
+    Y = oaci_sigmoid4_approx(X);
     _mm_storeu_ps(out, Y);
     return out[0];
 }
 
 #endif
 
-static inline float lpcnet_exp(float x) {
+static inline float oaci_lpcnet_exp(float x) {
     float out[8];
     __m256 X, Y;
     X = _mm256_set1_ps(x);
@@ -562,7 +562,7 @@ static inline float lpcnet_exp(float x) {
     return out[0];
 }
 
-static inline void softmax(float *y, const float *x, int N) {
+static inline void oaci_softmax(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 7; i += 8) {
         __m256 X, Y;
@@ -571,59 +571,59 @@ static inline void softmax(float *y, const float *x, int N) {
         _mm256_storeu_ps(&y[i], Y);
     }
     for (; i < N; i++)
-        y[i] = lpcnet_exp(x[i]);
+        y[i] = oaci_lpcnet_exp(x[i]);
 }
 
 #ifdef __AVX__
-static inline void vec_tanh(float *y, const float *x, int N) {
+static inline void oaci_vec_tanh(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 7; i += 8) {
         __m256 X, Y;
         X = _mm256_loadu_ps(&x[i]);
-        Y = tanh8_approx(X);
+        Y = oaci_tanh8_approx(X);
         _mm256_storeu_ps(&y[i], Y);
     }
     for (; i < N; i++) {
-        y[i] = tanh_approx(x[i]);
+        y[i] = oaci_tanh_approx(x[i]);
     }
 }
 
-static inline void vec_sigmoid(float *y, const float *x, int N) {
+static inline void oaci_vec_sigmoid(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 7; i += 8) {
         __m256 X, Y;
         X = _mm256_loadu_ps(&x[i]);
-        Y = sigmoid8_approx(X);
+        Y = oaci_sigmoid8_approx(X);
         _mm256_storeu_ps(&y[i], Y);
     }
     for (; i < N; i++) {
-        y[i] = sigmoid_approx(x[i]);
+        y[i] = oaci_sigmoid_approx(x[i]);
     }
 }
 #else
-static inline void vec_tanh(float *y, const float *x, int N) {
+static inline void oaci_vec_tanh(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 3; i += 4) {
         __m128 X, Y;
         X = _mm_loadu_ps(&x[i]);
-        Y = tanh4_approx(X);
+        Y = oaci_tanh4_approx(X);
         _mm_storeu_ps(&y[i], Y);
     }
     for (; i < N; i++) {
-        y[i] = tanh_approx(x[i]);
+        y[i] = oaci_tanh_approx(x[i]);
     }
 }
 
-static inline void vec_sigmoid(float *y, const float *x, int N) {
+static inline void oaci_vec_sigmoid(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 3; i += 4) {
         __m128 X, Y;
         X = _mm_loadu_ps(&x[i]);
-        Y = sigmoid4_approx(X);
+        Y = oaci_sigmoid4_approx(X);
         _mm_storeu_ps(&y[i], Y);
     }
     for (; i < N; i++) {
-        y[i] = sigmoid_approx(x[i]);
+        y[i] = oaci_sigmoid_approx(x[i]);
     }
 }
 
@@ -678,7 +678,7 @@ static inline mm256i_emu oac_mm256_dpbusds_epi32(mm256i_emu src, mm256i_emu a, m
 # error "No optimizations in vec_avx.h. This should never happen. "
 #endif
 
-static inline void sgemv(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+static inline void oaci_sgemv(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
     int i, j;
     i = 0;
     for (; i < rows - 15; i += 16) {
@@ -737,7 +737,7 @@ static inline void sgemv(float *out, const float *weights, int rows, int cols, i
     }
 }
 
-static inline void sparse_sgemv8x4(float *out, const float *weights, const int *idx, int rows, const float *x) {
+static inline void oaci_sparse_sgemv8x4(float *out, const float *weights, const int *idx, int rows, const float *x) {
     int i, j;
     for (i = 0; i < rows; i += 8) {
         float *y;
@@ -773,7 +773,7 @@ static inline void sparse_sgemv8x4(float *out, const float *weights, const int *
     }
 }
 
-static inline void sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *idx, const float *scale, int rows,
+static inline void oaci_sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *idx, const float *scale, int rows,
                                    int cols, const float *_x) {
     int i, j;
     unsigned char x[MAX_INPUTS];
@@ -821,7 +821,7 @@ static inline void sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *id
         _mm256_storeu_ps(&_out[i], vout);
     }
 }
-static inline void cgemv8x4(float *_out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
+static inline void oaci_cgemv8x4(float *_out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
     int i, j;
     unsigned char x[MAX_INPUTS];
     /*for (i=0;i<cols;i++) x[i] = 127+floor(.5+127*_x[i]);*/

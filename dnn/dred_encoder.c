@@ -116,7 +116,7 @@ void oaci_dred_encoder_init(DREDEnc* enc, oac_int32 Fs, int channels) {
     oaci_dred_encoder_reset(enc);
 }
 
-static void dred_process_frame(DREDEnc *enc, int arch) {
+static void oaci_dred_process_frame(DREDEnc *enc, int arch) {
     float feature_buffer[2*36];
     float input_buffer[2*DRED_NUM_FEATURES] = {0};
 
@@ -162,7 +162,7 @@ void oaci_filter_df2t(const float *in, float *out, int len, float b0, const floa
 #else
 # define MAX_DOWNMIX_BUFFER (960*2)
 #endif
-static void dred_convert_to_16k(DREDEnc *enc, const float *in, int in_len, float *out, int out_len) {
+static void oaci_dred_convert_to_16k(DREDEnc *enc, const float *in, int in_len, float *out, int out_len) {
     float oaci_downmix[MAX_DOWNMIX_BUFFER];
     int i;
     int up;
@@ -256,11 +256,11 @@ void oaci_dred_compute_latents(DREDEnc *enc, const float *pcm, int frame_size, i
         int process_size;
         process_size16k = IMIN(2*DRED_FRAME_SIZE, frame_size16k);
         process_size = process_size16k*enc->Fs/16000;
-        dred_convert_to_16k(enc, pcm, process_size, &enc->input_buffer[enc->input_buffer_fill], process_size16k);
+        oaci_dred_convert_to_16k(enc, pcm, process_size, &enc->input_buffer[enc->input_buffer_fill], process_size16k);
         enc->input_buffer_fill += process_size16k;
         if (enc->input_buffer_fill >= 2*DRED_FRAME_SIZE) {
             curr_offset16k += 320;
-            dred_process_frame(enc, arch);
+            oaci_dred_process_frame(enc, arch);
             enc->input_buffer_fill -= 2*DRED_FRAME_SIZE;
             OAC_MOVE(&enc->input_buffer[0], &enc->input_buffer[2*DRED_FRAME_SIZE], enc->input_buffer_fill);
             /* 15 ms (6*2.5 ms) is the ideal offset for DRED because it corresponds to our vocoder look-ahead. */
@@ -276,7 +276,7 @@ void oaci_dred_compute_latents(DREDEnc *enc, const float *pcm, int frame_size, i
     }
 }
 
-static void dred_encode_latents(ec_enc *enc, const float *x, const oac_uint8 *scale, const oac_uint8 *dzone,
+static void oaci_dred_encode_latents(ec_enc *enc, const float *x, const oac_uint8 *scale, const oac_uint8 *dzone,
                                 const oac_uint8 *r, const oac_uint8 *p0, int dim, int arch) {
     int i;
     int q[IMAX(DRED_LATENT_DIM, DRED_STATE_DIM)];
@@ -366,7 +366,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
         qmax >= 15 ? nvals : nvals + qmax - q0, 2*nvals);
     }
     state_qoffset = q0*DRED_STATE_DIM;
-    dred_encode_latents(
+    oaci_dred_encode_latents(
         &ec_encoder,
         &enc->state_buffer[latent_offset*DRED_STATE_DIM],
         oaci_dred_state_quant_scales_q8 + state_qoffset,
@@ -375,7 +375,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
         oaci_dred_state_p0_q8 + state_qoffset,
         DRED_STATE_DIM,
         arch);
-    if (ec_tell(&ec_encoder) > 8*max_bytes) {
+    if (oaci_ec_tell(&ec_encoder) > 8*max_bytes) {
         return 0;
     }
     ec_bak = ec_encoder;
@@ -384,7 +384,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
         q_level = oaci_compute_quantizer(q0, dQ, qmax, i/2);
         offset = q_level*DRED_LATENT_DIM;
 
-        dred_encode_latents(
+        oaci_dred_encode_latents(
             &ec_encoder,
             enc->latents_buffer + (i + latent_offset)*DRED_LATENT_DIM,
             oaci_dred_latent_quant_scales_q8 + offset,
@@ -394,7 +394,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
             DRED_LATENT_DIM,
             arch
             );
-        if (ec_tell(&ec_encoder) > 8*max_bytes) {
+        if (oaci_ec_tell(&ec_encoder) > 8*max_bytes) {
             /* If we haven't been able to code one chunk, give up on DRED completely. */
             if (i == 0) return 0;
             break;
@@ -410,7 +410,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
     if (dred_encoded == 0 || (dred_encoded <= 2 && extra_dred_offset))return 0;
     ec_encoder = ec_bak;
 
-    ec_buffer_fill = (ec_tell(&ec_encoder) + 7)/8;
+    ec_buffer_fill = (oaci_ec_tell(&ec_encoder) + 7)/8;
     oaci_ec_enc_shrink(&ec_encoder, ec_buffer_fill);
     oaci_ec_enc_done(&ec_encoder);
     return ec_buffer_fill;

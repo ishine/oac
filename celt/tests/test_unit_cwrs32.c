@@ -133,11 +133,11 @@ int main(void) {
             oac_uint32 inc;
             oac_uint32 nc;
             oac_uint32 i;
-            k = get_pulses(pseudo);
+            k = oaci_get_pulses(pseudo);
             if (k > pkmax[t]) break;
             printf("Testing CWRS with N=%i, K=%i...\n", n, k);
 #if defined(SMALL_FOOTPRINT)
-            nc = ncwrs_urow(n, k, uu);
+            nc = oaci_ncwrs_urow(n, k, uu);
 #else
             nc = CELT_PVQ_V(n, k);
 #endif

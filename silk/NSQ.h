@@ -65,7 +65,7 @@
 
 #undef silk_short_prediction_create_arch_coef
 
-static OAC_INLINE oac_int32 silk_noise_shape_quantizer_short_prediction_c(const oac_int32 *buf32,
+static OAC_INLINE oac_int32 oaci_silk_noise_shape_quantizer_short_prediction_c(const oac_int32 *buf32,
                                                                           const oac_int16 *coef16, oac_int order) {
     oac_int32 out;
     silk_assert( order == 10 || order == 16 );
@@ -94,11 +94,11 @@ static OAC_INLINE oac_int32 silk_noise_shape_quantizer_short_prediction_c(const 
     return out;
 }
 
-#define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  ((void)arch, \
-                                                                                      silk_noise_shape_quantizer_short_prediction_c \
+#define oaci_silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  ((void)arch, \
+                                                                                      oaci_silk_noise_shape_quantizer_short_prediction_c \
                                                                                       (in, coef, order))
 
-static OAC_INLINE oac_int32 silk_NSQ_noise_shape_feedback_loop_c(const oac_int32 *data0, oac_int32 *data1,
+static OAC_INLINE oac_int32 oaci_silk_NSQ_noise_shape_feedback_loop_c(const oac_int32 *data0, oac_int32 *data1,
                                                                  const oac_int16 *coef, oac_int order) {
     oac_int32 out;
     oac_int32 tmp1, tmp2;
@@ -126,8 +126,8 @@ static OAC_INLINE oac_int32 silk_NSQ_noise_shape_feedback_loop_c(const oac_int32
     return out;
 }
 
-#define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch)  ((void)arch, \
-                                                                              silk_NSQ_noise_shape_feedback_loop_c( \
+#define oaci_silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch)  ((void)arch, \
+                                                                              oaci_silk_NSQ_noise_shape_feedback_loop_c( \
     data0, data1, coef, order))
 
 #if defined(OAC_ARM_MAY_HAVE_NEON_INTR)

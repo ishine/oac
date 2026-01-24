@@ -106,7 +106,7 @@ void print_float_vector(const char* name, const float *vec, int length) {
 }
 #endif
 
-static void scale_kernel(
+static void oaci_scale_kernel(
     float *kernel,
     int in_channels,
     int out_channels,
@@ -211,7 +211,7 @@ void oaci_adaconv_process_frame(
     print_float_vector("adaconv_gain_raw", gain_buffer, out_channels);
 #endif
     transform_gains(gain_buffer, out_channels, filter_gain_a, filter_gain_b);
-    scale_kernel(kernel_buffer, in_channels, out_channels, kernel_size, gain_buffer);
+    oaci_scale_kernel(kernel_buffer, in_channels, out_channels, kernel_size, gain_buffer);
 
 #ifdef DEBUG_NNDSP
     print_float_vector("adaconv_kernel", kernel_buffer, in_channels*out_channels*kernel_size);
@@ -307,7 +307,7 @@ void oaci_adacomb_process_frame(
 #endif
     gain = exp(log_gain_limit - gain);
     global_gain = exp(filter_gain_a*global_gain + filter_gain_b);
-    scale_kernel(kernel_buffer, 1, 1, kernel_size, &gain);
+    oaci_scale_kernel(kernel_buffer, 1, 1, kernel_size, &gain);
 
 #ifdef DEBUG_NNDSP
     print_float_vector("adacomb_kernel", kernel_buffer, kernel_size);

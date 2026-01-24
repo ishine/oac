@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Predictive dequantizer for NLSF residuals */
-static OAC_INLINE void silk_NLSF_residual_dequant(          /* O    Returns RD value in Q30                     */
+static OAC_INLINE void oaci_silk_NLSF_residual_dequant(          /* O    Returns RD value in Q30                     */
     oac_int16 x_Q10[],                                      /* O    Output [ order ]                            */
     const oac_int8 indices[],                               /* I    Quantization indices [ order ]              */
     const oac_uint8 pred_coef_Q8[],                         /* I    Backward predictor coefs [ order ]          */
@@ -109,7 +109,7 @@ void oaci_silk_NLSF_decode(
     oaci_silk_NLSF_unpack( ec_ix, pred_Q8, psNLSF_CB, NLSFIndices[ 0 ] );
 
     /* Predictive residual dequantizer */
-    silk_NLSF_residual_dequant( res_Q10, &NLSFIndices[ 1 ], pred_Q8, psNLSF_CB->quantStepSize_Q16, psNLSF_CB->order );
+    oaci_silk_NLSF_residual_dequant( res_Q10, &NLSFIndices[ 1 ], pred_Q8, psNLSF_CB->quantStepSize_Q16, psNLSF_CB->order );
 
     /* Apply inverse square-rooted weights to first stage and add to output */
     pCB_element = &psNLSF_CB->CB1_NLSF_Q8[ NLSFIndices[ 0 ]*psNLSF_CB->order ];

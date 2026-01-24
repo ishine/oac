@@ -75,7 +75,7 @@
 #include "mathops.h"
 #include "celt_lpc.h"
 
-static void find_best_pitch(oac_val32 *xcorr, oac_val16 *y, int len,
+static void oaci_find_best_pitch(oac_val32 *xcorr, oac_val16 *y, int len,
                             int max_pitch, int *best_pitch
 #ifdef FIXED_POINT
                             , int yshift, oac_val32 maxcorr
@@ -88,7 +88,7 @@ static void find_best_pitch(oac_val32 *xcorr, oac_val16 *y, int len,
 #ifdef FIXED_POINT
     int xshift;
 
-    xshift = celt_ilog2(maxcorr) - 14;
+    xshift = oaci_celt_ilog2(maxcorr) - 14;
 #endif
 
     best_num[0] = -1;
@@ -185,7 +185,7 @@ void oaci_pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT
     }
     if (maxabs < 1)
         maxabs = 1;
-    shift = celt_ilog2(maxabs) - 10;
+    shift = oaci_celt_ilog2(maxabs) - 10;
     if (shift < 0)
         shift = 0;
     if (C == 2)
@@ -354,9 +354,9 @@ void oaci_pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_REST
         y_lp4[j] = y[2*j];
 
 #ifdef FIXED_POINT
-    xmax = celt_maxabs16(x_lp4, len>>2);
-    ymax = celt_maxabs16(y_lp4, lag>>2);
-    shift = celt_ilog2(MAX32(1, MAX32(xmax, ymax))) - 14 + celt_ilog2(len)/2;
+    xmax = oaci_celt_maxabs16(x_lp4, len>>2);
+    ymax = oaci_celt_maxabs16(y_lp4, lag>>2);
+    shift = oaci_celt_ilog2(MAX32(1, MAX32(xmax, ymax))) - 14 + oaci_celt_ilog2(len)/2;
     if (shift > 0) {
         for (j = 0; j < len>>2; j++)
             x_lp4[j] = SHR16(x_lp4[j], shift);
@@ -376,7 +376,7 @@ void oaci_pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_REST
 #endif
     oaci_celt_pitch_xcorr(x_lp4, y_lp4, xcorr, len>>2, max_pitch>>2, arch);
 
-    find_best_pitch(xcorr, y_lp4, len>>2, max_pitch>>2, best_pitch
+    oaci_find_best_pitch(xcorr, y_lp4, len>>2, max_pitch>>2, best_pitch
 #ifdef FIXED_POINT
         , 0, maxcorr
 #endif
@@ -403,7 +403,7 @@ void oaci_pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_REST
         maxcorr = MAX32(maxcorr, sum);
 #endif
     }
-    find_best_pitch(xcorr, y, len>>1, max_pitch>>1, best_pitch
+    oaci_find_best_pitch(xcorr, y, len>>1, max_pitch>>1, best_pitch
 #ifdef FIXED_POINT
         , shift + 1, maxcorr
 #endif
@@ -430,15 +430,15 @@ void oaci_pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_REST
 }
 
 #ifdef FIXED_POINT
-static oac_val16 compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
+static oac_val16 oaci_compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
     oac_val32 x2y2;
     int sx, sy, shift;
     oac_val32 g;
     oac_val16 den;
     if (xy == 0 || xx == 0 || yy == 0)
         return 0;
-    sx = celt_ilog2(xx) - 14;
-    sy = celt_ilog2(yy) - 14;
+    sx = oaci_celt_ilog2(xx) - 14;
+    sy = oaci_celt_ilog2(yy) - 14;
     shift = sx + sy;
     x2y2 = SHR32(MULT16_16(VSHR32(xx, sx), VSHR32(yy, sy)), 14);
     if (shift&1) {
@@ -456,7 +456,7 @@ static oac_val16 compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
     return EXTRACT16(MAX32(-Q15ONE, MIN32(g, Q15ONE)));
 }
 #else
-static oac_val16 compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
+static oac_val16 oaci_compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
     return xy/oaci_celt_sqrt(1 + xx*yy);
 }
 #endif
@@ -497,7 +497,7 @@ oac_val16 oaci_remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
     yy = yy_lookup[T0];
     best_xy = xy;
     best_yy = yy;
-    g = g0 = compute_pitch_gain(xy, xx, yy);
+    g = g0 = oaci_compute_pitch_gain(xy, xx, yy);
     /* Look for any pitch at T/k */
     for (k = 2; k <= 15; k++) {
         int T1, T1b;
@@ -519,7 +519,7 @@ oac_val16 oaci_remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
         oaci_dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2, arch);
         xy = HALF32(xy + xy2);
         yy = HALF32(yy_lookup[T1] + yy_lookup[T1b]);
-        g1 = compute_pitch_gain(xy, xx, yy);
+        g1 = oaci_compute_pitch_gain(xy, xx, yy);
         if (abs(T1 - prev_period) <= 1)
             cont = prev_gain;
         else if (abs(T1 - prev_period) <= 2 && 5*k*k < T0)

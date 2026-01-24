@@ -140,7 +140,7 @@ void fwgan_cont(FWGANState *st, const float *pcm0, const float *features0) {
     /* Deemphasis memory is just the last continuation sample. */
     st->deemph_mem = pcm0[CONT_PCM_INPUTS - 1];
 
-    /* Apply analysis filter, considering that the oaci_preemphasis and deemphasis filter
+    /* Apply analysis filter, considering that the oaci_preemphasis and oaci_deemphasis filter
        cancel each other in this case since the LPC filter is constant across that boundary.
      */
     for (i = LPC_ORDER; i < CONT_PCM_INPUTS; i++) {
@@ -152,7 +152,7 @@ void fwgan_cont(FWGANState *st, const float *pcm0, const float *features0) {
     for (i = 0; i < LPC_ORDER; i++) wpcm0[i] = wpcm0[LPC_ORDER];
 
     /* The memory of the pre-empahsis is the last sample of the weighted signal
-       (ignoring oaci_preemphasis+deemphasis combination). */
+       (ignoring oaci_preemphasis+oaci_deemphasis combination). */
     st->preemph_mem = wpcm0[CONT_PCM_INPUTS - 1];
     /* The memory of the synthesis filter is the pre-emphasized continuation. */
     for (i = 0; i < LPC_ORDER;

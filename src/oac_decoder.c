@@ -248,7 +248,7 @@ OacDecoder *oac_decoder_create(oac_int32 Fs, int channels, int *error) {
     return st;
 }
 
-static void smooth_fade(const oac_res *in1, const oac_res *in2,
+static void oaci_smooth_fade(const oac_res *in1, const oac_res *in2,
                         oac_res *out, int overlap, int channels,
                         const celt_coef *window, oac_int32 Fs) {
     int i, c;
@@ -495,7 +495,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
 
     start_band = 0;
     if (!decode_fec && mode != MODE_CELT_ONLY && data != NULL
-        && ec_tell(&dec) + 17 + 20*(mode == MODE_HYBRID) <= 8*len) {
+        && oaci_ec_tell(&dec) + 17 + 20*(mode == MODE_HYBRID) <= 8*len) {
         /* Check if we have a redundant 0-8 kHz band */
         if (mode == MODE_HYBRID)
             redundancy = oaci_ec_dec_bit_logp(&dec, 12);
@@ -504,14 +504,14 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
         if (redundancy) {
             celt_to_silk = oaci_ec_dec_bit_logp(&dec, 1);
             /* redundancy_bytes will be at least two, in the non-hybrid
-               case due to the ec_tell() check above */
+               case due to the oaci_ec_tell() check above */
             redundancy_bytes = mode == MODE_HYBRID ?
                                (oac_int32)oaci_ec_dec_uint(&dec, 256) + 2 :
-                               len - ((ec_tell(&dec) + 7)>>3);
+                               len - ((oaci_ec_tell(&dec) + 7)>>3);
             len -= redundancy_bytes;
             /* This is a sanity check. It should never happen for a valid
                packet, so the exact behaviour is not normative. */
-            if (len*8 < ec_tell(&dec)) {
+            if (len*8 < oaci_ec_tell(&dec)) {
                 len = 0;
                 redundancy_bytes = 0;
                 redundancy = 0;
@@ -627,7 +627,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
 
         oaci_celt_decode_with_ec(celt_dec, data + len, redundancy_bytes, redundant_audio, F5, NULL, 0);
         MUST_SUCCEED(celt_decoder_ctl(celt_dec, OAC_GET_FINAL_RANGE(&redundant_rng)));
-        smooth_fade(pcm + st->channels*(frame_size - F2_5), redundant_audio + st->channels*F2_5,
+        oaci_smooth_fade(pcm + st->channels*(frame_size - F2_5), redundant_audio + st->channels*F2_5,
                   pcm + st->channels*(frame_size - F2_5), F2_5, st->channels, window, st->Fs);
     }
     /* 5ms redundant frame for CELT->SILK; ignore if the previous frame did not
@@ -638,14 +638,14 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
             for (i = 0; i < F2_5; i++)
                 pcm[st->channels*i + c] = redundant_audio[st->channels*i + c];
         }
-        smooth_fade(redundant_audio + st->channels*F2_5, pcm + st->channels*F2_5,
+        oaci_smooth_fade(redundant_audio + st->channels*F2_5, pcm + st->channels*F2_5,
                   pcm + st->channels*F2_5, F2_5, st->channels, window, st->Fs);
     }
     if (transition) {
         if (audiosize >= F5) {
             for (i = 0; i < st->channels*F2_5; i++)
                 pcm[i] = pcm_transition[i];
-            smooth_fade(pcm_transition + st->channels*F2_5, pcm + st->channels*F2_5,
+            oaci_smooth_fade(pcm_transition + st->channels*F2_5, pcm + st->channels*F2_5,
                      pcm + st->channels*F2_5, F2_5,
                      st->channels, window, st->Fs);
         } else {
@@ -654,7 +654,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
                a bit of temporal aliasing, but it shouldn't be too bad and
                that's pretty much the best we can do. In any case, generating this
                transition it pretty silly in the first place */
-            smooth_fade(pcm_transition, pcm,
+            oaci_smooth_fade(pcm_transition, pcm,
                      pcm, F2_5,
                      st->channels, window, st->Fs);
         }
@@ -662,7 +662,7 @@ static int oac_decode_frame(OacDecoder *st, const unsigned char *data,
 
     if (st->decode_gain) {
         oac_val32 gain;
-        gain = celt_exp2(MULT16_16_P15(QCONST16(6.48814081e-4f, 25), st->decode_gain));
+        gain = oaci_celt_exp2(MULT16_16_P15(QCONST16(6.48814081e-4f, 25), st->decode_gain));
         for (i = 0; i < frame_size*st->channels; i++) {
             oac_val32 x;
             x = MULT32_32_Q16(pcm[i], gain);
@@ -1251,14 +1251,14 @@ struct OacDREDDecoder {
 };
 
 #if defined(ENABLE_DRED) && (defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS))
-static void validate_dred_decoder(OacDREDDecoder *st) {
+static void oaci_validate_dred_decoder(OacDREDDecoder *st) {
     celt_assert(st->magic == 0xD8EDDEC0);
 # ifdef OAC_ARCHMASK
     celt_assert(st->arch >= 0);
     celt_assert(st->arch <= OAC_ARCHMASK);
 # endif
 }
-# define VALIDATE_DRED_DECODER(st) validate_dred_decoder(st)
+# define VALIDATE_DRED_DECODER(st) oaci_validate_dred_decoder(st)
 #else
 # define VALIDATE_DRED_DECODER(st)
 #endif
@@ -1357,7 +1357,7 @@ bad_arg:
 }
 
 #ifdef ENABLE_DRED
-static int dred_find_payload(const unsigned char *data, oac_int32 len, const unsigned char **payload,
+static int oaci_dred_find_payload(const unsigned char *data, oac_int32 len, const unsigned char **payload,
                              int *dred_frame_offset) {
     OacExtensionIterator iter;
     oac_extension_data ext;
@@ -1444,7 +1444,7 @@ int oac_dred_parse(OacDREDDecoder *dred_dec, OacDRED *dred, const unsigned char 
     VALIDATE_DRED_DECODER(dred_dec);
     if (!dred_dec->loaded) return OAC_UNIMPLEMENTED;
     dred->process_stage = -1;
-    payload_len = dred_find_payload(data, len, &payload, &dred_frame_offset);
+    payload_len = oaci_dred_find_payload(data, len, &payload, &dred_frame_offset);
     if (payload_len < 0)
         return payload_len;
     if (payload != NULL) {

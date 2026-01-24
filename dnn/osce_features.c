@@ -213,7 +213,7 @@ static float osce_window[OSCE_SPEC_WINDOW_SIZE] = {
     0.044164277127f,     0.034354408400f,     0.024541228523f,     0.014725683311f,     0.004908718808f
 };
 
-static void apply_filterbank(float *x_out, float *x_in, const int *center_bins, const float* band_weights,
+static void oaci_apply_filterbank(float *x_out, float *x_in, const int *center_bins, const float* band_weights,
                              int num_bands) {
     int b, i;
     float frac;
@@ -239,7 +239,7 @@ static void apply_filterbank(float *x_out, float *x_in, const int *center_bins, 
 }
 
 
-static void mag_spec_320_onesided(float *out, float *in) {
+static void oaci_mag_spec_320_onesided(float *out, float *in) {
     celt_assert(OSCE_SPEC_WINDOW_SIZE == 320);
     kiss_fft_cpx buffer[OSCE_SPEC_WINDOW_SIZE];
     int k;
@@ -265,14 +265,14 @@ static void calculate_log_spectrum_from_lpc(float *spec, oac_int16 *a_q12, int l
     }
 
     /* calculate and invert magnitude spectrum */
-    mag_spec_320_onesided(buffer, buffer);
+    oaci_mag_spec_320_onesided(buffer, buffer);
 
     for (i = 0; i < OSCE_SPEC_NUM_FREQS; i++) {
         buffer[i] = 1.f/(buffer[i] + 1e-9f);
     }
 
     /* apply filterbank */
-    apply_filterbank(spec, buffer, center_bins_clean, band_weights_clean, OSCE_CLEAN_SPEC_NUM_BANDS);
+    oaci_apply_filterbank(spec, buffer, center_bins_clean, band_weights_clean, OSCE_CLEAN_SPEC_NUM_BANDS);
 
     /* log and scaling */
     for (i = 0; i < OSCE_CLEAN_SPEC_NUM_BANDS; i++) {
@@ -280,7 +280,7 @@ static void calculate_log_spectrum_from_lpc(float *spec, oac_int16 *a_q12, int l
     }
 }
 
-static void calculate_cepstrum(float *cepstrum, float *signal) {
+static void oaci_calculate_cepstrum(float *cepstrum, float *signal) {
     float buffer[OSCE_SPEC_WINDOW_SIZE];
     float *spec = &buffer[OSCE_SPEC_NUM_FREQS + 3];
     int n;
@@ -292,10 +292,10 @@ static void calculate_cepstrum(float *cepstrum, float *signal) {
     }
 
     /* calculate magnitude spectrum */
-    mag_spec_320_onesided(buffer, buffer);
+    oaci_mag_spec_320_onesided(buffer, buffer);
 
     /* accumulate bands */
-    apply_filterbank(spec, buffer, center_bins_noisy, band_weights_noisy, OSCE_NOISY_SPEC_NUM_BANDS);
+    oaci_apply_filterbank(spec, buffer, center_bins_noisy, band_weights_noisy, OSCE_NOISY_SPEC_NUM_BANDS);
 
     /* log domain conversion */
     for (n = 0; n < OSCE_NOISY_SPEC_NUM_BANDS; n++) {
@@ -310,7 +310,7 @@ static void calculate_cepstrum(float *cepstrum, float *signal) {
     oaci_dct(cepstrum, spec);
 }
 
-static void calculate_acorr(float *acorr, float *signal, int lag) {
+static void oaci_calculate_acorr(float *acorr, float *signal, int lag) {
     int n, k;
     celt_assert(acorr != signal);
 
@@ -329,7 +329,7 @@ static void calculate_acorr(float *acorr, float *signal, int lag) {
     }
 }
 
-static int pitch_postprocessing(OSCEFeatureState *psFeatures, int lag, int type) {
+static int oaci_pitch_postprocessing(OSCEFeatureState *psFeatures, int lag, int type) {
     int new_lag;
     int modulus;
 
@@ -428,17 +428,17 @@ void oaci_osce_calculate_features(
 
         /* noisy cepstrum from signal (update every other frame) */
         if (k%2 == 0) {
-            calculate_cepstrum(pfeatures + OSCE_NOISY_CEPSTRUM_START, frame - 160);
+            oaci_calculate_cepstrum(pfeatures + OSCE_NOISY_CEPSTRUM_START, frame - 160);
         } else {
             OAC_COPY(pfeatures + OSCE_NOISY_CEPSTRUM_START, pfeatures + OSCE_NOISY_CEPSTRUM_START - OSCE_FEATURE_DIM,
             OSCE_NOISY_CEPSTRUM_LENGTH);
         }
 
         /* pitch hangover and zero value replacement */
-        periods[k] = pitch_postprocessing(psFeatures, psDecCtrl->pitchL[k], psDec->indices.signalType);
+        periods[k] = oaci_pitch_postprocessing(psFeatures, psDecCtrl->pitchL[k], psDec->indices.signalType);
 
         /* auto-correlation around pitch lag */
-        calculate_acorr(pfeatures + OSCE_ACORR_START, frame, periods[k]);
+        oaci_calculate_acorr(pfeatures + OSCE_ACORR_START, frame, periods[k]);
 
         /* ltp */
         celt_assert(OSCE_LTP_LENGTH == LTP_ORDER);
@@ -524,7 +524,7 @@ void oaci_osce_bwe_calculate_features(
             mag_spec[k] = OSCE_BWE_WINDOW_SIZE*sqrt(fft_buffer[k].r*fft_buffer[k].r + fft_buffer[k].i*fft_buffer[k].i);
         }
 
-        apply_filterbank(lmspec, mag_spec, center_bins_bwe, band_weights_bwe, OSCE_BWE_NUM_BANDS);
+        oaci_apply_filterbank(lmspec, mag_spec, center_bins_bwe, band_weights_bwe, OSCE_BWE_NUM_BANDS);
 
         for (k = 0; k < OSCE_BWE_NUM_BANDS; k++) {
             lmspec[k] = log(lmspec[k] + 1e-9);

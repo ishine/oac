@@ -68,7 +68,7 @@
 #include "celt/cpu_support.h"
 #include "celt/arm/armcpu.h"
 
-oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf32, const oac_int32 *coef32,
+oac_int32 oaci_silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf32, const oac_int32 *coef32,
                                                            oac_int order) {
     int32x4_t coef0 = vld1q_s32(coef32);
     int32x4_t coef1 = vld1q_s32(coef32 + 4);
@@ -102,7 +102,7 @@ oac_int32 silk_noise_shape_quantizer_short_prediction_neon(const oac_int32 *buf3
 }
 
 
-oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
+oac_int32 oaci_silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
                                                   oac_int order) {
     oac_int32 out;
     if (order == 8) {
@@ -113,7 +113,7 @@ oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_in
         int32x4_t a1 = vld1q_s32(data1 + 3);  /* data1[3] ... [6] */
 
         /*TODO: Convert these once in advance instead of once per sample, like
-           silk_noise_shape_quantizer_short_prediction_neon() does.*/
+           oaci_silk_noise_shape_quantizer_short_prediction_neon() does.*/
         int16x8_t coef16 = vld1q_s16(coef);
         int32x4_t coef0 = vmovl_s16(vget_low_s16(coef16));
         int32x4_t coef1 = vmovl_s16(vget_high_s16(coef16));
@@ -121,9 +121,9 @@ oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_in
         /*This is not bit-exact with the C version, since we do not drop the
            lower 16 bits of each multiply, but wait until the end to truncate
            precision. This is an encoder-specific calculation (and unlike
-           silk_noise_shape_quantizer_short_prediction_neon(), is not meant to
+           oaci_silk_noise_shape_quantizer_short_prediction_neon(), is not meant to
            simulate what the decoder will do). We still could use vqdmulhq_s32()
-           like silk_noise_shape_quantizer_short_prediction_neon() and save
+           like oaci_silk_noise_shape_quantizer_short_prediction_neon() and save
            half the multiplies, but the speed difference is not large, since we
            then need two extra adds.*/
         int64x2_t b0 = vmull_s32(vget_low_s32(a0), vget_low_s32(coef0));
@@ -140,5 +140,5 @@ oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_in
         vst1q_s32(data1 + 4, a1);
         return out;
     }
-    return silk_NSQ_noise_shape_feedback_loop_c(data0, data1, coef, order);
+    return oaci_silk_NSQ_noise_shape_feedback_loop_c(data0, data1, coef, order);
 }

@@ -102,10 +102,10 @@ static OAC_INLINE long IMUL32(long i, long j) {
 #undef MULT16_32_Q15
 #define MULT16_32_Q15(a, b) ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (b)), 15))
 
-#define celt_ilog2(x) (30 - _lnorm(x))
+#define oaci_celt_ilog2(x) (30 - _lnorm(x))
 #define OVERRIDE_CELT_ILOG2
 
-#define celt_maxabs16(x, len) MAX32(EXTEND32(maxval((DATA *)x, len)), -EXTEND32(minval((DATA *)x, len)))
+#define oaci_celt_maxabs16(x, len) MAX32(EXTEND32(maxval((DATA *)x, len)), -EXTEND32(minval((DATA *)x, len)))
 #define OVERRIDE_CELT_MAXABS16
 
 #endif /* FIXED_C5X_H */

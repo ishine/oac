@@ -74,9 +74,9 @@
 # define MIPS_MADD __builtin_mips_madd
 # define MIPS_EXTR_R __builtin_mips_extr_r_w
 
-# define OVERRIDE_silk_noise_shape_quantizer_short_prediction
+# define OVERRIDE_oaci_silk_noise_shape_quantizer_short_prediction
 /* suddenly performance is worse */
-# define dont_OVERRIDE_silk_NSQ_noise_shape_feedback_loop
+# define dont_OVERRIDE_oaci_silk_NSQ_noise_shape_feedback_loop
 
 /* gets worst performance result */
 #elif defined(__mips_isa_rev) && __mips == 32
@@ -93,14 +93,14 @@ static inline oac_val32 MIPS_EXTR_R(long long acc, int shift) {
     return (oac_val32)((acc + (1<<shift)/2)>>shift);
 }
 
-# define OVERRIDE_silk_noise_shape_quantizer_short_prediction
-# define OVERRIDE_silk_NSQ_noise_shape_feedback_loop
+# define OVERRIDE_oaci_silk_noise_shape_quantizer_short_prediction
+# define OVERRIDE_oaci_silk_NSQ_noise_shape_feedback_loop
 
 #endif
 
-#if defined(OVERRIDE_silk_noise_shape_quantizer_short_prediction)
+#if defined(OVERRIDE_oaci_silk_noise_shape_quantizer_short_prediction)
 
-static OAC_INLINE oac_int32 silk_noise_shape_quantizer_short_prediction_mips(const oac_int32 *buf32,
+static OAC_INLINE oac_int32 oaci_silk_noise_shape_quantizer_short_prediction_mips(const oac_int32 *buf32,
                                                                              const oac_int16 *coef16, oac_int order) {
     oac_int64 out;
     silk_assert( order == 10 || order == 16 );
@@ -127,17 +127,17 @@ static OAC_INLINE oac_int32 silk_noise_shape_quantizer_short_prediction_mips(con
     return MIPS_EXTR_R(out, 16);
 }
 
-# undef  silk_noise_shape_quantizer_short_prediction
-# define silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  ((void)arch, \
-                                                                                       silk_noise_shape_quantizer_short_prediction_mips \
+# undef  oaci_silk_noise_shape_quantizer_short_prediction
+# define oaci_silk_noise_shape_quantizer_short_prediction(in, coef, coefRev, order, arch)  ((void)arch, \
+                                                                                       oaci_silk_noise_shape_quantizer_short_prediction_mips \
                                                                                        (in, coef, order))
 
-#endif /* OVERRIDE_silk_noise_shape_quantizer_short_prediction */
+#endif /* OVERRIDE_oaci_silk_noise_shape_quantizer_short_prediction */
 
 
-#if defined(OVERRIDE_silk_NSQ_noise_shape_feedback_loop)
+#if defined(OVERRIDE_oaci_silk_NSQ_noise_shape_feedback_loop)
 
-static OAC_INLINE oac_int32 silk_NSQ_noise_shape_feedback_loop_mips(const oac_int32 *data0, oac_int32 *data1,
+static OAC_INLINE oac_int32 oaci_silk_NSQ_noise_shape_feedback_loop_mips(const oac_int32 *data0, oac_int32 *data1,
                                                                     const oac_int16 *coef, oac_int order) {
     oac_int32 out;
     oac_int32 tmp1, tmp2;
@@ -163,11 +163,11 @@ static OAC_INLINE oac_int32 silk_NSQ_noise_shape_feedback_loop_mips(const oac_in
     return MIPS_EXTR_R( out, (16 - 1));
 }
 
-# undef  silk_NSQ_noise_shape_feedback_loop
-# define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch)  ((void)arch, \
-                                                                               silk_NSQ_noise_shape_feedback_loop_mips( \
+# undef  oaci_silk_NSQ_noise_shape_feedback_loop
+# define oaci_silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch)  ((void)arch, \
+                                                                               oaci_silk_NSQ_noise_shape_feedback_loop_mips( \
     data0, data1, coef, order))
 
-#endif /* OVERRIDE_silk_NSQ_noise_shape_feedback_loop */
+#endif /* OVERRIDE_oaci_silk_NSQ_noise_shape_feedback_loop */
 
 #endif /* NSQ_DEL_DEC_MIPSR1_H__ */

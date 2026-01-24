@@ -71,7 +71,7 @@
 #include "main.h"
 
 /* Helper function, interpolates the filter taps */
-static OAC_INLINE void silk_LP_interpolate_filter_taps(
+static OAC_INLINE void oaci_silk_LP_interpolate_filter_taps(
     oac_int32 B_Q28[ TRANSITION_NB ],
     oac_int32 A_Q28[ TRANSITION_NA ],
     const oac_int ind,
@@ -153,7 +153,7 @@ void oaci_silk_LP_variable_cutoff(
         silk_assert( ind < TRANSITION_INT_NUM );
 
         /* Interpolate filter coefficients */
-        silk_LP_interpolate_filter_taps( B_Q28, A_Q28, ind, fac_Q16 );
+        oaci_silk_LP_interpolate_filter_taps( B_Q28, A_Q28, ind, fac_Q16 );
 
         /* Update transition frame number for next frame */
         psLP->transition_frame_no = silk_LIMIT( psLP->transition_frame_no + psLP->mode, 0, TRANSITION_FRAMES );

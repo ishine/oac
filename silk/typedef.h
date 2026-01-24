@@ -93,11 +93,11 @@
 # ifdef ENABLE_ASSERTIONS
 #  include <stdio.h>
 #  include <stdlib.h>
-#  define silk_fatal(str) _silk_fatal(str, __FILE__, __LINE__);
+#  define silk_fatal(str) oaci_silk_fatal(str, __FILE__, __LINE__);
 #  ifdef __GNUC__
 __attribute__((noreturn))
 #  endif
-static OAC_INLINE void _silk_fatal(const char *str, const char *file, int line) {
+static OAC_INLINE void oaci_silk_fatal(const char *str, const char *file, int line) {
     fprintf (stderr, "Fatal (internal) error in %s, line %d: %s\n", file, line, str);
 #  if defined(_MSC_VER)
     _set_abort_behavior( 0, _WRITE_ABORT_MSG);

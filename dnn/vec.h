@@ -80,7 +80,7 @@
 
 # define NO_OPTIMIZATIONS
 
-static inline void sgemv16x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+static inline void oaci_sgemv16x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
     int i, j;
     OAC_CLEAR(out, rows);
     for (i = 0; i < rows; i += 16) {
@@ -111,7 +111,7 @@ static inline void sgemv16x1(float *out, const float *weights, int rows, int col
     }
 }
 
-static inline void sgemv8x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+static inline void oaci_sgemv8x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
     int i, j;
     OAC_CLEAR(out, rows);
     for (i = 0; i < rows; i += 8) {
@@ -134,9 +134,9 @@ static inline void sgemv8x1(float *out, const float *weights, int rows, int cols
     }
 }
 
-static inline void sgemv(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
-    if ((rows&0xf) == 0) sgemv16x1(out, weights, rows, cols, col_stride, x);
-    else if ((rows&0x7) == 0) sgemv8x1(out, weights, rows, cols, col_stride, x);
+static inline void oaci_sgemv(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+    if ((rows&0xf) == 0) oaci_sgemv16x1(out, weights, rows, cols, col_stride, x);
+    else if ((rows&0x7) == 0) oaci_sgemv8x1(out, weights, rows, cols, col_stride, x);
     else {
         int i, j;
         for (i = 0; i < rows; i++) {
@@ -146,7 +146,7 @@ static inline void sgemv(float *out, const float *weights, int rows, int cols, i
     }
 }
 
-static inline void sparse_sgemv8x4(float *out, const float *w, const int *idx, int rows, const float *x) {
+static inline void oaci_sparse_sgemv8x4(float *out, const float *w, const int *idx, int rows, const float *x) {
     int i, j;
     OAC_CLEAR(out, rows);
     for (i = 0; i < rows; i += 8) {
@@ -203,7 +203,7 @@ static inline void sparse_sgemv8x4(float *out, const float *w, const int *idx, i
 }
 
 # ifdef USE_SU_BIAS
-static inline void sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx, const float *scale, int rows,
+static inline void oaci_sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx, const float *scale, int rows,
                                    int cols, const float *_x) {
     int i, j;
     unsigned char x[MAX_INPUTS];
@@ -235,7 +235,7 @@ static inline void sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx
     }
     for (i = 0; i < rows; i++) out[i] *= scale[i];
 }
-static inline void cgemv8x4(float *out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
+static inline void oaci_cgemv8x4(float *out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
     int i, j;
     unsigned char x[MAX_INPUTS];
     for (i = 0; i < rows; i++) out[i] = 0;
@@ -263,7 +263,7 @@ static inline void cgemv8x4(float *out, const oac_int8 *w, const float *scale, i
     for (i = 0; i < rows; i++) out[i] *= scale[i];
 }
 # else
-static inline void sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx, const float *scale, int rows,
+static inline void oaci_sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx, const float *scale, int rows,
                                    int cols, const float *_x) {
     int i, j;
     oac_int8 x[MAX_INPUTS];
@@ -295,7 +295,7 @@ static inline void sparse_cgemv8x4(float *out, const oac_int8 *w, const int *idx
     }
     for (i = 0; i < rows; i++) out[i] *= scale[i];
 }
-static inline void cgemv8x4(float *out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
+static inline void oaci_cgemv8x4(float *out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
     int i, j;
     oac_int8 x[MAX_INPUTS];
     for (i = 0; i < rows; i++) out[i] = 0;
@@ -343,10 +343,10 @@ static inline float lpcnet_exp2(float x) {
     res.i = (res.i + (integer<<23))&0x7fffffff;
     return res.f;
 }
-#  define lpcnet_exp(x) lpcnet_exp2((x)*1.44269504f)
+#  define oaci_lpcnet_exp(x) lpcnet_exp2((x)*1.44269504f)
 
 #  define fmadd(a, b, c) ((a)*(b) + (c))
-static OAC_INLINE float tanh_approx(float x) {
+static OAC_INLINE float oaci_tanh_approx(float x) {
     const float N0 = 952.52801514f;
     const float N1 = 96.39235687f;
     const float N2 = 0.60863042f;
@@ -361,27 +361,27 @@ static OAC_INLINE float tanh_approx(float x) {
     return MAX32(-1.f, MIN32(1.f, num));
 }
 
-static inline float sigmoid_approx(float x) {
-    return .5f + .5f*tanh_approx(.5f*x);
+static inline float oaci_sigmoid_approx(float x) {
+    return .5f + .5f*oaci_tanh_approx(.5f*x);
 }
 
-static inline void softmax(float *y, const float *x, int N) {
+static inline void oaci_softmax(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N; i++)
-        y[i] = lpcnet_exp(x[i]);
+        y[i] = oaci_lpcnet_exp(x[i]);
 }
 
-static inline void vec_tanh(float *y, const float *x, int N) {
+static inline void oaci_vec_tanh(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N; i++) {
-        y[i] = tanh_approx(x[i]);
+        y[i] = oaci_tanh_approx(x[i]);
     }
 }
 
-static inline void vec_sigmoid(float *y, const float *x, int N) {
+static inline void oaci_vec_sigmoid(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N; i++) {
-        y[i] = sigmoid_approx(x[i]);
+        y[i] = oaci_sigmoid_approx(x[i]);
     }
 }
 # endif

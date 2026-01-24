@@ -233,7 +233,7 @@ void oaci_clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft
             f2[st->bitrev[i]] = yc;
         }
 # ifdef FIXED_POINT
-        headroom = IMAX(0, IMIN(scale_shift, 28 - celt_ilog2(maxval)));
+        headroom = IMAX(0, IMIN(scale_shift, 28 - oaci_celt_ilog2(maxval)));
 # endif
     }
 
@@ -294,9 +294,9 @@ void oaci_clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_ff
             maxval = MAX32(maxval, ABS32(in[i*stride]));
             sumval = ADD32_ovflw(sumval, ABS32(SHR32(in[i*stride], 11)));
         }
-        pre_shift = IMAX(0, 29 - celt_zlog2(1 + maxval));
+        pre_shift = IMAX(0, 29 - oaci_celt_zlog2(1 + maxval));
         /* Worst-case where all the energy goes to a single sample. */
-        post_shift = IMAX(0, 19 - celt_ilog2(ABS32(sumval)));
+        post_shift = IMAX(0, 19 - oaci_celt_ilog2(ABS32(sumval)));
         post_shift = IMIN(post_shift, pre_shift);
         fft_shift = pre_shift - post_shift;
     }

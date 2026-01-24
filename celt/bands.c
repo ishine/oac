@@ -134,7 +134,7 @@ void oaci_compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener 
             maxval = celt_maxabs32(&X[c*N + (eBands[i]<<LM)], (eBands[i + 1] - eBands[i])<<LM);
             if (maxval > 0) {
                 int shift = IMAX(0,
-                30 - celt_ilog2(maxval + (maxval>>14) + 1) - ((((m->logN[i] + 7)>>BITRES) + LM + 1)>>1));
+                30 - oaci_celt_ilog2(maxval + (maxval>>14) + 1) - ((((m->logN[i] + 7)>>BITRES) + LM + 1)>>1));
                 j = eBands[i]<<LM; do {
                     oac_val32 x = SHL32(X[j + c*N], shift);
                     sum = ADD32(sum, MULT32_32_Q31(x, x));
@@ -162,7 +162,7 @@ void oaci_normalise_bands(const CELTMode *m, const celt_sig * OAC_RESTRICT freq,
             /* For very low energies, we need this to make sure not to prevent energy rounding from
                blowing up the normalized signal. */
             if (E < 10) E += EPSILON;
-            shift = 30 - celt_zlog2(E);
+            shift = 30 - oaci_celt_zlog2(E);
             E = SHL32(E, shift);
             g = oaci_celt_rcp_norm32(E);
             j = M*eBands[i]; do {
@@ -253,7 +253,7 @@ void oaci_denormalise_bands(const CELTMode *m, const celt_norm * OAC_RESTRICT X,
             g = 0;
         } else {
             /* Handle the fractional part. */
-            g = SHL32(celt_exp2_db_frac((lg&((1<<DB_SHIFT) - 1))), 2);
+            g = SHL32(oaci_celt_exp2_db_frac((lg&((1<<DB_SHIFT) - 1))), 2);
         }
         /* Handle extreme gains with negative shift. */
         if (shift < 0) {
@@ -293,17 +293,17 @@ void oaci_anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collaps
         depth = celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i]))>>LM;
 
 #ifdef FIXED_POINT
-        thresh32 = SHR32(celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
+        thresh32 = SHR32(oaci_celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
         thresh = MULT16_32_Q15(QCONST16(0.5f, 15), MIN32(32767, thresh32));
         {
             oac_val32 t;
             t = N0<<LM;
-            shift = celt_ilog2(t)>>1;
+            shift = oaci_celt_ilog2(t)>>1;
             t = SHL32(t, (7 - shift)<<1);
             sqrt_1 = oaci_celt_rsqrt_norm(t);
         }
 #else
-        thresh = .5f*celt_exp2(-.125f*depth);
+        thresh = .5f*oaci_celt_exp2(-.125f*depth);
         sqrt_1 = oaci_celt_rsqrt(N0<<LM);
 #endif
 
@@ -369,7 +369,7 @@ void oaci_anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collaps
    corresponds to some quick-and-dirty perceptual experiments I ran to
    measure inter-aural masking (there doesn't seem to be any published data
    on the topic). */
-static void compute_channel_weights(celt_ener Ex, celt_ener Ey, oac_val16 w[2]) {
+static void oaci_compute_channel_weights(celt_ener Ex, celt_ener Ey, oac_val16 w[2]) {
     celt_ener minE;
 #ifdef FIXED_POINT
     int shift;
@@ -379,13 +379,13 @@ static void compute_channel_weights(celt_ener Ex, celt_ener Ey, oac_val16 w[2]) 
     Ex = ADD32(Ex, minE/3);
     Ey = ADD32(Ey, minE/3);
 #ifdef FIXED_POINT
-    shift = celt_ilog2(EPSILON + MAX32(Ex, Ey)) - 14;
+    shift = oaci_celt_ilog2(EPSILON + MAX32(Ex, Ey)) - 14;
 #endif
     w[0] = VSHR32(Ex, shift);
     w[1] = VSHR32(Ey, shift);
 }
 
-static void intensity_stereo(const CELTMode *m, celt_norm * OAC_RESTRICT X, const celt_norm * OAC_RESTRICT Y,
+static void oaci_intensity_stereo(const CELTMode *m, celt_norm * OAC_RESTRICT X, const celt_norm * OAC_RESTRICT Y,
                              const celt_ener *bandE, int bandID, int N) {
     int i = bandID;
     int j;
@@ -393,7 +393,7 @@ static void intensity_stereo(const CELTMode *m, celt_norm * OAC_RESTRICT X, cons
     oac_val16 left, right;
     oac_val16 norm;
 #ifdef FIXED_POINT
-    int shift = celt_zlog2(MAX32(bandE[i], bandE[i + m->nbEBands])) - 13;
+    int shift = oaci_celt_zlog2(MAX32(bandE[i], bandE[i + m->nbEBands])) - 13;
 #endif
     left = VSHR32(bandE[i], shift);
     right = VSHR32(bandE[i + m->nbEBands], shift);
@@ -410,7 +410,7 @@ static void intensity_stereo(const CELTMode *m, celt_norm * OAC_RESTRICT X, cons
     }
 }
 
-static void stereo_split(celt_norm * OAC_RESTRICT X, celt_norm * OAC_RESTRICT Y, int N) {
+static void oaci_stereo_split(celt_norm * OAC_RESTRICT X, celt_norm * OAC_RESTRICT Y, int N) {
     int j;
     for (j = 0; j < N; j++) {
         oac_val32 r, l;
@@ -421,7 +421,7 @@ static void stereo_split(celt_norm * OAC_RESTRICT X, celt_norm * OAC_RESTRICT Y,
     }
 }
 
-static void stereo_merge(celt_norm * OAC_RESTRICT X, celt_norm * OAC_RESTRICT Y, oac_val32 mid, int N, int arch) {
+static void oaci_stereo_merge(celt_norm * OAC_RESTRICT X, celt_norm * OAC_RESTRICT Y, oac_val32 mid, int N, int arch) {
     int j;
     oac_val32 xp = 0, side = 0;
     oac_val32 El, Er;
@@ -444,8 +444,8 @@ static void stereo_merge(celt_norm * OAC_RESTRICT X, celt_norm * OAC_RESTRICT Y,
     }
 
 #ifdef FIXED_POINT
-    kl = celt_ilog2(El)>>1;
-    kr = celt_ilog2(Er)>>1;
+    kl = oaci_celt_ilog2(El)>>1;
+    kr = oaci_celt_ilog2(Er)>>1;
 #endif
     t = VSHR32(El, (kl<<1) - 29);
     lgain = oaci_celt_rsqrt_norm32(t);
@@ -567,7 +567,7 @@ static const int ordery_table[] = {
     15,  0,  8,  7, 12,  3, 11,  4, 14,  1,  9,  6, 13,  2, 10,  5,
 };
 
-static void deinterleave_hadamard(celt_norm *X, int N0, int stride, int hadamard) {
+static void oaci_deinterleave_hadamard(celt_norm *X, int N0, int stride, int hadamard) {
     int i, j;
     VARDECL(celt_norm, tmp);
     int N;
@@ -590,7 +590,7 @@ static void deinterleave_hadamard(celt_norm *X, int N0, int stride, int hadamard
     RESTORE_STACK;
 }
 
-static void interleave_hadamard(celt_norm *X, int N0, int stride, int hadamard) {
+static void oaci_interleave_hadamard(celt_norm *X, int N0, int stride, int hadamard) {
     int i, j;
     VARDECL(celt_norm, tmp);
     int N;
@@ -624,7 +624,7 @@ void oaci_haar1(celt_norm *X, int N0, int stride) {
         }
 }
 
-static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
+static int oaci_compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
     static const oac_int16 exp2_table8[8] =
     {16384, 17866, 19483, 21247, 23170, 25267, 27554, 30048};
     int qn, qb;
@@ -676,7 +676,7 @@ struct split_ctx {
     int itheta_q30;
 };
 
-static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
+static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
                           celt_norm *X, celt_norm *Y, int N, int *b, int B, int B0,
                           int LM,
                           int stereo, int *fill) {
@@ -707,7 +707,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
     /* Decide on the resolution to give to the split parameter theta */
     pulse_cap = m->logN[i] + LM*(1<<BITRES);
     offset = (pulse_cap>>1) - (stereo && N == 2 ? QTHETA_OFFSET_TWOPHASE : QTHETA_OFFSET);
-    qn = compute_qn(N, *b, offset, pulse_cap, stereo);
+    qn = oaci_compute_qn(N, *b, offset, pulse_cap, stereo);
     if (stereo && i >= intensity)
         qn = 1;
     if (encode) {
@@ -810,9 +810,9 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
         itheta_q30 = (oac_int32)itheta<<16;
         if (encode && stereo) {
             if (itheta == 0)
-                intensity_stereo(m, X, Y, bandE, i, N);
+                oaci_intensity_stereo(m, X, Y, bandE, i, N);
             else
-                stereo_split(X, Y, N);
+                oaci_stereo_split(X, Y, N);
         }
         /* NOTE: Renormalising X and Y *may* help fixed-point a bit at very high rate.
                  Let's do that at higher complexity */
@@ -824,7 +824,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
                 for (j = 0; j < N; j++)
                     Y[j] = -Y[j];
             }
-            intensity_stereo(m, X, Y, bandE, i, N);
+            oaci_intensity_stereo(m, X, Y, bandE, i, N);
         }
         if (*b > 2<<BITRES && ctx->total_bits - tell > 2<<BITRES) {
             if (encode)
@@ -867,7 +867,7 @@ static void compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
     sctx->itheta = itheta;
     sctx->itheta_q30 = itheta_q30;
 }
-static unsigned quant_band_n1(struct band_ctx *ctx, celt_norm *X, celt_norm *Y,
+static unsigned oaci_quant_band_n1(struct band_ctx *ctx, celt_norm *X, celt_norm *Y,
                               celt_norm *lowband_out) {
     int c;
     int stereo;
@@ -902,7 +902,7 @@ static unsigned quant_band_n1(struct band_ctx *ctx, celt_norm *X, celt_norm *Y,
    It can split the band in two and transmit the energy difference with
    the two half-bands. It can be called recursively so bands can end up being
    split in 8 parts. */
-static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
+static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
                                 int N, int b, int B, celt_norm *lowband,
                                 int LM,
                                 oac_val32 gain, int fill) {
@@ -943,7 +943,7 @@ static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
             fill = (fill&1)|(fill<<1);
         B = (B + 1)>>1;
 
-        compute_theta(ctx, &sctx, X, Y, N, &b, B, B0, LM, 0, &fill);
+        oaci_compute_theta(ctx, &sctx, X, Y, N, &b, B, B0, LM, 0, &fill);
         imid = sctx.imid;
         iside = sctx.iside;
         delta = sctx.delta;
@@ -975,27 +975,27 @@ static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
 
         tell = oaci_ec_tell_frac(ec);
         if (mbits >= sbits) {
-            cm = quant_partition(ctx, X, N, mbits, B, lowband, LM,
+            cm = oaci_quant_partition(ctx, X, N, mbits, B, lowband, LM,
                MULT32_32_Q31(gain, mid), fill);
             rebalance = mbits - (oaci_ec_tell_frac(ec) - tell);
             if (rebalance > 3<<BITRES && itheta != 0)
                 sbits += rebalance - (3<<BITRES);
-            cm |= quant_partition(ctx, Y, N, sbits, B, next_lowband2, LM,
+            cm |= oaci_quant_partition(ctx, Y, N, sbits, B, next_lowband2, LM,
                MULT32_32_Q31(gain, side), fill>>B)<<(B0>>1);
         } else {
-            cm = quant_partition(ctx, Y, N, sbits, B, next_lowband2, LM,
+            cm = oaci_quant_partition(ctx, Y, N, sbits, B, next_lowband2, LM,
                MULT32_32_Q31(gain, side), fill>>B)<<(B0>>1);
             rebalance = sbits - (oaci_ec_tell_frac(ec) - tell);
             if (rebalance > 3<<BITRES && itheta != 16384)
                 mbits += rebalance - (3<<BITRES);
-            cm |= quant_partition(ctx, X, N, mbits, B, lowband, LM,
+            cm |= oaci_quant_partition(ctx, X, N, mbits, B, lowband, LM,
                MULT32_32_Q31(gain, mid), fill);
         }
     } else {
         oac_int32 remaining_bits;
         /* This is the basic no-split case */
-        q = bits2pulses(m, i, LM, b);
-        curr_bits = pulses2bits(m, i, LM, q);
+        q = oaci_bits2pulses(m, i, LM, b);
+        curr_bits = oaci_pulses2bits(m, i, LM, q);
         remaining_bits = ctx->total_bits - oaci_ec_tell_frac(ec) - 1;
         remaining_bits -= curr_bits;
 
@@ -1003,12 +1003,12 @@ static unsigned quant_partition(struct band_ctx *ctx, celt_norm *X,
         while (remaining_bits < 0 && q > 0) {
             remaining_bits += curr_bits;
             q--;
-            curr_bits = pulses2bits(m, i, LM, q);
+            curr_bits = oaci_pulses2bits(m, i, LM, q);
             remaining_bits -= curr_bits;
         }
 
         if (q != 0) {
-            int K = get_pulses(q);
+            int K = oaci_get_pulses(q);
 
             /* Finally do the actual quantization */
             if (encode) {
@@ -1123,7 +1123,7 @@ unsigned oaci_cubic_quant_partition(struct band_ctx *ctx, celt_norm *X, int N, i
 }
 
 /* This function is responsible for encoding and decoding a band for the mono case. */
-static unsigned quant_band(struct band_ctx *ctx, celt_norm *X,
+static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
                            int N, int b, int B, celt_norm *lowband,
                            int LM, celt_norm *lowband_out,
                            oac_val32 gain, celt_norm *lowband_scratch, int fill) {
@@ -1148,7 +1148,7 @@ static unsigned quant_band(struct band_ctx *ctx, celt_norm *X,
 
     /* Special case for one sample */
     if (N == 1) {
-        return quant_band_n1(ctx, X, NULL, lowband_out);
+        return oaci_quant_band_n1(ctx, X, NULL, lowband_out);
     }
 
     if (tf_change > 0)
@@ -1191,18 +1191,18 @@ static unsigned quant_band(struct band_ctx *ctx, celt_norm *X,
     /* Reorganize the samples in time order instead of frequency order */
     if (B0 > 1) {
         if (encode)
-            deinterleave_hadamard(X, N_B>>recombine, B0<<recombine, longBlocks);
+            oaci_deinterleave_hadamard(X, N_B>>recombine, B0<<recombine, longBlocks);
         if (lowband)
-            deinterleave_hadamard(lowband, N_B>>recombine, B0<<recombine, longBlocks);
+            oaci_deinterleave_hadamard(lowband, N_B>>recombine, B0<<recombine, longBlocks);
     }
 
-    cm = quant_partition(ctx, X, N, b, B, lowband, LM, gain, fill);
+    cm = oaci_quant_partition(ctx, X, N, b, B, lowband, LM, gain, fill);
 
     /* This code is used by the decoder and by the resynthesis-enabled encoder */
     if (ctx->resynth) {
         /* Undo the sample reorganization going from time order to frequency order */
         if (B0 > 1)
-            interleave_hadamard(X, N_B>>recombine, B0<<recombine, longBlocks);
+            oaci_interleave_hadamard(X, N_B>>recombine, B0<<recombine, longBlocks);
 
         /* Undo time-freq changes that we did earlier */
         N_B = N_B0;
@@ -1244,7 +1244,7 @@ static unsigned quant_band(struct band_ctx *ctx, celt_norm *X,
 #endif
 
 /* This function is responsible for encoding and decoding a band for the stereo case. */
-static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm *Y,
+static unsigned oaci_quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm *Y,
                                   int N, int b, int B, celt_norm *lowband,
                                   int LM, celt_norm *lowband_out,
                                   celt_norm *lowband_scratch, int fill) {
@@ -1264,7 +1264,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
 
     /* Special case for one sample */
     if (N == 1) {
-        return quant_band_n1(ctx, X, Y, lowband_out);
+        return oaci_quant_band_n1(ctx, X, Y, lowband_out);
     }
 
     orig_fill = fill;
@@ -1275,7 +1275,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
             else OAC_COPY(X, Y, N);
         }
     }
-    compute_theta(ctx, &sctx, X, Y, N, &b, B, B, LM, 1, &fill);
+    oaci_compute_theta(ctx, &sctx, X, Y, N, &b, B, B, LM, 1, &fill);
     inv = sctx.inv;
     imid = sctx.imid;
     iside = sctx.iside;
@@ -1321,7 +1321,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
         sign = 1 - 2*sign;
         /* We use orig_fill here because we want to fold the side, but if
            itheta==16384, we'll have cleared the low bits of fill. */
-        cm = quant_band(ctx, x2, N, mbits, B, lowband, LM, lowband_out, Q31ONE,
+        cm = oaci_quant_band(ctx, x2, N, mbits, B, lowband, LM, lowband_out, Q31ONE,
             lowband_scratch, orig_fill);
         /* We don't split N=2 bands, so cm is either 1 or 0 (for a fold-collapse),
            and there's no need to worry about mixing with the other channel. */
@@ -1352,7 +1352,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
         if (mbits >= sbits) {
             /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                mid for folding later. */
-            cm = quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, Q31ONE,
+            cm = oaci_quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, Q31ONE,
                lowband_scratch, fill);
             rebalance = mbits - (oaci_ec_tell_frac(ec) - tell);
             if (rebalance > 3<<BITRES && itheta != 0)
@@ -1360,17 +1360,17 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
 
             /* For a stereo split, the high bits of fill are always zero, so no
                folding will be done to the side. */
-            cm |= quant_band(ctx, Y, N, sbits, B, NULL, LM, NULL, side, NULL, fill>>B);
+            cm |= oaci_quant_band(ctx, Y, N, sbits, B, NULL, LM, NULL, side, NULL, fill>>B);
         } else {
             /* For a stereo split, the high bits of fill are always zero, so no
                folding will be done to the side. */
-            cm = quant_band(ctx, Y, N, sbits, B, NULL, LM, NULL, side, NULL, fill>>B);
+            cm = oaci_quant_band(ctx, Y, N, sbits, B, NULL, LM, NULL, side, NULL, fill>>B);
             rebalance = sbits - (oaci_ec_tell_frac(ec) - tell);
             if (rebalance > 3<<BITRES && itheta != 16384)
                 mbits += rebalance - (3<<BITRES);
             /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                mid for folding later. */
-            cm |= quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, Q31ONE,
+            cm |= oaci_quant_band(ctx, X, N, mbits, B, lowband, LM, lowband_out, Q31ONE,
                lowband_scratch, fill);
         }
     }
@@ -1379,7 +1379,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
     /* This code is used by the decoder and by the resynthesis-enabled encoder */
     if (ctx->resynth) {
         if (N != 2)
-            stereo_merge(X, Y, mid, N, ctx->arch);
+            oaci_stereo_merge(X, Y, mid, N, ctx->arch);
         if (inv) {
             int j;
             for (j = 0; j < N; j++)
@@ -1389,7 +1389,7 @@ static unsigned quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm 
     return cm;
 }
 
-static void special_hybrid_folding(const CELTMode *m, celt_norm *norm, celt_norm *norm2, int start, int M,
+static void oaci_special_hybrid_folding(const CELTMode *m, celt_norm *norm, celt_norm *norm2, int start, int M,
                                    int dual_stereo) {
     int n1, n2;
     const oac_int16 * OAC_RESTRICT eBands = m->eBands;
@@ -1520,7 +1520,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
             && (update_lowband || lowband_offset == 0))
             lowband_offset = i;
         if (i == start + 1)
-            special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
+            oaci_special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
 
         tf_change = tf_res[i];
         ctx.tf_change = tf_change;
@@ -1566,10 +1566,10 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     norm[j] = HALF32(norm[j] + norm2[j]);
         }
         if (dual_stereo) {
-            x_cm = quant_band(&ctx, X, N, b/2, B,
+            x_cm = oaci_quant_band(&ctx, X, N, b/2, B,
                effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                last?NULL:norm + M*eBands[i] - norm_offset, Q31ONE, lowband_scratch, x_cm);
-            y_cm = quant_band(&ctx, Y, N, b/2, B,
+            y_cm = oaci_quant_band(&ctx, Y, N, b/2, B,
                effective_lowband != -1 ? norm2 + effective_lowband : NULL, LM,
                last?NULL:norm2 + M*eBands[i] - norm_offset, Q31ONE, lowband_scratch, y_cm);
         } else {
@@ -1582,7 +1582,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     int nstart_bytes, nend_bytes, save_bytes;
                     unsigned char *bytes_buf;
                     oac_val16 w[2];
-                    compute_channel_weights(bandE[i], bandE[i + m->nbEBands], w);
+                    oaci_compute_channel_weights(bandE[i], bandE[i + m->nbEBands], w);
                     /* Make a copy. */
                     cm = x_cm|y_cm;
                     ec_save = *ec;
@@ -1591,7 +1591,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     OAC_COPY(Y_save, Y, N);
                     /* Encode and round down. */
                     ctx.theta_round = -1;
-                    x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
+                    x_cm = oaci_quant_band_stereo(&ctx, X, Y, N, b, B,
                      effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                      last?NULL:norm + M*eBands[i] - norm_offset, lowband_scratch, cm);
                     dist0 = MULT16_32_Q15(w[0], oaci_celt_inner_prod_norm_shift(X_save, X, N, arch)) + MULT16_32_Q15(w[1],
@@ -1617,10 +1617,10 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     OAC_COPY(X, X_save, N);
                     OAC_COPY(Y, Y_save, N);
                     if (i == start + 1)
-                        special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
+                        oaci_special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
                     /* Encode and round up. */
                     ctx.theta_round = 1;
-                    x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
+                    x_cm = oaci_quant_band_stereo(&ctx, X, Y, N, b, B,
                      effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                      last?NULL:norm + M*eBands[i] - norm_offset, lowband_scratch, cm);
                     dist1 = MULT16_32_Q15(w[0], oaci_celt_inner_prod_norm_shift(X_save, X, N, arch)) + MULT16_32_Q15(w[1],
@@ -1637,12 +1637,12 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     }
                 } else {
                     ctx.theta_round = 0;
-                    x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
+                    x_cm = oaci_quant_band_stereo(&ctx, X, Y, N, b, B,
                      effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                      last?NULL:norm + M*eBands[i] - norm_offset, lowband_scratch, x_cm|y_cm);
                 }
             } else {
-                x_cm = quant_band(&ctx, X, N, b, B,
+                x_cm = oaci_quant_band(&ctx, X, N, b, B,
                   effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
                   last?NULL:norm + M*eBands[i] - norm_offset, Q31ONE, lowband_scratch, x_cm|y_cm);
             }

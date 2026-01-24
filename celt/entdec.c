@@ -121,18 +121,18 @@
    URL="http://www.stanford.edu/class/ee398a/handouts/papers/Moffat98ArithmCoding.pdf"
    }*/
 
-static int ec_read_byte(ec_dec *_this) {
+static int oaci_ec_read_byte(ec_dec *_this) {
     return _this->offs < _this->storage?_this->buf[_this->offs++]:0;
 }
 
-static int ec_read_byte_from_end(ec_dec *_this) {
+static int oaci_ec_read_byte_from_end(ec_dec *_this) {
     return _this->end_offs < _this->storage?
            _this->buf[_this->storage - ++(_this->end_offs)]:0;
 }
 
 /*Normalizes the contents of val and rng so that rng lies entirely in the
    high-order symbol.*/
-static void ec_dec_normalize(ec_dec *_this) {
+static void oaci_ec_dec_normalize(ec_dec *_this) {
     /*If the range is too small, rescale it and input some bits.*/
     while (_this->rng <= EC_CODE_BOT) {
         int sym;
@@ -141,7 +141,7 @@ static void ec_dec_normalize(ec_dec *_this) {
         /*Use up the remaining bits from our last symbol.*/
         sym = _this->rem;
         /*Read the next value from the input.*/
-        _this->rem = ec_read_byte(_this);
+        _this->rem = oaci_ec_read_byte(_this);
         /*Take the rest of the bits we need from this new symbol.*/
         sym = (sym<<EC_SYM_BITS|_this->rem)>>(EC_SYM_BITS - EC_CODE_EXTRA);
         /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
@@ -155,18 +155,18 @@ void oaci_ec_dec_init(ec_dec *_this, unsigned char *_buf, oac_uint32 _storage) {
     _this->end_offs = 0;
     _this->end_window = 0;
     _this->nend_bits = 0;
-    /*This is the offset from which ec_tell() will subtract partial bits.
-       The final value after the ec_dec_normalize() call will be the same as in
+    /*This is the offset from which oaci_ec_tell() will subtract partial bits.
+       The final value after the oaci_ec_dec_normalize() call will be the same as in
        the encoder, but we have to compensate for the bits that are added there.*/
     _this->nbits_total = EC_CODE_BITS + 1
                          - ((EC_CODE_BITS - EC_CODE_EXTRA)/EC_SYM_BITS)*EC_SYM_BITS;
     _this->offs = 0;
     _this->rng = 1U<<EC_CODE_EXTRA;
-    _this->rem = ec_read_byte(_this);
+    _this->rem = oaci_ec_read_byte(_this);
     _this->val = _this->rng - 1 - (_this->rem>>(EC_SYM_BITS - EC_CODE_EXTRA));
     _this->error = 0;
     /*Normalize the interval.*/
-    ec_dec_normalize(_this);
+    oaci_ec_dec_normalize(_this);
 }
 
 unsigned oaci_ec_decode(ec_dec *_this, unsigned _ft) {
@@ -188,7 +188,7 @@ void oaci_ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft)
     s = IMUL32(_this->ext, _ft - _fh);
     _this->val -= s;
     _this->rng = _fl > 0?IMUL32(_this->ext, _fh - _fl):_this->rng - s;
-    ec_dec_normalize(_this);
+    oaci_ec_dec_normalize(_this);
 }
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
@@ -203,7 +203,7 @@ int oaci_ec_dec_bit_logp(ec_dec *_this, unsigned _logp) {
     ret = d < s;
     if (!ret) _this->val = d - s;
     _this->rng = ret?s:r - s;
-    ec_dec_normalize(_this);
+    oaci_ec_dec_normalize(_this);
     return ret;
 }
 
@@ -223,7 +223,7 @@ int oaci_ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb) {
     } while (d < s);
     _this->val = d - s;
     _this->rng = t - s;
-    ec_dec_normalize(_this);
+    oaci_ec_dec_normalize(_this);
     return ret;
 }
 
@@ -243,7 +243,7 @@ int oaci_ec_dec_icdf16(ec_dec *_this, const oac_uint16 *_icdf, unsigned _ftb) {
     } while (d < s);
     _this->val = d - s;
     _this->rng = t - s;
-    ec_dec_normalize(_this);
+    oaci_ec_dec_normalize(_this);
     return ret;
 }
 
@@ -281,7 +281,7 @@ oac_uint32 oaci_ec_dec_bits(ec_dec *_this, unsigned _bits) {
     available = _this->nend_bits;
     if ((unsigned)available < _bits) {
         do {
-            window |= (ec_window)ec_read_byte_from_end(_this)<<available;
+            window |= (ec_window)oaci_ec_read_byte_from_end(_this)<<available;
             available += EC_SYM_BITS;
         } while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
     }

@@ -353,7 +353,7 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
     return OAC_OK;
 }
 
-static unsigned char gen_toc(int mode, int framerate, int bandwidth, int channels) {
+static unsigned char oaci_gen_toc(int mode, int framerate, int bandwidth, int channels) {
     int period;
     unsigned char toc;
     period = 0;
@@ -491,7 +491,7 @@ static void dc_reject(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_
     int shift;
 
     /* Approximates -round(log2(6.3*cutoff_Hz/Fs)) */
-    shift = celt_ilog2(Fs/(cutoff_Hz*4));
+    shift = oaci_celt_ilog2(Fs/(cutoff_Hz*4));
     for (c = 0; c < channels; c++) {
         for (i = 0; i < len; i++) {
             oac_val32 x, y;
@@ -545,7 +545,7 @@ static void dc_reject(const oac_val16 *in, oac_int32 cutoff_Hz, oac_val16 *out, 
 }
 #endif
 
-static void stereo_fade(const oac_res *in, oac_res *out, oac_val16 g1, oac_val16 g2,
+static void oaci_stereo_fade(const oac_res *in, oac_res *out, oac_val16 g1, oac_val16 g2,
                         int overlap48, int frame_size, int channels, const celt_coef *window, oac_int32 Fs) {
     int i;
     int overlap;
@@ -575,7 +575,7 @@ static void stereo_fade(const oac_res *in, oac_res *out, oac_val16 g1, oac_val16
     }
 }
 
-static void gain_fade(const oac_res *in, oac_res *out, oac_val16 g1, oac_val16 g2,
+static void oaci_gain_fade(const oac_res *in, oac_res *out, oac_val16 g1, oac_val16 g2,
                       int overlap48, int frame_size, int channels, const celt_coef *window, oac_int32 Fs) {
     int i;
     int inc;
@@ -716,7 +716,7 @@ static oac_int32 compute_dred_bitrate(OacEncoder *st, oac_int32 bitrate_bps, int
 }
 #endif
 
-static oac_int32 user_bitrate_to_bitrate(OacEncoder *st, int frame_size, int max_data_bytes) {
+static oac_int32 oaci_user_bitrate_to_bitrate(OacEncoder *st, int frame_size, int max_data_bytes) {
     oac_int32 max_bitrate, user_bitrate;
     if (!frame_size) frame_size = st->Fs/400;
     max_bitrate = bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
@@ -828,7 +828,7 @@ oac_val16 oaci_compute_stereo_width(const oac_res *pcm, int frame_size, oac_int3
     int i;
     oac_val16 short_alpha;
 #ifdef FIXED_POINT
-    int shift = celt_ilog2(frame_size) - 2;
+    int shift = oaci_celt_ilog2(frame_size) - 2;
 #endif
     frame_rate = Fs/frame_size;
     short_alpha = MULT16_16(25, Q15ONE)/IMAX(50, frame_rate);
@@ -933,7 +933,7 @@ static int decide_fec(int useInBandFEC, int PacketLoss_perc, int last_fec, int m
     return 0;
 }
 
-static int compute_silk_rate_for_hybrid(int rate, int bandwidth, int frame20ms, int vbr, int fec, int channels) {
+static int oaci_compute_silk_rate_for_hybrid(int rate, int bandwidth, int frame20ms, int vbr, int fec, int channels) {
     int entry;
     int i;
     int N;
@@ -984,7 +984,7 @@ static int compute_silk_rate_for_hybrid(int rate, int bandwidth, int frame20ms, 
 
 /* Returns the equivalent bitrate corresponding to 20 ms frames,
    complexity 10 VBR operation. */
-static oac_int32 compute_equiv_rate(oac_int32 bitrate, int channels,
+static oac_int32 oaci_compute_equiv_rate(oac_int32 bitrate, int channels,
                                     int frame_rate, int vbr, int mode, int complexity, int loss) {
     oac_int32 equiv;
     equiv = bitrate;
@@ -1034,7 +1034,7 @@ int oaci_is_digital_silence(const oac_res* pcm, int frame_size, int channels, in
 }
 
 #ifdef FIXED_POINT
-static oac_val32 compute_frame_energy(const oac_res *pcm, int frame_size, int channels, int arch) {
+static oac_val32 oaci_compute_frame_energy(const oac_res *pcm, int frame_size, int channels, int arch) {
     int i;
     oac_val32 sample_max;
     int max_shift;
@@ -1046,8 +1046,8 @@ static oac_val32 compute_frame_energy(const oac_res *pcm, int frame_size, int ch
     sample_max = RES2INT16(celt_maxabs_res(pcm, len));
 
     /* Compute the right shift required in the MAC to avoid an overflow */
-    max_shift = celt_ilog2(len);
-    shift = IMAX(0, (celt_ilog2(1 + sample_max)<<1) + max_shift - 28);
+    max_shift = oaci_celt_ilog2(len);
+    shift = IMAX(0, (oaci_celt_ilog2(1 + sample_max)<<1) + max_shift - 28);
 
     /* Compute the energy */
     for (i = 0; i < len; i++)
@@ -1060,7 +1060,7 @@ static oac_val32 compute_frame_energy(const oac_res *pcm, int frame_size, int ch
     return energy;
 }
 #else
-static oac_val32 compute_frame_energy(const oac_val16 *pcm, int frame_size, int channels, int arch) {
+static oac_val32 oaci_compute_frame_energy(const oac_val16 *pcm, int frame_size, int channels, int arch) {
     int len = frame_size*channels;
     return oaci_celt_inner_prod(pcm, pcm, len, arch)/len;
 }
@@ -1090,7 +1090,7 @@ static int decide_dtx_mode(oac_int activity,            /* indicates if this fra
     return 0;
 }
 
-static int compute_redundancy_bytes(oac_int32 max_data_bytes, oac_int32 bitrate_bps, int frame_rate, int channels) {
+static int oaci_compute_redundancy_bytes(oac_int32 max_data_bytes, oac_int32 bitrate_bps, int frame_rate, int channels) {
     int redundancy_bytes_cap;
     int redundancy_bytes;
     oac_int32 redundancy_rate;
@@ -1257,14 +1257,14 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     {
         if (!is_silence) {
             st->peak_signal_energy = MAX32(MULT16_32_Q15(QCONST16(0.999f, 15), st->peak_signal_energy),
-                compute_frame_energy(pcm, frame_size, st->channels, st->arch));
+                oaci_compute_frame_energy(pcm, frame_size, st->channels, st->arch));
         }
     }
     if (st->channels == 2 && st->force_channels != 1)
         stereo_width = oaci_compute_stereo_width(pcm, frame_size, st->Fs, &st->width_mem);
     else
         stereo_width = 0;
-    st->bitrate_bps = user_bitrate_to_bitrate(st, frame_size, max_data_bytes);
+    st->bitrate_bps = oaci_user_bitrate_to_bitrate(st, frame_size, max_data_bytes);
 
     frame_rate = st->Fs/frame_size;
     if (!st->use_vbr) {
@@ -1318,7 +1318,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
         else if (tocmode == MODE_HYBRID && bw <= OAC_BANDWIDTH_SUPERWIDEBAND)
             bw = OAC_BANDWIDTH_SUPERWIDEBAND;
 
-        data[0] = gen_toc(tocmode, frame_rate, bw, st->stream_channels);
+        data[0] = oaci_gen_toc(tocmode, frame_rate, bw, st->stream_channels);
         data[0] |= packet_code;
 
         ret = packet_code <= 1 ? 1 : 2;
@@ -1341,7 +1341,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     max_rate = bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
 
     /* Equivalent 20-ms rate for mode/channel/bandwidth decisions */
-    equiv_rate = compute_equiv_rate(st->bitrate_bps, st->channels, st->Fs/frame_size,
+    equiv_rate = oaci_compute_equiv_rate(st->bitrate_bps, st->channels, st->Fs/frame_size,
           st->use_vbr, 0, st->silk_mode.complexity, st->silk_mode.packetLossPercentage);
 
     if (st->signal_type == OAC_SIGNAL_VOICE)
@@ -1384,7 +1384,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
 #endif
     }
     /* Update equivalent rate for channels decision. */
-    equiv_rate = compute_equiv_rate(st->bitrate_bps, st->stream_channels, st->Fs/frame_size,
+    equiv_rate = oaci_compute_equiv_rate(st->bitrate_bps, st->stream_channels, st->Fs/frame_size,
           st->use_vbr, 0, st->silk_mode.complexity, st->silk_mode.packetLossPercentage);
 
     /* Allow SILK DTX if DTX is enabled but the generalized DTX cannot be used,
@@ -1495,7 +1495,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     }
 
     /* Update equivalent rate with mode decision. */
-    equiv_rate = compute_equiv_rate(st->bitrate_bps, st->stream_channels, st->Fs/frame_size,
+    equiv_rate = oaci_compute_equiv_rate(st->bitrate_bps, st->stream_channels, st->Fs/frame_size,
           st->use_vbr, st->mode, st->silk_mode.complexity, st->silk_mode.packetLossPercentage);
 
     if (st->mode != MODE_CELT_ONLY && st->prev_mode == MODE_CELT_ONLY) {
@@ -1819,13 +1819,13 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         activity = analysis_info->activity_probability >= DTX_ACTIVITY_THRESHOLD;
         if (!activity) {
             /* Mark as active if this noise frame is sufficiently loud */
-            oac_val32 noise_energy = compute_frame_energy(pcm, frame_size, st->channels, st->arch);
+            oac_val32 noise_energy = oaci_compute_frame_energy(pcm, frame_size, st->channels, st->arch);
             activity = st->peak_signal_energy < (PSEUDO_SNR_THRESHOLD*noise_energy);
         }
     }
 #endif
     else if (st->mode == MODE_CELT_ONLY) {
-        oac_val32 noise_energy = compute_frame_energy(pcm, frame_size, st->channels, st->arch);
+        oac_val32 noise_energy = oaci_compute_frame_energy(pcm, frame_size, st->channels, st->arch);
         /* Boosting peak energy a bit because we didn't just average the active frames. */
         activity = st->peak_signal_energy < (QCONST16(PSEUDO_SNR_THRESHOLD, 0)*(oac_val64)HALF32(noise_energy));
     }
@@ -1845,7 +1845,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         redundancy = 0;
 
     if (redundancy) {
-        redundancy_bytes = compute_redundancy_bytes(max_data_bytes, st->bitrate_bps, frame_rate, st->stream_channels);
+        redundancy_bytes = oaci_compute_redundancy_bytes(max_data_bytes, st->bitrate_bps, frame_rate, st->stream_channels);
         if (redundancy_bytes == 0)
             redundancy = 0;
     }
@@ -1941,13 +1941,13 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         total_bitRate = bits_to_bitrate(bits_target, st->Fs, frame_size);
         if (st->mode == MODE_HYBRID) {
             /* Base rate for SILK */
-            st->silk_mode.bitRate = compute_silk_rate_for_hybrid(total_bitRate,
+            st->silk_mode.bitRate = oaci_compute_silk_rate_for_hybrid(total_bitRate,
                   curr_bandwidth, st->Fs == 50*frame_size, st->use_vbr, st->silk_mode.LBRR_coded,
                   st->stream_channels);
             if (!st->energy_masking) {
                 /* Increasingly attenuate high band when it gets allocated fewer bits */
                 celt_rate = total_bitRate - st->silk_mode.bitRate;
-                HB_gain = Q15ONE - SHR32(celt_exp2(-celt_rate*QCONST16(1.f/1024, 10)), 1);
+                HB_gain = Q15ONE - SHR32(oaci_celt_exp2(-celt_rate*QCONST16(1.f/1024, 10)), 1);
             }
         } else {
             /* SILK gets all bits */
@@ -2059,7 +2059,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             /* Constrained VBR. */
             if (st->mode == MODE_HYBRID) {
                 /* Compute SILK bitrate corresponding to the max total bits available */
-                oac_int32 maxBitRate = compute_silk_rate_for_hybrid(st->silk_mode.maxBits*st->Fs/frame_size,
+                oac_int32 maxBitRate = oaci_compute_silk_rate_for_hybrid(st->silk_mode.maxBits*st->Fs/frame_size,
                     curr_bandwidth, st->Fs == 50*frame_size, st->use_vbr, st->silk_mode.LBRR_coded,
                     st->stream_channels);
                 st->silk_mode.maxBits = bitrate_to_bits(maxBitRate, st->Fs, frame_size);
@@ -2076,7 +2076,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
                rewritten is tmp_prefill[] and even then only the part after the ramp really
                gets used (rather than sent to the encoder and discarded) */
             prefill_offset = st->channels*(st->encoder_buffer - st->delay_compensation - st->Fs/400);
-            gain_fade(st->delay_buffer + prefill_offset, st->delay_buffer + prefill_offset,
+            oaci_gain_fade(st->delay_buffer + prefill_offset, st->delay_buffer + prefill_offset,
                   0, Q15ONE, celt_mode->overlap, st->Fs/400, st->channels, celt_mode->window, st->Fs);
             OAC_CLEAR(st->delay_buffer, prefill_offset);
             pcm_silk = st->delay_buffer;
@@ -2118,7 +2118,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         }
         if (nBytes == 0) {
             st->rangeFinal = 0;
-            data[-1] = gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
+            data[-1] = oaci_gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
             RESTORE_STACK;
             return 1;
         }
@@ -2126,7 +2126,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         /* FIXME: How do we allocate the redundancy for CBR? */
         if (st->silk_mode.oacCanSwitch) {
             if (st->application != OAC_APPLICATION_RESTRICTED_SILK) {
-                redundancy_bytes = compute_redundancy_bytes(max_data_bytes, st->bitrate_bps, frame_rate,
+                redundancy_bytes = oaci_compute_redundancy_bytes(max_data_bytes, st->bitrate_bps, frame_rate,
                 st->stream_channels);
                 redundancy = (redundancy_bytes != 0);
             }
@@ -2183,10 +2183,10 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         OAC_COPY(st->delay_buffer, &pcm_buf[(frame_size + total_buffer - st->encoder_buffer)*st->channels],
         st->encoder_buffer*st->channels);
     }
-    /* gain_fade() and stereo_fade() need to be after the buffer copying
+    /* oaci_gain_fade() and oaci_stereo_fade() need to be after the buffer copying
        because we don't want any of this to affect the SILK part */
     if ((st->prev_HB_gain < Q15ONE || HB_gain < Q15ONE) && celt_mode != NULL) {
-        gain_fade(pcm_buf, pcm_buf,
+        oaci_gain_fade(pcm_buf, pcm_buf,
              st->prev_HB_gain, HB_gain, celt_mode->overlap, frame_size, st->channels, celt_mode->window, st->Fs);
     }
     st->prev_HB_gain = HB_gain;
@@ -2212,14 +2212,14 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             g2 *= (1.f/16384);
 #endif
             if (celt_mode != NULL) {
-                stereo_fade(pcm_buf, pcm_buf, g1, g2, celt_mode->overlap,
+                oaci_stereo_fade(pcm_buf, pcm_buf, g1, g2, celt_mode->overlap,
                      frame_size, st->channels, celt_mode->window, st->Fs);
             }
             st->hybrid_stereo_width_Q14 = st->silk_mode.stereoWidth_Q14;
         }
     }
 
-    if (st->mode != MODE_CELT_ONLY && ec_tell(&enc) + 17 + 20*(st->mode == MODE_HYBRID) <= 8*(max_data_bytes - 1)) {
+    if (st->mode != MODE_CELT_ONLY && oaci_ec_tell(&enc) + 17 + 20*(st->mode == MODE_HYBRID) <= 8*(max_data_bytes - 1)) {
         /* For SILK mode, the redundancy is inferred from the length */
         if (st->mode == MODE_HYBRID)
             oaci_ec_enc_bit_logp(&enc, redundancy, 12);
@@ -2229,9 +2229,9 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             if (st->mode == MODE_HYBRID) {
                 /* Reserve the 8 bits needed for the redundancy length,
                    and at least a few bits for CELT if possible */
-                max_redundancy = (max_data_bytes - 1) - ((ec_tell(&enc) + 8 + 3 + 7)>>3);
+                max_redundancy = (max_data_bytes - 1) - ((oaci_ec_tell(&enc) + 8 + 3 + 7)>>3);
             } else
-                max_redundancy = (max_data_bytes - 1) - ((ec_tell(&enc) + 7)>>3);
+                max_redundancy = (max_data_bytes - 1) - ((oaci_ec_tell(&enc) + 7)>>3);
             /* Target the same bit-rate for redundancy as for the rest,
                up to a max of 257 bytes */
             redundancy_bytes = IMIN(max_redundancy, redundancy_bytes);
@@ -2250,7 +2250,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     if (st->mode != MODE_CELT_ONLY)start_band = 17;
 
     if (st->mode == MODE_SILK_ONLY) {
-        ret = (ec_tell(&enc) + 7)>>3;
+        ret = (oaci_ec_tell(&enc) + 7)>>3;
         oaci_ec_enc_done(&enc);
         nb_compr_bytes = ret;
     } else {
@@ -2263,7 +2263,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             max_celt_bytes = nb_compr_bytes - dred_bytes*3/4;
             /* But try to give CELT at least 5 bytes to prevent a mismatch with
                the redundancy signaling. */
-            max_celt_bytes = IMAX((ec_tell(&enc) + 7)/8 + 5, max_celt_bytes);
+            max_celt_bytes = IMAX((oaci_ec_tell(&enc) + 7)/8 + 5, max_celt_bytes);
             /* Subject to the original max. */
             nb_compr_bytes = IMIN(nb_compr_bytes, max_celt_bytes);
         }
@@ -2336,7 +2336,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
             celt_encoder_ctl(celt_enc, CELT_SET_PREDICTION(0));
         }
         /* If false, we already busted the budget and we'll end up with a "PLC frame" */
-        if (ec_tell(&enc) <= 8*nb_compr_bytes) {
+        if (oaci_ec_tell(&enc) <= 8*nb_compr_bytes) {
             ret = oaci_celt_encode_with_ec(celt_enc, pcm_buf, frame_size, NULL, nb_compr_bytes, &enc);
             if (ret < 0) {
                 RESTORE_STACK;
@@ -2388,7 +2388,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 
     /* Signalling the mode in the first byte */
     data--;
-    data[0] |= gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
+    data[0] |= oaci_gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
 
     st->rangeFinal ^= redundant_rng;
 
@@ -2405,7 +2405,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     if (st->use_dtx && !st->silk_mode.useDTX) {
         if (decide_dtx_mode(activity, &st->nb_no_activity_ms_Q1, 2*1000*frame_size/st->Fs)) {
             st->rangeFinal = 0;
-            data[0] = gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
+            data[0] = oaci_gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
             RESTORE_STACK;
             return 1;
         }
@@ -2415,7 +2415,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 
     /* In the unlikely case that the SILK encoder busted its target, tell
        the decoder to call the PLC */
-    if (ec_tell(&enc) > (max_data_bytes - 1)*8) {
+    if (oaci_ec_tell(&enc) > (max_data_bytes - 1)*8) {
         if (max_data_bytes < 2) {
             RESTORE_STACK;
             return OAC_BUFFER_TOO_SMALL;
@@ -2644,7 +2644,7 @@ int oac_encoder_ctl(OacEncoder *st, int request, ...) {
             if (!value) {
                 goto bad_arg;
             }
-            *value = user_bitrate_to_bitrate(st, st->prev_framesize, 1276);
+            *value = oaci_user_bitrate_to_bitrate(st, st->prev_framesize, 1276);
         }
         break;
         case OAC_SET_FORCE_CHANNELS_REQUEST:

@@ -172,20 +172,20 @@ void testlog2(void) {
     float error_threshold = 2.2e-06;
     float max_error = 0;
     for (x = 0.001f; x < 1677700.0; x += (x/8.0)) {
-        float error = fabs((1.442695040888963387*log(x)) - celt_log2(x));
+        float error = fabs((1.442695040888963387*log(x)) - oaci_celt_log2(x));
         if (max_error < error) {
             max_error = error;
         }
 
         if (error > error_threshold) {
             fprintf (stderr,
-                  "celt_log2 failed: "
-                  "fabs((1.442695040888963387*log(x))-celt_log2(x))>%15.25e "
+                  "oaci_celt_log2 failed: "
+                  "fabs((1.442695040888963387*log(x))-oaci_celt_log2(x))>%15.25e "
                   "(x = %f, error = %15.25e)\n", error_threshold, x, error);
             ret = 1;
         }
     }
-    fprintf (stdout, "celt_log2 max_error: %15.25e\n", max_error);
+    fprintf (stdout, "oaci_celt_log2 max_error: %15.25e\n", max_error);
 }
 
 void testexp2(void) {
@@ -193,20 +193,20 @@ void testexp2(void) {
     float error_threshold = 2.3e-07;
     float max_error = 0;
     for (x = -11.0; x < 24.0; x += 0.0007f) {
-        float error = fabs(x - (1.442695040888963387*log((double)celt_exp2(x))));
+        float error = fabs(x - (1.442695040888963387*log((double)oaci_celt_exp2(x))));
         if (max_error < error) {
             max_error = error;
         }
 
         if (error > error_threshold) {
             fprintf (stderr,
-                  "celt_exp2 failed: "
-                  "fabs(x-(1.442695040888963387*log(celt_exp2(x))))>%15.25e "
+                  "oaci_celt_exp2 failed: "
+                  "fabs(x-(1.442695040888963387*log(oaci_celt_exp2(x))))>%15.25e "
                   "(x = %f, error = %15.25e)\n", error_threshold, x, error);
             ret = 1;
         }
     }
-    fprintf (stdout, "celt_exp2 max_error: %15.25e\n", max_error);
+    fprintf (stdout, "oaci_celt_exp2 max_error: %15.25e\n", max_error);
 }
 
 void testexp2log2(void) {
@@ -214,20 +214,20 @@ void testexp2log2(void) {
     float error_threshold = 2.0e-06;
     float max_error = 0;
     for (x = -11.0; x < 24.0; x += 0.0007f) {
-        float error = fabs(x - (celt_log2(celt_exp2(x))));
+        float error = fabs(x - (oaci_celt_log2(oaci_celt_exp2(x))));
         if (max_error < error) {
             max_error = error;
         }
 
         if (error > error_threshold) {
             fprintf (stderr,
-                  "celt_log2/celt_exp2 failed: "
-                  "fabs(x-(celt_log2(celt_exp2(x))))>%15.25e "
+                  "oaci_celt_log2/oaci_celt_exp2 failed: "
+                  "fabs(x-(oaci_celt_log2(oaci_celt_exp2(x))))>%15.25e "
                   "(x = %f, error = %15.25e)\n", error_threshold, x, error);
             ret = 1;
         }
     }
-    fprintf (stdout, "celt_exp2, celt_log2 max_error: %15.25e\n", max_error);
+    fprintf (stdout, "oaci_celt_exp2, oaci_celt_log2 max_error: %15.25e\n", max_error);
 }
 
 void test_cos(void) {
@@ -282,7 +282,7 @@ void test_atan2(void) {
 #else
 
 void testlog2_db(void) {
-    /* celt_log2_db test */
+    /* oaci_celt_log2_db test */
     float error = -1;
     float max_error = -2;
     float error_threshold = 2.e-07;
@@ -290,25 +290,25 @@ void testlog2_db(void) {
     int q_input = 14;
     for (x = 8; x < 1073741824; x += (x>>3)) {
         error = fabs((1.442695040888963387*log(FIX_INT_TO_DOUBLE(x, q_input)))
-            - FIX_INT_TO_DOUBLE(celt_log2_db(x), DB_SHIFT));
+            - FIX_INT_TO_DOUBLE(oaci_celt_log2_db(x), DB_SHIFT));
         if (error > max_error) {
             max_error = error;
         }
         if (error > error_threshold) {
-            fprintf(stderr, "celt_log2_db failed: error: [%.5e > %.5e] (x = %f)\n",
+            fprintf(stderr, "oaci_celt_log2_db failed: error: [%.5e > %.5e] (x = %f)\n",
                  error, error_threshold, FIX_INT_TO_DOUBLE(x, DB_SHIFT));
             ret = 1;
         }
     }
-    fprintf(stdout, "celt_log2_db max_error: %.7e\n", max_error);
+    fprintf(stdout, "oaci_celt_log2_db max_error: %.7e\n", max_error);
 }
 
 void testlog2(void) {
     oac_val32 x;
     for (x = 8; x < 1073741824; x += (x>>3)) {
-        float error = fabs((1.442695040888963387*log(x/16384.0)) - celt_log2(x)/1024.0);
+        float error = fabs((1.442695040888963387*log(x/16384.0)) - oaci_celt_log2(x)/1024.0);
         if (error > 0.003) {
-            fprintf (stderr, "celt_log2 failed: x = %ld, error = %f\n", (long)x, error);
+            fprintf (stderr, "oaci_celt_log2 failed: x = %ld, error = %f\n", (long)x, error);
             ret = 1;
         }
     }
@@ -317,10 +317,10 @@ void testlog2(void) {
 void testexp2(void) {
     oac_val16 x;
     for (x = -32768; x < 15360; x++) {
-        float error1 = fabs(x/1024.0 - (1.442695040888963387*log(celt_exp2(x)/65536.0)));
-        float error2 = fabs(exp(0.6931471805599453094*x/1024.0) - celt_exp2(x)/65536.0);
+        float error1 = fabs(x/1024.0 - (1.442695040888963387*log(oaci_celt_exp2(x)/65536.0)));
+        float error2 = fabs(exp(0.6931471805599453094*x/1024.0) - oaci_celt_exp2(x)/65536.0);
         if (error1 > 0.0002 && error2 > 0.00004) {
-            fprintf (stderr, "celt_exp2 failed: x = " WORD ", error1 = %f, error2 = %f\n", x, error1, error2);
+            fprintf (stderr, "oaci_celt_exp2 failed: x = " WORD ", error1 = %f, error2 = %f\n", x, error1, error2);
             ret = 1;
         }
     }
@@ -360,10 +360,10 @@ void testexp2_db(void) {
 void testexp2log2(void) {
     oac_val32 x;
     for (x = 8; x < 65536; x += (x>>3)) {
-        float error = fabs(x - 0.25*celt_exp2(celt_log2(x)))/16384;
+        float error = fabs(x - 0.25*oaci_celt_exp2(oaci_celt_log2(x)))/16384;
         if (error > 0.004) {
             fprintf (stderr,
-            "celt_log2/celt_exp2 failed: fabs(x-(celt_exp2(celt_log2(x))))>0.001 (x = %ld, error = %f)\n", (long)x,
+            "oaci_celt_log2/oaci_celt_exp2 failed: fabs(x-(oaci_celt_exp2(oaci_celt_log2(x))))>0.001 (x = %ld, error = %f)\n", (long)x,
             error);
             ret = 1;
         }
@@ -376,15 +376,15 @@ void testilog2(void) {
         oac_val32 lg;
         oac_val32 y;
 
-        lg = celt_ilog2(x);
+        lg = oaci_celt_ilog2(x);
         if (lg < 0 || lg >= 31) {
-            printf("celt_ilog2 failed: 0<=celt_ilog2(x)<31 (x = %d, celt_ilog2(x) = %d)\n", x, lg);
+            printf("oaci_celt_ilog2 failed: 0<=oaci_celt_ilog2(x)<31 (x = %d, oaci_celt_ilog2(x) = %d)\n", x, lg);
             ret = 1;
         }
         y = 1<<lg;
 
         if (x < y || (x>>1) >= y) {
-            printf("celt_ilog2 failed: 2**celt_ilog2(x)<=x<2**(celt_ilog2(x)+1) (x = %d, 2**celt_ilog2(x) = %d)\n", x,
+            printf("oaci_celt_ilog2 failed: 2**oaci_celt_ilog2(x)<=x<2**(oaci_celt_ilog2(x)+1) (x = %d, 2**oaci_celt_ilog2(x) = %d)\n", x,
             y);
             ret = 1;
         }
@@ -452,18 +452,18 @@ void testatan_norm(void) {
     for (fx = -1.0f; fx <= 1.0f; fx += 0.007f) {
         x = DOUBLE_TO_FIX_INT(fx, q_input);
         error = fabs(atan(FIX_INT_TO_DOUBLE(x, q_input))*ATAN2_2_OVER_PI
-            - FIX_INT_TO_DOUBLE(celt_atan_norm(x), q_output));
+            - FIX_INT_TO_DOUBLE(oaci_celt_atan_norm(x), q_output));
         if (error > max_error) {
             max_error = error;
         }
         if (error > error_threshold) {
             fprintf(stderr,
-                 "celt_atan_norm failed: error: [%.5e > %.5e] (x = %f)\n",
+                 "oaci_celt_atan_norm failed: error: [%.5e > %.5e] (x = %f)\n",
                  error, error_threshold, FIX_INT_TO_DOUBLE(x, DB_SHIFT));
             ret = 1;
         }
     }
-    fprintf(stdout, "celt_atan_norm max_error: %.7e\n", max_error);
+    fprintf(stdout, "oaci_celt_atan_norm max_error: %.7e\n", max_error);
 }
 
 void testatan2p_norm(void) {

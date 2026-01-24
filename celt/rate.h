@@ -78,11 +78,11 @@
 
 void oaci_compute_pulse_cache(CELTMode *m, int LM);
 
-static OAC_INLINE int get_pulses(int i) {
+static OAC_INLINE int oaci_get_pulses(int i) {
     return i < 8 ? i : (8 + (i&7))<<((i>>3) - 1);
 }
 
-static OAC_INLINE int bits2pulses(const CELTMode *m, int band, int LM, int bits) {
+static OAC_INLINE int oaci_bits2pulses(const CELTMode *m, int band, int LM, int bits) {
     int i;
     int lo, hi;
     const unsigned char *cache;
@@ -107,7 +107,7 @@ static OAC_INLINE int bits2pulses(const CELTMode *m, int band, int LM, int bits)
         return hi;
 }
 
-static OAC_INLINE int pulses2bits(const CELTMode *m, int band, int LM, int pulses) {
+static OAC_INLINE int oaci_pulses2bits(const CELTMode *m, int band, int LM, int pulses) {
     const unsigned char *cache;
 
     LM++;

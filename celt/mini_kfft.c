@@ -131,7 +131,7 @@ typedef struct mini_kiss_fft_state {
 
 
 
-static void kf_bfly2(
+static void oaci_kf_bfly2(
     mini_kiss_fft_cpx * Fout,
     const size_t fstride,
     const mini_kiss_fft_cfg st,
@@ -152,7 +152,7 @@ static void kf_bfly2(
     } while (--m);
 }
 
-static void kf_bfly4(
+static void oaci_kf_bfly4(
     mini_kiss_fft_cpx * Fout,
     const size_t fstride,
     const mini_kiss_fft_cfg st,
@@ -198,7 +198,7 @@ static void kf_bfly4(
     } while (--k);
 }
 
-static void kf_bfly3(
+static void oaci_kf_bfly3(
     mini_kiss_fft_cpx * Fout,
     const size_t fstride,
     const mini_kiss_fft_cfg st,
@@ -240,7 +240,7 @@ static void kf_bfly3(
     } while (--k);
 }
 
-static void kf_bfly5(
+static void oaci_kf_bfly5(
     mini_kiss_fft_cpx * Fout,
     const size_t fstride,
     const mini_kiss_fft_cfg st,
@@ -333,10 +333,10 @@ void kf_work(
 
     /* recombine the p smaller DFTs*/
     switch (p) {
-        case 2: kf_bfly2(Fout, fstride, st, m); break;
-        case 3: kf_bfly3(Fout, fstride, st, m); break;
-        case 4: kf_bfly4(Fout, fstride, st, m); break;
-        case 5: kf_bfly5(Fout, fstride, st, m); break;
+        case 2: oaci_kf_bfly2(Fout, fstride, st, m); break;
+        case 3: oaci_kf_bfly3(Fout, fstride, st, m); break;
+        case 4: oaci_kf_bfly4(Fout, fstride, st, m); break;
+        case 5: oaci_kf_bfly5(Fout, fstride, st, m); break;
         default: assert(0);
     }
 }

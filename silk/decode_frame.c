@@ -104,7 +104,7 @@ oac_int oaci_silk_decode_frame(
         VARDECL( oac_int16, pulses );
 #ifdef ENABLE_OSCE
         oac_int32 ec_start;
-        ec_start = ec_tell(psRangeDec);
+        ec_start = oaci_ec_tell(psRangeDec);
 #endif
         ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1)
             &~(SHELL_CODEC_FRAME_LENGTH - 1), oac_int16 );
@@ -141,7 +141,7 @@ oac_int oaci_silk_decode_frame(
         /********************************************************/
         /* Run SILK enhancer                                    */
         /********************************************************/
-        oaci_osce_enhance_frame( osce_model, psDec, psDecCtrl, pOut, ec_tell(psRangeDec) - ec_start, arch );
+        oaci_osce_enhance_frame( osce_model, psDec, psDecCtrl, pOut, oaci_ec_tell(psRangeDec) - ec_start, arch );
 #endif
 
         /********************************************************/

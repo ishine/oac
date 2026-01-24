@@ -74,7 +74,7 @@
 #define QA      16
 
 /* helper function for NLSF2A(..) */
-static OAC_INLINE void silk_NLSF2A_find_poly(
+static OAC_INLINE void oaci_silk_NLSF2A_find_poly(
     oac_int32          *out,      /* O    intermediate polynomial, QA [dd+1]        */
     const oac_int32    *cLSF,     /* I    vector of interleaved 2*cos(LSFs), QA [d] */
     oac_int dd                    /* I    polynomial order (= 1/2 * filter order)   */
@@ -102,7 +102,7 @@ void oaci_silk_NLSF2A(
     int arch                                        /* I    Run-time architecture                                       */
     ) {
     /* This ordering was found to maximize quality. It improves numerical accuracy of
-       silk_NLSF2A_find_poly() compared to "standard" ordering. */
+       oaci_silk_NLSF2A_find_poly() compared to "standard" ordering. */
     static const unsigned char ordering16[16] = {
         0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1
     };
@@ -144,8 +144,8 @@ void oaci_silk_NLSF2A(
     dd = silk_RSHIFT( d, 1 );
 
     /* generate even and odd polynomials using convolution */
-    silk_NLSF2A_find_poly( P, &cos_LSF_QA[ 0 ], dd );
-    silk_NLSF2A_find_poly( Q, &cos_LSF_QA[ 1 ], dd );
+    oaci_silk_NLSF2A_find_poly( P, &cos_LSF_QA[ 0 ], dd );
+    oaci_silk_NLSF2A_find_poly( Q, &cos_LSF_QA[ 1 ], dd );
 
     /* convert even and odd polynomials to oac_int32 Q12 filter coefs */
     for (k = 0; k < dd; k++) {
