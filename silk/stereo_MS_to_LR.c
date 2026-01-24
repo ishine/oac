@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Convert adaptive Mid/Side representation to Left/Right stereo signal */
-void silk_stereo_MS_to_LR(
+void oaci_silk_stereo_MS_to_LR(
     stereo_dec_state            *state,                         /* I/O  State                                       */
     oac_int16 x1[],                                            /* I/O  Left input signal, becomes mid signal       */
     oac_int16 x2[],                                            /* I/O  Right input signal, becomes side signal     */

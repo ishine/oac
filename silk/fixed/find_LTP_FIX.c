@@ -65,7 +65,7 @@
 #include "main_FIX.h"
 #include "tuning_parameters.h"
 
-void silk_find_LTP_FIX(
+void oaci_silk_find_LTP_FIX(
     oac_int32 XXLTP_Q17[ MAX_NB_SUBFR*LTP_ORDER*LTP_ORDER ],                          /* O    Correlation matrix                                               */
     oac_int32 xXLTP_Q17[ MAX_NB_SUBFR*LTP_ORDER ],                         /* O    Correlation vector                                                          */
     const oac_int16 r_ptr[],                                               /* I    Residual signal after LPC                                                   */
@@ -85,8 +85,8 @@ void silk_find_LTP_FIX(
     for (k = 0; k < nb_subfr; k++) {
         lag_ptr = r_ptr - (lag[ k ] + LTP_ORDER/2);
 
-        silk_sum_sqr_shift( &xx, &xx_shifts, r_ptr, subfr_length + LTP_ORDER );                            /* xx in Q( -xx_shifts ) */
-        silk_corrMatrix_FIX( lag_ptr, subfr_length, LTP_ORDER, XXLTP_Q17_ptr, &nrg, &XX_shifts, arch );    /* XXLTP_Q17_ptr and nrg in Q( -XX_shifts ) */
+        oaci_silk_sum_sqr_shift( &xx, &xx_shifts, r_ptr, subfr_length + LTP_ORDER );                            /* xx in Q( -xx_shifts ) */
+        oaci_silk_corrMatrix_FIX( lag_ptr, subfr_length, LTP_ORDER, XXLTP_Q17_ptr, &nrg, &XX_shifts, arch );    /* XXLTP_Q17_ptr and nrg in Q( -XX_shifts ) */
         extra_shifts = xx_shifts - XX_shifts;
         if (extra_shifts > 0) {
             /* Shift XX */
@@ -102,7 +102,7 @@ void silk_find_LTP_FIX(
         } else {
             xX_shifts = xx_shifts;
         }
-        silk_corrVector_FIX( lag_ptr, r_ptr, subfr_length, LTP_ORDER, xXLTP_Q17_ptr, xX_shifts, arch );    /* xXLTP_Q17_ptr in Q( -xX_shifts ) */
+        oaci_silk_corrVector_FIX( lag_ptr, r_ptr, subfr_length, LTP_ORDER, xXLTP_Q17_ptr, xX_shifts, arch );    /* xXLTP_Q17_ptr in Q( -xX_shifts ) */
 
         /* At this point all correlations are in Q(-xX_shifts) */
         temp = silk_SMLAWB( 1, nrg, SILK_FIX_CONST( LTP_CORR_INV_MAX, 16 ));

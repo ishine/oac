@@ -65,7 +65,7 @@
 #include "tables.h"
 
 
-const oac_uint8 silk_gain_iCDF[ 3 ][ N_LEVELS_QGAIN/8 ] =
+const oac_uint8 oaci_silk_gain_iCDF[ 3 ][ N_LEVELS_QGAIN/8 ] =
 {
     {
         224,    112,     44,     15,      3,      2,      1,      0
@@ -78,7 +78,7 @@ const oac_uint8 silk_gain_iCDF[ 3 ][ N_LEVELS_QGAIN/8 ] =
     }
 };
 
-const oac_uint8 silk_delta_gain_iCDF[ MAX_DELTA_GAIN_QUANT - MIN_DELTA_GAIN_QUANT + 1 ] = {
+const oac_uint8 oaci_silk_delta_gain_iCDF[ MAX_DELTA_GAIN_QUANT - MIN_DELTA_GAIN_QUANT + 1 ] = {
     250,    245,    234,    203,     71,     50,     42,     38,
     35,     33,     31,     29,     28,     27,     26,     25,
     24,     23,     22,     21,     20,     19,     18,     17,

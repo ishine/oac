@@ -96,10 +96,10 @@ int ec_ilog(oac_uint32 _v) {
 #endif
 
 #if 1
-/* This is a faster version of ec_tell_frac() that takes advantage
+/* This is a faster version of oaci_ec_tell_frac() that takes advantage
    of the low (1/8 bit) resolution to use just a linear function
    followed by a lookup to determine the exact transition thresholds. */
-oac_uint32 ec_tell_frac(ec_ctx *_this) {
+oac_uint32 oaci_ec_tell_frac(ec_ctx *_this) {
     static const unsigned correction[8] =
     {35733, 38967, 42495, 46340,
      50535, 55109, 60097, 65535};
@@ -116,7 +116,7 @@ oac_uint32 ec_tell_frac(ec_ctx *_this) {
     return nbits - l;
 }
 #else
-oac_uint32 ec_tell_frac(ec_ctx *_this) {
+oac_uint32 oaci_ec_tell_frac(ec_ctx *_this) {
     oac_uint32 nbits;
     oac_uint32 r;
     int l;
@@ -127,7 +127,7 @@ oac_uint32 ec_tell_frac(ec_ctx *_this) {
        subsequent bits.
        The computation here is independent of val itself (the decoder does not
        even track that value), even though the real number of bits used after
-       ec_enc_done() may be 1 smaller if rng is a power of two and the
+       oaci_ec_enc_done() may be 1 smaller if rng is a power of two and the
        corresponding trailing bits of val are all zeros.
        If we did try to track that special case, then coding a value with a
        probability of 1/(1<<n) might sometimes appear to use more than n bits.
@@ -149,7 +149,7 @@ oac_uint32 ec_tell_frac(ec_ctx *_this) {
 
 #ifdef USE_SMALL_DIV_TABLE
 /* Result of 2^32/(2*i+1), except for i=0. */
-const oac_uint32 SMALL_DIV_TABLE[129] = {
+const oac_uint32 OACI_SMALL_DIV_TABLE[129] = {
     0xFFFFFFFF, 0x55555555, 0x33333333, 0x24924924,
     0x1C71C71C, 0x1745D174, 0x13B13B13, 0x11111111,
     0x0F0F0F0F, 0x0D79435E, 0x0C30C30C, 0x0B21642C,

@@ -173,7 +173,7 @@ struct OacCustomEncoder {
     /* celt_glog energyError[],  Size = channels*mode->nbEBands */
 };
 
-int celt_encoder_get_size(int channels) {
+int oaci_celt_encoder_get_size(int channels) {
 #ifdef ENABLE_QEXT
     CELTMode *mode = oac_custom_mode_create(96000, 1920, NULL);
 #else
@@ -260,7 +260,7 @@ int oac_custom_encoder_init(CELTEncoder *st, const CELTMode *mode, int channels)
 }
 #endif
 
-int celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
+int oaci_celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
                       int arch) {
     int ret;
 #ifdef ENABLE_QEXT
@@ -274,7 +274,7 @@ int celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
            oac_custom_mode_create(48000, 960, NULL), channels, arch);
     if (ret != OAC_OK)
         return ret;
-    st->upsample = resampling_factor(sampling_rate);
+    st->upsample = oaci_resampling_factor(sampling_rate);
     return OAC_OK;
 }
 
@@ -421,9 +421,9 @@ static int transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
            geometric mean of the energy and half the max */
 #ifdef FIXED_POINT
         /* Costs two sqrt() to avoid overflows */
-        mean = MULT16_16(celt_sqrt(mean), celt_sqrt(MULT16_16(maxE, len2>>1)));
+        mean = MULT16_16(oaci_celt_sqrt(mean), oaci_celt_sqrt(MULT16_16(maxE, len2>>1)));
 #else
-        mean = celt_sqrt(mean*maxE*.5*len2);
+        mean = oaci_celt_sqrt(mean*maxE*.5*len2);
 #endif
         /* Inverse of the mean energy in Q15+6 */
         norm = SHL32(EXTEND32(len2), 6 + 14)/ADD32(EPSILON, SHR32(mean, 1));
@@ -467,9 +467,9 @@ static int transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
         *weak_transient = 1;
     }
     /* Arbitrary metric for VBR boost */
-    tf_max = MAX16(0, celt_sqrt(27*mask_metric) - 42);
+    tf_max = MAX16(0, oaci_celt_sqrt(27*mask_metric) - 42);
     /* *tf_estimate = 1 + MIN16(1, sqrt(MAX16(0, tf_max-30))/20); */
-    *tf_estimate = celt_sqrt(MAX32(0,
+    *tf_estimate = oaci_celt_sqrt(MAX32(0,
     SHL32(MULT16_16(QCONST16(0.0069, 14), MIN16(163, tf_max)), 14) - QCONST32(0.139, 28)));
     /*printf("%d %f\n", tf_max, mask_metric);*/
     RESTORE_STACK;
@@ -537,7 +537,7 @@ static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OAC_
     c = 0; do {
         for (b = 0; b < B; b++) {
             /* Interleaving the sub-frames while doing the MDCTs */
-            clt_mdct_forward(&mode->mdct, in + c*(B*N + overlap) + b*N,
+            oaci_clt_mdct_forward(&mode->mdct, in + c*(B*N + overlap) + b*N,
                           &out[b + c*N*B], mode->window, overlap, shift, B,
                           arch);
         }
@@ -557,7 +557,7 @@ static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OAC_
 }
 
 
-void celt_preemphasis(const oac_res * OAC_RESTRICT pcmp, celt_sig * OAC_RESTRICT inp,
+void oaci_celt_preemphasis(const oac_res * OAC_RESTRICT pcmp, celt_sig * OAC_RESTRICT inp,
                       int N, int CC, int upsample, const oac_val16 *coef, celt_sig *mem, int clip) {
     int i;
     oac_val16 coef0;
@@ -685,7 +685,7 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
         /* Check the -1 case for transients */
         if (isTransient && !narrow) {
             OAC_COPY(tmp_1, tmp, N);
-            haar1(tmp_1, N>>LM, 1<<LM);
+            oaci_haar1(tmp_1, N>>LM, 1<<LM);
             L1 = l1_metric(tmp_1, N, LM + 1, bias);
             if (L1 < best_L1) {
                 best_L1 = L1;
@@ -701,7 +701,7 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
             else
                 B = k + 1;
 
-            haar1(tmp, N>>k, 1<<k);
+            oaci_haar1(tmp, N>>k, 1<<k);
 
             L1 = l1_metric(tmp, N, B, bias);
 
@@ -726,15 +726,15 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
     /* Search for the optimal tf resolution, including tf_select */
     tf_select = 0;
     for (sel = 0; sel < 2; sel++) {
-        cost0 = importance[0]*abs(metric[0] - 2*tf_select_table[LM][4*isTransient + 2*sel + 0]);
-        cost1 = importance[0]*abs(metric[0] - 2*tf_select_table[LM][4*isTransient + 2*sel + 1])
+        cost0 = importance[0]*abs(metric[0] - 2*oaci_tf_select_table[LM][4*isTransient + 2*sel + 0]);
+        cost1 = importance[0]*abs(metric[0] - 2*oaci_tf_select_table[LM][4*isTransient + 2*sel + 1])
                 + (isTransient ? 0 : lambda);
         for (i = 1; i < len; i++) {
             int curr0, curr1;
             curr0 = IMIN(cost0, cost1 + lambda);
             curr1 = IMIN(cost0 + lambda, cost1);
-            cost0 = curr0 + importance[i]*abs(metric[i] - 2*tf_select_table[LM][4*isTransient + 2*sel + 0]);
-            cost1 = curr1 + importance[i]*abs(metric[i] - 2*tf_select_table[LM][4*isTransient + 2*sel + 1]);
+            cost0 = curr0 + importance[i]*abs(metric[i] - 2*oaci_tf_select_table[LM][4*isTransient + 2*sel + 0]);
+            cost1 = curr1 + importance[i]*abs(metric[i] - 2*oaci_tf_select_table[LM][4*isTransient + 2*sel + 1]);
         }
         cost0 = IMIN(cost0, cost1);
         selcost[sel] = cost0;
@@ -743,8 +743,8 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
      * If tests confirm it's useful for non-transients, we could allow it. */
     if (selcost[1] < selcost[0] && isTransient)
         tf_select = 1;
-    cost0 = importance[0]*abs(metric[0] - 2*tf_select_table[LM][4*isTransient + 2*tf_select + 0]);
-    cost1 = importance[0]*abs(metric[0] - 2*tf_select_table[LM][4*isTransient + 2*tf_select + 1])
+    cost0 = importance[0]*abs(metric[0] - 2*oaci_tf_select_table[LM][4*isTransient + 2*tf_select + 0]);
+    cost1 = importance[0]*abs(metric[0] - 2*oaci_tf_select_table[LM][4*isTransient + 2*tf_select + 1])
             + (isTransient ? 0 : lambda);
     /* Viterbi forward pass */
     for (i = 1; i < len; i++) {
@@ -770,8 +770,8 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
             curr1 = from1;
             path1[i] = 1;
         }
-        cost0 = curr0 + importance[i]*abs(metric[i] - 2*tf_select_table[LM][4*isTransient + 2*tf_select + 0]);
-        cost1 = curr1 + importance[i]*abs(metric[i] - 2*tf_select_table[LM][4*isTransient + 2*tf_select + 1]);
+        cost0 = curr0 + importance[i]*abs(metric[i] - 2*oaci_tf_select_table[LM][4*isTransient + 2*tf_select + 0]);
+        cost1 = curr1 + importance[i]*abs(metric[i] - 2*oaci_tf_select_table[LM][4*isTransient + 2*tf_select + 1]);
     }
     tf_res[len - 1] = cost0 < cost1 ? 0 : 1;
     /* Viterbi backward pass to check the decisions */
@@ -808,7 +808,7 @@ static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, 
     curr = tf_changed = 0;
     for (i = start; i < end; i++) {
         if (tell + logp <= budget) {
-            ec_enc_bit_logp(enc, tf_res[i]^curr, logp);
+            oaci_ec_enc_bit_logp(enc, tf_res[i]^curr, logp);
             tell = ec_tell(enc);
             curr = tf_res[i];
             tf_changed |= curr;
@@ -818,13 +818,13 @@ static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, 
     }
     /* Only code tf_select if it would actually make a difference. */
     if (tf_select_rsv
-        && tf_select_table[LM][4*isTransient + 0 + tf_changed] !=
-        tf_select_table[LM][4*isTransient + 2 + tf_changed])
-        ec_enc_bit_logp(enc, tf_select, 1);
+        && oaci_tf_select_table[LM][4*isTransient + 0 + tf_changed] !=
+        oaci_tf_select_table[LM][4*isTransient + 2 + tf_changed])
+        oaci_ec_enc_bit_logp(enc, tf_select, 1);
     else
         tf_select = 0;
     for (i = start; i < end; i++)
-        tf_res[i] = tf_select_table[LM][4*isTransient + 2*tf_select + tf_res[i]];
+        tf_res[i] = oaci_tf_select_table[LM][4*isTransient + 2*tf_select + tf_res[i]];
     /*for(i=0;i<end;i++)printf("%d ", isTransient ? tf_res[i] : LM+tf_res[i]);printf("\n");*/
 }
 
@@ -853,7 +853,7 @@ static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
         /* Compute inter-channel correlation for low frequencies */
         for (i = 0; i < 8; i++) {
             oac_val32 partial;
-            partial = celt_inner_prod_norm_shift(&X[m->eBands[i]<<LM], &X[N0 + (m->eBands[i]<<LM)],
+            partial = oaci_celt_inner_prod_norm_shift(&X[m->eBands[i]<<LM], &X[N0 + (m->eBands[i]<<LM)],
                 (m->eBands[i + 1] - m->eBands[i])<<LM, arch);
             sum = ADD16(sum, EXTRACT16(SHR32(partial, 18)));
         }
@@ -862,7 +862,7 @@ static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
         minXC = sum;
         for (i = 8; i < intensity; i++) {
             oac_val32 partial;
-            partial = celt_inner_prod_norm_shift(&X[m->eBands[i]<<LM], &X[N0 + (m->eBands[i]<<LM)],
+            partial = oaci_celt_inner_prod_norm_shift(&X[m->eBands[i]<<LM], &X[N0 + (m->eBands[i]<<LM)],
                 (m->eBands[i + 1] - m->eBands[i])<<LM, arch);
             minXC = MIN16(minXC, ABS16(EXTRACT16(SHR32(partial, 18))));
         }
@@ -1024,10 +1024,10 @@ static celt_glog dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *b
     /* Dynamic allocation code */
     maxDepth = -GCONST(31.9f);
     for (i = 0; i < end; i++) {
-        /* Noise floor must take into account eMeans, the depth, the width of the bands
+        /* Noise floor must take into account oaci_eMeans, the depth, the width of the bands
            and the preemphasis filter (approx. square of bark band ID) */
         noise_floor[i] = GCONST(0.0625f)*logN[i]
-                         + GCONST(.5f) + SHL32(9 - lsb_depth, DB_SHIFT) - SHL32(eMeans[i], DB_SHIFT - 4)
+                         + GCONST(.5f) + SHL32(9 - lsb_depth, DB_SHIFT) - SHL32(oaci_eMeans[i], DB_SHIFT - 4)
                          + GCONST(.0062f)*(i + 5)*(i + 5);
     }
     c = 0; do {
@@ -1215,7 +1215,7 @@ static celt_glog dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *b
 }
 
 #ifdef FIXED_POINT
-void normalize_tone_input(oac_val16 *x, int len) {
+void oaci_normalize_tone_input(oac_val16 *x, int len) {
     oac_val32 ac0 = len;
     int i;
     int shift;
@@ -1229,7 +1229,7 @@ void normalize_tone_input(oac_val16 *x, int len) {
         }
     }
 }
-int acos_approx(oac_val32 x) {
+int oaci_acos_approx(oac_val32 x) {
     oac_val16 x14;
     oac_val32 tmp;
     int flip = x < 0;
@@ -1237,7 +1237,7 @@ int acos_approx(oac_val32 x) {
     x14 = x>>15;
     tmp = (762*x14>>14) - 3308;
     tmp = (tmp*x14>>14) + 25726;
-    tmp = tmp*celt_sqrt(IMAX(0, (1<<30) - (x<<1)))>>16;
+    tmp = tmp*oaci_celt_sqrt(IMAX(0, (1<<30) - (x<<1)))>>16;
     if (flip) tmp = 25736 - tmp;
     return tmp;
 }
@@ -1293,11 +1293,11 @@ static int tone_lpc(const oac_val16 *x, int len, int delay, oac_val32 *lpc) {
     num1 = MULT32_32_Q31(r02, r11) - MULT32_32_Q31(r01, r12);
     if (num1 >= den) lpc[1] = QCONST32(1.f, 29);
     else if (num1 <= -den) lpc[1] = -QCONST32(1.f, 29);
-    else lpc[1] = frac_div32_q29(num1, den);
+    else lpc[1] = oaci_frac_div32_q29(num1, den);
     num0 = MULT32_32_Q31(r00, r12) - MULT32_32_Q31(r02, r01);
     if (HALF32(num0) >= den) lpc[0] = QCONST32(1.999999f, 29);
     else if (HALF32(num0) <= -den) lpc[0] = -QCONST32(1.999999f, 29);
-    else lpc[0] = frac_div32_q29(num0, den);
+    else lpc[0] = oaci_frac_div32_q29(num0, den);
     /*printf("%f %f\n", lpc[0], lpc[1]);*/
     return 0;
 }
@@ -1319,7 +1319,7 @@ static oac_val16 tone_detect(const celt_sig *in, int CC, int N, oac_val32 *tonei
         for (i = 0; i < N; i++) x[i] = PSHR32(in[i], SIG_SHIFT + 2);
     }
 #ifdef FIXED_POINT
-    normalize_tone_input(x, N);
+    oaci_normalize_tone_input(x, N);
 #endif
     fail = tone_lpc(x, N, delay, lpc);
     /* If our LPC filter resonates too close to DC, retry the analysis with down-sampling. */
@@ -1332,7 +1332,7 @@ static oac_val16 tone_detect(const celt_sig *in, int CC, int N, oac_val32 *tonei
         /* Squared radius of the poles. */
         *toneishness = -lpc[1];
 #ifdef FIXED_POINT
-        freq = (acos_approx(lpc[0]>>1) + delay/2)/delay;
+        freq = (oaci_acos_approx(lpc[0]>>1) + delay/2)/delay;
 #else
         freq = acos(.5f*lpc[0])/delay;
 #endif
@@ -1412,15 +1412,15 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
         VARDECL(oac_val16, pitch_buf);
         ALLOC(pitch_buf, (max_period + N)>>1, oac_val16);
 
-        pitch_downsample(pre, pitch_buf, (max_period + N)>>1, CC, 2, st->arch);
+        oaci_pitch_downsample(pre, pitch_buf, (max_period + N)>>1, CC, 2, st->arch);
         /* Don't search for the fir last 1.5 octave of the range because
            there's too many false-positives due to short-term correlation */
-        pitch_search(pitch_buf + (max_period>>1), pitch_buf, N,
+        oaci_pitch_search(pitch_buf + (max_period>>1), pitch_buf, N,
             max_period - 3*min_period, &pitch_index,
             st->arch);
         pitch_index = max_period - pitch_index;
 
-        gain1 = remove_doubling(pitch_buf, max_period, min_period,
+        gain1 = oaci_remove_doubling(pitch_buf, max_period, min_period,
             N, &pitch_index, st->prefilter_period, st->prefilter_gain, st->arch);
         if (pitch_index > max_period - QEXT_SCALE(2))
             pitch_index = max_period - QEXT_SCALE(2);
@@ -1494,11 +1494,11 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
         OAC_COPY(in + c*(N + overlap), st->in_mem + c*(overlap), overlap);
         for (i = 0; i < N; i++) before[c] += ABS32(SHR32(in[c*(N + overlap) + overlap + i], 12));
         if (offset)
-            comb_filter(in + c*(N + overlap) + overlap, pre[c] + max_period,
+            oaci_comb_filter(in + c*(N + overlap) + overlap, pre[c] + max_period,
                st->prefilter_period, st->prefilter_period, offset, -st->prefilter_gain, -st->prefilter_gain,
                st->prefilter_tapset, st->prefilter_tapset, NULL, 0, st->arch);
 
-        comb_filter(in + c*(N + overlap) + overlap + offset, pre[c] + max_period + offset,
+        oaci_comb_filter(in + c*(N + overlap) + overlap + offset, pre[c] + max_period + offset,
             st->prefilter_period, pitch_index, N - offset, -st->prefilter_gain, -gain1,
             st->prefilter_tapset, prefilter_tapset, mode->window, overlap, st->arch);
         for (i = 0; i < N; i++) after[c] += ABS32(SHR32(in[c*(N + overlap) + overlap + i], 12));
@@ -1523,7 +1523,7 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
         c = 0; do {
             int offset = mode->shortMdctSize - overlap;
             OAC_COPY(in + c*(N + overlap) + overlap, pre[c] + max_period, N);
-            comb_filter(in + c*(N + overlap) + overlap + offset, pre[c] + max_period + offset,
+            oaci_comb_filter(in + c*(N + overlap) + overlap + offset, pre[c] + max_period + offset,
                      st->prefilter_period, pitch_index, overlap, -st->prefilter_gain, -0,
                      st->prefilter_tapset, prefilter_tapset, mode->window, overlap, st->arch);
         } while (++c < CC);
@@ -1656,7 +1656,7 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, oac_int32 b
     return target;
 }
 
-int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int frame_size, unsigned char *compressed,
+int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int frame_size, unsigned char *compressed,
                         int nbCompressedBytes, ec_enc *enc) {
     int i, c, N;
     oac_int32 bits;
@@ -1773,7 +1773,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
         tell0_frac = tell = 1;
         nbFilledBytes = 0;
     } else {
-        tell0_frac = ec_tell_frac(enc);
+        tell0_frac = oaci_ec_tell_frac(enc);
         tell = ec_tell(enc);
         nbFilledBytes = (tell + 4)>>3;
     }
@@ -1824,7 +1824,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             nbCompressedBytes = IMAX(2, IMIN(nbCompressedBytes,
                 (tmp + 4*mode->Fs)/(8*mode->Fs) - !!st->signalling));
             if (enc != NULL)
-                ec_enc_shrink(enc, nbCompressedBytes);
+                oaci_ec_enc_shrink(enc, nbCompressedBytes);
         }
         effectiveBytes = nbCompressedBytes - nbFilledBytes;
     }
@@ -1834,7 +1834,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
         equiv_rate = IMIN(equiv_rate, st->bitrate - (40*C + 20)*((400>>LM) - 50));
 
     if (enc == NULL) {
-        ec_enc_init(&_enc, compressed, nbCompressedBytes);
+        oaci_ec_enc_init(&_enc, compressed, nbCompressedBytes);
         enc = &_enc;
     }
 
@@ -1857,7 +1857,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             if (max_allowed < nbAvailableBytes) {
                 nbCompressedBytes = nbFilledBytes + max_allowed;
                 nbAvailableBytes = max_allowed;
-                ec_enc_shrink(enc, nbCompressedBytes);
+                oaci_ec_enc_shrink(enc, nbCompressedBytes);
             }
         }
     }
@@ -1882,7 +1882,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
         silence = 1;
 #endif
     if (tell == 1)
-        ec_enc_bit_logp(enc, silence, 15);
+        oaci_ec_enc_bit_logp(enc, silence, 15);
     else
         silence = 0;
     if (silence) {
@@ -1891,7 +1891,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             effectiveBytes = nbCompressedBytes = IMIN(nbCompressedBytes, nbFilledBytes + 2);
             total_bits = nbCompressedBytes*8;
             nbAvailableBytes = 2;
-            ec_enc_shrink(enc, nbCompressedBytes);
+            oaci_ec_enc_shrink(enc, nbCompressedBytes);
         }
         /* Pretend we've filled all the remaining bits with zeros
               (that's what the initialiser did anyway) */
@@ -1905,7 +1905,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
 #else
         need_clip = st->clip && sample_max > 65536.f;
 #endif
-        celt_preemphasis(pcm + c, in + c*(N + overlap) + overlap, N, CC, st->upsample,
+        oaci_celt_preemphasis(pcm + c, in + c*(N + overlap) + overlap, N, CC, st->upsample,
                   mode->preemph, st->preemph_memE + c, need_clip);
         OAC_COPY(in + c*(N + overlap), &prefilter_mem[(1 + c)*QEXT_SCALE(COMBFILTER_MAXPERIOD) - overlap], overlap);
     } while (++c < CC);
@@ -1939,19 +1939,19 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             pitch_change = 1;
         if (pf_on == 0) {
             if (!hybrid && tell + 18 <= total_bits)
-                ec_enc_bit_logp(enc, 0, 1);
+                oaci_ec_enc_bit_logp(enc, 0, 1);
         } else {
             /*This block is not gated by a total bits check only because
                of the nbAvailableBytes check above.*/
             int octave;
-            ec_enc_bit_logp(enc, 1, 1);
+            oaci_ec_enc_bit_logp(enc, 1, 1);
             pitch_index += 1;
             octave = EC_ILOG(pitch_index) - 5;
-            ec_enc_uint(enc, octave, 6);
-            ec_enc_bits(enc, pitch_index - (16<<octave), 4 + octave);
+            oaci_ec_enc_uint(enc, octave, 6);
+            oaci_ec_enc_bits(enc, pitch_index - (16<<octave), 4 + octave);
             pitch_index -= 1;
-            ec_enc_bits(enc, qg, 3);
-            ec_enc_icdf(enc, prefilter_tapset, tapset_icdf, 4);
+            oaci_ec_enc_bits(enc, qg, 3);
+            oaci_ec_enc_icdf(enc, prefilter_tapset, tapset_icdf, 4);
         }
     }
     if (LM > 0 && ec_tell(enc) + 3 <= total_bits) {
@@ -1970,8 +1970,8 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     ALLOC(bandLogE2, C*nbEBands, celt_glog);
     if (secondMdct) {
         compute_mdcts(mode, 0, in, freq, C, CC, LM, st->upsample, st->arch);
-        compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
-        amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
+        oaci_compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
+        oaci_amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
         for (c = 0; c < C; c++) {
             for (i = 0; i < end; i++)
                 bandLogE2[nbEBands*c + i] += HALF32(SHL32(LM, DB_SHIFT));
@@ -1984,7 +1984,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     celt_assert(!celt_isnan(freq[0]) && (C == 1 || !celt_isnan(freq[N])));
     if (CC == 2 && C == 1)
         tf_chan = 0;
-    compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
+    oaci_compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
 
     if (st->lfe) {
         for (i = 2; i < end; i++) {
@@ -1992,7 +1992,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             bandE[i] = MAX32(bandE[i], EPSILON);
         }
     }
-    amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
+    oaci_amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
 
     ALLOC(surround_dynalloc, C*nbEBands, celt_glog);
     OAC_CLEAR(surround_dynalloc, end);
@@ -2096,8 +2096,8 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             isTransient = 1;
             shortBlocks = M;
             compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
-            compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
-            amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
+            oaci_compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
+            oaci_amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
             /* Compensate for the scaling of short vs long mdcts */
             for (c = 0; c < C; c++) {
                 for (i = 0; i < end; i++)
@@ -2108,12 +2108,12 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     }
 
     if (LM > 0 && ec_tell(enc) + 3 <= total_bits)
-        ec_enc_bit_logp(enc, isTransient, 3);
+        oaci_ec_enc_bit_logp(enc, isTransient, 3);
 
     ALLOC(X, C*N, celt_norm);        /**< Interleaved normalised MDCTs */
 
     /* Band normalisation */
-    normalise_bands(mode, freq, X, bandE, effEnd, C, M);
+    oaci_normalise_bands(mode, freq, X, bandE, effEnd, C, M);
 
     enable_tf_analysis = effectiveBytes >= 15*C && !hybrid && st->complexity >= 2 && !st->lfe
                          && toneishness < QCONST32(.98f, 29);
@@ -2165,7 +2165,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             }
         }
     } while (++c < C);
-    quant_coarse_energy(mode, start, end, effEnd, bandLogE,
+    oaci_quant_coarse_energy(mode, start, end, effEnd, bandLogE,
          oldBandE, total_bits, error, enc,
          C, LM, nbAvailableBytes, st->force_intra,
          &st->delayedIntra, st->complexity >= 4, st->loss_rate, st->lfe);
@@ -2190,7 +2190,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
                 st->spread_decision = SPREAD_NORMAL;
         } else {
             /* Disable new spreading+tapset estimator until we can show it works
-               better than the old one. So far it seems like spreading_decision()
+               better than the old one. So far it seems like oaci_spreading_decision()
                works best. */
 #if 0
             if (st->analysis.valid) {
@@ -2200,21 +2200,21 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
                                                                QCONST16(.02f, 15)};
                 static const oac_val16 tapset_thresholds[2] = {QCONST16(.0f, 15), QCONST16(.15f, 15)};
                 static const oac_val16 tapset_histeresis[2] = {QCONST16(.1f, 15), QCONST16(.05f, 15)};
-                st->spread_decision = hysteresis_decision(-st->analysis.tonality, spread_thresholds, spread_histeresis,
+                st->spread_decision = oaci_hysteresis_decision(-st->analysis.tonality, spread_thresholds, spread_histeresis,
                 3, st->spread_decision);
-                st->tapset_decision = hysteresis_decision(st->analysis.tonality_slope, tapset_thresholds,
+                st->tapset_decision = oaci_hysteresis_decision(st->analysis.tonality_slope, tapset_thresholds,
                 tapset_histeresis, 2, st->tapset_decision);
             } else
 #endif
             {
-                st->spread_decision = spreading_decision(mode, X,
+                st->spread_decision = oaci_spreading_decision(mode, X,
                   &st->tonal_average, st->spread_decision, &st->hf_average,
                   &st->tapset_decision, pf_on && !shortBlocks, effEnd, C, M, spread_weight);
             }
             /*printf("%d %d\n", st->tapset_decision, st->spread_decision);*/
             /*printf("%f %d %f %d\n\n", st->analysis.tonality, st->spread_decision, st->analysis.tonality_slope, st->tapset_decision);*/
         }
-        ec_enc_icdf(enc, st->spread_decision, spread_icdf, 5);
+        oaci_ec_enc_icdf(enc, st->spread_decision, spread_icdf, 5);
     } else {
         st->spread_decision = SPREAD_NORMAL;
     }
@@ -2223,12 +2223,12 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     if (st->lfe)
         offsets[0] = IMIN(8, effectiveBytes/3);
     ALLOC(cap, nbEBands, int);
-    init_caps(mode, cap, LM, C);
+    oaci_init_caps(mode, cap, LM, C);
 
     dynalloc_logp = 6;
     total_bits <<= BITRES;
     total_boost = 0;
-    tell = ec_tell_frac(enc);
+    tell = oaci_ec_tell_frac(enc);
     for (i = start; i < end; i++) {
         int width, quanta;
         int dynalloc_loop_logp;
@@ -2244,8 +2244,8 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
              && boost < cap[i]; j++) {
             int flag;
             flag = j < offsets[i];
-            ec_enc_bit_logp(enc, flag, dynalloc_loop_logp);
-            tell = ec_tell_frac(enc);
+            oaci_ec_enc_bit_logp(enc, flag, dynalloc_loop_logp);
+            tell = oaci_ec_tell_frac(enc);
             if (!flag)
                 break;
             boost += quanta;
@@ -2269,7 +2269,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
         if (LM != 0)
             dual_stereo = stereo_analysis(mode, X, LM, N);
 
-        st->intensity = hysteresis_decision((oac_val16)(equiv_rate/1000),
+        st->intensity = oaci_hysteresis_decision((oac_val16)(equiv_rate/1000),
             intensity_thresholds, intensity_histeresis, 21, st->intensity);
         st->intensity = IMIN(end, IMAX(start, st->intensity));
     }
@@ -2284,8 +2284,8 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             end, LM, C, N, &st->analysis, &st->stereo_saving, tf_estimate,
             st->intensity, surround_trim, equiv_rate, st->arch);
         }
-        ec_enc_icdf(enc, alloc_trim, trim_icdf, 7);
-        tell = ec_tell_frac(enc);
+        oaci_ec_enc_icdf(enc, alloc_trim, trim_icdf, 7);
+        tell = oaci_ec_tell_frac(enc);
     }
 
     /* In VBR mode the frame size must not be reduced so much that it would
@@ -2364,7 +2364,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
 
         if (st->vbr_count < 970) {
             st->vbr_count++;
-            alpha = celt_rcp(SHL32(EXTEND32(st->vbr_count + 20), 16));
+            alpha = oaci_celt_rcp(SHL32(EXTEND32(st->vbr_count + 20), 16));
         } else
             alpha = QCONST16(.001f, 15);
         /* How many bits have we used in excess of what we're allowed */
@@ -2390,7 +2390,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
         nbCompressedBytes = IMIN(nbCompressedBytes, nbAvailableBytes);
         /*printf("%d\n", nbCompressedBytes*50*8);*/
         /* This moves the raw bits to take into account the new compressed size */
-        ec_enc_shrink(enc, nbCompressedBytes);
+        oaci_ec_enc_shrink(enc, nbCompressedBytes);
     }
 
     /* Bit allocation */
@@ -2399,7 +2399,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     ALLOC(fine_priority, nbEBands, int);
 
     /* bits =           packet size                    - where we are - safety*/
-    bits = (((oac_int32)nbCompressedBytes*8)<<BITRES) - (oac_int32)ec_tell_frac(enc) - 1;
+    bits = (((oac_int32)nbCompressedBytes*8)<<BITRES) - (oac_int32)oaci_ec_tell_frac(enc) - 1;
     anti_collapse_rsv = isTransient && LM >= 2 && bits >= ((LM + 2)<<BITRES) ? (1<<BITRES) : 0;
     bits -= anti_collapse_rsv;
     signalBandwidth = end - 1;
@@ -2421,7 +2421,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
 #endif
     if (st->lfe)
         signalBandwidth = 1;
-    codedBands = clt_compute_allocation(mode, start, end, offsets, cap,
+    codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
          alloc_trim, &st->intensity, &dual_stereo, bits, &balance, pulses,
          fine_quant, fine_priority, C, LM, enc, 1, st->lastCodedBands, signalBandwidth);
     if (st->lastCodedBands)
@@ -2429,12 +2429,12 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
     else
         st->lastCodedBands = codedBands;
 
-    quant_fine_energy(mode, start, end, oldBandE, error, NULL, fine_quant, enc, C);
+    oaci_quant_fine_energy(mode, start, end, oldBandE, error, NULL, fine_quant, enc, C);
     OAC_CLEAR(energyError, nbEBands*CC);
 
     /* Residual quantisation */
     ALLOC(collapse_masks, C*nbEBands, unsigned char);
-    quant_all_bands(1, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
+    oaci_quant_all_bands(1, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
          bandE, pulses, shortBlocks, st->spread_decision,
          dual_stereo, st->intensity, tf_res, nbCompressedBytes*(8<<BITRES) - anti_collapse_rsv,
          balance, enc, LM, codedBands, &st->rng, st->complexity, st->arch, st->disable_inv);
@@ -2444,9 +2444,9 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
 #ifdef FUZZING
         anti_collapse_on = rand()&0x1;
 #endif
-        ec_enc_bits(enc, anti_collapse_on, 1);
+        oaci_ec_enc_bits(enc, anti_collapse_on, 1);
     }
-    quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority,
+    oaci_quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority,
     nbCompressedBytes*8 - ec_tell(enc), enc, C);
     c = 0;
     do {
@@ -2466,7 +2466,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
         celt_sig *out_mem[2];
 
         if (anti_collapse_on) {
-            anti_collapse(mode, X, collapse_masks, LM, C, N,
+            oaci_anti_collapse(mode, X, collapse_masks, LM, C, N,
                start, end, oldBandE, oldLogE, oldLogE2, pulses, st->rng, 1, st->arch);
         }
 
@@ -2478,24 +2478,24 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
             out_mem[c] = st->syn_mem[c] + QEXT_SCALE(DEC_PITCH_BUF_SIZE) - N;
         } while (++c < CC);
 
-        celt_synthesis(mode, X, out_mem, oldBandE, start, effEnd,
+        oaci_celt_synthesis(mode, X, out_mem, oldBandE, start, effEnd,
                      C, CC, isTransient, LM, st->upsample, silence, st->arch);
 
         c = 0; do {
             st->prefilter_period = IMAX(st->prefilter_period, COMBFILTER_MINPERIOD);
             st->prefilter_period_old = IMAX(st->prefilter_period_old, COMBFILTER_MINPERIOD);
-            comb_filter(out_mem[c], out_mem[c], st->prefilter_period_old, st->prefilter_period, mode->shortMdctSize,
+            oaci_comb_filter(out_mem[c], out_mem[c], st->prefilter_period_old, st->prefilter_period, mode->shortMdctSize,
                st->prefilter_gain_old, st->prefilter_gain, st->prefilter_tapset_old, st->prefilter_tapset,
                mode->window, overlap, st->arch);
             if (LM != 0)
-                comb_filter(out_mem[c] + mode->shortMdctSize, out_mem[c] + mode->shortMdctSize, st->prefilter_period,
+                oaci_comb_filter(out_mem[c] + mode->shortMdctSize, out_mem[c] + mode->shortMdctSize, st->prefilter_period,
                 pitch_index, N - mode->shortMdctSize,
                   st->prefilter_gain, gain1, st->prefilter_tapset, prefilter_tapset,
                   mode->window, overlap, st->arch);
         } while (++c < CC);
 
         /* We reuse freq[] as scratch space for the de-emphasis */
-        deemphasis(out_mem, (oac_res*)pcm, N, CC, st->upsample, mode->preemph, st->preemph_memD, 0);
+        oaci_deemphasis(out_mem, (oac_res*)pcm, N, CC, st->upsample, mode->preemph, st->preemph_memD, 0);
         st->prefilter_period_old = st->prefilter_period;
         st->prefilter_gain_old = st->prefilter_gain;
         st->prefilter_tapset_old = st->prefilter_tapset;
@@ -2544,7 +2544,7 @@ int celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm, int 
 
     /* If there's any room left (can only happen for very high rates),
        it's already filled with zeros */
-    ec_enc_done(enc);
+    oaci_ec_enc_done(enc);
 #if defined(CUSTOM_MODES) || defined(ENABLE_OAC_CUSTOM_API)
     if (st->signalling)
         nbCompressedBytes++;
@@ -2576,7 +2576,7 @@ int oac_custom_encode(CELTEncoder * OAC_RESTRICT st, const oac_int16 * pcm, int 
     for (j = 0; j < C*N; j++)
         in[j] = INT16TORES(pcm[j]);
 
-    ret = celt_encode_with_ec(st, in, frame_size, compressed, nbCompressedBytes, NULL);
+    ret = oaci_celt_encode_with_ec(st, in, frame_size, compressed, nbCompressedBytes, NULL);
 # ifdef RESYNTH
     for (j = 0; j < C*N; j++)
         ((oac_int16*)pcm)[j] = RES2INT16(in[j]);
@@ -2589,7 +2589,7 @@ int oac_custom_encode(CELTEncoder * OAC_RESTRICT st, const oac_int16 * pcm, int 
 # if defined(FIXED_POINT)
 int oac_custom_encode24(CELTEncoder * OAC_RESTRICT st, const oac_int32 * pcm, int frame_size, unsigned char *compressed,
                         int nbCompressedBytes) {
-    return celt_encode_with_ec(st, pcm, frame_size, compressed, nbCompressedBytes, NULL);
+    return oaci_celt_encode_with_ec(st, pcm, frame_size, compressed, nbCompressedBytes, NULL);
 }
 # else
 int oac_custom_encode24(CELTEncoder * OAC_RESTRICT st, const oac_int32 * pcm, int frame_size, unsigned char *compressed,
@@ -2608,7 +2608,7 @@ int oac_custom_encode24(CELTEncoder * OAC_RESTRICT st, const oac_int32 * pcm, in
     for (j = 0; j < C*N; j++)
         in[j] = INT24TORES(pcm[j]);
 
-    ret = celt_encode_with_ec(st, in, frame_size, compressed, nbCompressedBytes, NULL);
+    ret = oaci_celt_encode_with_ec(st, in, frame_size, compressed, nbCompressedBytes, NULL);
 #  ifdef RESYNTH
     for (j = 0; j < C*N; j++)
         ((oac_int32*)pcm)[j] = RES2INT24(in[j]);
@@ -2624,7 +2624,7 @@ int oac_custom_encode24(CELTEncoder * OAC_RESTRICT st, const oac_int32 * pcm, in
 #  if !defined(FIXED_POINT)
 int oac_custom_encode_float(CELTEncoder * OAC_RESTRICT st, const float * pcm, int frame_size, unsigned char *compressed,
                             int nbCompressedBytes) {
-    return celt_encode_with_ec(st, pcm, frame_size, compressed, nbCompressedBytes, NULL);
+    return oaci_celt_encode_with_ec(st, pcm, frame_size, compressed, nbCompressedBytes, NULL);
 }
 #  else
 int oac_custom_encode_float(CELTEncoder * OAC_RESTRICT st, const float * pcm, int frame_size, unsigned char *compressed,
@@ -2643,7 +2643,7 @@ int oac_custom_encode_float(CELTEncoder * OAC_RESTRICT st, const float * pcm, in
     for (j = 0; j < C*N; j++)
         in[j] = FLOAT2RES(pcm[j]);
 
-    ret = celt_encode_with_ec(st, in, frame_size, compressed, nbCompressedBytes, NULL);
+    ret = oaci_celt_encode_with_ec(st, in, frame_size, compressed, nbCompressedBytes, NULL);
 #   ifdef RESYNTH
     for (j = 0; j < C*N; j++)
         ((float*)pcm)[j] = RES2FLOAT(in[j]);

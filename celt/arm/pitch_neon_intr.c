@@ -67,7 +67,7 @@
 
 #ifdef FIXED_POINT
 
-oac_val32 celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
+oac_val32 oaci_celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
     int i;
     oac_val32 xy;
     int16x8_t x_s16x8, y_s16x8;
@@ -98,13 +98,13 @@ oac_val32 celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
     }
 
 # ifdef OAC_CHECK_ASM
-    celt_assert(celt_inner_prod_c(x, y, N) == xy);
+    celt_assert(oaci_celt_inner_prod_c(x, y, N) == xy);
 # endif
 
     return xy;
 }
 
-void dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+void oaci_dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
                           int N, oac_val32 *xy1, oac_val32 *xy2) {
     int i;
     oac_val32 xy01, xy02;
@@ -150,7 +150,7 @@ void dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_va
 # ifdef OAC_CHECK_ASM
     {
         oac_val32 xy1_c, xy2_c;
-        dual_inner_prod_c(x, y01, y02, N, &xy1_c, &xy2_c);
+        oaci_dual_inner_prod_c(x, y01, y02, N, &xy1_c, &xy2_c);
         celt_assert(xy1_c == *xy1);
         celt_assert(xy2_c == *xy2);
     }
@@ -172,10 +172,10 @@ void dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_va
 
 /* This part of code simulates floating-point NEON operations. */
 
-/* celt_inner_prod_neon_float_c_simulation() simulates the floating-point   */
-/* operations of celt_inner_prod_neon(), and both functions should have bit */
+/* oaci_celt_inner_prod_neon_float_c_simulation() simulates the floating-point   */
+/* operations of oaci_celt_inner_prod_neon(), and both functions should have bit */
 /* exact output.                                                            */
-static oac_val32 celt_inner_prod_neon_float_c_simulation(const oac_val16 *x, const oac_val16 *y, float *err, int N) {
+static oac_val32 oaci_celt_inner_prod_neon_float_c_simulation(const oac_val16 *x, const oac_val16 *y, float *err, int N) {
     int i;
     *err = 0;
     oac_val32 xy, xy0 = 0, xy1 = 0, xy2 = 0, xy3 = 0;
@@ -198,20 +198,20 @@ static oac_val32 celt_inner_prod_neon_float_c_simulation(const oac_val16 *x, con
     return xy;
 }
 
-/* dual_inner_prod_neon_float_c_simulation() simulates the floating-point   */
-/* operations of dual_inner_prod_neon(), and both functions should have bit */
+/* oaci_dual_inner_prod_neon_float_c_simulation() simulates the floating-point   */
+/* operations of oaci_dual_inner_prod_neon(), and both functions should have bit */
 /* exact output.                                                            */
-static void dual_inner_prod_neon_float_c_simulation(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+static void oaci_dual_inner_prod_neon_float_c_simulation(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
                                                     int N, oac_val32 *xy1, oac_val32 *xy2, float *err) {
-    *xy1 = celt_inner_prod_neon_float_c_simulation(x, y01, &err[0], N);
-    *xy2 = celt_inner_prod_neon_float_c_simulation(x, y02, &err[1], N);
+    *xy1 = oaci_celt_inner_prod_neon_float_c_simulation(x, y01, &err[0], N);
+    *xy2 = oaci_celt_inner_prod_neon_float_c_simulation(x, y02, &err[1], N);
 }
 
 # endif /* OAC_CHECK_ASM */
 
 /* ========================================================================== */
 
-oac_val32 celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
+oac_val32 oaci_celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
     int i;
     oac_val32 xy;
     float32x4_t xy_f32x4 = vdupq_n_f32(0);
@@ -245,7 +245,7 @@ oac_val32 celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
 # ifdef OAC_CHECK_ASM
     {
         float err, res;
-        res = celt_inner_prod_neon_float_c_simulation(x, y, &err, N);
+        res = oaci_celt_inner_prod_neon_float_c_simulation(x, y, &err, N);
         /*if (ABS32(res - xy) > err) fprintf(stderr, "%g %g %g\n", res, xy, err);*/
         celt_assert(ABS32(res - xy) <= err);
     }
@@ -254,7 +254,7 @@ oac_val32 celt_inner_prod_neon(const oac_val16 *x, const oac_val16 *y, int N) {
     return xy;
 }
 
-void dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+void oaci_dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
                           int N, oac_val32 *xy1, oac_val32 *xy2) {
     int i;
     oac_val32 xy01, xy02;
@@ -303,7 +303,7 @@ void dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01, const oac_va
     {
         oac_val32 xy1_c, xy2_c;
         float err[2];
-        dual_inner_prod_neon_float_c_simulation(x, y01, y02, N, &xy1_c, &xy2_c, err);
+        oaci_dual_inner_prod_neon_float_c_simulation(x, y01, y02, N, &xy1_c, &xy2_c, err);
         /*if (ABS32(xy1_c - *xy1) > err[0]) fprintf(stderr, "dual1 fail: %g %g %g\n", xy1_c, *xy1, err[0]);
            if (ABS32(xy2_c - *xy2) > err[1]) fprintf(stderr, "dual2 fail: %g %g %g\n", xy2_c, *xy2, err[1]);*/
         celt_assert(ABS32(xy1_c - *xy1) <= err[0]);

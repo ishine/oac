@@ -67,7 +67,7 @@
 
 /* Calculates residual energies of input subframes where all subframes have LPC_order   */
 /* of preceding samples                                                                 */
-void silk_residual_energy_FIX(
+void oaci_silk_residual_energy_FIX(
     oac_int32 nrgs[ MAX_NB_SUBFR ],                                        /* O    Residual energy per subframe                                                */
     oac_int nrgsQ[ MAX_NB_SUBFR ],                                         /* O    Q value per subframe                                                        */
     const oac_int16 x[],                                                   /* I    Input signal                                                                */
@@ -93,13 +93,13 @@ void silk_residual_energy_FIX(
     celt_assert((nb_subfr>>1)*(MAX_NB_SUBFR>>1) == nb_subfr );
     for (i = 0; i < nb_subfr>>1; i++) {
         /* Calculate half frame LPC residual signal including preceding samples */
-        silk_LPC_analysis_filter( LPC_res, x_ptr, a_Q12[ i ], (MAX_NB_SUBFR>>1)*offset, LPC_order, arch );
+        oaci_silk_LPC_analysis_filter( LPC_res, x_ptr, a_Q12[ i ], (MAX_NB_SUBFR>>1)*offset, LPC_order, arch );
 
         /* Point to first subframe of the just calculated LPC residual signal */
         LPC_res_ptr = LPC_res + LPC_order;
         for (j = 0; j < (MAX_NB_SUBFR>>1); j++) {
             /* Measure subframe energy */
-            silk_sum_sqr_shift( &nrgs[ i*(MAX_NB_SUBFR>>1) + j ], &rshift, LPC_res_ptr, subfr_length );
+            oaci_silk_sum_sqr_shift( &nrgs[ i*(MAX_NB_SUBFR>>1) + j ], &rshift, LPC_res_ptr, subfr_length );
 
             /* Set Q values for the measured energy */
             nrgsQ[ i*(MAX_NB_SUBFR>>1) + j ] = -rshift;

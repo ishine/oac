@@ -69,7 +69,7 @@
 #define MAX_FRAME_SIZE              384 /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384*/
 
 /* Compute reflection coefficients from input signal */
-silk_float silk_burg_modified_FLP(          /* O    returns residual energy                                     */
+silk_float oaci_silk_burg_modified_FLP(          /* O    returns residual energy                                     */
     silk_float A[],                         /* O    prediction coefficients (length order)                      */
     const silk_float x[],                   /* I    input signal, length: nb_subfr*(D+L_sub)                    */
     const silk_float minInvGain,            /* I    minimum inverse prediction gain                             */
@@ -87,12 +87,12 @@ silk_float silk_burg_modified_FLP(          /* O    returns residual energy     
     celt_assert( subfr_length*nb_subfr <= MAX_FRAME_SIZE );
 
     /* Compute autocorrelations, added over subframes */
-    C0 = silk_energy_FLP( x, nb_subfr*subfr_length );
+    C0 = oaci_silk_energy_FLP( x, nb_subfr*subfr_length );
     silk_memset( C_first_row, 0, SILK_MAX_ORDER_LPC*sizeof(double));
     for (s = 0; s < nb_subfr; s++) {
         x_ptr = x + s*subfr_length;
         for (n = 1; n < D + 1; n++) {
-            C_first_row[ n - 1 ] += silk_inner_product_FLP( x_ptr, x_ptr + n, subfr_length - n, arch );
+            C_first_row[ n - 1 ] += oaci_silk_inner_product_FLP( x_ptr, x_ptr + n, subfr_length - n, arch );
         }
     }
     silk_memcpy( C_last_row, C_first_row, SILK_MAX_ORDER_LPC*sizeof(double));
@@ -196,7 +196,7 @@ silk_float silk_burg_modified_FLP(          /* O    returns residual energy     
         }
         /* Subtract energy of preceding samples from C0 */
         for (s = 0; s < nb_subfr; s++) {
-            C0 -= silk_energy_FLP( x + s*subfr_length, D );
+            C0 -= oaci_silk_energy_FLP( x + s*subfr_length, D );
         }
         /* Approximate residual energy */
         nrg_f = C0*invGain;

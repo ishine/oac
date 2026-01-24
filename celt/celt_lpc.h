@@ -70,9 +70,9 @@
 
 #define CELT_LPC_ORDER 24
 
-void _celt_lpc(oac_val16 *_lpc, const oac_val32 *ac, int p);
+void oaci_celt_lpc(oac_val16 *_lpc, const oac_val32 *ac, int p);
 
-void celt_fir_c(
+void oaci_celt_fir_c(
     const oac_val16 *x,
     const oac_val16 *num,
     oac_val16 *y,
@@ -81,11 +81,11 @@ void celt_fir_c(
     int arch);
 
 #if !defined(OVERRIDE_CELT_FIR)
-# define celt_fir(x, num, y, N, ord, arch) \
-        (celt_fir_c(x, num, y, N, ord, arch))
+# define oaci_celt_fir(x, num, y, N, ord, arch) \
+        (oaci_celt_fir_c(x, num, y, N, ord, arch))
 #endif
 
-void celt_iir(const oac_val32 *x,
+void oaci_celt_iir(const oac_val32 *x,
     const oac_val16 *den,
     oac_val32 *y,
     int N,
@@ -93,7 +93,7 @@ void celt_iir(const oac_val32 *x,
     oac_val16 *mem,
     int arch);
 
-int _celt_autocorr(const oac_val16 *x, oac_val32 *ac,
+int oaci_celt_autocorr(const oac_val16 *x, oac_val32 *ac,
     const celt_coef *window, int overlap, int lag, int n, int arch);
 
 #endif /* CELT_LPC_H */

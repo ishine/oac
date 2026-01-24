@@ -79,7 +79,7 @@
    with frac bits of fractional precision.
    Tested for all possible 32-bit inputs with frac=4, where the maximum
    overestimation is 0.06254243 bits.*/
-int log2_frac(oac_uint32 val, int frac) {
+int oaci_log2_frac(oac_uint32 val, int frac) {
     int l;
     l = EC_ILOG(val);
     if (val&(val - 1)) {
@@ -463,12 +463,12 @@ static const oac_uint32 *const CELT_PVQ_U_ROW[15] = {
 # endif
 
 # if defined(CUSTOM_MODES)
-void get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
+void oaci_get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
     int k;
     /*_maxk==0 => there's nothing to do.*/
     celt_assert(_maxk > 0);
     _bits[0] = 0;
-    for (k = 1; k <= _maxk; k++) _bits[k] = log2_frac(CELT_PVQ_V(_n, k), _frac);
+    for (k = 1; k <= _maxk; k++) _bits[k] = oaci_log2_frac(CELT_PVQ_V(_n, k), _frac);
 }
 # endif
 
@@ -489,9 +489,9 @@ static oac_uint32 icwrs(int _n, const int *_y) {
     return i;
 }
 
-void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
+void oaci_encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
     celt_assert(_k > 0);
-    ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
+    oaci_ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
 }
 
 static oac_val32 cwrsi(int _n, int _k, oac_uint32 _i, int *_y) {
@@ -568,8 +568,8 @@ static oac_val32 cwrsi(int _n, int _k, oac_uint32 _i, int *_y) {
     return yy;
 }
 
-oac_val32 decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
-    return cwrsi(_n, _k, ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
+oac_val32 oaci_decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
+    return cwrsi(_n, _k, oaci_ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
 }
 
 #else /* SMALL_FOOTPRINT */
@@ -698,7 +698,7 @@ static OAC_INLINE oac_uint32 icwrs(int _n, int _k, oac_uint32 *_nc, const int *_
 }
 
 # if defined(CUSTOM_MODES)
-void get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
+void oaci_get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
     int k;
     /*_maxk==0 => there's nothing to do.*/
     celt_assert(_maxk > 0);
@@ -712,13 +712,13 @@ void get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
         ALLOC(u, _maxk + 2U, oac_uint32);
         ncwrs_urow(_n, _maxk, u);
         for (k = 1; k <= _maxk; k++)
-            _bits[k] = log2_frac(u[k] + u[k + 1], _frac);
+            _bits[k] = oaci_log2_frac(u[k] + u[k + 1], _frac);
         RESTORE_STACK;
     }
 }
 # endif /* CUSTOM_MODES */
 
-void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
+void oaci_encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
     oac_uint32 i;
     VARDECL(oac_uint32, u);
     oac_uint32 nc;
@@ -726,17 +726,17 @@ void encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
     celt_assert(_k > 0);
     ALLOC(u, _k + 2U, oac_uint32);
     i = icwrs(_n, _k, &nc, _y, u);
-    ec_enc_uint(_enc, i, nc);
+    oaci_ec_enc_uint(_enc, i, nc);
     RESTORE_STACK;
 }
 
-oac_val32 decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
+oac_val32 oaci_decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
     VARDECL(oac_uint32, u);
     int ret;
     SAVE_STACK;
     celt_assert(_k > 0);
     ALLOC(u, _k + 2U, oac_uint32);
-    ret = cwrsi(_n, _k, ec_dec_uint(_dec, ncwrs_urow(_n, _k, u)), _y, u);
+    ret = cwrsi(_n, _k, oaci_ec_dec_uint(_dec, ncwrs_urow(_n, _k, u)), _y, u);
     RESTORE_STACK;
     return ret;
 }

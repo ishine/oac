@@ -90,7 +90,7 @@ static OAC_INLINE int32x4_t calc_state( const int32x4_t state_QS0_s32x4, const i
     return vaddq_s32( state_QS1_1_s32x4, t_s32x4 );
 }
 
-void silk_warped_autocorrelation_FIX_neon(
+void oaci_silk_warped_autocorrelation_FIX_neon(
     oac_int32                *corr,                                        /* O    Result [order + 1]                                                          */
     oac_int                  *scale,                                       /* O    Scaling of the correlation vector                                           */
     const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
@@ -99,7 +99,7 @@ void silk_warped_autocorrelation_FIX_neon(
     const oac_int order                                                    /* I    Correlation order (even)                                                    */
     ) {
     if ((MAX_SHAPE_LPC_ORDER > 24) || (order < 6)) {
-        silk_warped_autocorrelation_FIX_c( corr, scale, input, warping_Q16, length, order );
+        oaci_silk_warped_autocorrelation_FIX_c( corr, scale, input, warping_Q16, length, order );
     } else {
         oac_int n, i, lsh;
         oac_int64 corr_QC[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };     /* In reverse order */
@@ -292,7 +292,7 @@ void silk_warped_autocorrelation_FIX_neon(
     {
         oac_int32 corr_c[ MAX_SHAPE_LPC_ORDER + 1 ];
         oac_int scale_c;
-        silk_warped_autocorrelation_FIX_c( corr_c, &scale_c, input, warping_Q16, length, order );
+        oaci_silk_warped_autocorrelation_FIX_c( corr_c, &scale_c, input, warping_Q16, length, order );
         silk_assert( !memcmp( corr_c, corr, sizeof(corr_c[ 0 ])*(order + 1)));
         silk_assert( scale_c == *scale );
     }

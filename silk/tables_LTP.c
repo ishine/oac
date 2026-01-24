@@ -64,7 +64,7 @@
 
 #include "tables.h"
 
-const oac_uint8 silk_LTP_per_index_iCDF[3] = {
+const oac_uint8 oaci_silk_LTP_per_index_iCDF[3] = {
     179,     99,      0
 };
 
@@ -100,13 +100,13 @@ static const oac_uint8 silk_LTP_gain_BITS_Q5_2[32] = {
     182,    192,    192,    192,    205,    192,    205,    224
 };
 
-const oac_uint8 * const silk_LTP_gain_iCDF_ptrs[NB_LTP_CBKS] = {
+const oac_uint8 * const oaci_silk_LTP_gain_iCDF_ptrs[NB_LTP_CBKS] = {
     silk_LTP_gain_iCDF_0,
     silk_LTP_gain_iCDF_1,
     silk_LTP_gain_iCDF_2
 };
 
-const oac_uint8 * const silk_LTP_gain_BITS_Q5_ptrs[NB_LTP_CBKS] = {
+const oac_uint8 * const oaci_silk_LTP_gain_BITS_Q5_ptrs[NB_LTP_CBKS] = {
     silk_LTP_gain_BITS_Q5_0,
     silk_LTP_gain_BITS_Q5_1,
     silk_LTP_gain_BITS_Q5_2
@@ -292,7 +292,7 @@ static const oac_int8 silk_LTP_gain_vq_2[32][5] =
     }
 };
 
-const oac_int8 * const silk_LTP_vq_ptrs_Q7[NB_LTP_CBKS] = {
+const oac_int8 * const oaci_silk_LTP_vq_ptrs_Q7[NB_LTP_CBKS] = {
     (oac_int8 *)&silk_LTP_gain_vq_0[0][0],
     (oac_int8 *)&silk_LTP_gain_vq_1[0][0],
     (oac_int8 *)&silk_LTP_gain_vq_2[0][0]
@@ -316,12 +316,12 @@ static const oac_uint8 silk_LTP_gain_vq_2_gain[32] = {
     124,    120,    123,    119,    170,    173,    107,    109
 };
 
-const oac_uint8 * const silk_LTP_vq_gain_ptrs_Q7[NB_LTP_CBKS] = {
+const oac_uint8 * const oaci_silk_LTP_vq_gain_ptrs_Q7[NB_LTP_CBKS] = {
     &silk_LTP_gain_vq_0_gain[0],
     &silk_LTP_gain_vq_1_gain[0],
     &silk_LTP_gain_vq_2_gain[0]
 };
 
-const oac_int8 silk_LTP_vq_sizes[NB_LTP_CBKS] = {
+const oac_int8 oaci_silk_LTP_vq_sizes[NB_LTP_CBKS] = {
     8, 16, 32
 };

@@ -72,7 +72,7 @@
    @param fs Probability of 0, multiplied by 32768
    @param decay Probability of the value +/- 1, multiplied by 16384
  */
-void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay);
+void oaci_ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay);
 
 /** Decode a value that is assumed to be the realisation of a
     Laplace-distributed random process
@@ -81,10 +81,10 @@ void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay);
    @param decay Probability of the value +/- 1, multiplied by 16384
    @return Value decoded
  */
-int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay);
+int oaci_ec_laplace_decode(ec_dec *dec, unsigned fs, int decay);
 
 
-int ec_laplace_decode_p0(ec_dec *dec, oac_uint16 p0, oac_uint16 decay);
-void ec_laplace_encode_p0(ec_enc *enc, int value, oac_uint16 p0, oac_uint16 decay);
+int oaci_ec_laplace_decode_p0(ec_dec *dec, oac_uint16 p0, oac_uint16 decay);
+void oaci_ec_laplace_encode_p0(ec_enc *enc, int value, oac_uint16 p0, oac_uint16 decay);
 
 #endif

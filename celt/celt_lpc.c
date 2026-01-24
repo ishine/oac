@@ -67,7 +67,7 @@
 #include "mathops.h"
 #include "pitch.h"
 
-void _celt_lpc(
+void oaci_celt_lpc(
     oac_val16       *_lpc,   /* out: [0...p-1] LPC coefficients      */
     const oac_val32 *ac, /* in:  [0...p] autocorrelation values  */
     int p)               {
@@ -100,7 +100,7 @@ void _celt_lpc(
                 rr += MULT32_32_Q31(lpc[j], ac[i - j]);
 #endif
             rr += SHR32(ac[i + 1], 6);
-            r = -frac_div32(SHL32(rr, 6), error);
+            r = -oaci_frac_div32(SHL32(rr, 6), error);
             /*  Update LPC coefficients and total error */
             lpc[i] = SHR32(r, 6);
             for (j = 0; j < (i + 1)>>1; j++) {
@@ -125,7 +125,7 @@ void _celt_lpc(
 #ifdef FIXED_POINT
     {
         /* Convert the int32 lpcs to int16 and ensure there are no wrap-arounds.
-           This reuses the logic in silk_LPC_fit() and silk_bwexpander_32(). Any bug
+           This reuses the logic in oaci_silk_LPC_fit() and oaci_silk_bwexpander_32(). Any bug
            fixes should also be applied there. */
         int iter, idx = 0;
         oac_val32 maxabs, absval, chirp_Q16, chirp_minus_one_Q16;
@@ -173,7 +173,7 @@ void _celt_lpc(
 }
 
 
-void celt_fir_c(
+void oaci_celt_fir_c(
     const oac_val16 *x,
     const oac_val16 *num,
     oac_val16 *y,
@@ -197,9 +197,9 @@ void celt_fir_c(
         {
             oac_val32 sum_c[4];
             memcpy(sum_c, sum, sizeof(sum_c));
-            xcorr_kernel_c(rnum, x + i - ord, sum_c, ord);
+            oaci_xcorr_kernel_c(rnum, x + i - ord, sum_c, ord);
 #endif
-        xcorr_kernel(rnum, x + i - ord, sum, ord, arch);
+        oaci_xcorr_kernel(rnum, x + i - ord, sum, ord, arch);
 #if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
         celt_assert(memcmp(sum, sum_c, sizeof(sum)) == 0);
     }
@@ -218,7 +218,7 @@ void celt_fir_c(
     RESTORE_STACK;
 }
 
-void celt_iir(const oac_val32 *_x,
+void oaci_celt_iir(const oac_val32 *_x,
               const oac_val16 *den,
               oac_val32 *_y,
               int N,
@@ -265,9 +265,9 @@ void celt_iir(const oac_val32 *_x,
         {
             oac_val32 sum_c[4];
             memcpy(sum_c, sum, sizeof(sum_c));
-            xcorr_kernel_c(rden, y + i, sum_c, ord);
+            oaci_xcorr_kernel_c(rden, y + i, sum_c, ord);
 # endif
-        xcorr_kernel(rden, y + i, sum, ord, arch);
+        oaci_xcorr_kernel(rden, y + i, sum, ord, arch);
 # if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
         celt_assert(memcmp(sum, sum_c, sizeof(sum)) == 0);
     }
@@ -302,7 +302,7 @@ void celt_iir(const oac_val32 *_x,
 #endif
 }
 
-int _celt_autocorr(
+int oaci_celt_autocorr(
     const oac_val16 *x,                  /*  in: [0...n-1] samples x   */
     oac_val32       *ac,                 /* out: [0...lag-1] ac values */
     const celt_coef  *window,
@@ -356,7 +356,7 @@ int _celt_autocorr(
             shift = 0;
     }
 #endif
-    celt_pitch_xcorr(xptr, xptr, ac, fastN, lag + 1, arch);
+    oaci_celt_pitch_xcorr(xptr, xptr, ac, fastN, lag + 1, arch);
     for (k = 0; k <= lag; k++) {
         for (i = k + fastN, d = 0; i < n; i++)
             d = MAC16_16(d, xptr[i], xptr[i - k]);

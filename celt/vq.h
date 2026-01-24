@@ -75,26 +75,26 @@
 #endif
 
 #if defined(FIXED_POINT)
-oac_val32 celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch);
-oac_val32 celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch);
+oac_val32 oaci_celt_inner_prod_norm(const celt_norm *x, const celt_norm *y, int len, int arch);
+oac_val32 oaci_celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y, int len, int arch);
 
-void norm_scaleup(celt_norm *X, int N, int shift);
-void norm_scaledown(celt_norm *X, int N, int shift);
+void oaci_norm_scaleup(celt_norm *X, int N, int shift);
+void oaci_norm_scaledown(celt_norm *X, int N, int shift);
 
 #else
-# define celt_inner_prod_norm celt_inner_prod
-# define celt_inner_prod_norm_shift celt_inner_prod
-# define norm_scaleup(X, N, shift)
-# define norm_scaledown(X, N, shift)
+# define oaci_celt_inner_prod_norm oaci_celt_inner_prod
+# define oaci_celt_inner_prod_norm_shift oaci_celt_inner_prod
+# define oaci_norm_scaleup(X, N, shift)
+# define oaci_norm_scaledown(X, N, shift)
 #endif
 
-void exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
+void oaci_exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int spread);
 
-oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
+oac_val16 oaci_op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
 
 #if !defined(OVERRIDE_OP_PVQ_SEARCH)
-# define op_pvq_search(x, iy, K, N, arch) \
-        (op_pvq_search_c(x, iy, K, N, arch))
+# define oaci_op_pvq_search(x, iy, K, N, arch) \
+        (oaci_op_pvq_search_c(x, iy, K, N, arch))
 #endif
 
 /** Algebraic pulse-vector quantiser. The signal x is replaced by the sum of
@@ -106,7 +106,7 @@ oac_val16 op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch);
  * @param enc Entropy encoder state
  * @ret A mask indicating which blocks in the band received pulses
  */
-unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
+unsigned oaci_alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
     oac_val32 gain, int resynth, int arch);
 
 /** Algebraic pulse decoder
@@ -116,14 +116,14 @@ unsigned alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *enc,
  * @param dec Entropy decoder state
  * @ret A mask indicating which blocks in the band received pulses
  */
-unsigned alg_unquant(celt_norm *X, int N, int K, int spread, int B,
+unsigned oaci_alg_unquant(celt_norm *X, int N, int K, int spread, int B,
     ec_dec *dec, oac_val32 gain);
 
-void renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch);
+void oaci_renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch);
 
-oac_int32 stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
+oac_int32 oaci_stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo, int N, int arch);
 
-unsigned cubic_quant(celt_norm *X, int N, int K, int B, ec_enc *enc, oac_val32 gain, int resynth);
-unsigned cubic_unquant(celt_norm *X, int N, int K, int B, ec_dec *dec, oac_val32 gain);
+unsigned oaci_cubic_quant(celt_norm *X, int N, int K, int B, ec_enc *enc, oac_val32 gain, int resynth);
+unsigned oaci_cubic_unquant(celt_norm *X, int N, int K, int B, ec_dec *dec, oac_val32 gain);
 
 #endif /* VQ_H */

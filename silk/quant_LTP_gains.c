@@ -65,7 +65,7 @@
 #include "main.h"
 #include "tuning_parameters.h"
 
-void silk_quant_LTP_gains(
+void oaci_silk_quant_LTP_gains(
     oac_int16 B_Q14[ MAX_NB_SUBFR*LTP_ORDER ],                             /* O    Quantized LTP gains             */
     oac_int8 cbk_index[ MAX_NB_SUBFR ],                                    /* O    Codebook Index                  */
     oac_int8                   *periodicity_index,                         /* O    Periodicity Index               */
@@ -98,10 +98,10 @@ void silk_quant_LTP_gains(
            such as state rescaling/rewhitening. */
         oac_int32 gain_safety = SILK_FIX_CONST( 0.4, 7 );
 
-        cl_ptr_Q5  = silk_LTP_gain_BITS_Q5_ptrs[ k ];
-        cbk_ptr_Q7 = silk_LTP_vq_ptrs_Q7[        k ];
-        cbk_gain_ptr_Q7 = silk_LTP_vq_gain_ptrs_Q7[ k ];
-        cbk_size   = silk_LTP_vq_sizes[          k ];
+        cl_ptr_Q5  = oaci_silk_LTP_gain_BITS_Q5_ptrs[ k ];
+        cbk_ptr_Q7 = oaci_silk_LTP_vq_ptrs_Q7[        k ];
+        cbk_gain_ptr_Q7 = oaci_silk_LTP_vq_gain_ptrs_Q7[ k ];
+        cbk_size   = oaci_silk_LTP_vq_sizes[          k ];
 
         /* Set up pointers to first subframe */
         XX_Q17_ptr = XX_Q17;
@@ -111,9 +111,9 @@ void silk_quant_LTP_gains(
         rate_dist_Q7 = 0;
         sum_log_gain_tmp_Q7 = *sum_log_gain_Q7;
         for (j = 0; j < nb_subfr; j++) {
-            max_gain_Q7 = silk_log2lin((SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB/6.0, 7 ) - sum_log_gain_tmp_Q7)
+            max_gain_Q7 = oaci_silk_log2lin((SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB/6.0, 7 ) - sum_log_gain_tmp_Q7)
                 + SILK_FIX_CONST( 7, 7 )) - gain_safety;
-            silk_VQ_WMat_EC(
+            oaci_silk_VQ_WMat_EC(
                 &temp_idx[ j ],         /* O    index of best codebook vector                           */
                 &res_nrg_Q15_subfr,     /* O    residual energy                                         */
                 &rate_dist_Q7_subfr,    /* O    best weighted quantization error + mu * rate            */
@@ -132,7 +132,7 @@ void silk_quant_LTP_gains(
             res_nrg_Q15  = silk_ADD_POS_SAT32( res_nrg_Q15, res_nrg_Q15_subfr );
             rate_dist_Q7 = silk_ADD_POS_SAT32( rate_dist_Q7, rate_dist_Q7_subfr );
             sum_log_gain_tmp_Q7 = silk_max(0, sum_log_gain_tmp_Q7
-                + silk_lin2log( gain_safety + gain_Q7 ) - SILK_FIX_CONST( 7, 7 ));
+                + oaci_silk_lin2log( gain_safety + gain_Q7 ) - SILK_FIX_CONST( 7, 7 ));
 
             XX_Q17_ptr += LTP_ORDER*LTP_ORDER;
             xX_Q17_ptr += LTP_ORDER;
@@ -146,7 +146,7 @@ void silk_quant_LTP_gains(
         }
     }
 
-    cbk_ptr_Q7 = silk_LTP_vq_ptrs_Q7[ *periodicity_index ];
+    cbk_ptr_Q7 = oaci_silk_LTP_vq_ptrs_Q7[ *periodicity_index ];
     for (j = 0; j < nb_subfr; j++) {
         for (k = 0; k < LTP_ORDER; k++) {
             B_Q14[ j*LTP_ORDER + k ] = silk_LSHIFT( cbk_ptr_Q7[ cbk_index[ j ]*LTP_ORDER + k ], 7 );
@@ -160,5 +160,5 @@ void silk_quant_LTP_gains(
     }
 
     *sum_log_gain_Q7 = best_sum_log_gain_Q7;
-    *pred_gain_dB_Q7 = (oac_int)silk_SMULBB( -3, silk_lin2log( res_nrg_Q15 ) - (15<<7));
+    *pred_gain_dB_Q7 = (oac_int)silk_SMULBB( -3, oaci_silk_lin2log( res_nrg_Q15 ) - (15<<7));
 }

@@ -87,7 +87,7 @@
 # define PACKAGE_VERSION "unknown"
 #endif
 
-int resampling_factor(oac_int32 rate) {
+int oaci_resampling_factor(oac_int32 rate) {
     int ret;
     switch (rate) {
 #ifdef ENABLE_QEXT
@@ -125,7 +125,7 @@ int resampling_factor(oac_int32 rate) {
 #  ifndef NON_STATIC_COMB_FILTER_CONST_C
 static
 #  endif
-void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
+void oaci_comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
                          celt_coef g10, celt_coef g11, celt_coef g12) {
     oac_val32 x0, x1, x2, x3, x4;
     int i;
@@ -186,7 +186,7 @@ void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
 #  ifndef NON_STATIC_COMB_FILTER_CONST_C
 static
 #  endif
-void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
+void oaci_comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
                          celt_coef g10, celt_coef g11, celt_coef g12) {
     oac_val32 x0, x1, x2, x3, x4;
     int i;
@@ -216,7 +216,7 @@ void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
 #endif
 
 #ifdef ENABLE_QEXT
-void comb_filter_qext(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
+void oaci_comb_filter_qext(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
                       oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
                       const celt_coef *window, int overlap, int arch) {
     VARDECL(oac_val32, mem_buf);
@@ -246,7 +246,7 @@ void comb_filter_qext(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
             for (i = 0; i < N2; i++) buf[i] = y[2*i + s];
             yptr = buf;
         }
-        comb_filter(yptr, mem_buf + COMBFILTER_MAXPERIOD, T0, T1, N2, g0, g1, tapset0, tapset1, new_window, overlap2,
+        oaci_comb_filter(yptr, mem_buf + COMBFILTER_MAXPERIOD, T0, T1, N2, g0, g1, tapset0, tapset1, new_window, overlap2,
         arch);
         for (i = 0; i < N2; i++) y[2*i + s] = yptr[i];
     }
@@ -255,8 +255,8 @@ void comb_filter_qext(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
 }
 #endif
 
-#ifndef OVERRIDE_comb_filter
-void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
+#ifndef OVERRIDE_oaci_comb_filter
+void oaci_comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
                  oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
                  const celt_coef *window, int overlap, int arch) {
     int i;
@@ -270,7 +270,7 @@ void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
     };
 # ifdef ENABLE_QEXT
     if (overlap == 240) {
-        comb_filter_qext(y, x, T0, T1, N, g0, g1, tapset0, tapset1, window, overlap, arch);
+        oaci_comb_filter_qext(y, x, T0, T1, N, g0, g1, tapset0, tapset1, window, overlap, arch);
         return;
     }
 # endif
@@ -327,15 +327,15 @@ void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
     }
 
     /* Compute the part with the constant filter. */
-    comb_filter_const(y + i, x + i, T1, N - i, g10, g11, g12, arch);
+    oaci_comb_filter_const(y + i, x + i, T1, N - i, g10, g11, g12, arch);
 }
-#endif /* OVERRIDE_comb_filter */
+#endif /* OVERRIDE_oaci_comb_filter */
 
 /* TF change table. Positive values mean better frequency resolution (longer
    effective window), whereas negative values mean better time resolution
    (shorter effective window). The second index is computed as:
    4*isTransient + 2*tf_select + per_band_flag */
-const signed char tf_select_table[4][8] = {
+const signed char oaci_tf_select_table[4][8] = {
     /*isTransient=0     isTransient=1 */
     {0, -1, 0, -1,    0, -1, 0, -1}, /* 2.5 ms */
     {0, -1, 0, -2,    1, 0, 1, -1},  /* 5 ms */
@@ -344,7 +344,7 @@ const signed char tf_select_table[4][8] = {
 };
 
 
-void init_caps(const CELTMode *m, int *cap, int LM, int C) {
+void oaci_init_caps(const CELTMode *m, int *cap, int LM, int C) {
     int i;
     for (i = 0; i < m->nbEBands; i++) {
         int N;

@@ -163,7 +163,7 @@ static void celt_fir5(oac_val16 *x,
 }
 
 
-void pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT x_lp,
+void oaci_pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT x_lp,
                       int len, int C, int factor, int arch) {
     int i;
     oac_val32 ac[5];
@@ -210,7 +210,7 @@ void pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT x_lp
         x_lp[0] += .25f*x[1][offset] + .5f*x[1][0];
     }
 #endif
-    _celt_autocorr(x_lp, ac, NULL, 0,
+    oaci_celt_autocorr(x_lp, ac, NULL, 0,
                   4, len, arch);
 
     /* Noise floor -40 dB */
@@ -229,7 +229,7 @@ void pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT x_lp
 #endif
     }
 
-    _celt_lpc(lpc, ac, 4);
+    oaci_celt_lpc(lpc, ac, 4);
     for (i = 0; i < 4; i++) {
         tmp = MULT16_16_Q15(QCONST16(.9f, 15), tmp);
         lpc[i] = MULT16_16_Q15(lpc[i], tmp);
@@ -249,7 +249,7 @@ oac_val32
 #else
 void
 #endif
-celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
+oaci_celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
                    oac_val32 *xcorr, int len, int max_pitch, int arch) {
 
 #if 0 /* This is a simple version of the pitch correlation that should work
@@ -289,9 +289,9 @@ celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
 # if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
         {
             oac_val32 sum_c[4] = {0, 0, 0, 0};
-            xcorr_kernel_c(_x, _y + i, sum_c, len);
+            oaci_xcorr_kernel_c(_x, _y + i, sum_c, len);
 # endif
-        xcorr_kernel(_x, _y + i, sum, len, arch);
+        oaci_xcorr_kernel(_x, _y + i, sum, len, arch);
 # if defined(OAC_CHECK_ASM) && defined(FIXED_POINT)
         celt_assert(memcmp(sum, sum_c, sizeof(sum)) == 0);
     }
@@ -310,7 +310,7 @@ celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
     /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
     for (; i < max_pitch; i++) {
         oac_val32 sum;
-        sum = celt_inner_prod(_x, _y + i, len, arch);
+        sum = oaci_celt_inner_prod(_x, _y + i, len, arch);
         xcorr[i] = sum;
 # ifdef FIXED_POINT
         maxcorr = MAX32(maxcorr, sum);
@@ -322,7 +322,7 @@ celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
 #endif
 }
 
-void pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_RESTRICT y,
+void oaci_pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_RESTRICT y,
                   int len, int max_pitch, int *pitch, int arch) {
     int i, j;
     int lag;
@@ -374,7 +374,7 @@ void pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_RESTRICT 
 #ifdef FIXED_POINT
     maxcorr =
 #endif
-    celt_pitch_xcorr(x_lp4, y_lp4, xcorr, len>>2, max_pitch>>2, arch);
+    oaci_celt_pitch_xcorr(x_lp4, y_lp4, xcorr, len>>2, max_pitch>>2, arch);
 
     find_best_pitch(xcorr, y_lp4, len>>2, max_pitch>>2, best_pitch
 #ifdef FIXED_POINT
@@ -396,7 +396,7 @@ void pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_RESTRICT 
         for (j = 0; j < len>>1; j++)
             sum += SHR32(MULT16_16(x_lp[j], y[i + j]), shift);
 #else
-        sum = celt_inner_prod(x_lp, y + i, len>>1, arch);
+        sum = oaci_celt_inner_prod(x_lp, y + i, len>>1, arch);
 #endif
         xcorr[i] = MAX32(-1, sum);
 #ifdef FIXED_POINT
@@ -450,19 +450,19 @@ static oac_val16 compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
             shift++;
         }
     }
-    den = celt_rsqrt_norm(x2y2);
+    den = oaci_celt_rsqrt_norm(x2y2);
     g = MULT16_32_Q15(den, xy);
     g = VSHR32(g, (shift>>1) - 1);
     return EXTRACT16(MAX32(-Q15ONE, MIN32(g, Q15ONE)));
 }
 #else
 static oac_val16 compute_pitch_gain(oac_val32 xy, oac_val32 xx, oac_val32 yy) {
-    return xy/celt_sqrt(1 + xx*yy);
+    return xy/oaci_celt_sqrt(1 + xx*yy);
 }
 #endif
 
 static const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
-oac_val16 remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
+oac_val16 oaci_remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
                           int N, int *T0_, int prev_period, oac_val16 prev_gain, int arch) {
     int k, i, T, T0;
     oac_val16 g, g0;
@@ -487,7 +487,7 @@ oac_val16 remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
 
     T = T0 = *T0_;
     ALLOC(yy_lookup, maxperiod + 1, oac_val32);
-    dual_inner_prod(x, x, x - T0, N, &xx, &xy, arch);
+    oaci_dual_inner_prod(x, x, x - T0, N, &xx, &xy, arch);
     yy_lookup[0] = xx;
     yy = xx;
     for (i = 1; i <= maxperiod; i++) {
@@ -516,7 +516,7 @@ oac_val16 remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
         } else {
             T1b = celt_udiv(2*second_check[k]*T0 + k, 2*k);
         }
-        dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2, arch);
+        oaci_dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2, arch);
         xy = HALF32(xy + xy2);
         yy = HALF32(yy_lookup[T1] + yy_lookup[T1b]);
         g1 = compute_pitch_gain(xy, xx, yy);
@@ -544,10 +544,10 @@ oac_val16 remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
     if (best_yy <= best_xy)
         pg = Q15ONE;
     else
-        pg = SHR32(frac_div32(best_xy, best_yy + 1), 16);
+        pg = SHR32(oaci_frac_div32(best_xy, best_yy + 1), 16);
 
     for (k = 0; k < 3; k++)
-        xcorr[k] = celt_inner_prod(x, x - (T + k - 1), N, arch);
+        xcorr[k] = oaci_celt_inner_prod(x, x - (T + k - 1), N, arch);
     if ((xcorr[2] - xcorr[0]) > MULT16_32_Q15(QCONST16(.7f, 15), xcorr[1] - xcorr[0]))
         offset = 1;
     else if ((xcorr[0] - xcorr[2]) > MULT16_32_Q15(QCONST16(.7f, 15), xcorr[1] - xcorr[2]))

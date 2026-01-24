@@ -146,7 +146,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
     oac_int decisionDelay                      /* I                                        */
     );
 
-void silk_NSQ_del_dec_sse4_1(
+void oaci_silk_NSQ_del_dec_sse4_1(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -190,7 +190,7 @@ void silk_NSQ_del_dec_sse4_1(
     silk_memcpy( &psIndices_c, psIndices, sizeof(psIndices_c));
     silk_assert( psEncC->nb_subfr*psEncC->subfr_length <= MAX_FRAME_LENGTH );
     silk_memcpy( pulses_c, pulses, psEncC->nb_subfr*psEncC->subfr_length*sizeof(pulses[0]));
-    silk_NSQ_del_dec_c(
+    oaci_silk_NSQ_del_dec_c(
         psEncC,
         &NSQ_c,
         &psIndices_c,
@@ -229,7 +229,7 @@ void silk_NSQ_del_dec_sse4_1(
         silk_memcpy( psDD->sAR2_Q14, NSQ->sAR2_Q14, sizeof(NSQ->sAR2_Q14));
     }
 
-    offset_Q10   = silk_Quantization_Offsets_Q10[ psIndices->signalType>>1 ][ psIndices->quantOffsetType ];
+    offset_Q10   = oaci_silk_Quantization_Offsets_Q10[ psIndices->signalType>>1 ][ psIndices->quantOffsetType ];
     smpl_buf_idx = 0; /* index of oldest samples */
 
     decisionDelay = silk_min_int( DECISION_DELAY, psEncC->subfr_length );
@@ -316,7 +316,7 @@ void silk_NSQ_del_dec_sse4_1(
                 start_idx = psEncC->ltp_mem_length - lag - psEncC->predictLPCOrder - LTP_ORDER/2;
                 celt_assert( start_idx > 0 );
 
-                silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k*psEncC->subfr_length ],
+                oaci_silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k*psEncC->subfr_length ],
                     A_Q12, psEncC->ltp_mem_length - start_idx, psEncC->predictLPCOrder, psEncC->arch );
 
                 NSQ->sLTP_buf_idx = psEncC->ltp_mem_length;

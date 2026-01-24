@@ -65,7 +65,7 @@
 #include "main_FLP.h"
 
 /* Autocorrelations for a warped frequency axis */
-void silk_warped_autocorrelation_FLP(
+void oaci_silk_warped_autocorrelation_FLP(
     silk_float                      *corr,                              /* O    Result [order + 1]                          */
     const silk_float                *input,                             /* I    Input data to correlate                     */
     const silk_float warping,                                           /* I    Warping coefficient                         */

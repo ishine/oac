@@ -256,7 +256,7 @@ static OAC_INLINE void copy_winner_state(
     }
 }
 
-void silk_NSQ_del_dec_neon(
+void oaci_silk_NSQ_del_dec_neon(
     const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
@@ -283,7 +283,7 @@ void silk_NSQ_del_dec_neon(
     silk_memcpy( &NSQ_c, NSQ, sizeof(NSQ_c));
     silk_memcpy( &psIndices_c, psIndices, sizeof(psIndices_c));
     silk_memcpy( pulses_c, pulses, sizeof(pulses_c));
-    silk_NSQ_del_dec_c( psEncC, &NSQ_c, &psIndices_c, x16, pulses_c, PredCoef_Q12, LTPCoef_Q14, AR_Q13,
+    oaci_silk_NSQ_del_dec_c( psEncC, &NSQ_c, &psIndices_c, x16, pulses_c, PredCoef_Q12, LTPCoef_Q14, AR_Q13,
     HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16,
                        pitchL, Lambda_Q10, LTP_scale_Q14 );
 #endif
@@ -296,7 +296,7 @@ void silk_NSQ_del_dec_neon(
         /* optimization, and C function is called.                                                 */
         /* When the number of delay decision states is 2, it's better to specialize another        */
         /* structure NSQ_del_dec2_struct and optimize with shorter NEON registers. (Low priority)  */
-        silk_NSQ_del_dec_c( psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,
+        oaci_silk_NSQ_del_dec_c( psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,
             Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14 );
     } else {
         oac_int i, k, lag, start_idx, LSF_interpolation_flag, Winner_ind, subfr;
@@ -339,7 +339,7 @@ void silk_NSQ_del_dec_neon(
             vst1q_s32( psDelDec->sAR2_Q14[ i ], vld1q_dup_s32( &NSQ->sAR2_Q14[ i ] ));
         }
 
-        offset_Q10   = silk_Quantization_Offsets_Q10[ psIndices->signalType>>1 ][ psIndices->quantOffsetType ];
+        offset_Q10   = oaci_silk_Quantization_Offsets_Q10[ psIndices->signalType>>1 ][ psIndices->quantOffsetType ];
         smpl_buf_idx = 0; /* index of oldest samples */
 
         decisionDelay = silk_min_int( DECISION_DELAY, psEncC->subfr_length );
@@ -417,7 +417,7 @@ void silk_NSQ_del_dec_neon(
                     start_idx = psEncC->ltp_mem_length - lag - psEncC->predictLPCOrder - LTP_ORDER/2;
                     silk_assert( start_idx > 0 );
 
-                    silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k*psEncC->subfr_length ],
+                    oaci_silk_LPC_analysis_filter( &sLTP[ start_idx ], &NSQ->xq[ start_idx + k*psEncC->subfr_length ],
                         A_Q12, psEncC->ltp_mem_length - start_idx, psEncC->predictLPCOrder, psEncC->arch );
 
                     NSQ->sLTP_buf_idx = psEncC->ltp_mem_length;

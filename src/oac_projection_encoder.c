@@ -86,7 +86,7 @@ static void oac_projection_copy_channel_in_float(
     int src_channel,
     int frame_size,
     void *user_data)                  {
-    mapping_matrix_multiply_channel_in_float((const MappingMatrix*)user_data,
+    oaci_mapping_matrix_multiply_channel_in_float((const MappingMatrix*)user_data,
         (const float*)src, src_stride, dst, src_channel, dst_stride, frame_size);
 }
 #endif
@@ -99,7 +99,7 @@ static void oac_projection_copy_channel_in_short(
     int src_channel,
     int frame_size,
     void *user_data)                  {
-    mapping_matrix_multiply_channel_in_short((const MappingMatrix*)user_data,
+    oaci_mapping_matrix_multiply_channel_in_short((const MappingMatrix*)user_data,
         (const oac_int16*)src, src_stride, dst, src_channel, dst_stride, frame_size);
 }
 
@@ -111,7 +111,7 @@ static void oac_projection_copy_channel_in_int24(
     int src_channel,
     int frame_size,
     void *user_data)                  {
-    mapping_matrix_multiply_channel_in_int24((const MappingMatrix*)user_data,
+    oaci_mapping_matrix_multiply_channel_in_int24((const MappingMatrix*)user_data,
         (const oac_int32*)src, src_stride, dst, src_channel, dst_stride, frame_size);
 }
 
@@ -126,7 +126,7 @@ static int get_order_plus_one_from_channels(int channels, int *order_plus_one) {
     if (channels < 1 || channels > 227)
         return OAC_BAD_ARG;
 
-    order_plus_one_ = isqrt32(channels);
+    order_plus_one_ = oaci_isqrt32(channels);
     acn_channels = order_plus_one_*order_plus_one_;
     nondiegetic_channels = channels - acn_channels;
     if (nondiegetic_channels != 0 && nondiegetic_channels != 2)
@@ -190,40 +190,40 @@ oac_int32 oac_projection_ambisonics_encoder_get_size(int channels,
         return 0;
 
     if (order_plus_one == 2) {
-        mixing_matrix_rows = mapping_matrix_foa_mixing.rows;
-        mixing_matrix_cols = mapping_matrix_foa_mixing.cols;
-        demixing_matrix_rows = mapping_matrix_foa_demixing.rows;
-        demixing_matrix_cols = mapping_matrix_foa_demixing.cols;
+        mixing_matrix_rows = oaci_mapping_matrix_foa_mixing.rows;
+        mixing_matrix_cols = oaci_mapping_matrix_foa_mixing.cols;
+        demixing_matrix_rows = oaci_mapping_matrix_foa_demixing.rows;
+        demixing_matrix_cols = oaci_mapping_matrix_foa_demixing.cols;
     } else if (order_plus_one == 3)   {
-        mixing_matrix_rows = mapping_matrix_soa_mixing.rows;
-        mixing_matrix_cols = mapping_matrix_soa_mixing.cols;
-        demixing_matrix_rows = mapping_matrix_soa_demixing.rows;
-        demixing_matrix_cols = mapping_matrix_soa_demixing.cols;
+        mixing_matrix_rows = oaci_mapping_matrix_soa_mixing.rows;
+        mixing_matrix_cols = oaci_mapping_matrix_soa_mixing.cols;
+        demixing_matrix_rows = oaci_mapping_matrix_soa_demixing.rows;
+        demixing_matrix_cols = oaci_mapping_matrix_soa_demixing.cols;
     } else if (order_plus_one == 4)   {
-        mixing_matrix_rows = mapping_matrix_toa_mixing.rows;
-        mixing_matrix_cols = mapping_matrix_toa_mixing.cols;
-        demixing_matrix_rows = mapping_matrix_toa_demixing.rows;
-        demixing_matrix_cols = mapping_matrix_toa_demixing.cols;
+        mixing_matrix_rows = oaci_mapping_matrix_toa_mixing.rows;
+        mixing_matrix_cols = oaci_mapping_matrix_toa_mixing.cols;
+        demixing_matrix_rows = oaci_mapping_matrix_toa_demixing.rows;
+        demixing_matrix_cols = oaci_mapping_matrix_toa_demixing.cols;
     } else if (order_plus_one == 5)   {
-        mixing_matrix_rows = mapping_matrix_fourthoa_mixing.rows;
-        mixing_matrix_cols = mapping_matrix_fourthoa_mixing.cols;
-        demixing_matrix_rows = mapping_matrix_fourthoa_demixing.rows;
-        demixing_matrix_cols = mapping_matrix_fourthoa_demixing.cols;
+        mixing_matrix_rows = oaci_mapping_matrix_fourthoa_mixing.rows;
+        mixing_matrix_cols = oaci_mapping_matrix_fourthoa_mixing.cols;
+        demixing_matrix_rows = oaci_mapping_matrix_fourthoa_demixing.rows;
+        demixing_matrix_cols = oaci_mapping_matrix_fourthoa_demixing.cols;
     } else if (order_plus_one == 6)   {
-        mixing_matrix_rows = mapping_matrix_fifthoa_mixing.rows;
-        mixing_matrix_cols = mapping_matrix_fifthoa_mixing.cols;
-        demixing_matrix_rows = mapping_matrix_fifthoa_demixing.rows;
-        demixing_matrix_cols = mapping_matrix_fifthoa_demixing.cols;
+        mixing_matrix_rows = oaci_mapping_matrix_fifthoa_mixing.rows;
+        mixing_matrix_cols = oaci_mapping_matrix_fifthoa_mixing.cols;
+        demixing_matrix_rows = oaci_mapping_matrix_fifthoa_demixing.rows;
+        demixing_matrix_cols = oaci_mapping_matrix_fifthoa_demixing.cols;
     } else
         return 0;
 
     mixing_matrix_size =
-        mapping_matrix_get_size(mixing_matrix_rows, mixing_matrix_cols);
+        oaci_mapping_matrix_get_size(mixing_matrix_rows, mixing_matrix_cols);
     if (!mixing_matrix_size)
         return 0;
 
     demixing_matrix_size =
-        mapping_matrix_get_size(demixing_matrix_rows, demixing_matrix_cols);
+        oaci_mapping_matrix_get_size(demixing_matrix_rows, demixing_matrix_cols);
     if (!demixing_matrix_size)
         return 0;
 
@@ -260,34 +260,34 @@ int oac_projection_ambisonics_encoder_init(OacProjectionEncoder *st, oac_int32 F
         /* Assign mixing matrix based on available pre-computed matrices. */
         mixing_matrix = get_mixing_matrix(st);
         if (order_plus_one == 2) {
-            mapping_matrix_init(mixing_matrix, mapping_matrix_foa_mixing.rows,
-        mapping_matrix_foa_mixing.cols, mapping_matrix_foa_mixing.gain,
-        mapping_matrix_foa_mixing_data,
-        sizeof(mapping_matrix_foa_mixing_data));
+            oaci_mapping_matrix_init(mixing_matrix, oaci_mapping_matrix_foa_mixing.rows,
+        oaci_mapping_matrix_foa_mixing.cols, oaci_mapping_matrix_foa_mixing.gain,
+        oaci_mapping_matrix_foa_mixing_data,
+        sizeof(oaci_mapping_matrix_foa_mixing_data));
         } else if (order_plus_one == 3)   {
-            mapping_matrix_init(mixing_matrix, mapping_matrix_soa_mixing.rows,
-        mapping_matrix_soa_mixing.cols, mapping_matrix_soa_mixing.gain,
-        mapping_matrix_soa_mixing_data,
-        sizeof(mapping_matrix_soa_mixing_data));
+            oaci_mapping_matrix_init(mixing_matrix, oaci_mapping_matrix_soa_mixing.rows,
+        oaci_mapping_matrix_soa_mixing.cols, oaci_mapping_matrix_soa_mixing.gain,
+        oaci_mapping_matrix_soa_mixing_data,
+        sizeof(oaci_mapping_matrix_soa_mixing_data));
         } else if (order_plus_one == 4)   {
-            mapping_matrix_init(mixing_matrix, mapping_matrix_toa_mixing.rows,
-        mapping_matrix_toa_mixing.cols, mapping_matrix_toa_mixing.gain,
-        mapping_matrix_toa_mixing_data,
-        sizeof(mapping_matrix_toa_mixing_data));
+            oaci_mapping_matrix_init(mixing_matrix, oaci_mapping_matrix_toa_mixing.rows,
+        oaci_mapping_matrix_toa_mixing.cols, oaci_mapping_matrix_toa_mixing.gain,
+        oaci_mapping_matrix_toa_mixing_data,
+        sizeof(oaci_mapping_matrix_toa_mixing_data));
         } else if (order_plus_one == 5)   {
-            mapping_matrix_init(mixing_matrix, mapping_matrix_fourthoa_mixing.rows,
-        mapping_matrix_fourthoa_mixing.cols, mapping_matrix_fourthoa_mixing.gain,
-        mapping_matrix_fourthoa_mixing_data,
-        sizeof(mapping_matrix_fourthoa_mixing_data));
+            oaci_mapping_matrix_init(mixing_matrix, oaci_mapping_matrix_fourthoa_mixing.rows,
+        oaci_mapping_matrix_fourthoa_mixing.cols, oaci_mapping_matrix_fourthoa_mixing.gain,
+        oaci_mapping_matrix_fourthoa_mixing_data,
+        sizeof(oaci_mapping_matrix_fourthoa_mixing_data));
         } else if (order_plus_one == 6)   {
-            mapping_matrix_init(mixing_matrix, mapping_matrix_fifthoa_mixing.rows,
-        mapping_matrix_fifthoa_mixing.cols, mapping_matrix_fifthoa_mixing.gain,
-        mapping_matrix_fifthoa_mixing_data,
-        sizeof(mapping_matrix_fifthoa_mixing_data));
+            oaci_mapping_matrix_init(mixing_matrix, oaci_mapping_matrix_fifthoa_mixing.rows,
+        oaci_mapping_matrix_fifthoa_mixing.cols, oaci_mapping_matrix_fifthoa_mixing.gain,
+        oaci_mapping_matrix_fifthoa_mixing_data,
+        sizeof(oaci_mapping_matrix_fifthoa_mixing_data));
         } else
             return OAC_BAD_ARG;
 
-        st->mixing_matrix_size_in_bytes = mapping_matrix_get_size(
+        st->mixing_matrix_size_in_bytes = oaci_mapping_matrix_get_size(
       mixing_matrix->rows, mixing_matrix->cols);
         if (!st->mixing_matrix_size_in_bytes)
             return OAC_BAD_ARG;
@@ -295,34 +295,34 @@ int oac_projection_ambisonics_encoder_init(OacProjectionEncoder *st, oac_int32 F
         /* Assign demixing matrix based on available pre-computed matrices. */
         demixing_matrix = get_enc_demixing_matrix(st);
         if (order_plus_one == 2) {
-            mapping_matrix_init(demixing_matrix, mapping_matrix_foa_demixing.rows,
-        mapping_matrix_foa_demixing.cols, mapping_matrix_foa_demixing.gain,
-        mapping_matrix_foa_demixing_data,
-        sizeof(mapping_matrix_foa_demixing_data));
+            oaci_mapping_matrix_init(demixing_matrix, oaci_mapping_matrix_foa_demixing.rows,
+        oaci_mapping_matrix_foa_demixing.cols, oaci_mapping_matrix_foa_demixing.gain,
+        oaci_mapping_matrix_foa_demixing_data,
+        sizeof(oaci_mapping_matrix_foa_demixing_data));
         } else if (order_plus_one == 3)   {
-            mapping_matrix_init(demixing_matrix, mapping_matrix_soa_demixing.rows,
-        mapping_matrix_soa_demixing.cols, mapping_matrix_soa_demixing.gain,
-        mapping_matrix_soa_demixing_data,
-        sizeof(mapping_matrix_soa_demixing_data));
+            oaci_mapping_matrix_init(demixing_matrix, oaci_mapping_matrix_soa_demixing.rows,
+        oaci_mapping_matrix_soa_demixing.cols, oaci_mapping_matrix_soa_demixing.gain,
+        oaci_mapping_matrix_soa_demixing_data,
+        sizeof(oaci_mapping_matrix_soa_demixing_data));
         } else if (order_plus_one == 4)   {
-            mapping_matrix_init(demixing_matrix, mapping_matrix_toa_demixing.rows,
-        mapping_matrix_toa_demixing.cols, mapping_matrix_toa_demixing.gain,
-        mapping_matrix_toa_demixing_data,
-        sizeof(mapping_matrix_toa_demixing_data));
+            oaci_mapping_matrix_init(demixing_matrix, oaci_mapping_matrix_toa_demixing.rows,
+        oaci_mapping_matrix_toa_demixing.cols, oaci_mapping_matrix_toa_demixing.gain,
+        oaci_mapping_matrix_toa_demixing_data,
+        sizeof(oaci_mapping_matrix_toa_demixing_data));
         } else if (order_plus_one == 5) {
-            mapping_matrix_init(demixing_matrix, mapping_matrix_fourthoa_demixing.rows,
-        mapping_matrix_fourthoa_demixing.cols, mapping_matrix_fourthoa_demixing.gain,
-        mapping_matrix_fourthoa_demixing_data,
-        sizeof(mapping_matrix_fourthoa_demixing_data));
+            oaci_mapping_matrix_init(demixing_matrix, oaci_mapping_matrix_fourthoa_demixing.rows,
+        oaci_mapping_matrix_fourthoa_demixing.cols, oaci_mapping_matrix_fourthoa_demixing.gain,
+        oaci_mapping_matrix_fourthoa_demixing_data,
+        sizeof(oaci_mapping_matrix_fourthoa_demixing_data));
         } else if (order_plus_one == 6)   {
-            mapping_matrix_init(demixing_matrix, mapping_matrix_fifthoa_demixing.rows,
-        mapping_matrix_fifthoa_demixing.cols, mapping_matrix_fifthoa_demixing.gain,
-        mapping_matrix_fifthoa_demixing_data,
-        sizeof(mapping_matrix_fifthoa_demixing_data));
+            oaci_mapping_matrix_init(demixing_matrix, oaci_mapping_matrix_fifthoa_demixing.rows,
+        oaci_mapping_matrix_fifthoa_demixing.cols, oaci_mapping_matrix_fifthoa_demixing.gain,
+        oaci_mapping_matrix_fifthoa_demixing_data,
+        sizeof(oaci_mapping_matrix_fifthoa_demixing_data));
         } else
             return OAC_BAD_ARG;
 
-        st->demixing_matrix_size_in_bytes = mapping_matrix_get_size(
+        st->demixing_matrix_size_in_bytes = oaci_mapping_matrix_get_size(
       demixing_matrix->rows, demixing_matrix->cols);
         if (!st->demixing_matrix_size_in_bytes)
             return OAC_BAD_ARG;
@@ -385,7 +385,7 @@ int oac_projection_encode(OacProjectionEncoder *st, const oac_int16 *pcm,
                           oac_int32 max_data_bytes) {
     return oac_multistream_encode_native(get_multistream_encoder(st),
     oac_projection_copy_channel_in_short, pcm, frame_size, data,
-    max_data_bytes, 16, downmix_int, 0, get_mixing_matrix(st));
+    max_data_bytes, 16, oaci_downmix_int, 0, get_mixing_matrix(st));
 }
 
 int oac_projection_encode24(OacProjectionEncoder *st, const oac_int32 *pcm,
@@ -393,7 +393,7 @@ int oac_projection_encode24(OacProjectionEncoder *st, const oac_int32 *pcm,
                             oac_int32 max_data_bytes) {
     return oac_multistream_encode_native(get_multistream_encoder(st),
     oac_projection_copy_channel_in_int24, pcm, frame_size, data,
-    max_data_bytes, MAX_ENCODING_DEPTH, downmix_int, 0, get_mixing_matrix(st));
+    max_data_bytes, MAX_ENCODING_DEPTH, oaci_downmix_int, 0, get_mixing_matrix(st));
 }
 
 #ifndef DISABLE_FLOAT_API
@@ -402,7 +402,7 @@ int oac_projection_encode_float(OacProjectionEncoder *st, const float *pcm,
                                 oac_int32 max_data_bytes) {
     return oac_multistream_encode_native(get_multistream_encoder(st),
     oac_projection_copy_channel_in_float, pcm, frame_size, data,
-    max_data_bytes, MAX_ENCODING_DEPTH, downmix_float, 1, get_mixing_matrix(st));
+    max_data_bytes, MAX_ENCODING_DEPTH, oaci_downmix_float, 1, get_mixing_matrix(st));
 }
 #endif
 
@@ -461,7 +461,7 @@ int oac_projection_encoder_ctl(OacProjectionEncoder *st, int request, ...) {
             if (!external_char) {
                 goto bad_arg;
             }
-            internal_short = mapping_matrix_get_data(demixing_matrix);
+            internal_short = oaci_mapping_matrix_get_data(demixing_matrix);
             internal_size = nb_input_streams*nb_output_streams*sizeof(oac_int16);
             if (external_size != internal_size) {
                 goto bad_arg;

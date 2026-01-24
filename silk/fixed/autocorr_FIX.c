@@ -66,7 +66,7 @@
 #include "celt_lpc.h"
 
 /* Compute autocorrelation */
-void silk_autocorr(
+void oaci_silk_autocorr(
     oac_int32                  *results,           /* O    Result (length correlationCount)                            */
     oac_int                    *scale,             /* O    Scaling of the correlation vector                           */
     const oac_int16            *inputData,         /* I    Input data to correlate                                     */
@@ -76,5 +76,5 @@ void silk_autocorr(
     ) {
     oac_int corrCount;
     corrCount = silk_min_int( inputDataSize, correlationCount );
-    *scale = _celt_autocorr(inputData, results, NULL, 0, corrCount - 1, inputDataSize, arch);
+    *scale = oaci_celt_autocorr(inputData, results, NULL, 0, corrCount - 1, inputDataSize, arch);
 }

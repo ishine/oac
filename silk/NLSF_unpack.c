@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Unpack predictor values and indices for entropy coding tables */
-void silk_NLSF_unpack(
+void oaci_silk_NLSF_unpack(
     oac_int16 ec_ix[],                                         /* O    Indices to entropy tables [ LPC_ORDER ]     */
     oac_uint8 pred_Q8[],                                       /* O    LSF predictor [ LPC_ORDER ]                 */
     const silk_NLSF_CB_struct   *psNLSF_CB,                     /* I    Codebook object                             */

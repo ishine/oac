@@ -96,7 +96,7 @@ static void gemm_accum(float *out, const oac_int8 *weights, int rows, int cols, 
     }
 }
 
-void analysis_compute_dense(const AnalysisDenseLayer *layer, float *output, const float *input) {
+void oaci_analysis_compute_dense(const AnalysisDenseLayer *layer, float *output, const float *input) {
     int i;
     int N, M;
     int stride;
@@ -117,7 +117,7 @@ void analysis_compute_dense(const AnalysisDenseLayer *layer, float *output, cons
     }
 }
 
-void analysis_compute_gru(const AnalysisGRULayer *gru, float *state, const float *input) {
+void oaci_analysis_compute_gru(const AnalysisGRULayer *gru, float *state, const float *input) {
     int i;
     int N, M;
     int stride;

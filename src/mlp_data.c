@@ -684,20 +684,20 @@ static const oac_int8 layer2_bias[2] = {
     14, 117
 };
 
-const AnalysisDenseLayer layer0 = {
+const AnalysisDenseLayer oaci_layer0 = {
     layer0_bias,
     layer0_weights,
     25, 32, 0
 };
 
-const AnalysisGRULayer layer1 = {
+const AnalysisGRULayer oaci_layer1 = {
     layer1_bias,
     layer1_weights,
     layer1_recur_weights,
     32, 24
 };
 
-const AnalysisDenseLayer layer2 = {
+const AnalysisDenseLayer oaci_layer2 = {
     layer2_bias,
     layer2_weights,
     24, 2, 1

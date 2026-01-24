@@ -75,7 +75,7 @@
 # include <smmintrin.h>
 # include "x86cpu.h"
 
-oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
+oac_val32 oaci_celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
                                  int N) {
     oac_int i, dataSize16;
     oac_int32 sum;
@@ -137,7 +137,7 @@ oac_val32 celt_inner_prod_sse4_1(const oac_val16 *x, const oac_val16 *y,
     return sum;
 }
 
-void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[ 4 ], int len) {
+void oaci_xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[ 4 ], int len) {
     int j;
 
     __m128i vecX, vecX0, vecX1, vecX2, vecX3;
@@ -150,7 +150,7 @@ void xcorr_kernel_sse4_1(const oac_val16 * x, const oac_val16 * y, oac_val32 sum
     for (j = 0; j < 4; j++) {
         sum_c[j] = sum[j];
     }
-    xcorr_kernel_c(x, y, sum_c, len);
+    oaci_xcorr_kernel_c(x, y, sum_c, len);
 # endif
 
     celt_assert(len >= 3);

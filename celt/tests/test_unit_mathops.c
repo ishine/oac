@@ -91,7 +91,7 @@ void testdiv(void) {
     for (i = 1; i <= 327670; i++) {
         double prod;
         oac_val32 val;
-        val = celt_rcp(i);
+        val = oaci_celt_rcp(i);
 #ifdef FIXED_POINT
         prod = (1./32768./65526.)*val*i;
 #else
@@ -109,7 +109,7 @@ void testsqrt(void) {
     for (i = 1; i <= 1000000000; i++) {
         double ratio;
         oac_val16 val;
-        val = celt_sqrt(i);
+        val = oaci_celt_sqrt(i);
         ratio = val/sqrt(i);
         if (fabs(ratio - 1) > .0005 && fabs(val - sqrt(i)) > 2) {
             fprintf (stderr, "sqrt failed: sqrt(%d)=" WORD " (ratio = %f)\n", i, val, ratio);
@@ -126,16 +126,16 @@ void testbitexactcos(void) {
     last = min_d = 32767;
     for (i = 64; i <= 16320; i++) {
         oac_int32 d;
-        oac_int32 q = bitexact_cos(i);
+        oac_int32 q = oaci_bitexact_cos(i);
         chk ^= q*i;
         d = last - q;
         if (d > max_d) max_d = d;
         if (d < min_d) min_d = d;
         last = q;
     }
-    if ((chk != 89408644) || (max_d != 5) || (min_d != 0) || (bitexact_cos(64) != 32767)
-        || (bitexact_cos(16320) != 200) || (bitexact_cos(8192) != 23171)) {
-        fprintf (stderr, "bitexact_cos failed\n");
+    if ((chk != 89408644) || (max_d != 5) || (min_d != 0) || (oaci_bitexact_cos(64) != 32767)
+        || (oaci_bitexact_cos(16320) != 200) || (oaci_bitexact_cos(8192) != 23171)) {
+        fprintf (stderr, "oaci_bitexact_cos failed\n");
         ret = 1;
     }
 }
@@ -147,21 +147,21 @@ void testbitexactlog2tan(void) {
     last = min_d = 15059;
     for (i = 64; i < 8193; i++) {
         oac_int32 d;
-        oac_int32 mid = bitexact_cos(i);
-        oac_int32 side = bitexact_cos(16384 - i);
-        oac_int32 q = bitexact_log2tan(mid, side);
+        oac_int32 mid = oaci_bitexact_cos(i);
+        oac_int32 side = oaci_bitexact_cos(16384 - i);
+        oac_int32 q = oaci_bitexact_log2tan(mid, side);
         chk ^= q*i;
         d = last - q;
-        if (q != -1*bitexact_log2tan(side, mid))
+        if (q != -1*oaci_bitexact_log2tan(side, mid))
             fail = 1;
         if (d > max_d) max_d = d;
         if (d < min_d) min_d = d;
         last = q;
     }
     if ((chk != 15821257) || (max_d != 61) || (min_d != -2) || fail
-        || (bitexact_log2tan(32767, 200) != 15059) || (bitexact_log2tan(30274, 12540) != 2611)
-        || (bitexact_log2tan(23171, 23171) != 0)) {
-        fprintf (stderr, "bitexact_log2tan failed\n");
+        || (oaci_bitexact_log2tan(32767, 200) != 15059) || (oaci_bitexact_log2tan(30274, 12540) != 2611)
+        || (oaci_bitexact_log2tan(23171, 23171) != 0)) {
+        fprintf (stderr, "oaci_bitexact_log2tan failed\n");
         ret = 1;
     }
 }
@@ -401,21 +401,21 @@ void testrsqrt(void) {
     for (fx = 0.25; fx < 1.0f; fx += 0.007f) {
         x = DOUBLE_TO_FIX_INT(fx, 31);
         quantized_fx = FIX_INT_TO_DOUBLE(x, 31);
-        error = fabs(FIX_INT_TO_DOUBLE(celt_rsqrt_norm32(x), 29)
+        error = fabs(FIX_INT_TO_DOUBLE(oaci_celt_rsqrt_norm32(x), 29)
             - 1/sqrt((double)quantized_fx));
         if (max_error < error) {
             max_error = error;
         }
         if (error > error_threshold) {
             fprintf (stderr,
-                  "celt_rsqrt_norm32 failed: "
-                  "fabs((1/sqrt(x))-celt_rsqrt_norm32(x))>%15.25e "
+                  "oaci_celt_rsqrt_norm32 failed: "
+                  "fabs((1/sqrt(x))-oaci_celt_rsqrt_norm32(x))>%15.25e "
                   "(x = %f, error = %15.25e)\n",
                   error_threshold, quantized_fx, error);
             ret = 1;
         }
     }
-    fprintf (stdout, "celt_rsqrt_norm32 max_error: %.7e\n", max_error);
+    fprintf (stdout, "oaci_celt_rsqrt_norm32 max_error: %.7e\n", max_error);
 }
 
 void testsqrt32(void) {
@@ -424,12 +424,12 @@ void testsqrt32(void) {
     float two_LSBs = FIX_INT_TO_DOUBLE(2, 16);
     float relative_error_threshold;
     for (i = 0; i <= 1073741824 + 64; i++) {
-        absolute_error = fabs(sqrt(i) - FIX_INT_TO_DOUBLE(celt_sqrt32(i), 16));
+        absolute_error = fabs(sqrt(i) - FIX_INT_TO_DOUBLE(oaci_celt_sqrt32(i), 16));
         relative_error_threshold = 8e-8*sqrt(i);
         if (absolute_error > two_LSBs
             && absolute_error > relative_error_threshold) {
             fprintf(stderr,
-                 "celt_sqrt32 failed: "
+                 "oaci_celt_sqrt32 failed: "
                  "absolute_error: [%.5e > %.5e] "
                  "relative_error: [%.5e > %.5e] (x = %d)\n",
                  absolute_error, two_LSBs,
@@ -517,18 +517,18 @@ void test_cos_norm32(void) {
     for (fx = -1.0f; fx <= 1.0f; fx += 0.007f) {
         x = DOUBLE_TO_FIX_INT(fx, q_input);
         error = fabs(cos(1.5707963267948966*FIX_INT_TO_DOUBLE(x, q_input))
-            - FIX_INT_TO_DOUBLE(celt_cos_norm32(x), q_output));
+            - FIX_INT_TO_DOUBLE(oaci_celt_cos_norm32(x), q_output));
         if (error > max_error) {
             max_error = error;
         }
         if (error > error_threshold) {
             fprintf(stderr,
-                 "celt_cos_norm32 failed: error: [%.5e > %.5e] (x = %f)\n",
+                 "oaci_celt_cos_norm32 failed: error: [%.5e > %.5e] (x = %f)\n",
                  error, error_threshold, FIX_INT_TO_DOUBLE(x, DB_SHIFT));
             ret = 1;
         }
     }
-    fprintf(stdout, "celt_cos_norm32 max_error: %.7e\n", max_error);
+    fprintf(stdout, "oaci_celt_cos_norm32 max_error: %.7e\n", max_error);
 }
 
 void test_cos(void) {
@@ -552,7 +552,7 @@ void test_rcp_norm32(void) {
         quantized_fx = FIX_INT_TO_DOUBLE(x, q_input);
         ground_truth = 1/quantized_fx;
         absolute_error = fabs(ground_truth
-            - FIX_INT_TO_DOUBLE(celt_rcp_norm32(x), 30));
+            - FIX_INT_TO_DOUBLE(oaci_celt_rcp_norm32(x), 30));
         relative_error = absolute_error/ground_truth;
         if (max_relative_error < relative_error) {
             max_relative_error = relative_error;
@@ -560,7 +560,7 @@ void test_rcp_norm32(void) {
         if (absolute_error > two_LSBs
             && absolute_error > relative_error_threshold*ground_truth) {
             fprintf(stderr,
-                 "celt_rcp_norm32 failed: "
+                 "oaci_celt_rcp_norm32 failed: "
                  "absolute_error: [%.5e > %.5e] "
                  "relative_error: [%.5e > %.5e] (x = %f)\n",
                  absolute_error, two_LSBs,
@@ -568,7 +568,7 @@ void test_rcp_norm32(void) {
             ret = 1;
         }
     }
-    fprintf(stdout, "celt_rcp_norm32 max_rel_error: %.7e\n", max_relative_error);
+    fprintf(stdout, "oaci_celt_rcp_norm32 max_rel_error: %.7e\n", max_relative_error);
 }
 #endif
 
@@ -620,16 +620,16 @@ void testcelt_float2int16(int use_ref_impl, int buffer_size) {
     }
 
     if (use_ref_impl) {
-        celt_float2int16_c(floatsToConvert, results, cnt);
+        oaci_celt_float2int16_c(floatsToConvert, results, cnt);
     } else {
-        celt_float2int16(floatsToConvert, results, cnt, oac_select_arch());
+        oaci_celt_float2int16(floatsToConvert, results, cnt, oac_select_arch());
     }
 
     for (i = 0; i < cnt; ++i) {
         const float expected = FLOAT2INT16(floatsToConvert[i]);
         if (results[i] != expected) {
             fprintf (stderr,
-            "testcelt_float2int16 failed: celt_float2int16 converted %f (index: %d) to %d (x*32768=%f, expected: %d, cnt: %d, ref: %d)\n",
+            "testcelt_float2int16 failed: oaci_celt_float2int16 converted %f (index: %d) to %d (x*32768=%f, expected: %d, cnt: %d, ref: %d)\n",
                floatsToConvert[i], i, (int)results[i], floatsToConvert[i]*32768.0f, (int)expected, buffer_size,
             use_ref_impl);
             ret = 1;

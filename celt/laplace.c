@@ -80,7 +80,7 @@ static unsigned ec_laplace_get_freq1(unsigned fs0, int decay) {
     return ft*(oac_int32)(16384 - decay)>>15;
 }
 
-void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
+void oaci_ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
     unsigned fl;
     int val = *value;
     fl = 0;
@@ -114,14 +114,14 @@ void ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
         celt_assert(fl + fs <= 32768);
         celt_assert(fs > 0);
     }
-    ec_encode_bin(enc, fl, fl + fs, 15);
+    oaci_ec_encode_bin(enc, fl, fl + fs, 15);
 }
 
-int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
+int oaci_ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
     int val = 0;
     unsigned fl;
     unsigned fm;
-    fm = ec_decode_bin(dec, 15);
+    fm = oaci_ec_decode_bin(dec, 15);
     fl = 0;
     if (fm >= fs) {
         val++;
@@ -151,18 +151,18 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
     celt_assert(fs > 0);
     celt_assert(fl <= fm);
     celt_assert(fm < IMIN(fl + fs, 32768));
-    ec_dec_update(dec, fl, IMIN(fl + fs, 32768), 32768);
+    oaci_ec_dec_update(dec, fl, IMIN(fl + fs, 32768), 32768);
     return val;
 }
 
-void ec_laplace_encode_p0(ec_enc *enc, int value, oac_uint16 p0, oac_uint16 decay) {
+void oaci_ec_laplace_encode_p0(ec_enc *enc, int value, oac_uint16 p0, oac_uint16 decay) {
     int s;
     oac_uint16 sign_icdf[3];
     sign_icdf[0] = 32768 - p0;
     sign_icdf[1] = sign_icdf[0]/2;
     sign_icdf[2] = 0;
     s = value == 0 ? 0 : (value > 0 ? 1 : 2);
-    ec_enc_icdf16(enc, s, sign_icdf, 15);
+    oaci_ec_enc_icdf16(enc, s, sign_icdf, 15);
     value = abs(value);
     if (value) {
         int i;
@@ -174,20 +174,20 @@ void ec_laplace_encode_p0(ec_enc *enc, int value, oac_uint16 p0, oac_uint16 deca
         icdf[7] = 0;
         value--;
         do {
-            ec_enc_icdf16(enc, IMIN(value, 7), icdf, 15);
+            oaci_ec_enc_icdf16(enc, IMIN(value, 7), icdf, 15);
             value -= 7;
         } while (value >= 0);
     }
 }
 
-int ec_laplace_decode_p0(ec_dec *dec, oac_uint16 p0, oac_uint16 decay) {
+int oaci_ec_laplace_decode_p0(ec_dec *dec, oac_uint16 p0, oac_uint16 decay) {
     int s;
     int value;
     oac_uint16 sign_icdf[3];
     sign_icdf[0] = 32768 - p0;
     sign_icdf[1] = sign_icdf[0]/2;
     sign_icdf[2] = 0;
-    s = ec_dec_icdf16(dec, sign_icdf, 15);
+    s = oaci_ec_dec_icdf16(dec, sign_icdf, 15);
     if (s == 2) s = -1;
     if (s != 0) {
         int i;
@@ -200,7 +200,7 @@ int ec_laplace_decode_p0(ec_dec *dec, oac_uint16 p0, oac_uint16 decay) {
         icdf[7] = 0;
         value = 1;
         do {
-            v = ec_dec_icdf16(dec, icdf, 15);
+            v = oaci_ec_dec_icdf16(dec, icdf, 15);
             value += v;
         } while (v == 7);
         return s*value;
@@ -226,21 +226,21 @@ int main() {
     p0 = 16000;
     decay = 16000;
     ptr = (unsigned char *)malloc(DATA_SIZE);
-    ec_enc_init(&enc, ptr, DATA_SIZE);
+    oaci_ec_enc_init(&enc, ptr, DATA_SIZE);
     for (i = 0; i < NB_VALS; i++) {
         printf("%d ", val[i]);
     }
     printf("\n");
     for (i = 0; i < NB_VALS; i++) {
-        ec_laplace_encode_p0(&enc, val[i], p0, decay);
+        oaci_ec_laplace_encode_p0(&enc, val[i], p0, decay);
     }
 
-    ec_enc_done(&enc);
+    oaci_ec_enc_done(&enc);
 
-    ec_dec_init(&dec, ec_get_buffer(&enc), ec_range_bytes(&enc));
+    oaci_ec_dec_init(&dec, ec_get_buffer(&enc), ec_range_bytes(&enc));
 
     for (i = 0; i < NB_VALS; i++) {
-        val[i] = ec_laplace_decode_p0(&dec, p0, decay);
+        val[i] = oaci_ec_laplace_decode_p0(&dec, p0, decay);
     }
     for (i = 0; i < NB_VALS; i++) {
         printf("%d ", val[i]);

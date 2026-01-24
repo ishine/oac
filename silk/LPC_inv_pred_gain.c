@@ -151,7 +151,7 @@ static oac_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns invers
 }
 
 /* For input in Q12 domain */
-oac_int32 silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
+oac_int32 oaci_silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
     const oac_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
     const oac_int order                            /* I   Prediction order                                             */
     ) {

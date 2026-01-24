@@ -66,7 +66,7 @@
 #include "pitch.h"
 
 /* Copy and multiply a vector by a constant */
-void silk_scale_copy_vector16(
+void oaci_silk_scale_copy_vector16(
     oac_int16                  *data_out,
     const oac_int16            *data_in,
     oac_int32 gain_Q16,                            /* I    Gain in Q16                                                 */
@@ -82,7 +82,7 @@ void silk_scale_copy_vector16(
 }
 
 /* Multiply a vector by a constant */
-void silk_scale_vector32_Q26_lshift_18(
+void oaci_silk_scale_vector32_Q26_lshift_18(
     oac_int32                  *data1,             /* I/O  Q0/Q18                                                      */
     oac_int32 gain_Q26,                            /* I    Q26                                                         */
     oac_int dataSize                               /* I    length                                                      */
@@ -99,14 +99,14 @@ void silk_scale_vector32_Q26_lshift_18(
 /*        * inVec1 and inVec2 should be at least 2 byte aligned.                */
 /*        * len should be positive 16bit integer.                               */
 /*        * only when len>6, memory access can be reduced by half.              */
-oac_int32 silk_inner_prod_aligned(
+oac_int32 oaci_silk_inner_prod_aligned(
     const oac_int16 *const inVec1,                 /*    I input vector 1                                              */
     const oac_int16 *const inVec2,                 /*    I input vector 2                                              */
     const oac_int len,                             /*    I vector lengths                                              */
     int arch                                        /*    I Run-time architecture                                       */
     ) {
 #ifdef FIXED_POINT
-    return celt_inner_prod(inVec1, inVec2, len, arch);
+    return oaci_celt_inner_prod(inVec1, inVec2, len, arch);
 #else
     oac_int i;
     oac_int32 sum = 0;
@@ -117,7 +117,7 @@ oac_int32 silk_inner_prod_aligned(
 #endif
 }
 
-oac_int64 silk_inner_prod16_c(
+oac_int64 oaci_silk_inner_prod16_c(
     const oac_int16            *inVec1,            /*    I input vector 1                                              */
     const oac_int16            *inVec2,            /*    I input vector 2                                              */
     const oac_int len                              /*    I vector lengths                                              */

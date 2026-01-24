@@ -84,16 +84,16 @@ static OAC_INLINE void silk_LP_interpolate_filter_taps(
                 /* Piece-wise linear interpolation of B and A */
                 for (nb = 0; nb < TRANSITION_NB; nb++) {
                     B_Q28[ nb ] = silk_SMLAWB(
-                        silk_Transition_LP_B_Q28[ ind     ][ nb ],
-                        silk_Transition_LP_B_Q28[ ind + 1 ][ nb ]
-                        - silk_Transition_LP_B_Q28[ ind     ][ nb ],
+                        oaci_silk_Transition_LP_B_Q28[ ind     ][ nb ],
+                        oaci_silk_Transition_LP_B_Q28[ ind + 1 ][ nb ]
+                        - oaci_silk_Transition_LP_B_Q28[ ind     ][ nb ],
                         fac_Q16 );
                 }
                 for (na = 0; na < TRANSITION_NA; na++) {
                     A_Q28[ na ] = silk_SMLAWB(
-                        silk_Transition_LP_A_Q28[ ind     ][ na ],
-                        silk_Transition_LP_A_Q28[ ind + 1 ][ na ]
-                        - silk_Transition_LP_A_Q28[ ind     ][ na ],
+                        oaci_silk_Transition_LP_A_Q28[ ind     ][ na ],
+                        oaci_silk_Transition_LP_A_Q28[ ind + 1 ][ na ]
+                        - oaci_silk_Transition_LP_A_Q28[ ind     ][ na ],
                         fac_Q16 );
                 }
             } else { /* ( fac_Q16 - ( 1 << 16 ) ) is in range of a 16-bit int */
@@ -101,26 +101,26 @@ static OAC_INLINE void silk_LP_interpolate_filter_taps(
                 /* Piece-wise linear interpolation of B and A */
                 for (nb = 0; nb < TRANSITION_NB; nb++) {
                     B_Q28[ nb ] = silk_SMLAWB(
-                        silk_Transition_LP_B_Q28[ ind + 1 ][ nb ],
-                        silk_Transition_LP_B_Q28[ ind + 1 ][ nb ]
-                        - silk_Transition_LP_B_Q28[ ind     ][ nb ],
+                        oaci_silk_Transition_LP_B_Q28[ ind + 1 ][ nb ],
+                        oaci_silk_Transition_LP_B_Q28[ ind + 1 ][ nb ]
+                        - oaci_silk_Transition_LP_B_Q28[ ind     ][ nb ],
                         fac_Q16 - ((oac_int32)1<<16));
                 }
                 for (na = 0; na < TRANSITION_NA; na++) {
                     A_Q28[ na ] = silk_SMLAWB(
-                        silk_Transition_LP_A_Q28[ ind + 1 ][ na ],
-                        silk_Transition_LP_A_Q28[ ind + 1 ][ na ]
-                        - silk_Transition_LP_A_Q28[ ind     ][ na ],
+                        oaci_silk_Transition_LP_A_Q28[ ind + 1 ][ na ],
+                        oaci_silk_Transition_LP_A_Q28[ ind + 1 ][ na ]
+                        - oaci_silk_Transition_LP_A_Q28[ ind     ][ na ],
                         fac_Q16 - ((oac_int32)1<<16));
                 }
             }
         } else {
-            silk_memcpy( B_Q28, silk_Transition_LP_B_Q28[ ind ], TRANSITION_NB*sizeof(oac_int32));
-            silk_memcpy( A_Q28, silk_Transition_LP_A_Q28[ ind ], TRANSITION_NA*sizeof(oac_int32));
+            silk_memcpy( B_Q28, oaci_silk_Transition_LP_B_Q28[ ind ], TRANSITION_NB*sizeof(oac_int32));
+            silk_memcpy( A_Q28, oaci_silk_Transition_LP_A_Q28[ ind ], TRANSITION_NA*sizeof(oac_int32));
         }
     } else {
-        silk_memcpy( B_Q28, silk_Transition_LP_B_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NB*sizeof(oac_int32));
-        silk_memcpy( A_Q28, silk_Transition_LP_A_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NA*sizeof(oac_int32));
+        silk_memcpy( B_Q28, oaci_silk_Transition_LP_B_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NB*sizeof(oac_int32));
+        silk_memcpy( A_Q28, oaci_silk_Transition_LP_A_Q28[ TRANSITION_INT_NUM - 1 ], TRANSITION_NA*sizeof(oac_int32));
     }
 }
 
@@ -128,7 +128,7 @@ static OAC_INLINE void silk_LP_interpolate_filter_taps(
 /* piece-wise linear interpolation between elliptic filters */
 /* Start by setting psEncC->mode <> 0;                      */
 /* Deactivate by setting psEncC->mode = 0;                  */
-void silk_LP_variable_cutoff(
+void oaci_silk_LP_variable_cutoff(
     silk_LP_state               *psLP,                          /* I/O  LP filter state                             */
     oac_int16                  *frame,                         /* I/O  Low-pass filtered output signal             */
     const oac_int frame_length                                 /* I    Frame length                                */
@@ -160,6 +160,6 @@ void silk_LP_variable_cutoff(
 
         /* ARMA low-pass filtering */
         silk_assert( TRANSITION_NB == 3 && TRANSITION_NA == 2 );
-        silk_biquad_alt_stride1( frame, B_Q28, A_Q28, psLP->In_LP_State, frame, frame_length);
+        oaci_silk_biquad_alt_stride1( frame, B_Q28, A_Q28, psLP->In_LP_State, frame, frame_length);
     }
 }

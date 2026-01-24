@@ -149,7 +149,7 @@ static void ec_dec_normalize(ec_dec *_this) {
     }
 }
 
-void ec_dec_init(ec_dec *_this, unsigned char *_buf, oac_uint32 _storage) {
+void oaci_ec_dec_init(ec_dec *_this, unsigned char *_buf, oac_uint32 _storage) {
     _this->buf = _buf;
     _this->storage = _storage;
     _this->end_offs = 0;
@@ -169,21 +169,21 @@ void ec_dec_init(ec_dec *_this, unsigned char *_buf, oac_uint32 _storage) {
     ec_dec_normalize(_this);
 }
 
-unsigned ec_decode(ec_dec *_this, unsigned _ft) {
+unsigned oaci_ec_decode(ec_dec *_this, unsigned _ft) {
     unsigned s;
     _this->ext = celt_udiv(_this->rng, _ft);
     s = (unsigned)(_this->val/_this->ext);
     return _ft - EC_MINI(s + 1, _ft);
 }
 
-unsigned ec_decode_bin(ec_dec *_this, unsigned _bits) {
+unsigned oaci_ec_decode_bin(ec_dec *_this, unsigned _bits) {
     unsigned s;
     _this->ext = _this->rng>>_bits;
     s = (unsigned)(_this->val/_this->ext);
     return (1U<<_bits) - EC_MINI(s + 1U, 1U<<_bits);
 }
 
-void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
+void oaci_ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     oac_uint32 s;
     s = IMUL32(_this->ext, _ft - _fh);
     _this->val -= s;
@@ -192,7 +192,7 @@ void ec_dec_update(ec_dec *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
 }
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
-int ec_dec_bit_logp(ec_dec *_this, unsigned _logp) {
+int oaci_ec_dec_bit_logp(ec_dec *_this, unsigned _logp) {
     oac_uint32 r;
     oac_uint32 d;
     oac_uint32 s;
@@ -207,7 +207,7 @@ int ec_dec_bit_logp(ec_dec *_this, unsigned _logp) {
     return ret;
 }
 
-int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb) {
+int oaci_ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb) {
     oac_uint32 r;
     oac_uint32 d;
     oac_uint32 s;
@@ -227,7 +227,7 @@ int ec_dec_icdf(ec_dec *_this, const unsigned char *_icdf, unsigned _ftb) {
     return ret;
 }
 
-int ec_dec_icdf16(ec_dec *_this, const oac_uint16 *_icdf, unsigned _ftb) {
+int oaci_ec_dec_icdf16(ec_dec *_this, const oac_uint16 *_icdf, unsigned _ftb) {
     oac_uint32 r;
     oac_uint32 d;
     oac_uint32 s;
@@ -247,7 +247,7 @@ int ec_dec_icdf16(ec_dec *_this, const oac_uint16 *_icdf, unsigned _ftb) {
     return ret;
 }
 
-oac_uint32 ec_dec_uint(ec_dec *_this, oac_uint32 _ft) {
+oac_uint32 oaci_ec_dec_uint(ec_dec *_this, oac_uint32 _ft) {
     unsigned ft;
     unsigned s;
     int ftb;
@@ -259,21 +259,21 @@ oac_uint32 ec_dec_uint(ec_dec *_this, oac_uint32 _ft) {
         oac_uint32 t;
         ftb -= EC_UINT_BITS;
         ft = (unsigned)(_ft>>ftb) + 1;
-        s = ec_decode(_this, ft);
-        ec_dec_update(_this, s, s + 1, ft);
-        t = (oac_uint32)s<<ftb|ec_dec_bits(_this, ftb);
+        s = oaci_ec_decode(_this, ft);
+        oaci_ec_dec_update(_this, s, s + 1, ft);
+        t = (oac_uint32)s<<ftb|oaci_ec_dec_bits(_this, ftb);
         if (t <= _ft) return t;
         _this->error = 1;
         return _ft;
     } else   {
         _ft++;
-        s = ec_decode(_this, (unsigned)_ft);
-        ec_dec_update(_this, s, s + 1, (unsigned)_ft);
+        s = oaci_ec_decode(_this, (unsigned)_ft);
+        oaci_ec_dec_update(_this, s, s + 1, (unsigned)_ft);
         return s;
     }
 }
 
-oac_uint32 ec_dec_bits(ec_dec *_this, unsigned _bits) {
+oac_uint32 oaci_ec_dec_bits(ec_dec *_this, unsigned _bits) {
     ec_window window;
     int available;
     oac_uint32 ret;

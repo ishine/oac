@@ -91,7 +91,7 @@ static OAC_INLINE void silk_PLC_conceal(
     );
 
 
-void silk_PLC_Reset(
+void oaci_silk_PLC_Reset(
     silk_decoder_state                  *psDec              /* I/O Decoder state        */
     ) {
     psDec->sPLC.pitchL_Q8 = silk_LSHIFT( psDec->frame_length, 8 - 1 );
@@ -101,7 +101,7 @@ void silk_PLC_Reset(
     psDec->sPLC.nb_subfr = 2;
 }
 
-void silk_PLC(
+void oaci_silk_PLC(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     oac_int16 frame[],                                     /* I/O  signal              */
@@ -113,7 +113,7 @@ void silk_PLC(
     ) {
     /* PLC control function */
     if (psDec->fs_kHz != psDec->sPLC.fs_kHz) {
-        silk_PLC_Reset( psDec );
+        oaci_silk_PLC_Reset( psDec );
         psDec->sPLC.fs_kHz = psDec->fs_kHz;
     }
 
@@ -137,7 +137,7 @@ void silk_PLC(
         if (lpcnet != NULL && psDec->sPLC.fs_kHz == 16) {
             int k;
             for (k = 0; k < psDec->nb_subfr; k += 2) {
-                lpcnet_plc_update( lpcnet, frame + k*psDec->subfr_length );
+                oaci_lpcnet_plc_update( lpcnet, frame + k*psDec->subfr_length );
             }
         }
 #endif
@@ -238,8 +238,8 @@ static OAC_INLINE void silk_PLC_energy(oac_int32 *energy1, oac_int *shift1, oac_
         exc_buf_ptr += subfr_length;
     }
     /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-    silk_sum_sqr_shift( energy1, shift1, exc_buf,                  subfr_length );
-    silk_sum_sqr_shift( energy2, shift2, &exc_buf[ subfr_length ], subfr_length );
+    oaci_silk_sum_sqr_shift( energy1, shift1, exc_buf,                  subfr_length );
+    oaci_silk_sum_sqr_shift( energy2, shift2, &exc_buf[ subfr_length ], subfr_length );
     RESTORE_STACK;
 }
 
@@ -310,7 +310,7 @@ static OAC_INLINE void silk_PLC_conceal(
     }
 
     /* LPC concealment. Apply BWE to previous LPC */
-    silk_bwexpander( psPLC->prevLPC_Q12, psDec->LPC_order, SILK_FIX_CONST( BWE_COEF, 16 ));
+    oaci_silk_bwexpander( psPLC->prevLPC_Q12, psDec->LPC_order, SILK_FIX_CONST( BWE_COEF, 16 ));
 
     /* Preload LPC coefficients to array on stack. Gives small performance gain */
     silk_memcpy( A_Q12, psPLC->prevLPC_Q12, psDec->LPC_order*sizeof(oac_int16));
@@ -330,7 +330,7 @@ static OAC_INLINE void silk_PLC_conceal(
             /* Reduce random noise for unvoiced frames with high LPC gain */
             oac_int32 invGain_Q30, down_scale_Q30;
 
-            invGain_Q30 = silk_LPC_inverse_pred_gain( psPLC->prevLPC_Q12, psDec->LPC_order, arch );
+            invGain_Q30 = oaci_silk_LPC_inverse_pred_gain( psPLC->prevLPC_Q12, psDec->LPC_order, arch );
 
             down_scale_Q30 = silk_min_32( silk_RSHIFT((oac_int32)1<<30, LOG2_INV_LPC_GAIN_HIGH_THRES ), invGain_Q30 );
             down_scale_Q30 = silk_max_32( silk_RSHIFT((oac_int32)1<<30, LOG2_INV_LPC_GAIN_LOW_THRES ), down_scale_Q30 );
@@ -347,7 +347,7 @@ static OAC_INLINE void silk_PLC_conceal(
     /* Rewhiten LTP state */
     idx = psDec->ltp_mem_length - lag - psDec->LPC_order - LTP_ORDER/2;
     celt_assert( idx > 0 );
-    silk_LPC_analysis_filter( &sLTP[ idx ], &psDec->outBuf[ idx ], A_Q12, psDec->ltp_mem_length - idx, psDec->LPC_order,
+    oaci_silk_LPC_analysis_filter( &sLTP[ idx ], &psDec->outBuf[ idx ], A_Q12, psDec->ltp_mem_length - idx, psDec->LPC_order,
     arch );
     /* Scale LTP state */
     inv_gain_Q30 = silk_INVERSE32_varQ( psPLC->prevGain_Q16[ 1 ], 46 );
@@ -435,7 +435,7 @@ static OAC_INLINE void silk_PLC_conceal(
         int run_deep_plc = psDec->sPLC.enable_deep_plc || lpcnet->fec_fill_pos != 0;
         if (run_deep_plc) {
             for (k = 0; k < psDec->nb_subfr; k += 2) {
-                lpcnet_plc_conceal( lpcnet, frame + k*psDec->subfr_length );
+                oaci_lpcnet_plc_conceal( lpcnet, frame + k*psDec->subfr_length );
             }
             /* We *should* be able to copy only from psDec->frame_length-MAX_LPC_ORDER, i.e. the last MAX_LPC_ORDER samples. */
             for (i = 0; i < psDec->frame_length; i++) {
@@ -443,7 +443,7 @@ static OAC_INLINE void silk_PLC_conceal(
             }
         } else {
             for (k = 0; k < psDec->nb_subfr; k += 2) {
-                lpcnet_plc_update( lpcnet, frame + k*psDec->subfr_length );
+                oaci_lpcnet_plc_update( lpcnet, frame + k*psDec->subfr_length );
             }
         }
     }
@@ -464,7 +464,7 @@ static OAC_INLINE void silk_PLC_conceal(
 }
 
 /* Glues concealed frames with new good received frames */
-void silk_PLC_glue_frames(
+void oaci_silk_PLC_glue_frames(
     silk_decoder_state                  *psDec,             /* I/O decoder state        */
     oac_int16 frame[],                                     /* I/O signal               */
     oac_int length                                         /* I length of signal       */
@@ -476,13 +476,13 @@ void silk_PLC_glue_frames(
 
     if (psDec->lossCnt) {
         /* Calculate energy in concealed residual */
-        silk_sum_sqr_shift( &psPLC->conc_energy, &psPLC->conc_energy_shift, frame, length );
+        oaci_silk_sum_sqr_shift( &psPLC->conc_energy, &psPLC->conc_energy_shift, frame, length );
 
         psPLC->last_frame_lost = 1;
     } else {
         if (psDec->sPLC.last_frame_lost) {
             /* Calculate residual in decoded signal if last frame was lost */
-            silk_sum_sqr_shift( &energy, &energy_shift, frame, length );
+            oaci_silk_sum_sqr_shift( &energy, &energy_shift, frame, length );
 
             /* Normalize energies */
             if (energy_shift > psPLC->conc_energy_shift) {

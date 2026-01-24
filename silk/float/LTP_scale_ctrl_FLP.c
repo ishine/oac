@@ -64,7 +64,7 @@
 
 #include "main_FLP.h"
 
-void silk_LTP_scale_ctrl_FLP(
+void oaci_silk_LTP_scale_ctrl_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     oac_int condCoding                                                 /* I    The type of conditional coding to use       */
@@ -80,13 +80,13 @@ void silk_LTP_scale_ctrl_FLP(
             round_loss = 2 + silk_SMULBB( round_loss, round_loss)/100;
         }
         psEnc->sCmn.indices.LTP_scaleIndex = silk_SMULBB( psEncCtrl->LTPredCodGain,
-        round_loss ) > silk_log2lin( 2900 - psEnc->sCmn.SNR_dB_Q7 );
+        round_loss ) > oaci_silk_log2lin( 2900 - psEnc->sCmn.SNR_dB_Q7 );
         psEnc->sCmn.indices.LTP_scaleIndex += silk_SMULBB( psEncCtrl->LTPredCodGain,
-        round_loss ) > silk_log2lin( 3900 - psEnc->sCmn.SNR_dB_Q7 );
+        round_loss ) > oaci_silk_log2lin( 3900 - psEnc->sCmn.SNR_dB_Q7 );
     } else {
         /* Default is minimum scaling */
         psEnc->sCmn.indices.LTP_scaleIndex = 0;
     }
 
-    psEncCtrl->LTP_scale = (silk_float)silk_LTPScales_table_Q14[ psEnc->sCmn.indices.LTP_scaleIndex ]/16384.0f;
+    psEncCtrl->LTP_scale = (silk_float)oaci_silk_LTPScales_table_Q14[ psEnc->sCmn.indices.LTP_scaleIndex ]/16384.0f;
 }

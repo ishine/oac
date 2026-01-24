@@ -113,11 +113,11 @@ int main(int _argc, char **_argv) {
         seed = time(NULL);
     /*Testing encoding of raw bit values.*/
     ptr = (unsigned char *)malloc(DATA_SIZE);
-    ec_enc_init(&enc, ptr, DATA_SIZE);
+    oaci_ec_enc_init(&enc, ptr, DATA_SIZE);
     for (ft = 2; ft < 1024; ft++) {
         for (i = 0; i < ft; i++) {
             entropy += log(ft)*M_LOG2E;
-            ec_enc_uint(&enc, i, ft);
+            oaci_ec_enc_uint(&enc, i, ft);
         }
     }
     /*Testing encoding of raw bit values.*/
@@ -125,7 +125,7 @@ int main(int _argc, char **_argv) {
         for (i = 0; i < (1<<ftb); i++) {
             entropy += ftb;
             nbits = ec_tell(&enc);
-            ec_enc_bits(&enc, i, ftb);
+            oaci_ec_enc_bits(&enc, i, ftb);
             nbits2 = ec_tell(&enc);
             if (nbits2 - nbits != ftb) {
                 fprintf(stderr, "Used %li bits to encode %i bits directly.\n",
@@ -134,16 +134,16 @@ int main(int _argc, char **_argv) {
             }
         }
     }
-    nbits = ec_tell_frac(&enc);
-    ec_enc_done(&enc);
+    nbits = oaci_ec_tell_frac(&enc);
+    oaci_ec_enc_done(&enc);
     fprintf(stderr,
    "Encoded %0.2f bits of entropy to %0.2f bits (%0.3f%% wasted).\n",
    entropy, ldexp(nbits, -3), 100*(nbits - ldexp(entropy, 3))/nbits);
     fprintf(stderr, "Packed to %li bytes.\n", (long)ec_range_bytes(&enc));
-    ec_dec_init(&dec, ptr, DATA_SIZE);
+    oaci_ec_dec_init(&dec, ptr, DATA_SIZE);
     for (ft = 2; ft < 1024; ft++) {
         for (i = 0; i < ft; i++) {
-            sym = ec_dec_uint(&dec, ft);
+            sym = oaci_ec_dec_uint(&dec, ft);
             if (sym != (unsigned)i) {
                 fprintf(stderr, "Decoded %i instead of %i with ft of %i.\n", sym, i, ft);
                 ret = -1;
@@ -152,14 +152,14 @@ int main(int _argc, char **_argv) {
     }
     for (ftb = 1; ftb < 16; ftb++) {
         for (i = 0; i < (1<<ftb); i++) {
-            sym = ec_dec_bits(&dec, ftb);
+            sym = oaci_ec_dec_bits(&dec, ftb);
             if (sym != (unsigned)i) {
                 fprintf(stderr, "Decoded %i instead of %i with ftb of %i.\n", sym, i, ftb);
                 ret = -1;
             }
         }
     }
-    nbits2 = ec_tell_frac(&dec);
+    nbits2 = oaci_ec_tell_frac(&dec);
     if (nbits != nbits2) {
         fprintf(stderr,
      "Reported number of bits used was %0.2f, should be %0.2f.\n",
@@ -172,28 +172,28 @@ int main(int _argc, char **_argv) {
        get used in practice.
        It's mostly here for code coverage completeness.*/
     /*Start with a 16-bit buffer.*/
-    ec_enc_init(&enc, ptr, 2);
+    oaci_ec_enc_init(&enc, ptr, 2);
     /*Write 7 raw bits.*/
-    ec_enc_bits(&enc, 0x55, 7);
+    oaci_ec_enc_bits(&enc, 0x55, 7);
     /*Write 12.3 bits of range coder data.*/
-    ec_enc_uint(&enc, 1, 2);
-    ec_enc_uint(&enc, 1, 3);
-    ec_enc_uint(&enc, 1, 4);
-    ec_enc_uint(&enc, 1, 5);
-    ec_enc_uint(&enc, 2, 6);
-    ec_enc_uint(&enc, 6, 7);
-    ec_enc_done(&enc);
-    ec_dec_init(&dec, ptr, 2);
+    oaci_ec_enc_uint(&enc, 1, 2);
+    oaci_ec_enc_uint(&enc, 1, 3);
+    oaci_ec_enc_uint(&enc, 1, 4);
+    oaci_ec_enc_uint(&enc, 1, 5);
+    oaci_ec_enc_uint(&enc, 2, 6);
+    oaci_ec_enc_uint(&enc, 6, 7);
+    oaci_ec_enc_done(&enc);
+    oaci_ec_dec_init(&dec, ptr, 2);
     if (!enc.error
         /*The raw bits should have been overwritten by the range coder data.*/
-        || ec_dec_bits(&dec, 7) != 0x05
+        || oaci_ec_dec_bits(&dec, 7) != 0x05
         /*And all the range coder data should have been encoded correctly.*/
-        || ec_dec_uint(&dec, 2) != 1
-        || ec_dec_uint(&dec, 3) != 1
-        || ec_dec_uint(&dec, 4) != 1
-        || ec_dec_uint(&dec, 5) != 1
-        || ec_dec_uint(&dec, 6) != 2
-        || ec_dec_uint(&dec, 7) != 6) {
+        || oaci_ec_dec_uint(&dec, 2) != 1
+        || oaci_ec_dec_uint(&dec, 3) != 1
+        || oaci_ec_dec_uint(&dec, 4) != 1
+        || oaci_ec_dec_uint(&dec, 5) != 1
+        || oaci_ec_dec_uint(&dec, 6) != 2
+        || oaci_ec_dec_uint(&dec, 7) != 6) {
         fprintf(stderr, "Encoder bust overwrote range coder data with raw bits.\n");
         ret = -1;
     }
@@ -209,24 +209,24 @@ int main(int _argc, char **_argv) {
         sz = rand()/((RAND_MAX>>(rand()%9U)) + 1U);
         data = (unsigned *)malloc(sz*sizeof(*data));
         tell = (unsigned *)malloc((sz + 1)*sizeof(*tell));
-        ec_enc_init(&enc, ptr, DATA_SIZE2);
+        oaci_ec_enc_init(&enc, ptr, DATA_SIZE2);
         zeros = rand()%13 == 0;
-        tell[0] = ec_tell_frac(&enc);
+        tell[0] = oaci_ec_tell_frac(&enc);
         for (j = 0; j < sz; j++) {
             if (zeros)
                 data[j] = 0;
             else
                 data[j] = rand()%ft;
-            ec_enc_uint(&enc, data[j], ft);
-            tell[j + 1] = ec_tell_frac(&enc);
+            oaci_ec_enc_uint(&enc, data[j], ft);
+            tell[j + 1] = oaci_ec_tell_frac(&enc);
         }
         if (rand()%2 == 0)
             while (ec_tell(&enc)%8 != 0)
-                ec_enc_uint(&enc, rand()%2, 2);
+                oaci_ec_enc_uint(&enc, rand()%2, 2);
         tell_bits = ec_tell(&enc);
-        ec_enc_done(&enc);
+        oaci_ec_enc_done(&enc);
         if (tell_bits != (unsigned)ec_tell(&enc)) {
-            fprintf(stderr, "ec_tell() changed after ec_enc_done(): %i instead of %i (Random seed: %u)\n",
+            fprintf(stderr, "ec_tell() changed after oaci_ec_enc_done(): %i instead of %i (Random seed: %u)\n",
        ec_tell(&enc), tell_bits, seed);
             ret = -1;
         }
@@ -235,24 +235,24 @@ int main(int _argc, char **_argv) {
                ec_range_bytes(&enc), (tell_bits + 7)/8, seed);
             ret = -1;
         }
-        ec_dec_init(&dec, ptr, DATA_SIZE2);
-        if (ec_tell_frac(&dec) != tell[0]) {
+        oaci_ec_dec_init(&dec, ptr, DATA_SIZE2);
+        if (oaci_ec_tell_frac(&dec) != tell[0]) {
             fprintf(stderr,
        "Tell mismatch between encoder and decoder at symbol %i: %i instead of %i (Random seed: %u).\n",
-       0, ec_tell_frac(&dec), tell[0], seed);
+       0, oaci_ec_tell_frac(&dec), tell[0], seed);
         }
         for (j = 0; j < sz; j++) {
-            sym = ec_dec_uint(&dec, ft);
+            sym = oaci_ec_dec_uint(&dec, ft);
             if (sym != data[j]) {
                 fprintf(stderr,
          "Decoded %i instead of %i with ft of %i at position %i of %i (Random seed: %u).\n",
          sym, data[j], ft, j, sz, seed);
                 ret = -1;
             }
-            if (ec_tell_frac(&dec) != tell[j + 1]) {
+            if (oaci_ec_tell_frac(&dec) != tell[j + 1]) {
                 fprintf(stderr,
          "Tell mismatch between encoder and decoder at symbol %i: %i instead of %i (Random seed: %u).\n",
-         j + 1, ec_tell_frac(&dec), tell[j + 1], seed);
+         j + 1, oaci_ec_tell_frac(&dec), tell[j + 1], seed);
             }
         }
         free(tell);
@@ -270,44 +270,44 @@ int main(int _argc, char **_argv) {
         data = (unsigned *)malloc(sz*sizeof(*data));
         tell = (unsigned *)malloc((sz + 1)*sizeof(*tell));
         enc_method = (unsigned *)malloc(sz*sizeof(*enc_method));
-        ec_enc_init(&enc, ptr, DATA_SIZE2);
-        tell[0] = ec_tell_frac(&enc);
+        oaci_ec_enc_init(&enc, ptr, DATA_SIZE2);
+        tell[0] = oaci_ec_tell_frac(&enc);
         for (j = 0; j < sz; j++) {
             data[j] = rand()/((RAND_MAX>>1) + 1);
             logp1[j] = (rand()%15) + 1;
             enc_method[j] = rand()/((RAND_MAX>>2) + 1);
             switch (enc_method[j]) {
                 case 0: {
-                    ec_encode(&enc, data[j]?(1<<logp1[j]) - 1:0,
+                    oaci_ec_encode(&enc, data[j]?(1<<logp1[j]) - 1:0,
                         (1<<logp1[j]) - (data[j]?0:1), 1<<logp1[j]);
                 } break;
                 case 1: {
-                    ec_encode_bin(&enc, data[j]?(1<<logp1[j]) - 1:0,
+                    oaci_ec_encode_bin(&enc, data[j]?(1<<logp1[j]) - 1:0,
                         (1<<logp1[j]) - (data[j]?0:1), logp1[j]);
                 } break;
                 case 2: {
-                    ec_enc_bit_logp(&enc, data[j], logp1[j]);
+                    oaci_ec_enc_bit_logp(&enc, data[j], logp1[j]);
                 } break;
                 case 3: {
                     unsigned char icdf[2];
                     icdf[0] = 1;
                     icdf[1] = 0;
-                    ec_enc_icdf(&enc, data[j], icdf, logp1[j]);
+                    oaci_ec_enc_icdf(&enc, data[j], icdf, logp1[j]);
                 } break;
             }
-            tell[j + 1] = ec_tell_frac(&enc);
+            tell[j + 1] = oaci_ec_tell_frac(&enc);
         }
-        ec_enc_done(&enc);
+        oaci_ec_enc_done(&enc);
         if ((ec_tell(&enc) + 7U)/8U < ec_range_bytes(&enc)) {
             fprintf(stderr, "tell() lied, there's %i bytes instead of %d (Random seed: %u)\n",
        ec_range_bytes(&enc), (ec_tell(&enc) + 7)/8, seed);
             ret = -1;
         }
-        ec_dec_init(&dec, ptr, DATA_SIZE2);
-        if (ec_tell_frac(&dec) != tell[0]) {
+        oaci_ec_dec_init(&dec, ptr, DATA_SIZE2);
+        if (oaci_ec_tell_frac(&dec) != tell[0]) {
             fprintf(stderr,
        "Tell mismatch between encoder and decoder at symbol %i: %i instead of %i (Random seed: %u).\n",
-       0, ec_tell_frac(&dec), tell[0], seed);
+       0, oaci_ec_tell_frac(&dec), tell[0], seed);
         }
         for (j = 0; j < sz; j++) {
             int fs;
@@ -315,25 +315,25 @@ int main(int _argc, char **_argv) {
             dec_method = rand()/((RAND_MAX>>2) + 1);
             switch (dec_method) {
                 case 0: {
-                    fs = ec_decode(&dec, 1<<logp1[j]);
+                    fs = oaci_ec_decode(&dec, 1<<logp1[j]);
                     sym = fs >= (1<<logp1[j]) - 1;
-                    ec_dec_update(&dec, sym?(1<<logp1[j]) - 1:0,
+                    oaci_ec_dec_update(&dec, sym?(1<<logp1[j]) - 1:0,
                         (1<<logp1[j]) - (sym?0:1), 1<<logp1[j]);
                 } break;
                 case 1: {
-                    fs = ec_decode_bin(&dec, logp1[j]);
+                    fs = oaci_ec_decode_bin(&dec, logp1[j]);
                     sym = fs >= (1<<logp1[j]) - 1;
-                    ec_dec_update(&dec, sym?(1<<logp1[j]) - 1:0,
+                    oaci_ec_dec_update(&dec, sym?(1<<logp1[j]) - 1:0,
                         (1<<logp1[j]) - (sym?0:1), 1<<logp1[j]);
                 } break;
                 case 2: {
-                    sym = ec_dec_bit_logp(&dec, logp1[j]);
+                    sym = oaci_ec_dec_bit_logp(&dec, logp1[j]);
                 } break;
                 case 3: {
                     unsigned char icdf[2];
                     icdf[0] = 1;
                     icdf[1] = 0;
-                    sym = ec_dec_icdf(&dec, icdf, logp1[j]);
+                    sym = oaci_ec_dec_icdf(&dec, icdf, logp1[j]);
                 } break;
             }
             if (sym != data[j]) {
@@ -344,10 +344,10 @@ int main(int _argc, char **_argv) {
          enc_method[j], dec_method);
                 ret = -1;
             }
-            if (ec_tell_frac(&dec) != tell[j + 1]) {
+            if (oaci_ec_tell_frac(&dec) != tell[j + 1]) {
                 fprintf(stderr,
          "Tell mismatch between encoder and decoder at symbol %i: %i instead of %i (Random seed: %u).\n",
-         j + 1, ec_tell_frac(&dec), tell[j + 1], seed);
+         j + 1, oaci_ec_tell_frac(&dec), tell[j + 1], seed);
             }
         }
         free(enc_method);
@@ -355,57 +355,57 @@ int main(int _argc, char **_argv) {
         free(data);
         free(logp1);
     }
-    ec_enc_init(&enc, ptr, DATA_SIZE2);
-    ec_enc_bit_logp(&enc, 0, 1);
-    ec_enc_bit_logp(&enc, 0, 1);
-    ec_enc_bit_logp(&enc, 0, 1);
-    ec_enc_bit_logp(&enc, 0, 1);
-    ec_enc_bit_logp(&enc, 0, 2);
-    ec_enc_patch_initial_bits(&enc, 3, 2);
+    oaci_ec_enc_init(&enc, ptr, DATA_SIZE2);
+    oaci_ec_enc_bit_logp(&enc, 0, 1);
+    oaci_ec_enc_bit_logp(&enc, 0, 1);
+    oaci_ec_enc_bit_logp(&enc, 0, 1);
+    oaci_ec_enc_bit_logp(&enc, 0, 1);
+    oaci_ec_enc_bit_logp(&enc, 0, 2);
+    oaci_ec_enc_patch_initial_bits(&enc, 3, 2);
     if (enc.error) {
         fprintf(stderr, "patch_initial_bits failed");
         ret = -1;
     }
-    ec_enc_patch_initial_bits(&enc, 0, 5);
+    oaci_ec_enc_patch_initial_bits(&enc, 0, 5);
     if (!enc.error) {
         fprintf(stderr, "patch_initial_bits didn't fail when it should have");
         ret = -1;
     }
-    ec_enc_done(&enc);
+    oaci_ec_enc_done(&enc);
     if (ec_range_bytes(&enc) != 1 || ptr[0] != 192) {
         fprintf(stderr, "Got %d when expecting 192 for patch_initial_bits", ptr[0]);
         ret = -1;
     }
-    ec_enc_init(&enc, ptr, DATA_SIZE2);
-    ec_enc_bit_logp(&enc, 0, 1);
-    ec_enc_bit_logp(&enc, 0, 1);
-    ec_enc_bit_logp(&enc, 1, 6);
-    ec_enc_bit_logp(&enc, 0, 2);
-    ec_enc_patch_initial_bits(&enc, 0, 2);
+    oaci_ec_enc_init(&enc, ptr, DATA_SIZE2);
+    oaci_ec_enc_bit_logp(&enc, 0, 1);
+    oaci_ec_enc_bit_logp(&enc, 0, 1);
+    oaci_ec_enc_bit_logp(&enc, 1, 6);
+    oaci_ec_enc_bit_logp(&enc, 0, 2);
+    oaci_ec_enc_patch_initial_bits(&enc, 0, 2);
     if (enc.error) {
         fprintf(stderr, "patch_initial_bits failed");
         ret = -1;
     }
-    ec_enc_done(&enc);
+    oaci_ec_enc_done(&enc);
     if (ec_range_bytes(&enc) != 2 || ptr[0] != 63) {
         fprintf(stderr, "Got %d when expecting 63 for patch_initial_bits", ptr[0]);
         ret = -1;
     }
-    ec_enc_init(&enc, ptr, 2);
-    ec_enc_bit_logp(&enc, 0, 2);
+    oaci_ec_enc_init(&enc, ptr, 2);
+    oaci_ec_enc_bit_logp(&enc, 0, 2);
     for (i = 0; i < 48; i++) {
-        ec_enc_bits(&enc, 0, 1);
+        oaci_ec_enc_bits(&enc, 0, 1);
     }
-    ec_enc_done(&enc);
+    oaci_ec_enc_done(&enc);
     if (!enc.error) {
         fprintf(stderr, "Raw bits overfill didn't fail when it should have");
         ret = -1;
     }
-    ec_enc_init(&enc, ptr, 2);
+    oaci_ec_enc_init(&enc, ptr, 2);
     for (i = 0; i < 17; i++) {
-        ec_enc_bits(&enc, 0, 1);
+        oaci_ec_enc_bits(&enc, 0, 1);
     }
-    ec_enc_done(&enc);
+    oaci_ec_enc_done(&enc);
     if (!enc.error) {
         fprintf(stderr, "17 raw bits encoded in two bytes");
         ret = -1;

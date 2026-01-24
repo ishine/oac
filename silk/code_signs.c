@@ -71,7 +71,7 @@
 #define silk_dec_map(a)                  (silk_LSHIFT((a),  1 ) - 1)
 
 /* Encodes signs of excitation */
-void silk_encode_signs(
+void oaci_silk_encode_signs(
     ec_enc                      *psRangeEnc,                        /* I/O  Compressor data structure                   */
     const oac_int8 pulses[],                                       /* I    pulse signal                                */
     oac_int length,                                                /* I    length of input                             */
@@ -87,7 +87,7 @@ void silk_encode_signs(
     icdf[ 1 ] = 0;
     q_ptr = pulses;
     i = silk_SMULBB( 7, silk_ADD_LSHIFT( quantOffsetType, signalType, 1 ));
-    icdf_ptr = &silk_sign_iCDF[ i ];
+    icdf_ptr = &oaci_silk_sign_iCDF[ i ];
     length = silk_RSHIFT( length + SHELL_CODEC_FRAME_LENGTH/2, LOG2_SHELL_CODEC_FRAME_LENGTH );
     for (i = 0; i < length; i++) {
         p = sum_pulses[ i ];
@@ -95,7 +95,7 @@ void silk_encode_signs(
             icdf[ 0 ] = icdf_ptr[ silk_min( p&0x1F, 6 ) ];
             for (j = 0; j < SHELL_CODEC_FRAME_LENGTH; j++) {
                 if (q_ptr[ j ] != 0) {
-                    ec_enc_icdf( psRangeEnc, silk_enc_map( q_ptr[ j ]), icdf, 8 );
+                    oaci_ec_enc_icdf( psRangeEnc, silk_enc_map( q_ptr[ j ]), icdf, 8 );
                 }
             }
         }
@@ -104,7 +104,7 @@ void silk_encode_signs(
 }
 
 /* Decodes signs of excitation */
-void silk_decode_signs(
+void oaci_silk_decode_signs(
     ec_dec                      *psRangeDec,                        /* I/O  Compressor data structure                   */
     oac_int16 pulses[],                                            /* I/O  pulse signal                                */
     oac_int length,                                                /* I    length of input                             */
@@ -120,7 +120,7 @@ void silk_decode_signs(
     icdf[ 1 ] = 0;
     q_ptr = pulses;
     i = silk_SMULBB( 7, silk_ADD_LSHIFT( quantOffsetType, signalType, 1 ));
-    icdf_ptr = &silk_sign_iCDF[ i ];
+    icdf_ptr = &oaci_silk_sign_iCDF[ i ];
     length = silk_RSHIFT( length + SHELL_CODEC_FRAME_LENGTH/2, LOG2_SHELL_CODEC_FRAME_LENGTH );
     for (i = 0; i < length; i++) {
         p = sum_pulses[ i ];
@@ -131,12 +131,12 @@ void silk_decode_signs(
                     /* attach sign */
 #if 0
                     /* conditional implementation */
-                    if (ec_dec_icdf( psRangeDec, icdf, 8 ) == 0) {
+                    if (oaci_ec_dec_icdf( psRangeDec, icdf, 8 ) == 0) {
                         q_ptr[ j ] = -q_ptr[ j ];
                     }
 #else
                     /* implementation with shift, subtraction, multiplication */
-                    q_ptr[ j ] *= silk_dec_map( ec_dec_icdf( psRangeDec, icdf, 8 ));
+                    q_ptr[ j ] *= silk_dec_map( oaci_ec_dec_icdf( psRangeDec, icdf, 8 ));
 #endif
                 }
             }

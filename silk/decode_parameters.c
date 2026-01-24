@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Decode parameters from payload */
-void silk_decode_parameters(
+void oaci_silk_decode_parameters(
     silk_decoder_state          *psDec,                         /* I/O  State                                       */
     silk_decoder_control        *psDecCtrl,                     /* I/O  Decoder control                             */
     oac_int condCoding                                         /* I    The type of conditional coding to use       */
@@ -75,16 +75,16 @@ void silk_decode_parameters(
     const oac_int8 *cbk_ptr_Q7;
 
     /* Dequant Gains */
-    silk_gains_dequant( psDecCtrl->Gains_Q16, psDec->indices.GainsIndices,
+    oaci_silk_gains_dequant( psDecCtrl->Gains_Q16, psDec->indices.GainsIndices,
         &psDec->LastGainIndex, condCoding == CODE_CONDITIONALLY, psDec->nb_subfr );
 
     /****************/
     /* Decode NLSFs */
     /****************/
-    silk_NLSF_decode( pNLSF_Q15, psDec->indices.NLSFIndices, psDec->psNLSF_CB );
+    oaci_silk_NLSF_decode( pNLSF_Q15, psDec->indices.NLSFIndices, psDec->psNLSF_CB );
 
     /* Convert NLSF parameters to AR prediction filter coefficients */
-    silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 1 ], pNLSF_Q15, psDec->LPC_order, psDec->arch );
+    oaci_silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 1 ], pNLSF_Q15, psDec->LPC_order, psDec->arch );
 
     /* If just reset, e.g., because internal Fs changed, do not allow interpolation */
     /* improves the case of packet loss in the first frame after a switch           */
@@ -101,7 +101,7 @@ void silk_decode_parameters(
         }
 
         /* Convert NLSF parameters to AR prediction filter coefficients */
-        silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 0 ], pNLSF0_Q15, psDec->LPC_order, psDec->arch );
+        oaci_silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 0 ], pNLSF0_Q15, psDec->LPC_order, psDec->arch );
     } else {
         /* Copy LPC coefficients for first half from second half */
         silk_memcpy( psDecCtrl->PredCoef_Q12[ 0 ], psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order*sizeof(oac_int16));
@@ -111,8 +111,8 @@ void silk_decode_parameters(
 
     /* After a packet loss do BWE of LPC coefs */
     if (psDec->lossCnt) {
-        silk_bwexpander( psDecCtrl->PredCoef_Q12[ 0 ], psDec->LPC_order, BWE_AFTER_LOSS_Q16 );
-        silk_bwexpander( psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order, BWE_AFTER_LOSS_Q16 );
+        oaci_silk_bwexpander( psDecCtrl->PredCoef_Q12[ 0 ], psDec->LPC_order, BWE_AFTER_LOSS_Q16 );
+        oaci_silk_bwexpander( psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order, BWE_AFTER_LOSS_Q16 );
     }
 
     if (psDec->indices.signalType == TYPE_VOICED) {
@@ -121,11 +121,11 @@ void silk_decode_parameters(
         /*********************/
 
         /* Decode pitch values */
-        silk_decode_pitch( psDec->indices.lagIndex, psDec->indices.contourIndex, psDecCtrl->pitchL, psDec->fs_kHz,
+        oaci_silk_decode_pitch( psDec->indices.lagIndex, psDec->indices.contourIndex, psDecCtrl->pitchL, psDec->fs_kHz,
         psDec->nb_subfr );
 
         /* Decode Codebook Index */
-        cbk_ptr_Q7 = silk_LTP_vq_ptrs_Q7[ psDec->indices.PERIndex ]; /* set pointer to start of codebook */
+        cbk_ptr_Q7 = oaci_silk_LTP_vq_ptrs_Q7[ psDec->indices.PERIndex ]; /* set pointer to start of codebook */
 
         for (k = 0; k < psDec->nb_subfr; k++) {
             Ix = psDec->indices.LTPIndex[ k ];
@@ -138,7 +138,7 @@ void silk_decode_parameters(
         /* Decode LTP scaling */
         /**********************/
         Ix = psDec->indices.LTP_scaleIndex;
-        psDecCtrl->LTP_scale_Q14 = silk_LTPScales_table_Q14[ Ix ];
+        psDecCtrl->LTP_scale_Q14 = oaci_silk_LTPScales_table_Q14[ Ix ];
     } else {
         silk_memset( psDecCtrl->pitchL,      0,             psDec->nb_subfr*sizeof(oac_int));
         silk_memset( psDecCtrl->LTPCoef_Q14, 0, LTP_ORDER*psDec->nb_subfr*sizeof(oac_int16));

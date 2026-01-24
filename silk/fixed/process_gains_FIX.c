@@ -66,7 +66,7 @@
 #include "tuning_parameters.h"
 
 /* Processing of gains */
-void silk_process_gains_FIX(
+void oaci_silk_process_gains_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Encoder state                                                               */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Encoder control                                                             */
     oac_int condCoding                                                     /* I    The type of conditional coding to use                                       */
@@ -78,7 +78,7 @@ void silk_process_gains_FIX(
     /* Gain reduction when LTP coding gain is high */
     if (psEnc->sCmn.indices.signalType == TYPE_VOICED) {
         /*s = -0.5f * silk_sigmoid( 0.25f * ( psEncCtrl->LTPredCodGain - 12.0f ) ); */
-        s_Q16 = -silk_sigm_Q15( silk_RSHIFT_ROUND( psEncCtrl->LTPredCodGain_Q7 - SILK_FIX_CONST( 12.0, 7 ), 4 ));
+        s_Q16 = -oaci_silk_sigm_Q15( silk_RSHIFT_ROUND( psEncCtrl->LTPredCodGain_Q7 - SILK_FIX_CONST( 12.0, 7 ), 4 ));
         for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {
             psEncCtrl->Gains_Q16[ k ] = silk_SMLAWB( psEncCtrl->Gains_Q16[ k ], psEncCtrl->Gains_Q16[ k ], s_Q16 );
         }
@@ -86,7 +86,7 @@ void silk_process_gains_FIX(
 
     /* Limit the quantized signal */
     /* InvMaxSqrVal = pow( 2.0f, 0.33f * ( 21.0f - SNR_dB ) ) / subfr_length; */
-    InvMaxSqrVal_Q16 = silk_DIV32_16( silk_log2lin(
+    InvMaxSqrVal_Q16 = silk_DIV32_16( oaci_silk_log2lin(
         silk_SMULWB( SILK_FIX_CONST( 21 + 16/0.33, 7 ) - psEnc->sCmn.SNR_dB_Q7, SILK_FIX_CONST( 0.33, 16 ))),
     psEnc->sCmn.subfr_length );
 
@@ -124,7 +124,7 @@ void silk_process_gains_FIX(
     psEncCtrl->lastGainIndexPrev = psShapeSt->LastGainIndex;
 
     /* Quantize gains */
-    silk_gains_quant( psEnc->sCmn.indices.GainsIndices, psEncCtrl->Gains_Q16,
+    oaci_silk_gains_quant( psEnc->sCmn.indices.GainsIndices, psEncCtrl->Gains_Q16,
         &psShapeSt->LastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
     /* Set quantizer offset for voiced signals. Larger offset when LTP coding gain is low or tilt is high (ie low-pass) */
@@ -137,7 +137,7 @@ void silk_process_gains_FIX(
     }
 
     /* Quantizer boundary adjustment */
-    quant_offset_Q10 = silk_Quantization_Offsets_Q10[ psEnc->sCmn.indices.signalType>>
+    quant_offset_Q10 = oaci_silk_Quantization_Offsets_Q10[ psEnc->sCmn.indices.signalType>>
                                                       1 ][ psEnc->sCmn.indices.quantOffsetType ];
     psEncCtrl->Lambda_Q10 = SILK_FIX_CONST( LAMBDA_OFFSET, 10 )
                             + silk_SMULBB( SILK_FIX_CONST( LAMBDA_DELAYED_DECISIONS, 10 ),

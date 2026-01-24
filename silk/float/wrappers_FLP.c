@@ -67,7 +67,7 @@
 /* Wrappers. Calls flp / fix code */
 
 /* Convert AR filter coefficients to NLSF parameters */
-void silk_A2NLSF_FLP(
+void oaci_silk_A2NLSF_FLP(
     oac_int16                      *NLSF_Q15,                          /* O    NLSF vector      [ LPC_order ]              */
     const silk_float                *pAR,                               /* I    LPC coefficients [ LPC_order ]              */
     const oac_int LPC_order                                            /* I    LPC order                                   */
@@ -79,11 +79,11 @@ void silk_A2NLSF_FLP(
         a_fix_Q16[ i ] = silk_float2int( pAR[ i ]*65536.0f );
     }
 
-    silk_A2NLSF( NLSF_Q15, a_fix_Q16, LPC_order );
+    oaci_silk_A2NLSF( NLSF_Q15, a_fix_Q16, LPC_order );
 }
 
 /* Convert LSF parameters to AR prediction filter coefficients */
-void silk_NLSF2A_FLP(
+void oaci_silk_NLSF2A_FLP(
     silk_float                      *pAR,                               /* O    LPC coefficients [ LPC_order ]              */
     const oac_int16                *NLSF_Q15,                          /* I    NLSF vector      [ LPC_order ]              */
     const oac_int LPC_order,                                           /* I    LPC order                                   */
@@ -92,7 +92,7 @@ void silk_NLSF2A_FLP(
     oac_int i;
     oac_int16 a_fix_Q12[ MAX_LPC_ORDER ];
 
-    silk_NLSF2A( a_fix_Q12, NLSF_Q15, LPC_order, arch );
+    oaci_silk_NLSF2A( a_fix_Q12, NLSF_Q15, LPC_order, arch );
 
     for (i = 0; i < LPC_order; i++) {
         pAR[ i ] = ( silk_float )a_fix_Q12[ i ]*(1.0f/4096.0f);
@@ -102,7 +102,7 @@ void silk_NLSF2A_FLP(
 /******************************************/
 /* Floating-point NLSF processing wrapper */
 /******************************************/
-void silk_process_NLSFs_FLP(
+void oaci_silk_process_NLSFs_FLP(
     silk_encoder_state              *psEncC,                            /* I/O  Encoder state                               */
     silk_float PredCoef[ 2 ][ MAX_LPC_ORDER ],                          /* O    Prediction coefficients                     */
     oac_int16 NLSF_Q15[      MAX_LPC_ORDER ],                          /* I/O  Normalized LSFs (quant out) (0 - (2^15-1))  */
@@ -111,7 +111,7 @@ void silk_process_NLSFs_FLP(
     oac_int i, j;
     oac_int16 PredCoef_Q12[ 2 ][ MAX_LPC_ORDER ];
 
-    silk_process_NLSFs( psEncC, PredCoef_Q12, NLSF_Q15, prev_NLSF_Q15);
+    oaci_silk_process_NLSFs( psEncC, PredCoef_Q12, NLSF_Q15, prev_NLSF_Q15);
 
     for (j = 0; j < 2; j++) {
         for (i = 0; i < psEncC->predictLPCOrder; i++) {
@@ -123,7 +123,7 @@ void silk_process_NLSFs_FLP(
 /****************************************/
 /* Floating-point Silk NSQ wrapper      */
 /****************************************/
-void silk_NSQ_wrapper_FLP(
+void oaci_silk_NSQ_wrapper_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     SideInfoIndices                 *psIndices,                         /* I/O  Quantization indices                        */
@@ -178,7 +178,7 @@ void silk_NSQ_wrapper_FLP(
     }
 
     if (psIndices->signalType == TYPE_VOICED) {
-        LTP_scale_Q14 = silk_LTPScales_table_Q14[ psIndices->LTP_scaleIndex ];
+        LTP_scale_Q14 = oaci_silk_LTPScales_table_Q14[ psIndices->LTP_scaleIndex ];
     } else {
         LTP_scale_Q14 = 0;
     }
@@ -190,11 +190,11 @@ void silk_NSQ_wrapper_FLP(
 
     /* Call NSQ */
     if (psEnc->sCmn.nStatesDelayedDecision > 1 || psEnc->sCmn.warping_Q16 > 0) {
-        silk_NSQ_del_dec( &psEnc->sCmn, psNSQ, psIndices, x16, pulses, PredCoef_Q12[ 0 ], LTPCoef_Q14,
+        oaci_silk_NSQ_del_dec( &psEnc->sCmn, psNSQ, psIndices, x16, pulses, PredCoef_Q12[ 0 ], LTPCoef_Q14,
             AR_Q13, HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, psEncCtrl->pitchL, Lambda_Q10, LTP_scale_Q14,
         psEnc->sCmn.arch );
     } else {
-        silk_NSQ( &psEnc->sCmn, psNSQ, psIndices, x16, pulses, PredCoef_Q12[ 0 ], LTPCoef_Q14,
+        oaci_silk_NSQ( &psEnc->sCmn, psNSQ, psIndices, x16, pulses, PredCoef_Q12[ 0 ], LTPCoef_Q14,
             AR_Q13, HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, psEncCtrl->pitchL, Lambda_Q10, LTP_scale_Q14,
         psEnc->sCmn.arch );
     }
@@ -203,7 +203,7 @@ void silk_NSQ_wrapper_FLP(
 /***********************************************/
 /* Floating-point Silk LTP quantiation wrapper */
 /***********************************************/
-void silk_quant_LTP_gains_FLP(
+void oaci_silk_quant_LTP_gains_FLP(
     silk_float B[ MAX_NB_SUBFR * LTP_ORDER ],                           /* O    Quantized LTP gains                            */
     oac_int8 cbk_index[ MAX_NB_SUBFR ],                                /* O    Codebook index                              */
     oac_int8                       *periodicity_index,                 /* O    Periodicity index                           */
@@ -229,7 +229,7 @@ void silk_quant_LTP_gains_FLP(
         xX_Q17[ i ] = (oac_int32)silk_float2int( xX[ i ]*131072.0f );
     } while (++i < nb_subfr*LTP_ORDER);
 
-    silk_quant_LTP_gains( B_Q14, cbk_index, periodicity_index, sum_log_gain_Q7, &pred_gain_dB_Q7, XX_Q17, xX_Q17,
+    oaci_silk_quant_LTP_gains( B_Q14, cbk_index, periodicity_index, sum_log_gain_Q7, &pred_gain_dB_Q7, XX_Q17, xX_Q17,
     subfr_len, nb_subfr, arch );
 
     for (i = 0; i < nb_subfr*LTP_ORDER; i++) {

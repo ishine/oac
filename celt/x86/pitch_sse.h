@@ -71,7 +71,7 @@
 #endif
 
 #if defined(OAC_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)
-void xcorr_kernel_sse4_1(
+void oaci_xcorr_kernel_sse4_1(
     const oac_int16 *x,
     const oac_int16 *y,
     oac_val32 sum[4],
@@ -79,7 +79,7 @@ void xcorr_kernel_sse4_1(
 #endif
 
 #if defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)
-void xcorr_kernel_sse(
+void oaci_xcorr_kernel_sse(
     const oac_val16 *x,
     const oac_val16 *y,
     oac_val32 sum[4],
@@ -88,45 +88,45 @@ void xcorr_kernel_sse(
 
 #if defined(OAC_X86_PRESUME_SSE4_1) && defined(FIXED_POINT)
 # define OVERRIDE_XCORR_KERNEL
-# define xcorr_kernel(x, y, sum, len, arch) \
-        ((void)arch, xcorr_kernel_sse4_1(x, y, sum, len))
+# define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((void)arch, oaci_xcorr_kernel_sse4_1(x, y, sum, len))
 
 #elif defined(OAC_X86_PRESUME_SSE) && !defined(FIXED_POINT)
 # define OVERRIDE_XCORR_KERNEL
-# define xcorr_kernel(x, y, sum, len, arch) \
-        ((void)arch, xcorr_kernel_sse(x, y, sum, len))
+# define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((void)arch, oaci_xcorr_kernel_sse(x, y, sum, len))
 
 #elif defined(OAC_HAVE_RTCD) &&  ((defined(OAC_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)) \
     || (defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)))
 
-extern void (*const XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y,
                     oac_val32 sum[4],
                     int len);
 
 # define OVERRIDE_XCORR_KERNEL
-# define xcorr_kernel(x, y, sum, len, arch) \
-        ((*XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
+# define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((*OACI_XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
 
 #endif
 
 #if defined(OAC_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)
-oac_val32 celt_inner_prod_sse4_1(
+oac_val32 oaci_celt_inner_prod_sse4_1(
     const oac_int16 *x,
     const oac_int16 *y,
     int N);
 #endif
 
 #if defined(OAC_X86_MAY_HAVE_SSE2) && defined(FIXED_POINT)
-oac_val32 celt_inner_prod_sse2(
+oac_val32 oaci_celt_inner_prod_sse2(
     const oac_int16 *x,
     const oac_int16 *y,
     int N);
 #endif
 
 #if defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)
-oac_val32 celt_inner_prod_sse(
+oac_val32 oaci_celt_inner_prod_sse(
     const oac_val16 *x,
     const oac_val16 *y,
     int N);
@@ -135,45 +135,45 @@ oac_val32 celt_inner_prod_sse(
 
 #if defined(OAC_X86_PRESUME_SSE4_1) && defined(FIXED_POINT)
 # define OVERRIDE_CELT_INNER_PROD
-# define celt_inner_prod(x, y, N, arch) \
-        ((void)arch, celt_inner_prod_sse4_1(x, y, N))
+# define oaci_celt_inner_prod(x, y, N, arch) \
+        ((void)arch, oaci_celt_inner_prod_sse4_1(x, y, N))
 
 #elif defined(OAC_X86_PRESUME_SSE2) && defined(FIXED_POINT) && !defined(OAC_X86_MAY_HAVE_SSE4_1)
 # define OVERRIDE_CELT_INNER_PROD
-# define celt_inner_prod(x, y, N, arch) \
-        ((void)arch, celt_inner_prod_sse2(x, y, N))
+# define oaci_celt_inner_prod(x, y, N, arch) \
+        ((void)arch, oaci_celt_inner_prod_sse2(x, y, N))
 
 #elif defined(OAC_X86_PRESUME_SSE) && !defined(FIXED_POINT)
 # define OVERRIDE_CELT_INNER_PROD
-# define celt_inner_prod(x, y, N, arch) \
-        ((void)arch, celt_inner_prod_sse(x, y, N))
+# define oaci_celt_inner_prod(x, y, N, arch) \
+        ((void)arch, oaci_celt_inner_prod_sse(x, y, N))
 
 
 #elif defined(OAC_HAVE_RTCD) && (((defined(OAC_X86_MAY_HAVE_SSE4_1) || defined(OAC_X86_MAY_HAVE_SSE2)) \
     && defined(FIXED_POINT)) || \
     (defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)))
 
-extern oac_val32 (*const CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+extern oac_val32 (*const OACI_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y,
                     int N);
 
 # define OVERRIDE_CELT_INNER_PROD
-# define celt_inner_prod(x, y, N, arch) \
-        ((*CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
+# define oaci_celt_inner_prod(x, y, N, arch) \
+        ((*OACI_CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
 
 #endif
 
 #if defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)
 
-void dual_inner_prod_sse(const oac_val16 *x,
+void oaci_dual_inner_prod_sse(const oac_val16 *x,
     const oac_val16 *y01,
     const oac_val16 *y02,
     int N,
     oac_val32       *xy1,
     oac_val32       *xy2);
 
-void comb_filter_const_sse(oac_val32 *y,
+void oaci_comb_filter_const_sse(oac_val32 *y,
     oac_val32 *x,
     int T,
     int N,
@@ -185,16 +185,16 @@ void comb_filter_const_sse(oac_val32 *y,
 # if defined(OAC_X86_PRESUME_SSE)
 #  define OVERRIDE_DUAL_INNER_PROD
 #  define OVERRIDE_COMB_FILTER_CONST
-#  define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
-        ((void)(arch), dual_inner_prod_sse(x, y01, y02, N, xy1, xy2))
+#  define oaci_dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
+        ((void)(arch), oaci_dual_inner_prod_sse(x, y01, y02, N, xy1, xy2))
 
-#  define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
-        ((void)(arch), comb_filter_const_sse(y, x, T, N, g10, g11, g12))
+#  define oaci_comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
+        ((void)(arch), oaci_comb_filter_const_sse(y, x, T, N, g10, g11, g12))
 # elif defined(OAC_HAVE_RTCD)
 
 #  define OVERRIDE_DUAL_INNER_PROD
 #  define OVERRIDE_COMB_FILTER_CONST
-extern void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
               const oac_val16 *x,
               const oac_val16 *y01,
               const oac_val16 *y02,
@@ -202,10 +202,10 @@ extern void (*const DUAL_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
               oac_val32       *xy1,
               oac_val32       *xy2);
 
-#  define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
-        ((*DUAL_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y01, y02, N, xy1, xy2))
+#  define oaci_dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
+        ((*OACI_DUAL_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y01, y02, N, xy1, xy2))
 
-extern void (*const COMB_FILTER_CONST_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_COMB_FILTER_CONST_IMPL[OAC_ARCHMASK + 1])(
               oac_val32 *y,
               oac_val32 *x,
               int T,
@@ -214,24 +214,24 @@ extern void (*const COMB_FILTER_CONST_IMPL[OAC_ARCHMASK + 1])(
               oac_val16 g11,
               oac_val16 g12);
 
-#  define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
-        ((*COMB_FILTER_CONST_IMPL[(arch)&OAC_ARCHMASK])(y, x, T, N, g10, g11, g12))
+#  define oaci_comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
+        ((*OACI_COMB_FILTER_CONST_IMPL[(arch)&OAC_ARCHMASK])(y, x, T, N, g10, g11, g12))
 
 #  define NON_STATIC_COMB_FILTER_CONST_C
 
 # endif
 
-void celt_pitch_xcorr_avx2(const float *_x, const float *_y, float *xcorr, int len, int max_pitch, int arch);
+void oaci_celt_pitch_xcorr_avx2(const float *_x, const float *_y, float *xcorr, int len, int max_pitch, int arch);
 
 # if defined(OAC_X86_PRESUME_AVX2)
 
 #  define OVERRIDE_PITCH_XCORR
-#  define celt_pitch_xcorr celt_pitch_xcorr_avx2
+#  define oaci_celt_pitch_xcorr oaci_celt_pitch_xcorr_avx2
 
 # elif defined(OAC_HAVE_RTCD) && defined(OAC_X86_MAY_HAVE_AVX2)
 
 #  define OVERRIDE_PITCH_XCORR
-extern void (*const PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
               const float *_x,
               const float *_y,
               float *xcorr,
@@ -240,8 +240,8 @@ extern void (*const PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
               int arch
     );
 
-#  define celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
-        ((*PITCH_XCORR_IMPL[(arch)&OAC_ARCHMASK])(_x, _y, xcorr, len, max_pitch, arch))
+#  define oaci_celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
+        ((*OACI_PITCH_XCORR_IMPL[(arch)&OAC_ARCHMASK])(_x, _y, xcorr, len, max_pitch, arch))
 
 
 # endif /* OAC_X86_PRESUME_AVX2 && !OAC_HAVE_RTCD */

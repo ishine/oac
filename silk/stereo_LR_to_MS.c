@@ -66,7 +66,7 @@
 #include "stack_alloc.h"
 
 /* Convert Left/Right stereo signal to adaptive Mid/Side representation */
-void silk_stereo_LR_to_MS(
+void oaci_silk_stereo_LR_to_MS(
     stereo_enc_state            *state,                         /* I/O  State                                       */
     oac_int16 x1[],                                            /* I/O  Left input signal, becomes mid signal       */
     oac_int16 x2[],                                            /* I/O  Right input signal, becomes side signal     */
@@ -130,9 +130,9 @@ void silk_stereo_LR_to_MS(
                       SILK_FIX_CONST( STEREO_RATIO_SMOOTH_COEF,     16 );
     smooth_coef_Q16 = silk_SMULWB( silk_SMULBB( prev_speech_act_Q8, prev_speech_act_Q8 ), smooth_coef_Q16 );
 
-    pred_Q13[ 0 ] = silk_stereo_find_predictor( &LP_ratio_Q14, LP_mid, LP_side, &state->mid_side_amp_Q0[ 0 ],
+    pred_Q13[ 0 ] = oaci_silk_stereo_find_predictor( &LP_ratio_Q14, LP_mid, LP_side, &state->mid_side_amp_Q0[ 0 ],
     frame_length, smooth_coef_Q16 );
-    pred_Q13[ 1 ] = silk_stereo_find_predictor( &HP_ratio_Q14, HP_mid, HP_side, &state->mid_side_amp_Q0[ 2 ],
+    pred_Q13[ 1 ] = oaci_silk_stereo_find_predictor( &HP_ratio_Q14, HP_mid, HP_side, &state->mid_side_amp_Q0[ 2 ],
     frame_length, smooth_coef_Q16 );
     /* Ratio of the norms of residual and mid signals */
     frac_Q16 = silk_SMLABB( HP_ratio_Q14, LP_ratio_Q14, 3 );
@@ -172,7 +172,7 @@ void silk_stereo_LR_to_MS(
         width_Q14 = 0;
         pred_Q13[ 0 ] = 0;
         pred_Q13[ 1 ] = 0;
-        silk_stereo_quant_pred( pred_Q13, ix );
+        oaci_silk_stereo_quant_pred( pred_Q13, ix );
     } else if (state->width_prev_Q14 == 0
                && (8*total_rate_bps < 13*min_mid_rate_bps || silk_SMULWB( frac_Q16,
     state->smth_width_Q14 ) < SILK_FIX_CONST( 0.05, 14 ))) {
@@ -180,7 +180,7 @@ void silk_stereo_LR_to_MS(
         /* Scale down and quantize predictors */
         pred_Q13[ 0 ] = silk_RSHIFT( silk_SMULBB( state->smth_width_Q14, pred_Q13[ 0 ] ), 14 );
         pred_Q13[ 1 ] = silk_RSHIFT( silk_SMULBB( state->smth_width_Q14, pred_Q13[ 1 ] ), 14 );
-        silk_stereo_quant_pred( pred_Q13, ix );
+        oaci_silk_stereo_quant_pred( pred_Q13, ix );
         /* Collapse stereo width */
         width_Q14 = 0;
         pred_Q13[ 0 ] = 0;
@@ -195,20 +195,20 @@ void silk_stereo_LR_to_MS(
         /* Scale down and quantize predictors */
         pred_Q13[ 0 ] = silk_RSHIFT( silk_SMULBB( state->smth_width_Q14, pred_Q13[ 0 ] ), 14 );
         pred_Q13[ 1 ] = silk_RSHIFT( silk_SMULBB( state->smth_width_Q14, pred_Q13[ 1 ] ), 14 );
-        silk_stereo_quant_pred( pred_Q13, ix );
+        oaci_silk_stereo_quant_pred( pred_Q13, ix );
         /* Collapse stereo width */
         width_Q14 = 0;
         pred_Q13[ 0 ] = 0;
         pred_Q13[ 1 ] = 0;
     } else if (state->smth_width_Q14 > SILK_FIX_CONST( 0.95, 14 )) {
         /* Full-width stereo coding */
-        silk_stereo_quant_pred( pred_Q13, ix );
+        oaci_silk_stereo_quant_pred( pred_Q13, ix );
         width_Q14 = SILK_FIX_CONST( 1, 14 );
     } else {
         /* Reduced-width stereo coding; scale down and quantize predictors */
         pred_Q13[ 0 ] = silk_RSHIFT( silk_SMULBB( state->smth_width_Q14, pred_Q13[ 0 ] ), 14 );
         pred_Q13[ 1 ] = silk_RSHIFT( silk_SMULBB( state->smth_width_Q14, pred_Q13[ 1 ] ), 14 );
-        silk_stereo_quant_pred( pred_Q13, ix );
+        oaci_silk_stereo_quant_pred( pred_Q13, ix );
         width_Q14 = state->smth_width_Q14;
     }
 

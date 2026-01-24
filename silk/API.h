@@ -87,7 +87,7 @@ typedef struct {
 /***********************************************/
 /* Get size in bytes of the Silk encoder state */
 /***********************************************/
-oac_int silk_Get_Encoder_Size(                         /* O    Returns error code                              */
+oac_int oaci_silk_Get_Encoder_Size(                         /* O    Returns error code                              */
     oac_int                        *encSizeBytes,      /* O    Number of bytes in SILK encoder state           */
     oac_int channels                                   /* I    Number of channels                              */
     );
@@ -95,7 +95,7 @@ oac_int silk_Get_Encoder_Size(                         /* O    Returns error cod
 /*************************/
 /* Init or reset encoder */
 /*************************/
-oac_int silk_InitEncoder(                              /* O    Returns error code                              */
+oac_int oaci_silk_InitEncoder(                              /* O    Returns error code                              */
     void                            *encState,          /* I/O  State                                           */
     int channels,                                       /* I    Number of channels                              */
     int arch,                                           /* I    Run-time architecture                           */
@@ -107,7 +107,7 @@ oac_int silk_InitEncoder(                              /* O    Returns error cod
 /**************************/
 /* Note: if prefillFlag is set, the input must contain 10 ms of audio, irrespective of what                     */
 /* encControl->payloadSize_ms is set to                                                                         */
-oac_int silk_Encode(                                   /* O    Returns error code                              */
+oac_int oaci_silk_Encode(                                   /* O    Returns error code                              */
     void                            *encState,          /* I/O  State                                           */
     silk_EncControlStruct           *encControl,        /* I    Control status                                  */
     const oac_res                  *samplesIn,         /* I    Speech sample input vector                      */
@@ -126,7 +126,7 @@ oac_int silk_Encode(                                   /* O    Returns error cod
 /***********************************************/
 /* Load OSCE models from external data pointer */
 /***********************************************/
-oac_int silk_LoadOSCEModels(
+oac_int oaci_silk_LoadOSCEModels(
     void *decState,                                     /* O    I/O State                                       */
     const unsigned char *data,                          /* I    pointer to binary blob                          */
     int len                                             /* I    length of binary blob data                      */
@@ -135,25 +135,25 @@ oac_int silk_LoadOSCEModels(
 /***********************************************/
 /* Get size in bytes of the Silk decoder state */
 /***********************************************/
-oac_int silk_Get_Decoder_Size(                         /* O    Returns error code                              */
+oac_int oaci_silk_Get_Decoder_Size(                         /* O    Returns error code                              */
     oac_int                        *decSizeBytes       /* O    Number of bytes in SILK decoder state           */
     );
 
 /*************************/
 /* Init and Reset decoder */
 /*************************/
-oac_int silk_ResetDecoder(                              /* O    Returns error code                              */
+oac_int oaci_silk_ResetDecoder(                              /* O    Returns error code                              */
     void                            *decState            /* I/O  State                                           */
     );
 
-oac_int silk_InitDecoder(                              /* O    Returns error code                              */
+oac_int oaci_silk_InitDecoder(                              /* O    Returns error code                              */
     void                            *decState           /* I/O  State                                           */
     );
 
 /******************/
 /* Decode a frame */
 /******************/
-oac_int silk_Decode(                                   /* O    Returns error code                              */
+oac_int oaci_silk_Decode(                                   /* O    Returns error code                              */
     void*                           decState,           /* I/O  State                                           */
     silk_DecControlStruct*decControl,                   /* I/O  Control Structure                               */
     oac_int lostFlag,                                  /* I    0: no loss, 1 loss, 2 decode fec                */

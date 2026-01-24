@@ -75,7 +75,7 @@ static const oac_int32 tiltWeights[ VAD_N_BANDS ] = { 30000, 6000, -12000, -1200
 /***************************************/
 /* Get the speech activity level in Q8 */
 /***************************************/
-oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if success                  */
+oac_int oaci_silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if success                  */
     silk_encoder_state          *psEncC,            /* I/O  Encoder state                               */
     const oac_int16 pIn[]                          /* I    PCM input                                   */
     ) {
@@ -100,7 +100,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     oac_int ret_c;
 
     silk_memcpy( &psEncC_c, psEncC, sizeof(psEncC_c));
-    ret_c = silk_VAD_GetSA_Q8_c( &psEncC_c, pIn );
+    ret_c = oaci_silk_VAD_GetSA_Q8_c( &psEncC_c, pIn );
 #endif
 
     /* Safety checks */
@@ -131,15 +131,15 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     ALLOC( X, X_offset[ 3 ] + decimated_framelength1, oac_int16 );
 
     /* 0-8 kHz to 0-4 kHz and 4-8 kHz */
-    silk_ana_filt_bank_1( pIn, &psSilk_VAD->AnaState[  0 ],
+    oaci_silk_ana_filt_bank_1( pIn, &psSilk_VAD->AnaState[  0 ],
         X, &X[ X_offset[ 3 ] ], psEncC->frame_length );
 
     /* 0-4 kHz to 0-2 kHz and 2-4 kHz */
-    silk_ana_filt_bank_1( X, &psSilk_VAD->AnaState1[ 0 ],
+    oaci_silk_ana_filt_bank_1( X, &psSilk_VAD->AnaState1[ 0 ],
         X, &X[ X_offset[ 2 ] ], decimated_framelength1 );
 
     /* 0-2 kHz to 0-1 kHz and 1-2 kHz */
-    silk_ana_filt_bank_1( X, &psSilk_VAD->AnaState2[ 0 ],
+    oaci_silk_ana_filt_bank_1( X, &psSilk_VAD->AnaState2[ 0 ],
         X, &X[ X_offset[ 1 ] ], decimated_framelength2 );
 
     /*********************************************/
@@ -213,7 +213,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /********************/
     /* Noise estimation */
     /********************/
-    silk_VAD_GetNoiseLevels( &Xnrg[ 0 ], psSilk_VAD );
+    oaci_silk_VAD_GetNoiseLevels( &Xnrg[ 0 ], psSilk_VAD );
 
     /***********************************************/
     /* Signal-plus-noise to noise ratio estimation */
@@ -231,7 +231,7 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
             }
 
             /* Convert to log domain */
-            SNR_Q7 = silk_lin2log( NrgToNoiseRatio_Q8[ b ] ) - 8*128;
+            SNR_Q7 = oaci_silk_lin2log( NrgToNoiseRatio_Q8[ b ] ) - 8*128;
 
             /* Sum-of-squares */
             sumSquared = silk_SMLABB( sumSquared, SNR_Q7, SNR_Q7 );          /* Q14 */
@@ -256,12 +256,12 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
     /*********************************/
     /* Speech Probability Estimation */
     /*********************************/
-    SA_Q15 = silk_sigm_Q15( silk_SMULWB( VAD_SNR_FACTOR_Q16, pSNR_dB_Q7 ) - VAD_NEGATIVE_OFFSET_Q5 );
+    SA_Q15 = oaci_silk_sigm_Q15( silk_SMULWB( VAD_SNR_FACTOR_Q16, pSNR_dB_Q7 ) - VAD_NEGATIVE_OFFSET_Q5 );
 
     /**************************/
     /* Frequency Tilt Measure */
     /**************************/
-    psEncC->input_tilt_Q15 = silk_LSHIFT( silk_sigm_Q15( input_tilt ) - 16384, 1 );
+    psEncC->input_tilt_Q15 = silk_LSHIFT( oaci_silk_sigm_Q15( input_tilt ) - 16384, 1 );
 
     /**************************************************/
     /* Scale the sigmoid output based on power levels */
@@ -305,9 +305,9 @@ oac_int silk_VAD_GetSA_Q8_sse4_1(                  /* O    Return value, 0 if su
             NrgToNoiseRatio_Q8[ b ] - psSilk_VAD->NrgRatioSmth_Q8[ b ], smooth_coef_Q16 );
 
         /* signal to noise ratio in dB per band */
-        SNR_Q7 = 3*(silk_lin2log( psSilk_VAD->NrgRatioSmth_Q8[b] ) - 8*128);
+        SNR_Q7 = 3*(oaci_silk_lin2log( psSilk_VAD->NrgRatioSmth_Q8[b] ) - 8*128);
         /* quality = sigmoid( 0.25 * ( SNR_dB - 16 ) ); */
-        psEncC->input_quality_bands_Q15[ b ] = silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16*128, 4 ));
+        psEncC->input_quality_bands_Q15[ b ] = oaci_silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16*128, 4 ));
     }
 
 #ifdef OAC_CHECK_ASM

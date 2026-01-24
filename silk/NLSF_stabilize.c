@@ -77,7 +77,7 @@
 #define MAX_LOOPS        20
 
 /* NLSF stabilizer, for a single input data vector */
-void silk_NLSF_stabilize(
+void oaci_silk_NLSF_stabilize(
     oac_int16            *NLSF_Q15,                /* I/O   Unstable/stabilized normalized LSF vector in Q15 [L]       */
     const oac_int16            *NDeltaMin_Q15,     /* I     Min distance vector, NDeltaMin_Q15[L] must be >= 1 [L+1]   */
     const oac_int L                                /* I     Number of NLSF parameters in the input vector              */
@@ -155,7 +155,7 @@ void silk_NLSF_stabilize(
         /* Insertion sort (fast for already almost sorted arrays):   */
         /* Best case:  O(n)   for an already sorted array            */
         /* Worst case: O(n^2) for an inversely sorted array          */
-        silk_insertion_sort_increasing_all_values_int16( &NLSF_Q15[0], L );
+        oaci_silk_insertion_sort_increasing_all_values_int16( &NLSF_Q15[0], L );
 
         /* First NLSF should be no less than NDeltaMin[0] */
         NLSF_Q15[0] = silk_max_int( NLSF_Q15[0], NDeltaMin_Q15[0] );

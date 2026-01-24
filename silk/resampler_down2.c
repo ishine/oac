@@ -66,7 +66,7 @@
 #include "resampler_rom.h"
 
 /* Downsample by a factor 2 */
-void silk_resampler_down2(
+void oaci_silk_resampler_down2(
     oac_int32                  *S,                 /* I/O  State vector [ 2 ]                                          */
     oac_int16                  *out,               /* O    Output signal [ floor(len/2) ]                              */
     const oac_int16            *in,                /* I    Input signal [ len ]                                        */

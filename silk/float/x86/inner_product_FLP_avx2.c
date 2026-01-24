@@ -68,7 +68,7 @@
 
 
 /* inner product of two silk_float arrays, with result as double */
-double silk_inner_product_FLP_avx2(
+double oaci_silk_inner_product_FLP_avx2(
     const silk_float    *data1,
     const silk_float    *data2,
     oac_int dataSize)                                {

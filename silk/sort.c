@@ -70,7 +70,7 @@
 
 #include "SigProc_FIX.h"
 
-void silk_insertion_sort_increasing(
+void oaci_silk_insertion_sort_increasing(
     oac_int32           *a,             /* I/O   Unsorted / Sorted vector               */
     oac_int             *idx,           /* O     Index vector for the sorted elements   */
     const oac_int L,                    /* I     Vector length                          */
@@ -117,7 +117,7 @@ void silk_insertion_sort_increasing(
 
 #ifdef FIXED_POINT
 /* This function is only used by the fixed-point build */
-void silk_insertion_sort_decreasing_int16(
+void oaci_silk_insertion_sort_decreasing_int16(
     oac_int16                  *a,                 /* I/O   Unsorted / Sorted vector                                   */
     oac_int                    *idx,               /* O     Index vector for the sorted elements                       */
     const oac_int L,                               /* I     Vector length                                              */
@@ -163,7 +163,7 @@ void silk_insertion_sort_decreasing_int16(
 }
 #endif
 
-void silk_insertion_sort_increasing_all_values_int16(
+void oaci_silk_insertion_sort_increasing_all_values_int16(
     oac_int16                 *a,                  /* I/O   Unsorted / Sorted vector                                   */
     const oac_int L                                /* I     Vector length                                              */
     ) {

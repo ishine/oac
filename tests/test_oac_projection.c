@@ -131,13 +131,13 @@ void test_simple_matrix(void) {
     output_pcm = (oac_res *)oac_alloc(sizeof(oac_res)*SIMPLE_MATRIX_OUTPUT_SIZE);
 
     /* Initialize matrix */
-    simple_matrix_size = mapping_matrix_get_size(simple_matrix_params.rows,
+    simple_matrix_size = oaci_mapping_matrix_get_size(simple_matrix_params.rows,
     simple_matrix_params.cols);
     if (!simple_matrix_size)
         test_failed();
 
     simple_matrix = (MappingMatrix *)oac_alloc(simple_matrix_size);
-    mapping_matrix_init(simple_matrix, simple_matrix_params.rows,
+    oaci_mapping_matrix_init(simple_matrix, simple_matrix_params.rows,
     simple_matrix_params.cols, simple_matrix_params.gain, simple_matrix_data,
     sizeof(simple_matrix_data));
 
@@ -150,7 +150,7 @@ void test_simple_matrix(void) {
     for (i = 0; i < SIMPLE_MATRIX_OUTPUT_SIZE; i++)
         output_pcm[i] = 0;
     for (i = 0; i < simple_matrix->rows; i++) {
-        mapping_matrix_multiply_channel_in_short(simple_matrix,
+        oaci_mapping_matrix_multiply_channel_in_short(simple_matrix,
       input_int16, simple_matrix->cols, &output_pcm[i], i,
       simple_matrix->rows, SIMPLE_MATRIX_FRAME_SIZE);
     }
@@ -162,7 +162,7 @@ void test_simple_matrix(void) {
     for (i = 0; i < SIMPLE_MATRIX_OUTPUT_SIZE; i++)
         output_int16[i] = 0;
     for (i = 0; i < simple_matrix->cols; i++) {
-        mapping_matrix_multiply_channel_out_short(simple_matrix,
+        oaci_mapping_matrix_multiply_channel_out_short(simple_matrix,
       &input_pcm[i], i, simple_matrix->cols, output_int16,
       simple_matrix->rows, SIMPLE_MATRIX_FRAME_SIZE);
     }
@@ -175,7 +175,7 @@ void test_simple_matrix(void) {
     for (i = 0; i < SIMPLE_MATRIX_OUTPUT_SIZE; i++)
         output_pcm[i] = 0;
     for (i = 0; i < simple_matrix->rows; i++) {
-        mapping_matrix_multiply_channel_in_float(simple_matrix,
+        oaci_mapping_matrix_multiply_channel_in_float(simple_matrix,
       input_pcm, simple_matrix->cols, &output_pcm[i], i,
       simple_matrix->rows, SIMPLE_MATRIX_FRAME_SIZE);
     }
@@ -187,7 +187,7 @@ void test_simple_matrix(void) {
     for (i = 0; i < SIMPLE_MATRIX_OUTPUT_SIZE; i++)
         output_pcm[i] = 0;
     for (i = 0; i < simple_matrix->cols; i++) {
-        mapping_matrix_multiply_channel_out_float(simple_matrix,
+        oaci_mapping_matrix_multiply_channel_out_float(simple_matrix,
       &input_pcm[i], i, simple_matrix->cols, output_pcm,
       simple_matrix->rows, SIMPLE_MATRIX_FRAME_SIZE);
     }

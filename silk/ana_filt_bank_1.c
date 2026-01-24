@@ -69,7 +69,7 @@ static const oac_int16 A_fb1_20 = 5394<<1;
 static const oac_int16 A_fb1_21 = -24290; /* (oac_int16)(20623 << 1) */
 
 /* Split signal into two decimated bands using first-order allpass filters */
-void silk_ana_filt_bank_1(
+void oaci_silk_ana_filt_bank_1(
     const oac_int16            *in,                /* I    Input signal [N]                                            */
     oac_int32                  *S,                 /* I/O  State vector [2]                                            */
     oac_int16                  *outL,              /* O    Low band [N/2]                                              */

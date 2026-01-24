@@ -100,19 +100,19 @@ static inline float vmaxvf(float32x4_t a) {
 # endif
 }
 
-void celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
+void oaci_celt_float2int16_neon(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
 # if defined(OAC_HAVE_RTCD) && \
     (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
 extern void
-(*const CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK + 1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
+(*const OACI_CELT_FLOAT2INT16_IMPL[OAC_ARCHMASK + 1])(const float * OAC_RESTRICT in, short * OAC_RESTRICT out, int cnt);
 
 #  define OVERRIDE_FLOAT2INT16 (1)
-#  define celt_float2int16(in, out, cnt, arch) \
-        ((*CELT_FLOAT2INT16_IMPL[(arch)&OAC_ARCHMASK])(in, out, cnt))
+#  define oaci_celt_float2int16(in, out, cnt, arch) \
+        ((*OACI_CELT_FLOAT2INT16_IMPL[(arch)&OAC_ARCHMASK])(in, out, cnt))
 
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #  define OVERRIDE_FLOAT2INT16 (1)
-#  define celt_float2int16(in, out, cnt, arch) ((void)(arch), celt_float2int16_neon(in, out, cnt))
+#  define oaci_celt_float2int16(in, out, cnt, arch) ((void)(arch), oaci_celt_float2int16_neon(in, out, cnt))
 # endif
 
 int oac_limit2_checkwithin1_neon(float * samples, int cnt);

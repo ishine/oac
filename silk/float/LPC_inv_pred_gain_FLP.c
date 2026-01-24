@@ -69,7 +69,7 @@
 /* compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
 /* this code is based on silk_a2k_FLP()                                 */
-silk_float silk_LPC_inverse_pred_gain_FLP(  /* O    return inverse prediction gain, energy domain               */
+silk_float oaci_silk_LPC_inverse_pred_gain_FLP(  /* O    return inverse prediction gain, energy domain               */
     const silk_float    *A,                 /* I    prediction coefficients [order]                             */
     oac_int32 order                        /* I    prediction order                                            */
     ) {

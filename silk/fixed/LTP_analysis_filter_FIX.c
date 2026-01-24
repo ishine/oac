@@ -64,7 +64,7 @@
 
 #include "main_FIX.h"
 
-void silk_LTP_analysis_filter_FIX(
+void oaci_silk_LTP_analysis_filter_FIX(
     oac_int16                      *LTP_res,                               /* O    LTP residual signal of length MAX_NB_SUBFR * ( pre_length + subfr_length )  */
     const oac_int16                *x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
     const oac_int16 LTPCoef_Q14[ LTP_ORDER*MAX_NB_SUBFR ],                 /* I    LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe                   */

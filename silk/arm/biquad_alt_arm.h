@@ -64,7 +64,7 @@
 #include "celt/arm/armcpu.h"
 
 #if defined(OAC_ARM_MAY_HAVE_NEON_INTR)
-void silk_biquad_alt_stride2_neon(
+void oaci_silk_biquad_alt_stride2_neon(
     const oac_int16            *in,                /* I     input signal                                               */
     const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
     const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -74,18 +74,18 @@ void silk_biquad_alt_stride2_neon(
     );
 
 # if !defined(OAC_HAVE_RTCD) && defined(OAC_ARM_PRESUME_NEON)
-#  define OVERRIDE_silk_biquad_alt_stride2                   (1)
-#  define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), \
-                                                                        PRESUME_NEON(silk_biquad_alt_stride2)(in, B_Q28, \
+#  define OVERRIDE_oaci_silk_biquad_alt_stride2                   (1)
+#  define oaci_silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), \
+                                                                        PRESUME_NEON(oaci_silk_biquad_alt_stride2)(in, B_Q28, \
                                                                                                               A_Q28, S, \
                                                                                                               out, len))
 # endif
 #endif
 
-#if !defined(OVERRIDE_silk_biquad_alt_stride2)
+#if !defined(OVERRIDE_oaci_silk_biquad_alt_stride2)
 /*Is run-time CPU detection enabled on this platform?*/
 # if defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
-extern void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
         const oac_int16            *in,                /* I     input signal                                               */
         const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
         const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -93,14 +93,14 @@ extern void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
         oac_int16                  *out,               /* O     output signal                                              */
         const oac_int32 len                            /* I     signal length (must be even)                               */
     );
-#  define OVERRIDE_silk_biquad_alt_stride2                  (1)
-#  define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, \
-                                  arch) ((*SILK_BIQUAD_ALT_STRIDE2_IMPL[(arch)&OAC_ARCHMASK])(in, B_Q28, A_Q28, S, out, \
+#  define OVERRIDE_oaci_silk_biquad_alt_stride2                  (1)
+#  define oaci_silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, \
+                                  arch) ((*OACI_SILK_BIQUAD_ALT_STRIDE2_IMPL[(arch)&OAC_ARCHMASK])(in, B_Q28, A_Q28, S, out, \
                                                                                               len))
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
-#  define OVERRIDE_silk_biquad_alt_stride2                  (1)
-#  define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), \
-                                                                        silk_biquad_alt_stride2_neon(in, B_Q28, A_Q28, \
+#  define OVERRIDE_oaci_silk_biquad_alt_stride2                  (1)
+#  define oaci_silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), \
+                                                                        oaci_silk_biquad_alt_stride2_neon(in, B_Q28, A_Q28, \
     S, out, len))
 # endif
 #endif

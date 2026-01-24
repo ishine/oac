@@ -73,7 +73,7 @@
 /****************/
 /* Decode frame */
 /****************/
-oac_int silk_decode_frame(
+oac_int oaci_silk_decode_frame(
     silk_decoder_state          *psDec,                         /* I/O  Pointer to Silk decoder state               */
     ec_dec                      *psRangeDec,                    /* I/O  Compressor data structure                   */
     oac_int16 pOut[],                                          /* O    Pointer to output speech frame              */
@@ -111,23 +111,23 @@ oac_int silk_decode_frame(
         /*********************************************/
         /* Decode quantization indices of side info  */
         /*********************************************/
-        silk_decode_indices( psDec, psRangeDec, psDec->nFramesDecoded, lostFlag, condCoding );
+        oaci_silk_decode_indices( psDec, psRangeDec, psDec->nFramesDecoded, lostFlag, condCoding );
 
         /*********************************************/
         /* Decode quantization indices of excitation */
         /*********************************************/
-        silk_decode_pulses( psRangeDec, pulses, psDec->indices.signalType,
+        oaci_silk_decode_pulses( psRangeDec, pulses, psDec->indices.signalType,
                 psDec->indices.quantOffsetType, psDec->frame_length );
 
         /********************************************/
         /* Decode parameters and pulse signal       */
         /********************************************/
-        silk_decode_parameters( psDec, psDecCtrl, condCoding );
+        oaci_silk_decode_parameters( psDec, psDecCtrl, condCoding );
 
         /********************************************************/
         /* Run inverse NSQ                                      */
         /********************************************************/
-        silk_decode_core( psDec, psDecCtrl, pOut, pulses, arch );
+        oaci_silk_decode_core( psDec, psDecCtrl, pOut, pulses, arch );
 
         /*************************/
         /* Update output buffer. */
@@ -141,13 +141,13 @@ oac_int silk_decode_frame(
         /********************************************************/
         /* Run SILK enhancer                                    */
         /********************************************************/
-        osce_enhance_frame( osce_model, psDec, psDecCtrl, pOut, ec_tell(psRangeDec) - ec_start, arch );
+        oaci_osce_enhance_frame( osce_model, psDec, psDecCtrl, pOut, ec_tell(psRangeDec) - ec_start, arch );
 #endif
 
         /********************************************************/
         /* Update PLC state                                     */
         /********************************************************/
-        silk_PLC( psDec, psDecCtrl, pOut, 0,
+        oaci_silk_PLC( psDec, psDecCtrl, pOut, 0,
 #ifdef ENABLE_DEEP_PLC
             lpcnet,
 #endif
@@ -161,14 +161,14 @@ oac_int silk_decode_frame(
         psDec->first_frame_after_reset = 0;
     } else {
         /* Handle packet loss by extrapolation */
-        silk_PLC( psDec, psDecCtrl, pOut, 1,
+        oaci_silk_PLC( psDec, psDecCtrl, pOut, 1,
 #ifdef ENABLE_DEEP_PLC
             lpcnet,
 #endif
             arch );
 
 #ifdef ENABLE_OSCE
-        osce_reset( &psDec->osce, psDec->osce.method );
+        oaci_osce_reset( &psDec->osce, psDec->osce.method );
 #endif
         /*************************/
         /* Update output buffer. */
@@ -182,12 +182,12 @@ oac_int silk_decode_frame(
     /************************************************/
     /* Comfort noise generation / estimation        */
     /************************************************/
-    silk_CNG( psDec, psDecCtrl, pOut, L );
+    oaci_silk_CNG( psDec, psDecCtrl, pOut, L );
 
     /****************************************************************/
     /* Ensure smooth connection of extrapolated and good frames     */
     /****************************************************************/
-    silk_PLC_glue_frames( psDec, pOut, L );
+    oaci_silk_PLC_glue_frames( psDec, pOut, L );
 
     /* Update some decoder state variables */
     psDec->lagPrev = psDecCtrl->pitchL[ psDec->nb_subfr - 1 ];

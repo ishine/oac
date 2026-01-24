@@ -66,7 +66,7 @@
 #include "tuning_parameters.h"
 
 /* Processing of gains */
-void silk_process_gains_FLP(
+void oaci_silk_process_gains_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     oac_int condCoding                                                 /* I    The type of conditional coding to use       */
@@ -105,7 +105,7 @@ void silk_process_gains_FLP(
     psEncCtrl->lastGainIndexPrev = psShapeSt->LastGainIndex;
 
     /* Quantize gains */
-    silk_gains_quant( psEnc->sCmn.indices.GainsIndices, pGains_Q16,
+    oaci_silk_gains_quant( psEnc->sCmn.indices.GainsIndices, pGains_Q16,
             &psShapeSt->LastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
     /* Overwrite unquantized gains with quantized gains and convert back to Q0 from Q16 */
@@ -123,7 +123,7 @@ void silk_process_gains_FLP(
     }
 
     /* Quantizer boundary adjustment */
-    quant_offset = silk_Quantization_Offsets_Q10[ psEnc->sCmn.indices.signalType>>
+    quant_offset = oaci_silk_Quantization_Offsets_Q10[ psEnc->sCmn.indices.signalType>>
                                                   1 ][ psEnc->sCmn.indices.quantOffsetType ]/1024.0f;
     psEncCtrl->Lambda = LAMBDA_OFFSET
                         + LAMBDA_DELAYED_DECISIONS*psEnc->sCmn.nStatesDelayedDecision

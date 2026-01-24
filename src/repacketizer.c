@@ -220,7 +220,7 @@ oac_int32 oac_repacketizer_out_range_impl(OacRepacketizer *rp, int begin, int en
                 return OAC_BUFFER_TOO_SMALL;
             }
             *ptr++ = (rp->toc&0xFC)|0x2;
-            ptr += encode_size(len[0], ptr);
+            ptr += oaci_encode_size(len[0], ptr);
         }
     }
     if (count > 2 || (pad && tot_size < maxlen) || ext_count > 0) {
@@ -290,11 +290,11 @@ oac_int32 oac_repacketizer_out_range_impl(OacRepacketizer *rp, int begin, int en
         }
         if (vbr) {
             for (i = 0; i < count - 1; i++)
-                ptr += encode_size(len[i], ptr);
+                ptr += oaci_encode_size(len[i], ptr);
         }
     }
     if (self_delimited) {
-        int sdlen = encode_size(len[count - 1], ptr);
+        int sdlen = oaci_encode_size(len[count - 1], ptr);
         ptr += sdlen;
     }
     /* Copy the actual data */

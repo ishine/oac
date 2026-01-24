@@ -107,14 +107,14 @@
 #define SILK_PE_MAX_COMPLEX         2
 
 /* Tables for 20 ms frames */
-extern const oac_int8 silk_CB_lags_stage2[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ];
-extern const oac_int8 silk_CB_lags_stage3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ];
-extern const oac_int8 silk_Lag_range_stage3[ SILK_PE_MAX_COMPLEX + 1 ] [ PE_MAX_NB_SUBFR ][ 2 ];
-extern const oac_int8 silk_nb_cbk_searchs_stage3[ SILK_PE_MAX_COMPLEX + 1 ];
+extern const oac_int8 oaci_silk_CB_lags_stage2[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ];
+extern const oac_int8 oaci_silk_CB_lags_stage3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ];
+extern const oac_int8 oaci_silk_Lag_range_stage3[ SILK_PE_MAX_COMPLEX + 1 ] [ PE_MAX_NB_SUBFR ][ 2 ];
+extern const oac_int8 oaci_silk_nb_cbk_searchs_stage3[ SILK_PE_MAX_COMPLEX + 1 ];
 
 /* Tables for 10 ms frames */
-extern const oac_int8 silk_CB_lags_stage2_10_ms[ PE_MAX_NB_SUBFR>>1][ 3 ];
-extern const oac_int8 silk_CB_lags_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ 12 ];
-extern const oac_int8 silk_Lag_range_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ 2 ];
+extern const oac_int8 oaci_silk_CB_lags_stage2_10_ms[ PE_MAX_NB_SUBFR>>1][ 3 ];
+extern const oac_int8 oaci_silk_CB_lags_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ 12 ];
+extern const oac_int8 oaci_silk_Lag_range_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ 2 ];
 
 #endif

@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Set decoder sampling rate */
-oac_int silk_decoder_set_fs(
+oac_int oaci_silk_decoder_set_fs(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state pointer                       */
     oac_int fs_kHz,                                            /* I    Sampling frequency (kHz)                    */
     oac_int32 fs_API_Hz                                        /* I    API Sampling frequency (Hz)                 */
@@ -82,7 +82,7 @@ oac_int silk_decoder_set_fs(
     /* Initialize resampler when switching internal or external sampling frequency */
     if (psDec->fs_kHz != fs_kHz || psDec->fs_API_hz != fs_API_Hz) {
         /* Initialize the resampler for dec_API.c preparing resampling from fs_kHz to API_fs_Hz */
-        ret += silk_resampler_init( &psDec->resampler_state, silk_SMULBB( fs_kHz, 1000 ), fs_API_Hz, 0 );
+        ret += oaci_silk_resampler_init( &psDec->resampler_state, silk_SMULBB( fs_kHz, 1000 ), fs_API_Hz, 0 );
 
         psDec->fs_API_hz = fs_API_Hz;
     }
@@ -90,32 +90,32 @@ oac_int silk_decoder_set_fs(
     if (psDec->fs_kHz != fs_kHz || frame_length != psDec->frame_length) {
         if (fs_kHz == 8) {
             if (psDec->nb_subfr == MAX_NB_SUBFR) {
-                psDec->pitch_contour_iCDF = silk_pitch_contour_NB_iCDF;
+                psDec->pitch_contour_iCDF = oaci_silk_pitch_contour_NB_iCDF;
             } else {
-                psDec->pitch_contour_iCDF = silk_pitch_contour_10_ms_NB_iCDF;
+                psDec->pitch_contour_iCDF = oaci_silk_pitch_contour_10_ms_NB_iCDF;
             }
         } else {
             if (psDec->nb_subfr == MAX_NB_SUBFR) {
-                psDec->pitch_contour_iCDF = silk_pitch_contour_iCDF;
+                psDec->pitch_contour_iCDF = oaci_silk_pitch_contour_iCDF;
             } else {
-                psDec->pitch_contour_iCDF = silk_pitch_contour_10_ms_iCDF;
+                psDec->pitch_contour_iCDF = oaci_silk_pitch_contour_10_ms_iCDF;
             }
         }
         if (psDec->fs_kHz != fs_kHz) {
             psDec->ltp_mem_length = silk_SMULBB( LTP_MEM_LENGTH_MS, fs_kHz );
             if (fs_kHz == 8 || fs_kHz == 12) {
                 psDec->LPC_order = MIN_LPC_ORDER;
-                psDec->psNLSF_CB = &silk_NLSF_CB_NB_MB;
+                psDec->psNLSF_CB = &oaci_silk_NLSF_CB_NB_MB;
             } else {
                 psDec->LPC_order = MAX_LPC_ORDER;
-                psDec->psNLSF_CB = &silk_NLSF_CB_WB;
+                psDec->psNLSF_CB = &oaci_silk_NLSF_CB_WB;
             }
             if (fs_kHz == 16) {
-                psDec->pitch_lag_low_bits_iCDF = silk_uniform8_iCDF;
+                psDec->pitch_lag_low_bits_iCDF = oaci_silk_uniform8_iCDF;
             } else if (fs_kHz == 12) {
-                psDec->pitch_lag_low_bits_iCDF = silk_uniform6_iCDF;
+                psDec->pitch_lag_low_bits_iCDF = oaci_silk_uniform6_iCDF;
             } else if (fs_kHz == 8) {
-                psDec->pitch_lag_low_bits_iCDF = silk_uniform4_iCDF;
+                psDec->pitch_lag_low_bits_iCDF = oaci_silk_uniform4_iCDF;
             } else {
                 /* unsupported sampling rate */
                 celt_assert( 0 );

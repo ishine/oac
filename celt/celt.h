@@ -178,31 +178,31 @@ static OAC_INLINE oac_int32 bitrate_to_bits(oac_int32 bitrate, oac_int32 Fs, oac
 
 /* Encoder stuff */
 
-int celt_encoder_get_size(int channels);
+int oaci_celt_encoder_get_size(int channels);
 
-int celt_encode_with_ec(OacCustomEncoder * OAC_RESTRICT st, const oac_res * pcm, int frame_size,
+int oaci_celt_encode_with_ec(OacCustomEncoder * OAC_RESTRICT st, const oac_res * pcm, int frame_size,
     unsigned char *compressed, int nbCompressedBytes, ec_enc *enc);
 
-int celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
+int oaci_celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
     int arch);
 
 
 
 /* Decoder stuff */
 
-int celt_decoder_get_size(int channels);
+int oaci_celt_decoder_get_size(int channels);
 
 
-int celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channels);
+int oaci_celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channels);
 
-int celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned char *data,
+int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned char *data,
     int len, oac_res * OAC_RESTRICT pcm, int frame_size, ec_dec *dec, int accum
 #ifdef ENABLE_DEEP_PLC
     , LPCNetPLCState *lpcnet
 #endif
     );
 
-int celt_decode_with_ec(OacCustomDecoder * OAC_RESTRICT st, const unsigned char *data,
+int oaci_celt_decode_with_ec(OacCustomDecoder * OAC_RESTRICT st, const unsigned char *data,
     int len, oac_res * OAC_RESTRICT pcm, int frame_size, ec_dec *dec, int accum);
 
 #define celt_encoder_ctl oac_custom_encoder_ctl
@@ -258,30 +258,30 @@ static OAC_INLINE int fromOac(unsigned char c) {
 #define COMBFILTER_MAXPERIOD 1024
 #define COMBFILTER_MINPERIOD 15
 
-extern const signed char tf_select_table[4][8];
+extern const signed char oaci_tf_select_table[4][8];
 
 #if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
-void validate_celt_decoder(CELTDecoder *st);
-# define VALIDATE_CELT_DECODER(st) validate_celt_decoder(st)
+void oaci_validate_celt_decoder(CELTDecoder *st);
+# define VALIDATE_CELT_DECODER(st) oaci_validate_celt_decoder(st)
 #else
 # define VALIDATE_CELT_DECODER(st)
 #endif
 
-int resampling_factor(oac_int32 rate);
+int oaci_resampling_factor(oac_int32 rate);
 
-void celt_preemphasis(const oac_res * OAC_RESTRICT pcmp, celt_sig * OAC_RESTRICT inp,
+void oaci_celt_preemphasis(const oac_res * OAC_RESTRICT pcmp, celt_sig * OAC_RESTRICT inp,
     int N, int CC, int upsample, const oac_val16 *coef, celt_sig *mem, int clip);
 
-void comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
+void oaci_comb_filter(oac_val32 *y, oac_val32 *x, int T0, int T1, int N,
     oac_val16 g0, oac_val16 g1, int tapset0, int tapset1,
     const celt_coef *window, int overlap, int arch);
 
-void init_caps(const CELTMode *m, int *cap, int LM, int C);
+void oaci_init_caps(const CELTMode *m, int *cap, int LM, int C);
 
 #ifdef RESYNTH
-void deemphasis(celt_sig *in[], oac_res *pcm, int N, int C, int downsample, const oac_val16 *coef, celt_sig *mem,
+void oaci_deemphasis(celt_sig *in[], oac_res *pcm, int N, int C, int downsample, const oac_val16 *coef, celt_sig *mem,
     int accum);
-void celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
+void oaci_celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[],
     celt_glog *oldBandE, int start, int effEnd, int C, int CC, int isTransient,
     int LM, int downsample, int silence, int arch);
 #endif

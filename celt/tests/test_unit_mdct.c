@@ -146,7 +146,7 @@ void test1d(int nfft, int isinverse, int arch) {
     int shift = 0;
     const mdct_lookup *cfg;
     mdct_lookup _cfg;
-    clt_mdct_init(&_cfg, nfft, 0, arch);
+    oaci_clt_mdct_init(&_cfg, nfft, 0, arch);
     cfg = &_cfg;
 #else
     int shift;
@@ -189,13 +189,13 @@ void test1d(int nfft, int isinverse, int arch) {
     if (isinverse) {
         for (k = 0; k < nfft; ++k)
             out[k] = 0;
-        clt_mdct_backward(cfg, in, out, window, nfft/2, shift, 1, arch);
-        /* apply TDAC because clt_mdct_backward() no longer does that */
+        oaci_clt_mdct_backward(cfg, in, out, window, nfft/2, shift, 1, arch);
+        /* apply TDAC because oaci_clt_mdct_backward() no longer does that */
         for (k = 0; k < nfft/4; ++k)
             out[nfft - k - 1] = out[nfft/2 + k];
         check_inv(in, out, nfft, isinverse);
     } else {
-        clt_mdct_forward(cfg, in, out, window, nfft/2, shift, 1, arch);
+        oaci_clt_mdct_forward(cfg, in, out, window, nfft/2, shift, 1, arch);
         check(in_copy, out, nfft, isinverse);
     }
     /*for (k=0;k<nfft;++k) printf("%d %d ", out[k].r, out[k].i);printf("\n");*/
@@ -206,7 +206,7 @@ void test1d(int nfft, int isinverse, int arch) {
     free(out);
     free(window);
 #ifdef CUSTOM_MODES
-    clt_mdct_clear(&_cfg, arch);
+    oaci_clt_mdct_clear(&_cfg, arch);
 #endif
 }
 

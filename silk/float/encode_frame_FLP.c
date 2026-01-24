@@ -75,7 +75,7 @@ static OAC_INLINE void silk_LBRR_encode_FLP(
     oac_int condCoding                                                 /* I    The type of conditional coding used so far for this frame */
     );
 
-void silk_encode_do_VAD_FLP(
+void oaci_silk_encode_do_VAD_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     oac_int activity                                                   /* I    Decision of Oac voice activity detector    */
     ) {
@@ -84,7 +84,7 @@ void silk_encode_do_VAD_FLP(
     /****************************/
     /* Voice Activity Detection */
     /****************************/
-    silk_VAD_GetSA_Q8( &psEnc->sCmn, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.arch );
+    oaci_silk_VAD_GetSA_Q8( &psEnc->sCmn, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.arch );
     /* If Oac VAD is inactive and Silk VAD is active: lower Silk VAD to just under the threshold */
     if (activity == VAD_NO_ACTIVITY && psEnc->sCmn.speech_activity_Q8 >= activity_threshold) {
         psEnc->sCmn.speech_activity_Q8 = activity_threshold - 1;
@@ -114,7 +114,7 @@ void silk_encode_do_VAD_FLP(
 /****************/
 /* Encode frame */
 /****************/
-oac_int silk_encode_frame_FLP(
+oac_int oaci_silk_encode_frame_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     oac_int32                      *pnBytesOut,                        /* O    Number of payload bytes;                    */
     ec_enc                          *psRangeEnc,                        /* I/O  compressor data structure                   */
@@ -162,7 +162,7 @@ oac_int silk_encode_frame_FLP(
     /***************************************/
     /* Ensure smooth bandwidth transitions */
     /***************************************/
-    silk_LP_variable_cutoff( &psEnc->sCmn.sLP, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.frame_length );
+    oaci_silk_LP_variable_cutoff( &psEnc->sCmn.sLP, psEnc->sCmn.inputBuf + 1, psEnc->sCmn.frame_length );
 
     /*******************************************/
     /* Copy new frame to front of input buffer */
@@ -180,22 +180,22 @@ oac_int silk_encode_frame_FLP(
         /*****************************************/
         /* Find pitch lags, initial LPC analysis */
         /*****************************************/
-        silk_find_pitch_lags_FLP( psEnc, &sEncCtrl, res_pitch, x_frame, psEnc->sCmn.arch );
+        oaci_silk_find_pitch_lags_FLP( psEnc, &sEncCtrl, res_pitch, x_frame, psEnc->sCmn.arch );
 
         /************************/
         /* Noise shape analysis */
         /************************/
-        silk_noise_shape_analysis_FLP( psEnc, &sEncCtrl, res_pitch_frame, x_frame );
+        oaci_silk_noise_shape_analysis_FLP( psEnc, &sEncCtrl, res_pitch_frame, x_frame );
 
         /***************************************************/
         /* Find linear prediction coefficients (LPC + LTP) */
         /***************************************************/
-        silk_find_pred_coefs_FLP( psEnc, &sEncCtrl, res_pitch_frame, x_frame, condCoding );
+        oaci_silk_find_pred_coefs_FLP( psEnc, &sEncCtrl, res_pitch_frame, x_frame, condCoding );
 
         /****************************************/
         /* Process gains                        */
         /****************************************/
-        silk_process_gains_FLP( psEnc, &sEncCtrl, condCoding );
+        oaci_silk_process_gains_FLP( psEnc, &sEncCtrl, condCoding );
 
         /****************************************/
         /* Low Bitrate Redundant Encoding       */
@@ -207,7 +207,7 @@ oac_int silk_encode_frame_FLP(
         gainMult_Q8 = SILK_FIX_CONST( 1, 8 );
         found_lower = 0;
         found_upper = 0;
-        gainsID = silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
+        gainsID = oaci_silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
         gainsID_lower = -1;
         gainsID_upper = -1;
         /* Copy part of the input state */
@@ -235,7 +235,7 @@ oac_int silk_encode_frame_FLP(
                 /*****************************************/
                 /* Noise shaping quantization            */
                 /*****************************************/
-                silk_NSQ_wrapper_FLP( psEnc, &sEncCtrl, &psEnc->sCmn.indices, &psEnc->sCmn.sNSQ, psEnc->sCmn.pulses,
+                oaci_silk_NSQ_wrapper_FLP( psEnc, &sEncCtrl, &psEnc->sCmn.indices, &psEnc->sCmn.sNSQ, psEnc->sCmn.pulses,
                 x_frame );
 
                 if (iter == maxIter && !found_lower) {
@@ -245,12 +245,12 @@ oac_int silk_encode_frame_FLP(
                 /****************************************/
                 /* Encode Parameters                    */
                 /****************************************/
-                silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
+                oaci_silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
 
                 /****************************************/
                 /* Encode Excitation Signal             */
                 /****************************************/
-                silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
+                oaci_silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                       psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
 
                 nBits = ec_tell( psRangeEnc );
@@ -274,9 +274,9 @@ oac_int silk_encode_frame_FLP(
                         psEnc->sCmn.pulses[ i ] = 0;
                     }
 
-                    silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
+                    oaci_silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
 
-                    silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
+                    oaci_silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                         psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
 
                     nBits = ec_tell( psRangeEnc );
@@ -378,11 +378,11 @@ oac_int silk_encode_frame_FLP(
 
             /* Quantize gains */
             psEnc->sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
-            silk_gains_quant( psEnc->sCmn.indices.GainsIndices, pGains_Q16,
+            oaci_silk_gains_quant( psEnc->sCmn.indices.GainsIndices, pGains_Q16,
                   &psEnc->sShape.LastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
             /* Unique identifier of gains vector */
-            gainsID = silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
+            gainsID = oaci_silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
 
             /* Overwrite unquantized gains with quantized gains and convert back to Q0 from Q16 */
             for (i = 0; i < psEnc->sCmn.nb_subfr; i++) {
@@ -459,7 +459,7 @@ static OAC_INLINE void silk_LBRR_encode_FLP(
         }
 
         /* Decode to get gains in sync with decoder */
-        silk_gains_dequant( Gains_Q16, psIndices_LBRR->GainsIndices,
+        oaci_silk_gains_dequant( Gains_Q16, psIndices_LBRR->GainsIndices,
             &psEnc->sCmn.LBRRprevLastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
         /* Overwrite unquantized gains with quantized gains and convert back to Q0 from Q16 */
@@ -470,7 +470,7 @@ static OAC_INLINE void silk_LBRR_encode_FLP(
         /*****************************************/
         /* Noise shaping quantization            */
         /*****************************************/
-        silk_NSQ_wrapper_FLP( psEnc, psEncCtrl, psIndices_LBRR, &sNSQ_LBRR[0],
+        oaci_silk_NSQ_wrapper_FLP( psEnc, psEncCtrl, psIndices_LBRR, &sNSQ_LBRR[0],
             psEnc->sCmn.pulses_LBRR[ psEnc->sCmn.nFramesEncoded ], xfw );
 
         /* Restore original gains */

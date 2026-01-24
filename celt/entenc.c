@@ -141,7 +141,7 @@ static OAC_INLINE void ec_enc_normalize(ec_enc *_this) {
     }
 }
 
-void ec_enc_init(ec_enc *_this, unsigned char *_buf, oac_uint32 _size) {
+void oaci_ec_enc_init(ec_enc *_this, unsigned char *_buf, oac_uint32 _size) {
     _this->buf = _buf;
     _this->end_offs = 0;
     _this->end_window = 0;
@@ -157,7 +157,7 @@ void ec_enc_init(ec_enc *_this, unsigned char *_buf, oac_uint32 _size) {
     _this->error = 0;
 }
 
-void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
+void oaci_ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     oac_uint32 r;
     r = celt_udiv(_this->rng, _ft);
     if (_fl > 0) {
@@ -167,7 +167,7 @@ void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     ec_enc_normalize(_this);
 }
 
-void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
+void oaci_ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
     oac_uint32 r;
     r = _this->rng>>_bits;
     if (_fl > 0) {
@@ -178,7 +178,7 @@ void ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
 }
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
-void ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp) {
+void oaci_ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp) {
     oac_uint32 r;
     oac_uint32 s;
     oac_uint32 l;
@@ -191,7 +191,7 @@ void ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp) {
     ec_enc_normalize(_this);
 }
 
-void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb) {
+void oaci_ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb) {
     oac_uint32 r;
     r = _this->rng>>_ftb;
     if (_s > 0) {
@@ -201,7 +201,7 @@ void ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ft
     ec_enc_normalize(_this);
 }
 
-void ec_enc_icdf16(ec_enc *_this, int _s, const oac_uint16 *_icdf, unsigned _ftb) {
+void oaci_ec_enc_icdf16(ec_enc *_this, int _s, const oac_uint16 *_icdf, unsigned _ftb) {
     oac_uint32 r;
     r = _this->rng>>_ftb;
     if (_s > 0) {
@@ -211,7 +211,7 @@ void ec_enc_icdf16(ec_enc *_this, int _s, const oac_uint16 *_icdf, unsigned _ftb
     ec_enc_normalize(_this);
 }
 
-void ec_enc_uint(ec_enc *_this, oac_uint32 _fl, oac_uint32 _ft) {
+void oaci_ec_enc_uint(ec_enc *_this, oac_uint32 _fl, oac_uint32 _ft) {
     unsigned ft;
     unsigned fl;
     int ftb;
@@ -223,12 +223,12 @@ void ec_enc_uint(ec_enc *_this, oac_uint32 _fl, oac_uint32 _ft) {
         ftb -= EC_UINT_BITS;
         ft = (_ft>>ftb) + 1;
         fl = (unsigned)(_fl>>ftb);
-        ec_encode(_this, fl, fl + 1, ft);
-        ec_enc_bits(_this, _fl&(((oac_uint32)1<<ftb) - 1U), ftb);
-    } else ec_encode(_this, _fl, _fl + 1, _ft + 1);
+        oaci_ec_encode(_this, fl, fl + 1, ft);
+        oaci_ec_enc_bits(_this, _fl&(((oac_uint32)1<<ftb) - 1U), ftb);
+    } else oaci_ec_encode(_this, _fl, _fl + 1, _ft + 1);
 }
 
-void ec_enc_bits(ec_enc *_this, oac_uint32 _fl, unsigned _bits) {
+void oaci_ec_enc_bits(ec_enc *_this, oac_uint32 _fl, unsigned _bits) {
     ec_window window;
     int used;
     window = _this->end_window;
@@ -248,7 +248,7 @@ void ec_enc_bits(ec_enc *_this, oac_uint32 _fl, unsigned _bits) {
     _this->nbits_total += _bits;
 }
 
-void ec_enc_patch_initial_bits(ec_enc *_this, unsigned _val, unsigned _nbits) {
+void oaci_ec_enc_patch_initial_bits(ec_enc *_this, unsigned _val, unsigned _nbits) {
     int shift;
     unsigned mask;
     celt_assert(_nbits <= EC_SYM_BITS);
@@ -269,14 +269,14 @@ void ec_enc_patch_initial_bits(ec_enc *_this, unsigned _val, unsigned _nbits) {
     else _this->error = -1;
 }
 
-void ec_enc_shrink(ec_enc *_this, oac_uint32 _size) {
+void oaci_ec_enc_shrink(ec_enc *_this, oac_uint32 _size) {
     celt_assert(_this->offs + _this->end_offs <= _size);
     OAC_MOVE(_this->buf + _size - _this->end_offs,
    _this->buf + _this->storage - _this->end_offs, _this->end_offs);
     _this->storage = _size;
 }
 
-void ec_enc_done(ec_enc *_this) {
+void oaci_ec_enc_done(ec_enc *_this) {
     ec_window window;
     int used;
     oac_uint32 msk;

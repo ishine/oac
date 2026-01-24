@@ -83,19 +83,19 @@
 # include "arm/pitch_arm.h"
 #endif
 
-void pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT x_lp,
+void oaci_pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT x_lp,
     int len, int C, int factor, int arch);
 
-void pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_RESTRICT y,
+void oaci_pitch_search(const oac_val16 * OAC_RESTRICT x_lp, oac_val16 * OAC_RESTRICT y,
     int len, int max_pitch, int *pitch, int arch);
 
-oac_val16 remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
+oac_val16 oaci_remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
     int N, int *T0, int prev_period, oac_val16 prev_gain, int arch);
 
 
 /* OPT: This is the kernel you really want to optimize. It gets used a lot
    by the prefilter and by the PLC. */
-static OAC_INLINE void xcorr_kernel_c(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[4], int len) {
+static OAC_INLINE void oaci_xcorr_kernel_c(const oac_val16 * x, const oac_val16 * y, oac_val32 sum[4], int len) {
     int j;
     oac_val16 y_0, y_1, y_2, y_3;
     celt_assert(len >= 3);
@@ -157,12 +157,12 @@ static OAC_INLINE void xcorr_kernel_c(const oac_val16 * x, const oac_val16 * y, 
 }
 
 #ifndef OVERRIDE_XCORR_KERNEL
-# define xcorr_kernel(x, y, sum, len, arch) \
-        ((void)(arch), xcorr_kernel_c(x, y, sum, len))
+# define oaci_xcorr_kernel(x, y, sum, len, arch) \
+        ((void)(arch), oaci_xcorr_kernel_c(x, y, sum, len))
 #endif /* OVERRIDE_XCORR_KERNEL */
 
 
-static OAC_INLINE void dual_inner_prod_c(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
+static OAC_INLINE void oaci_dual_inner_prod_c(const oac_val16 *x, const oac_val16 *y01, const oac_val16 *y02,
                                          int N, oac_val32 *xy1, oac_val32 *xy2) {
     int i;
     oac_val32 xy01 = 0;
@@ -176,13 +176,13 @@ static OAC_INLINE void dual_inner_prod_c(const oac_val16 *x, const oac_val16 *y0
 }
 
 #ifndef OVERRIDE_DUAL_INNER_PROD
-# define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
-        ((void)(arch), dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
+# define oaci_dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
+        ((void)(arch), oaci_dual_inner_prod_c(x, y01, y02, N, xy1, xy2))
 #endif
 
 /*We make sure a C version is always available for cases where the overhead of
    vectorization and passing around an arch flag aren't worth it.*/
-static OAC_INLINE oac_val32 celt_inner_prod_c(const oac_val16 *x,
+static OAC_INLINE oac_val32 oaci_celt_inner_prod_c(const oac_val16 *x,
                                               const oac_val16 *y, int N) {
     int i;
     oac_val32 xy = 0;
@@ -192,12 +192,12 @@ static OAC_INLINE oac_val32 celt_inner_prod_c(const oac_val16 *x,
 }
 
 #if !defined(OVERRIDE_CELT_INNER_PROD)
-# define celt_inner_prod(x, y, N, arch) \
-        ((void)(arch), celt_inner_prod_c(x, y, N))
+# define oaci_celt_inner_prod(x, y, N, arch) \
+        ((void)(arch), oaci_celt_inner_prod_c(x, y, N))
 #endif
 
 #ifdef NON_STATIC_COMB_FILTER_CONST_C
-void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
+void oaci_comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
     oac_val16 g10, oac_val16 g11, oac_val16 g12);
 #endif
 
@@ -207,21 +207,21 @@ oac_val32
 #else
 void
 #endif
-celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
+oaci_celt_pitch_xcorr_c(const oac_val16 *_x, const oac_val16 *_y,
     oac_val32 *xcorr, int len, int max_pitch, int arch);
 
 #ifndef OVERRIDE_PITCH_XCORR
-# define celt_pitch_xcorr celt_pitch_xcorr_c
+# define oaci_celt_pitch_xcorr oaci_celt_pitch_xcorr_c
 #endif
 
 #ifdef NON_STATIC_COMB_FILTER_CONST_C
-void comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
+void oaci_comb_filter_const_c(oac_val32 *y, oac_val32 *x, int T, int N,
     oac_val16 g10, oac_val16 g11, oac_val16 g12);
 #endif
 
 #ifndef OVERRIDE_COMB_FILTER_CONST
-# define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
-        ((void)(arch), comb_filter_const_c(y, x, T, N, g10, g11, g12))
+# define oaci_comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
+        ((void)(arch), oaci_comb_filter_const_c(y, x, T, N, g10, g11, g12))
 #endif
 
 

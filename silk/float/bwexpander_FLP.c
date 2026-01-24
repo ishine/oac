@@ -65,7 +65,7 @@
 #include "SigProc_FLP.h"
 
 /* Chirp (bw expand) LP AR filter */
-void silk_bwexpander_FLP(
+void oaci_silk_bwexpander_FLP(
     silk_float          *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     const oac_int d,                       /* I    length of ar                                                */
     const silk_float chirp                  /* I    chirp factor (typically in range (0..1) )                   */

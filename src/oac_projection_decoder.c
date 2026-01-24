@@ -94,7 +94,7 @@ static void oac_projection_copy_channel_out_float(
         OAC_CLEAR(float_dst, frame_size*dst_stride);
 
     if (src != NULL)
-        mapping_matrix_multiply_channel_out_float(matrix, src, dst_channel,
+        oaci_mapping_matrix_multiply_channel_out_float(matrix, src, dst_channel,
       src_stride, float_dst, dst_stride, frame_size);
 }
 #endif
@@ -115,7 +115,7 @@ static void oac_projection_copy_channel_out_short(
         OAC_CLEAR(short_dst, frame_size*dst_stride);
 
     if (src != NULL)
-        mapping_matrix_multiply_channel_out_short(matrix, src, dst_channel,
+        oaci_mapping_matrix_multiply_channel_out_short(matrix, src, dst_channel,
       src_stride, short_dst, dst_stride, frame_size);
 }
 
@@ -135,7 +135,7 @@ static void oac_projection_copy_channel_out_int24(
         OAC_CLEAR(short_dst, frame_size*dst_stride);
 
     if (src != NULL)
-        mapping_matrix_multiply_channel_out_int24(matrix, src, dst_channel,
+        oaci_mapping_matrix_multiply_channel_out_int24(matrix, src, dst_channel,
       src_stride, short_dst, dst_stride, frame_size);
 }
 
@@ -158,7 +158,7 @@ oac_int32 oac_projection_decoder_get_size(int channels, int streams,
     oac_int32 decoder_size;
 
     matrix_size =
-        mapping_matrix_get_size(streams + coupled_streams, channels);
+        oaci_mapping_matrix_get_size(streams + coupled_streams, channels);
     if (!matrix_size)
         return 0;
 
@@ -197,13 +197,13 @@ int oac_projection_decoder_init(OacProjectionDecoder *st, oac_int32 Fs,
 
     /* Assign demixing matrix. */
     st->demixing_matrix_size_in_bytes =
-        mapping_matrix_get_size(channels, nb_input_streams);
+        oaci_mapping_matrix_get_size(channels, nb_input_streams);
     if (!st->demixing_matrix_size_in_bytes) {
         RESTORE_STACK;
         return OAC_BAD_ARG;
     }
 
-    mapping_matrix_init(get_dec_demixing_matrix(st), channels, nb_input_streams, 0,
+    oaci_mapping_matrix_init(get_dec_demixing_matrix(st), channels, nb_input_streams, 0,
     buf, demixing_matrix_size);
 
     /* Set trivial mapping so each input channel pairs with a matrix column. */

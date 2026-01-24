@@ -67,7 +67,7 @@
 # include <stddef.h>
 # include "ecintrin.h"
 
-extern const oac_uint32 SMALL_DIV_TABLE[129];
+extern const oac_uint32 OACI_SMALL_DIV_TABLE[129];
 
 # ifdef OAC_ARM_ASM
 #  define USE_SMALL_DIV_TABLE
@@ -114,7 +114,7 @@ struct ec_ctx {
        the input value, minus one.
        In the encoder: the low end of the current range.*/
     oac_uint32 val;
-    /*In the decoder: the saved normalization factor from ec_decode().
+    /*In the decoder: the saved normalization factor from oaci_ec_decode().
        In the encoder: the number of outstanding carry propagating symbols.*/
     oac_uint32 ext;
     /*A buffered input/output symbol, awaiting carry propagation.*/
@@ -151,7 +151,7 @@ static OAC_INLINE int ec_tell(ec_ctx *_this) {
    Return: The number of bits scaled by 2**BITRES.
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
-oac_uint32 ec_tell_frac(ec_ctx *_this);
+oac_uint32 oaci_ec_tell_frac(ec_ctx *_this);
 
 /* Tested exhaustively for all n and for 1<=d<=256 */
 static OAC_INLINE oac_uint32 celt_udiv(oac_uint32 n, oac_uint32 d) {
@@ -162,7 +162,7 @@ static OAC_INLINE oac_uint32 celt_udiv(oac_uint32 n, oac_uint32 d) {
     else {
         oac_uint32 t, q;
         t = EC_ILOG(d& -d);
-        q = (oac_uint64)SMALL_DIV_TABLE[d>>t]*(n>>(t - 1))>>32;
+        q = (oac_uint64)OACI_SMALL_DIV_TABLE[d>>t]*(n>>(t - 1))>>32;
         return q + (n - q*d >= d);
     }
 # else

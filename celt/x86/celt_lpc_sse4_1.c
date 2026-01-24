@@ -73,7 +73,7 @@
 
 #if defined(FIXED_POINT)
 
-void celt_fir_sse4_1(const oac_val16 *x,
+void oaci_celt_fir_sse4_1(const oac_val16 *x,
                      const oac_val16 *num,
                      oac_val16 *y,
                      int N,
@@ -98,9 +98,9 @@ void celt_fir_sse4_1(const oac_val16 *x,
 # if defined(OAC_CHECK_ASM)
         {
             oac_val32 sums_c[4] = {0};
-            xcorr_kernel_c(rnum, x + i - ord, sums_c, ord);
+            oaci_xcorr_kernel_c(rnum, x + i - ord, sums_c, ord);
 # endif
-        xcorr_kernel(rnum, x + i - ord, sums, ord, arch);
+        oaci_xcorr_kernel(rnum, x + i - ord, sums, ord, arch);
 # if defined(OAC_CHECK_ASM)
         celt_assert(memcmp(sums, sums_c, sizeof(sums)) == 0);
     }

@@ -65,7 +65,7 @@
 #include "SigProc_FLP.h"
 
 /* step up function, converts reflection coefficients to prediction coefficients */
-void silk_k2a_FLP(
+void oaci_silk_k2a_FLP(
     silk_float          *A,                 /* O     prediction coefficients [order]                            */
     const silk_float    *rc,                /* I     reflection coefficients [order]                            */
     oac_int32 order                        /* I     prediction order                                           */

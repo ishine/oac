@@ -88,7 +88,7 @@
 /*!
  * Initialize/reset the resampler state for a given pair of input/output sampling rates
  */
-oac_int silk_resampler_init(
+oac_int oaci_silk_resampler_init(
     silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
     oac_int32 Fs_Hz_in,                            /* I    Input sampling rate (Hz)                                    */
     oac_int32 Fs_Hz_out,                           /* I    Output sampling rate (Hz)                                   */
@@ -98,7 +98,7 @@ oac_int silk_resampler_init(
 /*!
  * Resampler: convert from one sampling rate to another
  */
-oac_int silk_resampler(
+oac_int oaci_silk_resampler(
     silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
     oac_int16 out[],                               /* O    Output signal                                               */
     const oac_int16 in[],                          /* I    Input signal                                                */
@@ -108,7 +108,7 @@ oac_int silk_resampler(
 /*!
  * Downsample 2x, mediocre quality
  */
-void silk_resampler_down2(
+void oaci_silk_resampler_down2(
     oac_int32                  *S,                 /* I/O  State vector [ 2 ]                                          */
     oac_int16                  *out,               /* O    Output signal [ len ]                                       */
     const oac_int16            *in,                /* I    Input signal [ floor(len/2) ]                               */
@@ -118,7 +118,7 @@ void silk_resampler_down2(
 /*!
  * Downsample by a factor 2/3, low quality
  */
-void silk_resampler_down2_3(
+void oaci_silk_resampler_down2_3(
     oac_int32                  *S,                 /* I/O  State vector [ 6 ]                                          */
     oac_int16                  *out,               /* O    Output signal [ floor(2*inLen/3) ]                          */
     const oac_int16            *in,                /* I    Input signal [ inLen ]                                      */
@@ -130,7 +130,7 @@ void silk_resampler_down2_3(
  * slower than biquad() but uses more precise coefficients
  * can handle (slowly) varying coefficients
  */
-void silk_biquad_alt_stride1(
+void oaci_silk_biquad_alt_stride1(
     const oac_int16            *in,                /* I     input signal                                               */
     const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
     const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -139,7 +139,7 @@ void silk_biquad_alt_stride1(
     const oac_int32 len                            /* I     signal length (must be even)                               */
     );
 
-void silk_biquad_alt_stride2_c(
+void oaci_silk_biquad_alt_stride2_c(
     const oac_int16            *in,                /* I     input signal                                               */
     const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
     const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -149,7 +149,7 @@ void silk_biquad_alt_stride2_c(
     );
 
 /* Variable order MA prediction error filter. */
-void silk_LPC_analysis_filter(
+void oaci_silk_LPC_analysis_filter(
     oac_int16                  *out,               /* O    Output signal                                               */
     const oac_int16            *in,                /* I    Input signal                                                */
     const oac_int16            *B,                 /* I    MA prediction coefficients, Q12 [order]                     */
@@ -159,14 +159,14 @@ void silk_LPC_analysis_filter(
     );
 
 /* Chirp (bandwidth expand) LP AR filter */
-void silk_bwexpander(
+void oaci_silk_bwexpander(
     oac_int16                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     const oac_int d,                               /* I    Length of ar                                                */
     oac_int32 chirp_Q16                            /* I    Chirp factor (typically in the range 0 to 1)                */
     );
 
 /* Chirp (bandwidth expand) LP AR filter */
-void silk_bwexpander_32(
+void oaci_silk_bwexpander_32(
     oac_int32                  *ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     const oac_int d,                               /* I    Length of ar                                                */
     oac_int32 chirp_Q16                            /* I    Chirp factor in Q16                                         */
@@ -174,13 +174,13 @@ void silk_bwexpander_32(
 
 /* Compute inverse of LPC prediction gain, and                           */
 /* test if LPC coefficients are stable (all poles within unit circle)    */
-oac_int32 silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
+oac_int32 oaci_silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse prediction gain in energy domain, Q30        */
     const oac_int16            *A_Q12,             /* I   Prediction coefficients, Q12 [order]                         */
     const oac_int order                            /* I   Prediction order                                             */
     );
 
 /* Split signal in two decimated bands using first-order allpass filters */
-void silk_ana_filt_bank_1(
+void oaci_silk_ana_filt_bank_1(
     const oac_int16            *in,                /* I    Input signal [N]                                            */
     oac_int32                  *S,                 /* I/O  State vector [2]                                            */
     oac_int16                  *outL,              /* O    Low band [N/2]                                              */
@@ -188,14 +188,14 @@ void silk_ana_filt_bank_1(
     const oac_int32 N                              /* I    Number of input samples                                     */
     );
 
-#if !defined(OVERRIDE_silk_biquad_alt_stride2)
-# define silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), \
-                                                                       silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, \
+#if !defined(OVERRIDE_oaci_silk_biquad_alt_stride2)
+# define oaci_silk_biquad_alt_stride2(in, B_Q28, A_Q28, S, out, len, arch) ((void)(arch), \
+                                                                       oaci_silk_biquad_alt_stride2_c(in, B_Q28, A_Q28, S, \
     out, len))
 #endif
 
-#if !defined(OVERRIDE_silk_LPC_inverse_pred_gain)
-# define silk_LPC_inverse_pred_gain(A_Q12, order, arch)     ((void)(arch), silk_LPC_inverse_pred_gain_c(A_Q12, order))
+#if !defined(OVERRIDE_oaci_silk_LPC_inverse_pred_gain)
+# define oaci_silk_LPC_inverse_pred_gain(A_Q12, order, arch)     ((void)(arch), oaci_silk_LPC_inverse_pred_gain_c(A_Q12, order))
 #endif
 
 /********************************************************************/
@@ -204,24 +204,24 @@ void silk_ana_filt_bank_1(
 
 /* Approximation of 128 * log2() (exact inverse of approx 2^() below) */
 /* Convert input to a log scale    */
-oac_int32 silk_lin2log(
+oac_int32 oaci_silk_lin2log(
     const oac_int32 inLin                          /* I  input in linear scale                                         */
     );
 
 /* Approximation of a sigmoid function */
-oac_int silk_sigm_Q15(
+oac_int oaci_silk_sigm_Q15(
     oac_int in_Q5                                  /* I                                                                */
     );
 
 /* Approximation of 2^() (exact inverse of approx log2() above) */
 /* Convert input to a linear scale */
-oac_int32 silk_log2lin(
+oac_int32 oaci_silk_log2lin(
     const oac_int32 inLog_Q7                       /* I  input on log scale                                            */
     );
 
 /* Compute number of bits to right shift the sum of squares of a vector    */
 /* of int16s to make it fit in an int32                                    */
-void silk_sum_sqr_shift(
+void oaci_silk_sum_sqr_shift(
     oac_int32                  *energy,            /* O   Energy of x, after shifting to the right                     */
     oac_int                    *shift,             /* O   Number of bits right shift applied to energy                 */
     const oac_int16            *x,                 /* I   Input vector                                                 */
@@ -231,7 +231,7 @@ void silk_sum_sqr_shift(
 /* Calculates the reflection coefficients from the correlation sequence    */
 /* Faster than schur64(), but much less accurate.                          */
 /* uses SMLAWB(), requiring armv5E and higher.                             */
-oac_int32 silk_schur(                              /* O    Returns residual energy                                     */
+oac_int32 oaci_silk_schur(                              /* O    Returns residual energy                                     */
     oac_int16                  *rc_Q15,            /* O    reflection coefficients [order] Q15                         */
     const oac_int32            *c,                 /* I    correlations [order+1]                                      */
     const oac_int32 order                          /* I    prediction order                                            */
@@ -240,21 +240,21 @@ oac_int32 silk_schur(                              /* O    Returns residual ener
 /* Calculates the reflection coefficients from the correlation sequence    */
 /* Slower than schur(), but more accurate.                                 */
 /* Uses SMULL(), available on armv4                                        */
-oac_int32 silk_schur64(                            /* O    returns residual energy                                     */
+oac_int32 oaci_silk_schur64(                            /* O    returns residual energy                                     */
     oac_int32 rc_Q16[],                            /* O    Reflection coefficients [order] Q16                         */
     const oac_int32 c[],                           /* I    Correlations [order+1]                                      */
     oac_int32 order                                /* I    Prediction order                                            */
     );
 
 /* Step up function, converts reflection coefficients to prediction coefficients */
-void silk_k2a(
+void oaci_silk_k2a(
     oac_int32                  *A_Q24,             /* O    Prediction coefficients [order] Q24                         */
     const oac_int16            *rc_Q15,            /* I    Reflection coefficients [order] Q15                         */
     const oac_int32 order                          /* I    Prediction order                                            */
     );
 
 /* Step up function, converts reflection coefficients to prediction coefficients */
-void silk_k2a_Q16(
+void oaci_silk_k2a_Q16(
     oac_int32                  *A_Q24,             /* O    Prediction coefficients [order] Q24                         */
     const oac_int32            *rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
     const oac_int32 order                          /* I    Prediction order                                            */
@@ -265,7 +265,7 @@ void silk_k2a_Q16(
 /*    1 -> sine window from 0 to pi/2                               */
 /*    2 -> sine window from pi/2 to pi                              */
 /* every other sample of window is linearly interpolated, for speed */
-void silk_apply_sine_window(
+void oaci_silk_apply_sine_window(
     oac_int16 px_win[],                            /* O    Pointer to windowed signal                                  */
     const oac_int16 px[],                          /* I    Pointer to input signal                                     */
     const oac_int win_type,                        /* I    Selects a window type                                       */
@@ -273,7 +273,7 @@ void silk_apply_sine_window(
     );
 
 /* Compute autocorrelation */
-void silk_autocorr(
+void oaci_silk_autocorr(
     oac_int32                  *results,           /* O    Result (length correlationCount)                            */
     oac_int                    *scale,             /* O    Scaling of the correlation vector                           */
     const oac_int16            *inputData,         /* I    Input data to correlate                                     */
@@ -282,7 +282,7 @@ void silk_autocorr(
     int arch                                        /* I    Run-time architecture                                       */
     );
 
-void silk_decode_pitch(
+void oaci_silk_decode_pitch(
     oac_int16 lagIndex,                            /* I                                                                */
     oac_int8 contourIndex,                         /* O                                                                */
     oac_int pitch_lags[],                          /* O    4 pitch values                                              */
@@ -290,7 +290,7 @@ void silk_decode_pitch(
     const oac_int nb_subfr                         /* I    number of sub frames                                        */
     );
 
-oac_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
+oac_int oaci_silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
     const oac_int16            *frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
     oac_int                    *pitch_out,         /* O    4 pitch lag values                                          */
     oac_int16                  *lagIndex,          /* O    Lag Index                                                   */
@@ -307,14 +307,14 @@ oac_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 v
 
 /* Compute Normalized Line Spectral Frequencies (NLSFs) from whitening filter coefficients      */
 /* If not all roots are found, the a_Q16 coefficients are bandwidth expanded until convergence. */
-void silk_A2NLSF(
+void oaci_silk_A2NLSF(
     oac_int16                  *NLSF,              /* O    Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d] */
     oac_int32                  *a_Q16,             /* I/O  Monic whitening filter coefficients in Q16 [d]              */
     const oac_int d                                /* I    Filter order (must be even)                                 */
     );
 
 /* compute whitening filter coefficients from normalized line spectral frequencies */
-void silk_NLSF2A(
+void oaci_silk_NLSF2A(
     oac_int16                  *a_Q12,             /* O    monic whitening filter coefficients in Q12,  [ d ]          */
     const oac_int16            *NLSF,              /* I    normalized line spectral frequencies in Q15, [ d ]          */
     const oac_int d,                               /* I    filter order (should be even)                               */
@@ -322,7 +322,7 @@ void silk_NLSF2A(
     );
 
 /* Convert int32 coefficients to int16 coefs and make sure there's no wrap-around */
-void silk_LPC_fit(
+void oaci_silk_LPC_fit(
     oac_int16                  *a_QOUT,            /* O    Output signal                                               */
     oac_int32                  *a_QIN,             /* I/O  Input signal                                                */
     const oac_int QOUT,                            /* I    Input Q domain                                              */
@@ -330,41 +330,41 @@ void silk_LPC_fit(
     const oac_int d                                /* I    Filter order                                                */
     );
 
-void silk_insertion_sort_increasing(
+void oaci_silk_insertion_sort_increasing(
     oac_int32                  *a,                 /* I/O   Unsorted / Sorted vector                                   */
     oac_int                    *idx,               /* O     Index vector for the sorted elements                       */
     const oac_int L,                               /* I     Vector length                                              */
     const oac_int K                                /* I     Number of correctly sorted positions                       */
     );
 
-void silk_insertion_sort_decreasing_int16(
+void oaci_silk_insertion_sort_decreasing_int16(
     oac_int16                  *a,                 /* I/O   Unsorted / Sorted vector                                   */
     oac_int                    *idx,               /* O     Index vector for the sorted elements                       */
     const oac_int L,                               /* I     Vector length                                              */
     const oac_int K                                /* I     Number of correctly sorted positions                       */
     );
 
-void silk_insertion_sort_increasing_all_values_int16(
+void oaci_silk_insertion_sort_increasing_all_values_int16(
     oac_int16                 *a,                  /* I/O   Unsorted / Sorted vector                                   */
     const oac_int L                                /* I     Vector length                                              */
     );
 
 /* NLSF stabilizer, for a single input data vector */
-void silk_NLSF_stabilize(
+void oaci_silk_NLSF_stabilize(
     oac_int16            *NLSF_Q15,                /* I/O   Unstable/stabilized normalized LSF vector in Q15 [L]       */
     const oac_int16            *NDeltaMin_Q15,     /* I     Min distance vector, NDeltaMin_Q15[L] must be >= 1 [L+1]   */
     const oac_int L                                /* I     Number of NLSF parameters in the input vector              */
     );
 
 /* Laroia low complexity NLSF weights */
-void silk_NLSF_VQ_weights_laroia(
+void oaci_silk_NLSF_VQ_weights_laroia(
     oac_int16                  *pNLSFW_Q_OUT,      /* O     Pointer to input vector weights [D]                        */
     const oac_int16            *pNLSF_Q15,         /* I     Pointer to input vector         [D]                        */
     const oac_int D                                /* I     Input vector dimension (even)                              */
     );
 
 /* Compute reflection coefficients from input signal */
-void silk_burg_modified_c(
+void oaci_silk_burg_modified_c(
     oac_int32                  *res_nrg,           /* O    Residual energy                                             */
     oac_int                    *res_nrg_Q,         /* O    Residual energy Q value                                     */
     oac_int32 A_Q16[],                             /* O    Prediction coefficients (length order)                      */
@@ -377,7 +377,7 @@ void silk_burg_modified_c(
     );
 
 /* Copy and multiply a vector by a constant */
-void silk_scale_copy_vector16(
+void oaci_silk_scale_copy_vector16(
     oac_int16                  *data_out,
     const oac_int16            *data_in,
     oac_int32 gain_Q16,                            /* I    Gain in Q16                                                 */
@@ -385,7 +385,7 @@ void silk_scale_copy_vector16(
     );
 
 /* Some for the LTP related function requires Q26 to work.*/
-void silk_scale_vector32_Q26_lshift_18(
+void oaci_silk_scale_vector32_Q26_lshift_18(
     oac_int32                  *data1,             /* I/O  Q0/Q18                                                      */
     oac_int32 gain_Q26,                            /* I    Q26                                                         */
     oac_int dataSize                               /* I    length                                                      */
@@ -397,7 +397,7 @@ void silk_scale_vector32_Q26_lshift_18(
 
 /*    return sum( inVec1[i] * inVec2[i] ) */
 
-oac_int32 silk_inner_prod_aligned(
+oac_int32 oaci_silk_inner_prod_aligned(
     const oac_int16 *const inVec1,                 /*    I input vector 1                                              */
     const oac_int16 *const inVec2,                 /*    I input vector 2                                              */
     const oac_int len,                             /*    I vector lengths                                              */
@@ -405,14 +405,14 @@ oac_int32 silk_inner_prod_aligned(
     );
 
 
-oac_int32 silk_inner_prod_aligned_scale(
+oac_int32 oaci_silk_inner_prod_aligned_scale(
     const oac_int16 *const inVec1,                 /*    I input vector 1                                              */
     const oac_int16 *const inVec2,                 /*    I input vector 2                                              */
     const oac_int scale,                           /*    I number of bits to shift                                     */
     const oac_int len                              /*    I vector lengths                                              */
     );
 
-oac_int64 silk_inner_prod16_c(
+oac_int64 oaci_silk_inner_prod16_c(
     const oac_int16            *inVec1,            /*    I input vector 1                                              */
     const oac_int16            *inVec2,            /*    I input vector 2                                              */
     const oac_int len                              /*    I vector lengths                                              */
@@ -642,15 +642,15 @@ static OAC_INLINE oac_int64 silk_max_64(oac_int64 a, oac_int64 b) {
 /* the following seems faster on x86 */
 #define silk_SMMUL(a32, b32)                (oac_int32)silk_RSHIFT64(silk_SMULL((a32), (b32)), 32)
 
-#if !defined(OVERRIDE_silk_burg_modified)
-# define silk_burg_modified(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch) \
+#if !defined(OVERRIDE_oaci_silk_burg_modified)
+# define oaci_silk_burg_modified(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch) \
         ((void)(arch), \
-         silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch))
+         oaci_silk_burg_modified_c(res_nrg, res_nrg_Q, A_Q16, x, minInvGain_Q30, subfr_length, nb_subfr, D, arch))
 #endif
 
-#if !defined(OVERRIDE_silk_inner_prod16)
-# define silk_inner_prod16(inVec1, inVec2, len, arch) \
-        ((void)(arch), silk_inner_prod16_c(inVec1, inVec2, len))
+#if !defined(OVERRIDE_oaci_silk_inner_prod16)
+# define oaci_silk_inner_prod16(inVec1, inVec2, len, arch) \
+        ((void)(arch), oaci_silk_inner_prod16_c(inVec1, inVec2, len))
 #endif
 
 #include "Inlines.h"

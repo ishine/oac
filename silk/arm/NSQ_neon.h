@@ -133,13 +133,13 @@ oac_int32 silk_NSQ_noise_shape_feedback_loop_neon(const oac_int32 *data0, oac_in
          silk_noise_shape_quantizer_short_prediction_c(in, coef, order))
 
 extern oac_int32
-(*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK + 1])(
+(*const OACI_SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK + 1])(
  const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
  oac_int order);
 
 # undef silk_NSQ_noise_shape_feedback_loop
 # define silk_NSQ_noise_shape_feedback_loop(data0, data1, coef, order, arch) \
-        (SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[(arch)&OAC_ARCHMASK](data0, data1, \
+        (OACI_SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[(arch)&OAC_ARCHMASK](data0, data1, \
                                                                       coef, order))
 
 #endif

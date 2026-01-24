@@ -235,7 +235,7 @@ static OAC_INLINE void silk_LPC_analysis_filter6_FLP(
 /* filter always starts with zero state         */
 /* first Order output samples are set to zero   */
 /************************************************/
-void silk_LPC_analysis_filter_FLP(
+void oaci_silk_LPC_analysis_filter_FLP(
     silk_float r_LPC[],                                                 /* O    LPC residual signal                         */
     const silk_float PredCoef[],                                        /* I    LPC coefficients                            */
     const silk_float s[],                                               /* I    Input signal                                */

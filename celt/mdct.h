@@ -90,18 +90,18 @@ typedef struct {
 # include "arm/mdct_arm.h"
 #endif
 
-int clt_mdct_init(mdct_lookup *l, int N, int maxshift, int arch);
-void clt_mdct_clear(mdct_lookup *l, int arch);
+int oaci_clt_mdct_init(mdct_lookup *l, int N, int maxshift, int arch);
+void oaci_clt_mdct_clear(mdct_lookup *l, int arch);
 
 /** Compute a forward MDCT and scale by 4/N, trashes the input array */
-void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in,
+void oaci_clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in,
     kiss_fft_scalar * OAC_RESTRICT out,
     const celt_coef *window, int overlap,
     int shift, int stride, int arch);
 
 /** Compute a backward MDCT (no scaling) and performs weighted overlap-add
     (scales implicitly by 1/2) */
-void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
+void oaci_clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
     kiss_fft_scalar * OAC_RESTRICT out,
     const celt_coef * OAC_RESTRICT window,
     int overlap, int shift, int stride, int arch);
@@ -110,33 +110,33 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
 /* Is run-time CPU detection enabled on this platform? */
 # if defined(OAC_HAVE_RTCD) && defined(HAVE_ARM_NE10)
 
-extern void (*const CLT_MDCT_FORWARD_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_CLT_MDCT_FORWARD_IMPL[OAC_ARCHMASK + 1])(
       const mdct_lookup *l, kiss_fft_scalar *in,
       kiss_fft_scalar * OAC_RESTRICT out, const celt_coef *window,
       int overlap, int shift, int stride, int arch);
 
-#  define clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
-        ((*CLT_MDCT_FORWARD_IMPL[(arch)&OAC_ARCHMASK])(_l, _in, _out, \
+#  define oaci_clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
+        ((*OACI_CLT_MDCT_FORWARD_IMPL[(arch)&OAC_ARCHMASK])(_l, _in, _out, \
                                                        _window, _overlap, _shift, \
                                                        _stride, _arch))
 
-extern void (*const CLT_MDCT_BACKWARD_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_CLT_MDCT_BACKWARD_IMPL[OAC_ARCHMASK + 1])(
       const mdct_lookup *l, kiss_fft_scalar *in,
       kiss_fft_scalar * OAC_RESTRICT out, const celt_coef *window,
       int overlap, int shift, int stride, int arch);
 
-#  define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
-        (*CLT_MDCT_BACKWARD_IMPL[(arch)&OAC_ARCHMASK])(_l, _in, _out, \
+#  define oaci_clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
+        (*OACI_CLT_MDCT_BACKWARD_IMPL[(arch)&OAC_ARCHMASK])(_l, _in, _out, \
                                                        _window, _overlap, _shift, \
                                                        _stride, _arch)
 
 # else /* if defined(OAC_HAVE_RTCD) && defined(HAVE_ARM_NE10) */
 
-#  define clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
-        clt_mdct_forward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
+#  define oaci_clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
+        oaci_clt_mdct_forward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
 
-#  define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
-        clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
+#  define oaci_clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
+        oaci_clt_mdct_backward_c(_l, _in, _out, _window, _overlap, _shift, _stride, _arch)
 
 # endif /* end if defined(OAC_HAVE_RTCD) && defined(HAVE_ARM_NE10) && !defined(FIXED_POINT) */
 #endif /* end if !defined(OVERRIDE_OAC_MDCT) */

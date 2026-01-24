@@ -109,7 +109,7 @@ static const oac_int8 delay_matrix_dec[ 3 ][ 6 ] = {
 #define USE_silk_resampler_private_down_FIR         (3)
 
 /* Initialize/reset the resampler state for a given pair of input/output sampling rates */
-oac_int silk_resampler_init(
+oac_int oaci_silk_resampler_init(
     silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
     oac_int32 Fs_Hz_in,                            /* I    Input sampling rate (Hz)                                    */
     oac_int32 Fs_Hz_out,                           /* I    Output sampling rate (Hz)                                   */
@@ -170,27 +170,27 @@ oac_int silk_resampler_init(
         if (silk_MUL( Fs_Hz_out, 4 ) == silk_MUL( Fs_Hz_in, 3 )) {              /* Fs_out : Fs_in = 3 : 4 */
             S->FIR_Fracs = 3;
             S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
-            S->Coefs = silk_Resampler_3_4_COEFS;
+            S->Coefs = oaci_silk_Resampler_3_4_COEFS;
         } else if (silk_MUL( Fs_Hz_out, 3 ) == silk_MUL( Fs_Hz_in, 2 )) {       /* Fs_out : Fs_in = 2 : 3 */
             S->FIR_Fracs = 2;
             S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR0;
-            S->Coefs = silk_Resampler_2_3_COEFS;
+            S->Coefs = oaci_silk_Resampler_2_3_COEFS;
         } else if (silk_MUL( Fs_Hz_out, 2 ) == Fs_Hz_in) {                      /* Fs_out : Fs_in = 1 : 2 */
             S->FIR_Fracs = 1;
             S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR1;
-            S->Coefs = silk_Resampler_1_2_COEFS;
+            S->Coefs = oaci_silk_Resampler_1_2_COEFS;
         } else if (silk_MUL( Fs_Hz_out, 3 ) == Fs_Hz_in) {                      /* Fs_out : Fs_in = 1 : 3 */
             S->FIR_Fracs = 1;
             S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
-            S->Coefs = silk_Resampler_1_3_COEFS;
+            S->Coefs = oaci_silk_Resampler_1_3_COEFS;
         } else if (silk_MUL( Fs_Hz_out, 4 ) == Fs_Hz_in) {                      /* Fs_out : Fs_in = 1 : 4 */
             S->FIR_Fracs = 1;
             S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
-            S->Coefs = silk_Resampler_1_4_COEFS;
+            S->Coefs = oaci_silk_Resampler_1_4_COEFS;
         } else if (silk_MUL( Fs_Hz_out, 6 ) == Fs_Hz_in) {                      /* Fs_out : Fs_in = 1 : 6 */
             S->FIR_Fracs = 1;
             S->FIR_Order = RESAMPLER_DOWN_ORDER_FIR2;
-            S->Coefs = silk_Resampler_1_6_COEFS;
+            S->Coefs = oaci_silk_Resampler_1_6_COEFS;
         } else {
             /* None available */
             celt_assert( 0 );
@@ -213,7 +213,7 @@ oac_int silk_resampler_init(
 
 /* Resampler: convert from one sampling rate to another */
 /* Input and output sampling rate are at most 48000 Hz  */
-oac_int silk_resampler(
+oac_int oaci_silk_resampler(
     silk_resampler_state_struct *S,                 /* I/O  Resampler state                                             */
     oac_int16 out[],                               /* O    Output signal                                               */
     const oac_int16 in[],                          /* I    Input signal                                                */
@@ -233,16 +233,16 @@ oac_int silk_resampler(
 
     switch (S->resampler_function) {
         case USE_silk_resampler_private_up2_HQ_wrapper:
-            silk_resampler_private_up2_HQ_wrapper( S, out, S->delayBuf, S->Fs_in_kHz );
-            silk_resampler_private_up2_HQ_wrapper( S, &out[ S->Fs_out_kHz ], &in[ nSamples ], inLen - S->Fs_in_kHz );
+            oaci_silk_resampler_private_up2_HQ_wrapper( S, out, S->delayBuf, S->Fs_in_kHz );
+            oaci_silk_resampler_private_up2_HQ_wrapper( S, &out[ S->Fs_out_kHz ], &in[ nSamples ], inLen - S->Fs_in_kHz );
             break;
         case USE_silk_resampler_private_IIR_FIR:
-            silk_resampler_private_IIR_FIR( S, out, S->delayBuf, S->Fs_in_kHz );
-            silk_resampler_private_IIR_FIR( S, &out[ S->Fs_out_kHz ], &in[ nSamples ], inLen - S->Fs_in_kHz );
+            oaci_silk_resampler_private_IIR_FIR( S, out, S->delayBuf, S->Fs_in_kHz );
+            oaci_silk_resampler_private_IIR_FIR( S, &out[ S->Fs_out_kHz ], &in[ nSamples ], inLen - S->Fs_in_kHz );
             break;
         case USE_silk_resampler_private_down_FIR:
-            silk_resampler_private_down_FIR( S, out, S->delayBuf, S->Fs_in_kHz );
-            silk_resampler_private_down_FIR( S, &out[ S->Fs_out_kHz ], &in[ nSamples ], inLen - S->Fs_in_kHz );
+            oaci_silk_resampler_private_down_FIR( S, out, S->delayBuf, S->Fs_in_kHz );
+            oaci_silk_resampler_private_down_FIR( S, &out[ S->Fs_out_kHz ], &in[ nSamples ], inLen - S->Fs_in_kHz );
             break;
         default:
             silk_memcpy( out, S->delayBuf, S->Fs_in_kHz*sizeof(oac_int16));

@@ -66,7 +66,7 @@
 #include "SigProc_FLP.h"
 
 /* compute autocorrelation */
-void silk_autocorrelation_FLP(
+void oaci_silk_autocorrelation_FLP(
     silk_float          *results,           /* O    result (length correlationCount)                            */
     const silk_float    *inputData,         /* I    input data to correlate                                     */
     oac_int inputDataSize,                 /* I    length of input                                             */
@@ -79,6 +79,6 @@ void silk_autocorrelation_FLP(
     }
 
     for (i = 0; i < correlationCount; i++) {
-        results[ i ] =  (silk_float)silk_inner_product_FLP( inputData, inputData + i, inputDataSize - i, arch );
+        results[ i ] =  (silk_float)oaci_silk_inner_product_FLP( inputData, inputData + i, inputDataSize - i, arch );
     }
 }

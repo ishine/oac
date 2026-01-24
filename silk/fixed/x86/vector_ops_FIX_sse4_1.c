@@ -71,7 +71,7 @@
 #include "pitch.h"
 #include "celt/x86/x86cpu.h"
 
-oac_int64 silk_inner_prod16_sse4_1(
+oac_int64 oaci_silk_inner_prod16_sse4_1(
     const oac_int16            *inVec1,            /*    I input vector 1                                              */
     const oac_int16            *inVec2,            /*    I input vector 2                                              */
     const oac_int len                              /*    I vector lengths                                              */
@@ -116,7 +116,7 @@ oac_int64 silk_inner_prod16_sse4_1(
 
 #ifdef OAC_CHECK_ASM
     {
-        oac_int64 sum_c = silk_inner_prod16_c( inVec1, inVec2, len );
+        oac_int64 sum_c = oaci_silk_inner_prod16_c( inVec1, inVec2, len );
         silk_assert( sum == sum_c );
     }
 #endif

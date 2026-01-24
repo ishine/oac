@@ -97,7 +97,7 @@ static OAC_INLINE float relu(float x) {
 
 /*#define HIGH_ACCURACY */
 
-void RTCD_SUF(compute_activation_)(float *output, const float *input, int N, int activation)
+void RTCD_SUF(oaci_compute_activation_)(float *output, const float *input, int N, int activation)
 {
    int i;
    if (activation == ACTIVATION_SIGMOID) {
@@ -148,7 +148,7 @@ void RTCD_SUF(compute_activation_)(float *output, const float *input, int N, int
 }
 
 
-void RTCD_SUF(compute_linear_) (const LinearLayer *linear, float *out, const float *in)
+void RTCD_SUF(oaci_compute_linear_) (const LinearLayer *linear, float *out, const float *in)
 {
    int i, M, N;
    const float *bias;
@@ -252,7 +252,7 @@ static void conv2d_3x3_float(float *out, const float *weights, int in_channels, 
 
 #define MAX_CONV2D_INPUTS 8192
 
-void RTCD_SUF(compute_conv2d_)(const Conv2dLayer *conv, float *out, float *mem, const float *in, int height,
+void RTCD_SUF(oaci_compute_conv2d_)(const Conv2dLayer *conv, float *out, float *mem, const float *in, int height,
 int hstride, int activation)
 {
    int i;
@@ -278,7 +278,7 @@ int hstride, int activation)
         }
    }
    for (i = 0; i < conv->out_channels; i++) {
-        RTCD_SUF(compute_activation_)(&out[i*hstride], &out[i*hstride], height, activation);
+        RTCD_SUF(oaci_compute_activation_)(&out[i*hstride], &out[i*hstride], height, activation);
    }
 }
 

@@ -70,7 +70,7 @@
 # if (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && \
     !defined(OAC_ARM_PRESUME_NEON_INTR))
 
-void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
         const oac_int16            *in,                /* I     input signal                                               */
         const oac_int32            *B_Q28,             /* I     MA coefficients [3]                                        */
         const oac_int32            *A_Q28,             /* I     AR coefficients [2]                                        */
@@ -78,25 +78,25 @@ void (*const SILK_BIQUAD_ALT_STRIDE2_IMPL[OAC_ARCHMASK + 1])(
         oac_int16                  *out,               /* O     output signal                                              */
         const oac_int32 len                            /* I     signal length (must be even)                               */
     ) = {
-    silk_biquad_alt_stride2_c,      /* ARMv4 */
-    silk_biquad_alt_stride2_c,      /* EDSP */
-    silk_biquad_alt_stride2_c,      /* Media */
-    silk_biquad_alt_stride2_neon,   /* Neon */
-    silk_biquad_alt_stride2_neon,   /* dotprod */
+    oaci_silk_biquad_alt_stride2_c,      /* ARMv4 */
+    oaci_silk_biquad_alt_stride2_c,      /* EDSP */
+    oaci_silk_biquad_alt_stride2_c,      /* Media */
+    oaci_silk_biquad_alt_stride2_neon,   /* Neon */
+    oaci_silk_biquad_alt_stride2_neon,   /* dotprod */
 };
 
-oac_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OAC_ARCHMASK + 1])( /* O   Returns inverse prediction gain in energy domain, Q30        */
+oac_int32 (*const OACI_SILK_LPC_INVERSE_PRED_GAIN_IMPL[OAC_ARCHMASK + 1])( /* O   Returns inverse prediction gain in energy domain, Q30        */
         const oac_int16            *A_Q12,                             /* I   Prediction coefficients, Q12 [order]                         */
         const oac_int order                                            /* I   Prediction order                                             */
     ) = {
-    silk_LPC_inverse_pred_gain_c,      /* ARMv4 */
-    silk_LPC_inverse_pred_gain_c,      /* EDSP */
-    silk_LPC_inverse_pred_gain_c,      /* Media */
-    silk_LPC_inverse_pred_gain_neon,   /* Neon */
-    silk_LPC_inverse_pred_gain_neon,   /* dotprod */
+    oaci_silk_LPC_inverse_pred_gain_c,      /* ARMv4 */
+    oaci_silk_LPC_inverse_pred_gain_c,      /* EDSP */
+    oaci_silk_LPC_inverse_pred_gain_c,      /* Media */
+    oaci_silk_LPC_inverse_pred_gain_neon,   /* Neon */
+    oaci_silk_LPC_inverse_pred_gain_neon,   /* dotprod */
 };
 
-void  (*const SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
+void  (*const OACI_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
         const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
         silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
         SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */
@@ -113,11 +113,11 @@ void  (*const SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
         const oac_int Lambda_Q10,                                              /* I    Rate/distortion tradeoff        */
         const oac_int LTP_scale_Q14                                            /* I    LTP state scaling               */
     ) = {
-    silk_NSQ_del_dec_c,      /* ARMv4 */
-    silk_NSQ_del_dec_c,      /* EDSP */
-    silk_NSQ_del_dec_c,      /* Media */
-    silk_NSQ_del_dec_neon,   /* Neon */
-    silk_NSQ_del_dec_neon,   /* dotprod */
+    oaci_silk_NSQ_del_dec_c,      /* ARMv4 */
+    oaci_silk_NSQ_del_dec_c,      /* EDSP */
+    oaci_silk_NSQ_del_dec_c,      /* Media */
+    oaci_silk_NSQ_del_dec_neon,   /* Neon */
+    oaci_silk_NSQ_del_dec_neon,   /* dotprod */
 };
 
 /*There is no table for silk_noise_shape_quantizer_short_prediction because the
@@ -126,7 +126,7 @@ void  (*const SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
    See NSQ_neon.h for details.*/
 
 oac_int32
-(*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK + 1])(
+(*const OACI_SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK + 1])(
  const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
  oac_int order) = {
     silk_NSQ_noise_shape_feedback_loop_c,  /* ARMv4 */
@@ -141,7 +141,7 @@ oac_int32
 # if defined(FIXED_POINT) && \
     defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 
-void (*const SILK_WARPED_AUTOCORRELATION_FIX_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_SILK_WARPED_AUTOCORRELATION_FIX_IMPL[OAC_ARCHMASK + 1])(
           oac_int32                *corr,                                  /* O    Result [order + 1]                                                          */
           oac_int                  *scale,                                 /* O    Scaling of the correlation vector                                           */
     const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
@@ -149,11 +149,11 @@ void (*const SILK_WARPED_AUTOCORRELATION_FIX_IMPL[OAC_ARCHMASK + 1])(
     const oac_int length,                                                  /* I    Length of input                                                             */
     const oac_int order                                                    /* I    Correlation order (even)                                                    */
     ) = {
-    silk_warped_autocorrelation_FIX_c,      /* ARMv4 */
-    silk_warped_autocorrelation_FIX_c,      /* EDSP */
-    silk_warped_autocorrelation_FIX_c,      /* Media */
-    silk_warped_autocorrelation_FIX_neon,   /* Neon */
-    silk_warped_autocorrelation_FIX_neon,   /* dotprod */
+    oaci_silk_warped_autocorrelation_FIX_c,      /* ARMv4 */
+    oaci_silk_warped_autocorrelation_FIX_c,      /* EDSP */
+    oaci_silk_warped_autocorrelation_FIX_c,      /* Media */
+    oaci_silk_warped_autocorrelation_FIX_neon,   /* Neon */
+    oaci_silk_warped_autocorrelation_FIX_neon,   /* dotprod */
 };
 
 # endif

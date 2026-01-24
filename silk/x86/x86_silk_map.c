@@ -77,32 +77,32 @@
 
 #  include "fixed/main_FIX.h"
 
-oac_int64 (*const SILK_INNER_PROD16_IMPL[ OAC_ARCHMASK + 1 ] )(
+oac_int64 (*const OACI_SILK_INNER_PROD16_IMPL[ OAC_ARCHMASK + 1 ] )(
     const oac_int16 *inVec1,
     const oac_int16 *inVec2,
     const oac_int len
     ) = {
-    silk_inner_prod16_c,                /* non-sse */
-    silk_inner_prod16_c,
-    silk_inner_prod16_c,
-    MAY_HAVE_SSE4_1( silk_inner_prod16 ), /* sse4.1 */
-    MAY_HAVE_SSE4_1( silk_inner_prod16 ) /* avx */
+    oaci_silk_inner_prod16_c,                /* non-sse */
+    oaci_silk_inner_prod16_c,
+    oaci_silk_inner_prod16_c,
+    MAY_HAVE_SSE4_1( oaci_silk_inner_prod16 ), /* sse4.1 */
+    MAY_HAVE_SSE4_1( oaci_silk_inner_prod16 ) /* avx */
 };
 
 # endif
 
-oac_int (*const SILK_VAD_GETSA_Q8_IMPL[ OAC_ARCHMASK + 1 ] )(
+oac_int (*const OACI_SILK_VAD_GETSA_Q8_IMPL[ OAC_ARCHMASK + 1 ] )(
     silk_encoder_state *psEncC,
     const oac_int16 pIn[]
     ) = {
-    silk_VAD_GetSA_Q8_c,                /* non-sse */
-    silk_VAD_GetSA_Q8_c,
-    silk_VAD_GetSA_Q8_c,
-    MAY_HAVE_SSE4_1( silk_VAD_GetSA_Q8 ), /* sse4.1 */
-    MAY_HAVE_SSE4_1( silk_VAD_GetSA_Q8 ) /* avx */
+    oaci_silk_VAD_GetSA_Q8_c,                /* non-sse */
+    oaci_silk_VAD_GetSA_Q8_c,
+    oaci_silk_VAD_GetSA_Q8_c,
+    MAY_HAVE_SSE4_1( oaci_silk_VAD_GetSA_Q8 ), /* sse4.1 */
+    MAY_HAVE_SSE4_1( oaci_silk_VAD_GetSA_Q8 ) /* avx */
 };
 
-void (*const SILK_NSQ_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_NSQ_IMPL[ OAC_ARCHMASK + 1 ] )(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -119,14 +119,14 @@ void (*const SILK_NSQ_IMPL[ OAC_ARCHMASK + 1 ] )(
     const oac_int Lambda_Q10,                                                /* I    Rate/distortion tradeoff        */
     const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
     ) = {
-    silk_NSQ_c,                /* non-sse */
-    silk_NSQ_c,
-    silk_NSQ_c,
-    MAY_HAVE_SSE4_1( silk_NSQ ), /* sse4.1 */
-    MAY_HAVE_SSE4_1( silk_NSQ ) /* avx */
+    oaci_silk_NSQ_c,                /* non-sse */
+    oaci_silk_NSQ_c,
+    oaci_silk_NSQ_c,
+    MAY_HAVE_SSE4_1( oaci_silk_NSQ ), /* sse4.1 */
+    MAY_HAVE_SSE4_1( oaci_silk_NSQ ) /* avx */
 };
 
-void (*const SILK_VQ_WMAT_EC_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_VQ_WMAT_EC_IMPL[ OAC_ARCHMASK + 1 ] )(
     oac_int8                   *ind,                           /* O    index of best codebook vector               */
     oac_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
     oac_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
@@ -140,14 +140,14 @@ void (*const SILK_VQ_WMAT_EC_IMPL[ OAC_ARCHMASK + 1 ] )(
     const oac_int32 max_gain_Q7,                               /* I    maximum sum of absolute LTP coefficients    */
     const oac_int L                                            /* I    number of vectors in codebook               */
     ) = {
-    silk_VQ_WMat_EC_c,                /* non-sse */
-    silk_VQ_WMat_EC_c,
-    silk_VQ_WMat_EC_c,
-    MAY_HAVE_SSE4_1( silk_VQ_WMat_EC ), /* sse4.1 */
-    MAY_HAVE_SSE4_1( silk_VQ_WMat_EC ) /* avx */
+    oaci_silk_VQ_WMat_EC_c,                /* non-sse */
+    oaci_silk_VQ_WMat_EC_c,
+    oaci_silk_VQ_WMat_EC_c,
+    MAY_HAVE_SSE4_1( oaci_silk_VQ_WMat_EC ), /* sse4.1 */
+    MAY_HAVE_SSE4_1( oaci_silk_VQ_WMat_EC ) /* avx */
 };
 
-void (*const SILK_NSQ_DEL_DEC_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_NSQ_DEL_DEC_IMPL[ OAC_ARCHMASK + 1 ] )(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -164,16 +164,16 @@ void (*const SILK_NSQ_DEL_DEC_IMPL[ OAC_ARCHMASK + 1 ] )(
     const oac_int Lambda_Q10,                                                /* I    Rate/distortion tradeoff        */
     const oac_int LTP_scale_Q14                                              /* I    LTP state scaling               */
     ) = {
-    silk_NSQ_del_dec_c,                /* non-sse */
-    silk_NSQ_del_dec_c,
-    silk_NSQ_del_dec_c,
-    MAY_HAVE_SSE4_1( silk_NSQ_del_dec ), /* sse4.1 */
-    MAY_HAVE_AVX2( silk_NSQ_del_dec ) /* avx */
+    oaci_silk_NSQ_del_dec_c,                /* non-sse */
+    oaci_silk_NSQ_del_dec_c,
+    oaci_silk_NSQ_del_dec_c,
+    MAY_HAVE_SSE4_1( oaci_silk_NSQ_del_dec ), /* sse4.1 */
+    MAY_HAVE_AVX2( oaci_silk_NSQ_del_dec ) /* avx */
 };
 
 # if defined(FIXED_POINT)
 
-void (*const SILK_BURG_MODIFIED_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_BURG_MODIFIED_IMPL[ OAC_ARCHMASK + 1 ] )(
     oac_int32                  *res_nrg,           /* O    Residual energy                                             */
     oac_int                    *res_nrg_Q,         /* O    Residual energy Q value                                     */
     oac_int32 A_Q16[],                             /* O    Prediction coefficients (length order)                      */
@@ -184,27 +184,27 @@ void (*const SILK_BURG_MODIFIED_IMPL[ OAC_ARCHMASK + 1 ] )(
     const oac_int D,                               /* I    Order                                                       */
     int arch                                        /* I    Run-time architecture                                       */
     ) = {
-    silk_burg_modified_c,                /* non-sse */
-    silk_burg_modified_c,
-    silk_burg_modified_c,
-    MAY_HAVE_SSE4_1( silk_burg_modified ), /* sse4.1 */
-    MAY_HAVE_SSE4_1( silk_burg_modified ) /* avx */
+    oaci_silk_burg_modified_c,                /* non-sse */
+    oaci_silk_burg_modified_c,
+    oaci_silk_burg_modified_c,
+    MAY_HAVE_SSE4_1( oaci_silk_burg_modified ), /* sse4.1 */
+    MAY_HAVE_SSE4_1( oaci_silk_burg_modified ) /* avx */
 };
 
 # endif
 
 # ifndef FIXED_POINT
 
-double (*const SILK_INNER_PRODUCT_FLP_IMPL[ OAC_ARCHMASK + 1 ] )(
+double (*const OACI_SILK_INNER_PRODUCT_FLP_IMPL[ OAC_ARCHMASK + 1 ] )(
     const silk_float    *data1,
     const silk_float    *data2,
     oac_int dataSize
     ) = {
-    silk_inner_product_FLP_c,                /* non-sse */
-    silk_inner_product_FLP_c,
-    silk_inner_product_FLP_c,
-    silk_inner_product_FLP_c, /* sse4.1 */
-    MAY_HAVE_AVX2( silk_inner_product_FLP ) /* avx */
+    oaci_silk_inner_product_FLP_c,                /* non-sse */
+    oaci_silk_inner_product_FLP_c,
+    oaci_silk_inner_product_FLP_c,
+    oaci_silk_inner_product_FLP_c, /* sse4.1 */
+    MAY_HAVE_AVX2( oaci_silk_inner_product_FLP ) /* avx */
 };
 
 # endif

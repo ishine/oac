@@ -65,25 +65,25 @@
 #include "typedef.h"
 #include "pitch_est_defines.h"
 
-const oac_int8 silk_CB_lags_stage2_10_ms[ PE_MAX_NB_SUBFR>>1][ PE_NB_CBKS_STAGE2_10MS ] =
+const oac_int8 oaci_silk_CB_lags_stage2_10_ms[ PE_MAX_NB_SUBFR>>1][ PE_NB_CBKS_STAGE2_10MS ] =
 {
     {0, 1, 0},
     {0, 0, 1}
 };
 
-const oac_int8 silk_CB_lags_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ PE_NB_CBKS_STAGE3_10MS ] =
+const oac_int8 oaci_silk_CB_lags_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ PE_NB_CBKS_STAGE3_10MS ] =
 {
     { 0, 0, 1, -1, 1, -1, 2, -2, 2, -2, 3, -3},
     { 0, 1, 0, 1, -1, 2, -1, 2, -2, 3, -2, 3}
 };
 
-const oac_int8 silk_Lag_range_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ 2 ] =
+const oac_int8 oaci_silk_Lag_range_stage3_10_ms[ PE_MAX_NB_SUBFR>>1 ][ 2 ] =
 {
     {-3, 7},
     {-2, 7}
 };
 
-const oac_int8 silk_CB_lags_stage2[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ] =
+const oac_int8 oaci_silk_CB_lags_stage2[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ] =
 {
     {0, 2, -1, -1, -1, 0, 0, 1, 1, 0, 1},
     {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0},
@@ -91,7 +91,7 @@ const oac_int8 silk_CB_lags_stage2[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ] =
     {0, -1, 2, 1, 0, 1, 1, 0, 0, -1, -1}
 };
 
-const oac_int8 silk_CB_lags_stage3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ] =
+const oac_int8 oaci_silk_CB_lags_stage3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ] =
 {
     {0, 0, 1, -1, 0, 1, -1, 0, -1, 1, -2, 2, -2, -2, 2, -3, 2, 3, -3, -4, 3, -4, 4, 4, -5, 5, -6, -5, 6, -7, 6, 5, 8,
      -9},
@@ -100,7 +100,7 @@ const oac_int8 silk_CB_lags_stage3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ] =
     {0, 1, 0, 0, 1, 0, 1, -1, 2, -1, 2, -1, 2, 3, -2, 3, -2, -2, 4, 4, -3, 5, -3, -4, 6, -4, 6, 5, -5, 8, -6, -5, -7, 9}
 };
 
-const oac_int8 silk_Lag_range_stage3[ SILK_PE_MAX_COMPLEX + 1 ] [ PE_MAX_NB_SUBFR ][ 2 ] =
+const oac_int8 oaci_silk_Lag_range_stage3[ SILK_PE_MAX_COMPLEX + 1 ] [ PE_MAX_NB_SUBFR ][ 2 ] =
 {
     /* Lags to search for low number of stage3 cbks */
     {
@@ -125,7 +125,7 @@ const oac_int8 silk_Lag_range_stage3[ SILK_PE_MAX_COMPLEX + 1 ] [ PE_MAX_NB_SUBF
     }
 };
 
-const oac_int8 silk_nb_cbk_searchs_stage3[ SILK_PE_MAX_COMPLEX + 1 ] =
+const oac_int8 oaci_silk_nb_cbk_searchs_stage3[ SILK_PE_MAX_COMPLEX + 1 ] =
 {
     PE_NB_CBKS_STAGE3_MIN,
     PE_NB_CBKS_STAGE3_MID,

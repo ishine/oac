@@ -70,8 +70,8 @@
 
 
 /* Autocorrelations for a warped frequency axis */
-#ifndef OVERRIDE_silk_warped_autocorrelation_FIX_c
-void silk_warped_autocorrelation_FIX_c(
+#ifndef OVERRIDE_oaci_silk_warped_autocorrelation_FIX_c
+void oaci_silk_warped_autocorrelation_FIX_c(
     oac_int32                *corr,                                        /* O    Result [order + 1]                                                          */
     oac_int                  *scale,                                       /* O    Scaling of the correlation vector                                           */
     const oac_int16                *input,                                 /* I    Input data to correlate                                                     */
@@ -121,4 +121,4 @@ void silk_warped_autocorrelation_FIX_c(
     }
     silk_assert( corr_QC[ 0 ] >= 0 ); /* If breaking, decrease QC*/
 }
-#endif /* OVERRIDE_silk_warped_autocorrelation_FIX_c */
+#endif /* OVERRIDE_oaci_silk_warped_autocorrelation_FIX_c */

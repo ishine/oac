@@ -68,7 +68,7 @@
 /* Window types:                        */
 /*  1 -> sine window from 0 to pi/2     */
 /*  2 -> sine window from pi/2 to pi    */
-void silk_apply_sine_window_FLP(
+void oaci_silk_apply_sine_window_FLP(
     silk_float px_win[],                                                /* O    Pointer to windowed signal                  */
     const silk_float px[],                                              /* I    Pointer to input signal                     */
     const oac_int win_type,                                            /* I    Selects a window type                       */

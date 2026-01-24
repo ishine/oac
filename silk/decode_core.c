@@ -68,7 +68,7 @@
 /**********************************************************/
 /* Core decoder. Performs inverse NSQ operation LTP + LPC */
 /**********************************************************/
-void silk_decode_core(
+void oaci_silk_decode_core(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state                               */
     silk_decoder_control        *psDecCtrl,                     /* I    Decoder control                             */
     oac_int16 xq[],                                            /* O    Decoded speech                              */
@@ -98,7 +98,7 @@ void silk_decode_core(
     ALLOC( sLPC_Q14, psDec->subfr_length + MAX_LPC_ORDER, oac_int32 );
 #endif
 
-    offset_Q10 = silk_Quantization_Offsets_Q10[ psDec->indices.signalType>>1 ][ psDec->indices.quantOffsetType ];
+    offset_Q10 = oaci_silk_Quantization_Offsets_Q10[ psDec->indices.signalType>>1 ][ psDec->indices.quantOffsetType ];
 
     if (psDec->indices.NLSFInterpCoef_Q2 < 1<<2) {
         NLSF_interpolation_flag = 1;
@@ -184,7 +184,7 @@ void silk_decode_core(
                     silk_memcpy( &psDec->outBuf[ psDec->ltp_mem_length ], xq, 2*psDec->subfr_length*sizeof(oac_int16));
                 }
 
-                silk_LPC_analysis_filter( &sLTP[ start_idx ], &psDec->outBuf[ start_idx + k*psDec->subfr_length ],
+                oaci_silk_LPC_analysis_filter( &sLTP[ start_idx ], &psDec->outBuf[ start_idx + k*psDec->subfr_length ],
                     A_Q12, psDec->ltp_mem_length - start_idx, psDec->LPC_order, arch );
 
                 /* After rewhitening the LTP state is unscaled */

@@ -91,7 +91,7 @@ static OAC_INLINE void silk_CNG_exc(
     *rand_seed = seed;
 }
 
-void silk_CNG_Reset(
+void oaci_silk_CNG_Reset(
     silk_decoder_state          *psDec                          /* I/O  Decoder state                               */
     ) {
     oac_int i, NLSF_step_Q15, NLSF_acc_Q15;
@@ -107,7 +107,7 @@ void silk_CNG_Reset(
 }
 
 /* Updates CNG estimate, and applies the CNG when packet was lost   */
-void silk_CNG(
+void oaci_silk_CNG(
     silk_decoder_state          *psDec,                         /* I/O  Decoder state                               */
     silk_decoder_control        *psDecCtrl,                     /* I/O  Decoder control                             */
     oac_int16 frame[],                                         /* I/O  Signal                                      */
@@ -121,7 +121,7 @@ void silk_CNG(
 
     if (psDec->fs_kHz != psCNG->fs_kHz) {
         /* Reset state */
-        silk_CNG_Reset( psDec );
+        oaci_silk_CNG_Reset( psDec );
 
         psCNG->fs_kHz = psDec->fs_kHz;
     }
@@ -182,7 +182,7 @@ void silk_CNG(
         silk_CNG_exc( CNG_sig_Q14 + MAX_LPC_ORDER, psCNG->CNG_exc_buf_Q14, length, &psCNG->rand_seed );
 
         /* Convert CNG NLSF to filter representation */
-        silk_NLSF2A( A_Q12, psCNG->CNG_smth_NLSF_Q15, psDec->LPC_order, psDec->arch );
+        oaci_silk_NLSF2A( A_Q12, psCNG->CNG_smth_NLSF_Q15, psDec->LPC_order, psDec->arch );
 
         /* Generate CNG signal, by synthesis filtering */
         silk_memcpy( CNG_sig_Q14, psCNG->CNG_synth_state, MAX_LPC_ORDER*sizeof(oac_int32));

@@ -80,7 +80,7 @@ static const oac_int16 freq_table_Q16[ 27 ] = {
     2313,    2214,    2123,    2038,    1961,    1889,    1822,    1760,    1702,
 };
 
-void silk_apply_sine_window(
+void oaci_silk_apply_sine_window(
     oac_int16 px_win[],                            /* O    Pointer to windowed signal                                  */
     const oac_int16 px[],                          /* I    Pointer to input signal                                     */
     const oac_int win_type,                        /* I    Selects a window type                                       */

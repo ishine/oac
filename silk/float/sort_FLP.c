@@ -69,7 +69,7 @@
 #include "typedef.h"
 #include "SigProc_FLP.h"
 
-void silk_insertion_sort_decreasing_FLP(
+void oaci_silk_insertion_sort_decreasing_FLP(
     silk_float          *a,                 /* I/O  Unsorted / Sorted vector                                    */
     oac_int            *idx,               /* O    Index vector for the sorted elements                        */
     const oac_int L,                       /* I    Vector length                                               */

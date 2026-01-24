@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Delayed-decision quantizer for NLSF residuals */
-oac_int32 silk_NLSF_del_dec_quant(                             /* O    Returns RD value in Q25                     */
+oac_int32 oaci_silk_NLSF_del_dec_quant(                             /* O    Returns RD value in Q25                     */
     oac_int8 indices[],                                        /* O    Quantization indices [ order ]              */
     const oac_int16 x_Q10[],                                   /* I    Input [ order ]                             */
     const oac_int16 w_Q5[],                                    /* I    Weights [ order ]                           */

@@ -67,7 +67,7 @@
 #include "tuning_parameters.h"
 
 /* Find pitch lags */
-void silk_find_pitch_lags_FIX(
+void oaci_silk_find_pitch_lags_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  encoder state                                                               */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  encoder control                                                             */
     oac_int16 res[],                                                       /* O    residual                                                                    */
@@ -104,7 +104,7 @@ void silk_find_pitch_lags_FIX(
     /* First LA_LTP samples */
     x_ptr = x + buf_len - psEnc->sCmn.pitch_LPC_win_length;
     Wsig_ptr  = Wsig;
-    silk_apply_sine_window( Wsig_ptr, x_ptr, 1, psEnc->sCmn.la_pitch );
+    oaci_silk_apply_sine_window( Wsig_ptr, x_ptr, 1, psEnc->sCmn.la_pitch );
 
     /* Middle un - windowed samples */
     Wsig_ptr  += psEnc->sCmn.la_pitch;
@@ -115,10 +115,10 @@ void silk_find_pitch_lags_FIX(
     /* Last LA_LTP samples */
     Wsig_ptr  += psEnc->sCmn.pitch_LPC_win_length - silk_LSHIFT( psEnc->sCmn.la_pitch, 1 );
     x_ptr += psEnc->sCmn.pitch_LPC_win_length - silk_LSHIFT( psEnc->sCmn.la_pitch, 1 );
-    silk_apply_sine_window( Wsig_ptr, x_ptr, 2, psEnc->sCmn.la_pitch );
+    oaci_silk_apply_sine_window( Wsig_ptr, x_ptr, 2, psEnc->sCmn.la_pitch );
 
     /* Calculate autocorrelation sequence */
-    silk_autocorr( auto_corr, &scale, Wsig, psEnc->sCmn.pitch_LPC_win_length, psEnc->sCmn.pitchEstimationLPCOrder + 1,
+    oaci_silk_autocorr( auto_corr, &scale, Wsig, psEnc->sCmn.pitch_LPC_win_length, psEnc->sCmn.pitchEstimationLPCOrder + 1,
     arch );
 
     /* Add white noise, as fraction of energy */
@@ -126,13 +126,13 @@ void silk_find_pitch_lags_FIX(
     SILK_FIX_CONST( FIND_PITCH_WHITE_NOISE_FRACTION, 16 )) + 1;
 
     /* Calculate the reflection coefficients using schur */
-    res_nrg = silk_schur( rc_Q15, auto_corr, psEnc->sCmn.pitchEstimationLPCOrder );
+    res_nrg = oaci_silk_schur( rc_Q15, auto_corr, psEnc->sCmn.pitchEstimationLPCOrder );
 
     /* Prediction gain */
     psEncCtrl->predGain_Q16 = silk_DIV32_varQ( auto_corr[ 0 ], silk_max_int( res_nrg, 1 ), 16 );
 
     /* Convert reflection coefficients to prediction coefficients */
-    silk_k2a( A_Q24, rc_Q15, psEnc->sCmn.pitchEstimationLPCOrder );
+    oaci_silk_k2a( A_Q24, rc_Q15, psEnc->sCmn.pitchEstimationLPCOrder );
 
     /* Convert From 32 bit Q24 to 16 bit Q12 coefs */
     for (i = 0; i < psEnc->sCmn.pitchEstimationLPCOrder; i++) {
@@ -140,12 +140,12 @@ void silk_find_pitch_lags_FIX(
     }
 
     /* Do BWE */
-    silk_bwexpander( A_Q12, psEnc->sCmn.pitchEstimationLPCOrder, SILK_FIX_CONST( FIND_PITCH_BANDWIDTH_EXPANSION, 16 ));
+    oaci_silk_bwexpander( A_Q12, psEnc->sCmn.pitchEstimationLPCOrder, SILK_FIX_CONST( FIND_PITCH_BANDWIDTH_EXPANSION, 16 ));
 
     /*****************************************/
     /* LPC analysis filtering                */
     /*****************************************/
-    silk_LPC_analysis_filter( res, x, A_Q12, buf_len, psEnc->sCmn.pitchEstimationLPCOrder, psEnc->sCmn.arch );
+    oaci_silk_LPC_analysis_filter( res, x, A_Q12, buf_len, psEnc->sCmn.pitchEstimationLPCOrder, psEnc->sCmn.arch );
 
     if (psEnc->sCmn.indices.signalType != TYPE_NO_VOICE_ACTIVITY && psEnc->sCmn.first_frame_after_reset == 0) {
         /* Threshold for pitch estimator */
@@ -160,7 +160,7 @@ void silk_find_pitch_lags_FIX(
         /*****************************************/
         /* Call pitch estimator                  */
         /*****************************************/
-        if (silk_pitch_analysis_core( res, psEncCtrl->pitchL, &psEnc->sCmn.indices.lagIndex,
+        if (oaci_silk_pitch_analysis_core( res, psEncCtrl->pitchL, &psEnc->sCmn.indices.lagIndex,
         &psEnc->sCmn.indices.contourIndex,
                 &psEnc->LTPCorr_Q15, psEnc->sCmn.prevLag, psEnc->sCmn.pitchEstimationThreshold_Q16,
             (oac_int)thrhld_Q13, psEnc->sCmn.fs_kHz, psEnc->sCmn.pitchEstimationComplexity, psEnc->sCmn.nb_subfr,

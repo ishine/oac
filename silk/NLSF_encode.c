@@ -68,7 +68,7 @@
 /***********************/
 /* NLSF vector encoder */
 /***********************/
-oac_int32 silk_NLSF_encode(                                    /* O    Returns RD value in Q25                     */
+oac_int32 oaci_silk_NLSF_encode(                                    /* O    Returns RD value in Q25                     */
     oac_int8             *NLSFIndices,                         /* I    Codebook path vector [ LPC_ORDER + 1 ]      */
     oac_int16            *pNLSF_Q15,                           /* I/O  (Un)quantized NLSF vector [ LPC_ORDER ]     */
     const silk_NLSF_CB_struct   *psNLSF_CB,                     /* I    Codebook object                             */
@@ -96,16 +96,16 @@ oac_int32 silk_NLSF_encode(                                    /* O    Returns R
     silk_assert( NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0 );
 
     /* NLSF stabilization */
-    silk_NLSF_stabilize( pNLSF_Q15, psNLSF_CB->deltaMin_Q15, psNLSF_CB->order );
+    oaci_silk_NLSF_stabilize( pNLSF_Q15, psNLSF_CB->deltaMin_Q15, psNLSF_CB->order );
 
     /* First stage: VQ */
     ALLOC( err_Q24, psNLSF_CB->nVectors, oac_int32 );
-    silk_NLSF_VQ( err_Q24, pNLSF_Q15, psNLSF_CB->CB1_NLSF_Q8, psNLSF_CB->CB1_Wght_Q9, psNLSF_CB->nVectors,
+    oaci_silk_NLSF_VQ( err_Q24, pNLSF_Q15, psNLSF_CB->CB1_NLSF_Q8, psNLSF_CB->CB1_Wght_Q9, psNLSF_CB->nVectors,
     psNLSF_CB->order );
 
     /* Sort the quantization errors */
     ALLOC( tempIndices1, nSurvivors, oac_int );
-    silk_insertion_sort_increasing( err_Q24, tempIndices1, psNLSF_CB->nVectors, nSurvivors );
+    oaci_silk_insertion_sort_increasing( err_Q24, tempIndices1, psNLSF_CB->nVectors, nSurvivors );
 
     ALLOC( RD_Q25, nSurvivors, oac_int32 );
     ALLOC( tempIndices2, nSurvivors*MAX_LPC_ORDER, oac_int8 );
@@ -125,10 +125,10 @@ oac_int32 silk_NLSF_encode(                                    /* O    Returns R
         }
 
         /* Unpack entropy table indices and predictor for current CB1 index */
-        silk_NLSF_unpack( ec_ix, pred_Q8, psNLSF_CB, ind1 );
+        oaci_silk_NLSF_unpack( ec_ix, pred_Q8, psNLSF_CB, ind1 );
 
         /* Trellis quantizer */
-        RD_Q25[ s ] = silk_NLSF_del_dec_quant( &tempIndices2[ s*MAX_LPC_ORDER ], res_Q10, W_adj_Q5, pred_Q8, ec_ix,
+        RD_Q25[ s ] = oaci_silk_NLSF_del_dec_quant( &tempIndices2[ s*MAX_LPC_ORDER ], res_Q10, W_adj_Q5, pred_Q8, ec_ix,
             psNLSF_CB->ec_Rates_Q5, psNLSF_CB->quantStepSize_Q16, psNLSF_CB->invQuantStepSize_Q6, NLSF_mu_Q20,
         psNLSF_CB->order );
 
@@ -139,18 +139,18 @@ oac_int32 silk_NLSF_encode(                                    /* O    Returns R
         } else {
             prob_Q8 = iCDF_ptr[ ind1 - 1 ] - iCDF_ptr[ ind1 ];
         }
-        bits_q7 = (8<<7) - silk_lin2log( prob_Q8 );
+        bits_q7 = (8<<7) - oaci_silk_lin2log( prob_Q8 );
         RD_Q25[ s ] = silk_SMLABB( RD_Q25[ s ], bits_q7, silk_RSHIFT( NLSF_mu_Q20, 2 ));
     }
 
     /* Find the lowest rate-distortion error */
-    silk_insertion_sort_increasing( RD_Q25, &bestIndex, nSurvivors, 1 );
+    oaci_silk_insertion_sort_increasing( RD_Q25, &bestIndex, nSurvivors, 1 );
 
     NLSFIndices[ 0 ] = (oac_int8)tempIndices1[ bestIndex ];
     silk_memcpy( &NLSFIndices[ 1 ], &tempIndices2[ bestIndex*MAX_LPC_ORDER ], psNLSF_CB->order*sizeof(oac_int8));
 
     /* Decode */
-    silk_NLSF_decode( pNLSF_Q15, NLSFIndices, psNLSF_CB );
+    oaci_silk_NLSF_decode( pNLSF_Q15, NLSFIndices, psNLSF_CB );
 
     ret = RD_Q25[ 0 ];
     RESTORE_STACK;

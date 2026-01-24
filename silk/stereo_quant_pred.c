@@ -65,7 +65,7 @@
 #include "main.h"
 
 /* Quantize mid/side predictors */
-void silk_stereo_quant_pred(
+void oaci_silk_stereo_quant_pred(
     oac_int32 pred_Q13[],                                      /* I/O  Predictors (out: quantized)                 */
     oac_int8 ix[ 2 ][ 3 ]                                      /* O    Quantization indices                        */
     ) {
@@ -77,8 +77,8 @@ void silk_stereo_quant_pred(
         /* Brute-force search over quantization levels */
         err_min_Q13 = silk_int32_MAX;
         for (i = 0; i < STEREO_QUANT_TAB_SIZE - 1; i++) {
-            low_Q13 = silk_stereo_pred_quant_Q13[ i ];
-            step_Q13 = silk_SMULWB( silk_stereo_pred_quant_Q13[ i + 1 ] - low_Q13,
+            low_Q13 = oaci_silk_stereo_pred_quant_Q13[ i ];
+            step_Q13 = silk_SMULWB( oaci_silk_stereo_pred_quant_Q13[ i + 1 ] - low_Q13,
                 SILK_FIX_CONST( 0.5/STEREO_QUANT_SUB_STEPS, 16 ));
             for (j = 0; j < STEREO_QUANT_SUB_STEPS; j++) {
                 lvl_Q13 = silk_SMLABB( low_Q13, step_Q13, 2*j + 1 );

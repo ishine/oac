@@ -74,7 +74,7 @@
 #include "mdct.h"
 #include "stack_alloc.h"
 
-void clt_mdct_forward_neon(const mdct_lookup *l,
+void oaci_clt_mdct_forward_neon(const mdct_lookup *l,
                            kiss_fft_scalar *in,
                            kiss_fft_scalar * OAC_RESTRICT out,
                            const oac_val16 *window,
@@ -181,7 +181,7 @@ void clt_mdct_forward_neon(const mdct_lookup *l,
     RESTORE_STACK;
 }
 
-void clt_mdct_backward_neon(const mdct_lookup *l,
+void oaci_clt_mdct_backward_neon(const mdct_lookup *l,
                             kiss_fft_scalar *in,
                             kiss_fft_scalar * OAC_RESTRICT out,
                             const oac_val16 * OAC_RESTRICT window,

@@ -65,7 +65,7 @@
 #include "main_FLP.h"
 
 /* Add noise to matrix diagonal */
-void silk_regularize_correlations_FLP(
+void oaci_silk_regularize_correlations_FLP(
     silk_float                      *XX,                                /* I/O  Correlation matrices                        */
     silk_float                      *xx,                                /* I/O  Correlation values                          */
     const silk_float noise,                                             /* I    Noise energy to add                         */

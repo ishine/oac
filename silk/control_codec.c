@@ -95,7 +95,7 @@ static OAC_INLINE oac_int silk_setup_LBRR(
 
 
 /* Control encoder */
-oac_int silk_control_encoder(
+oac_int oaci_silk_control_encoder(
     silk_encoder_state_Fxx          *psEnc,                                 /* I/O  Pointer to Silk encoder state                                               */
     silk_EncControlStruct           *encControl,                            /* I    Control structure                                                           */
     const oac_int allow_bw_switch,                                         /* I    Flag to allow switching audio bandwidth                                     */
@@ -128,7 +128,7 @@ oac_int silk_control_encoder(
     /********************************************/
     /* Determine internal sampling rate         */
     /********************************************/
-    fs_kHz = silk_control_audio_bandwidth( &psEnc->sCmn, encControl );
+    fs_kHz = oaci_silk_control_audio_bandwidth( &psEnc->sCmn, encControl );
     if (force_fs_kHz) {
         fs_kHz = force_fs_kHz;
     }
@@ -172,7 +172,7 @@ static oac_int silk_setup_resamplers(
     if (psEnc->sCmn.fs_kHz != fs_kHz || psEnc->sCmn.prev_API_fs_Hz != psEnc->sCmn.API_fs_Hz) {
         if (psEnc->sCmn.fs_kHz == 0) {
             /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
-            ret += silk_resampler_init( &psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz, fs_kHz*1000, 1 );
+            ret += oaci_silk_resampler_init( &psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz, fs_kHz*1000, 1 );
         } else {
             VARDECL( oac_int16, x_buf_API_fs_Hz );
             VARDECL( silk_resampler_state_struct, temp_resampler_state );
@@ -198,7 +198,7 @@ static oac_int silk_setup_resamplers(
 
             /* Initialize resampler for temporary resampling of x_buf data to API_fs_Hz */
             ALLOC( temp_resampler_state, 1, silk_resampler_state_struct );
-            ret += silk_resampler_init( temp_resampler_state, silk_SMULBB( psEnc->sCmn.fs_kHz, 1000 ),
+            ret += oaci_silk_resampler_init( temp_resampler_state, silk_SMULBB( psEnc->sCmn.fs_kHz, 1000 ),
             psEnc->sCmn.API_fs_Hz, 0 );
 
             /* Calculate number of samples to temporarily upsample */
@@ -206,14 +206,14 @@ static oac_int silk_setup_resamplers(
 
             /* Temporary resampling of x_buf data to API_fs_Hz */
             ALLOC( x_buf_API_fs_Hz, api_buf_samples, oac_int16 );
-            ret += silk_resampler( temp_resampler_state, x_buf_API_fs_Hz, x_bufFIX, old_buf_samples );
+            ret += oaci_silk_resampler( temp_resampler_state, x_buf_API_fs_Hz, x_bufFIX, old_buf_samples );
 
             /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
-            ret += silk_resampler_init( &psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz,
+            ret += oaci_silk_resampler_init( &psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz,
             silk_SMULBB( fs_kHz, 1000 ), 1 );
 
             /* Correct resampler state by resampling buffered data from API_fs_Hz to fs_kHz */
-            ret += silk_resampler( &psEnc->sCmn.resampler_state, x_bufFIX, x_buf_API_fs_Hz, api_buf_samples );
+            ret += oaci_silk_resampler( &psEnc->sCmn.resampler_state, x_bufFIX, x_buf_API_fs_Hz, api_buf_samples );
 
 #ifndef FIXED_POINT
             silk_short2float_array( psEnc->x_buf, x_bufFIX, new_buf_samples);
@@ -248,9 +248,9 @@ static oac_int silk_setup_fs(
             psEnc->sCmn.frame_length = silk_SMULBB( PacketSize_ms, fs_kHz );
             psEnc->sCmn.pitch_LPC_win_length = silk_SMULBB( FIND_PITCH_LPC_WIN_MS_2_SF, fs_kHz );
             if (psEnc->sCmn.fs_kHz == 8) {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_10_ms_NB_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_10_ms_NB_iCDF;
             } else {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_10_ms_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_10_ms_iCDF;
             }
         } else {
             psEnc->sCmn.nFramesPerPacket = silk_DIV32_16( PacketSize_ms, MAX_FRAME_LENGTH_MS );
@@ -258,9 +258,9 @@ static oac_int silk_setup_fs(
             psEnc->sCmn.frame_length = silk_SMULBB( 20, fs_kHz );
             psEnc->sCmn.pitch_LPC_win_length = silk_SMULBB( FIND_PITCH_LPC_WIN_MS, fs_kHz );
             if (psEnc->sCmn.fs_kHz == 8) {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_NB_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_NB_iCDF;
             } else {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_iCDF;
             }
         }
         psEnc->sCmn.PacketSize_ms  = PacketSize_ms;
@@ -291,23 +291,23 @@ static oac_int silk_setup_fs(
         psEnc->sCmn.fs_kHz = fs_kHz;
         if (psEnc->sCmn.fs_kHz == 8) {
             if (psEnc->sCmn.nb_subfr == MAX_NB_SUBFR) {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_NB_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_NB_iCDF;
             } else {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_10_ms_NB_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_10_ms_NB_iCDF;
             }
         } else {
             if (psEnc->sCmn.nb_subfr == MAX_NB_SUBFR) {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_iCDF;
             } else {
-                psEnc->sCmn.pitch_contour_iCDF = silk_pitch_contour_10_ms_iCDF;
+                psEnc->sCmn.pitch_contour_iCDF = oaci_silk_pitch_contour_10_ms_iCDF;
             }
         }
         if (psEnc->sCmn.fs_kHz == 8 || psEnc->sCmn.fs_kHz == 12) {
             psEnc->sCmn.predictLPCOrder = MIN_LPC_ORDER;
-            psEnc->sCmn.psNLSF_CB  = &silk_NLSF_CB_NB_MB;
+            psEnc->sCmn.psNLSF_CB  = &oaci_silk_NLSF_CB_NB_MB;
         } else {
             psEnc->sCmn.predictLPCOrder = MAX_LPC_ORDER;
-            psEnc->sCmn.psNLSF_CB  = &silk_NLSF_CB_WB;
+            psEnc->sCmn.psNLSF_CB  = &oaci_silk_NLSF_CB_WB;
         }
         psEnc->sCmn.subfr_length   = SUB_FRAME_LENGTH_MS*fs_kHz;
         psEnc->sCmn.frame_length   = silk_SMULBB( psEnc->sCmn.subfr_length, psEnc->sCmn.nb_subfr );
@@ -320,11 +320,11 @@ static oac_int silk_setup_fs(
             psEnc->sCmn.pitch_LPC_win_length = silk_SMULBB( FIND_PITCH_LPC_WIN_MS_2_SF, fs_kHz );
         }
         if (psEnc->sCmn.fs_kHz == 16) {
-            psEnc->sCmn.pitch_lag_low_bits_iCDF = silk_uniform8_iCDF;
+            psEnc->sCmn.pitch_lag_low_bits_iCDF = oaci_silk_uniform8_iCDF;
         } else if (psEnc->sCmn.fs_kHz == 12) {
-            psEnc->sCmn.pitch_lag_low_bits_iCDF = silk_uniform6_iCDF;
+            psEnc->sCmn.pitch_lag_low_bits_iCDF = oaci_silk_uniform6_iCDF;
         } else {
-            psEnc->sCmn.pitch_lag_low_bits_iCDF = silk_uniform4_iCDF;
+            psEnc->sCmn.pitch_lag_low_bits_iCDF = oaci_silk_uniform4_iCDF;
         }
     }
 
