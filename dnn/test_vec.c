@@ -12,10 +12,10 @@
 
 #define lpcnet_exp2 lpcnet_exp2_fast
 #define tansig_approx tansig_approx_fast
-#define sigmoid_approx sigmoid_approx_fast
-#define softmax softmax_fast
-#define vec_tanh vec_tanh_fast
-#define vec_sigmoid vec_sigmoid_fast
+#define oaci_sigmoid_approx sigmoid_approx_fast
+#define oaci_softmax softmax_fast
+#define oaci_vec_tanh vec_tanh_fast
+#define oaci_vec_sigmoid vec_sigmoid_fast
 #define sgemv_accum16 sgemv_accum16_fast
 #define sparse_sgemv_accum16 sparse_sgemv_accum16_fast
 
@@ -36,10 +36,10 @@ const char simd[] = "none";
 
 #undef lpcnet_exp2
 #undef tansig_approx
-#undef sigmoid_approx
-#undef softmax
-#undef vec_tanh
-#undef vec_sigmoid
+#undef oaci_sigmoid_approx
+#undef oaci_softmax
+#undef oaci_vec_tanh
+#undef oaci_vec_sigmoid
 #undef sgemv_accum16
 #undef sparse_sgemv_accum16
 #include "vec.h"

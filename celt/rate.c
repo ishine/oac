@@ -51,7 +51,7 @@ static const unsigned char LOG2_FRAC_TABLE[24] = {
 
 /*Determines if V(N,K) fits in a 32-bit unsigned integer.
    N and K are themselves limited to 15 bits.*/
-static int fits_in32(int _n, int _k) {
+static int oaci_fits_in32(int _n, int _k) {
     static const oac_int16 maxN[15] = {
         32767, 32767, 32767, 1476, 283, 109,  60,  40,
         29,  24,  20,  18,  16,  14,  13
@@ -106,7 +106,7 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
                 int K;
                 entryN[nbEntries] = N;
                 K = 0;
-                while (fits_in32(N, get_pulses(K + 1)) && K < MAX_PSEUDO)
+                while (oaci_fits_in32(N, oaci_get_pulses(K + 1)) && K < MAX_PSEUDO)
                     K++;
                 entryK[nbEntries] = K;
                 cindex[i*m->nbEBands + j] = curr;
@@ -124,9 +124,9 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
     for (i = 0; i < nbEntries; i++) {
         unsigned char *ptr = bits + entryI[i];
         oac_int16 tmp[CELT_MAX_PULSES + 1];
-        oaci_get_required_bits(tmp, entryN[i], get_pulses(entryK[i]), BITRES);
+        oaci_get_required_bits(tmp, entryN[i], oaci_get_pulses(entryK[i]), BITRES);
         for (j = 1; j <= entryK[i]; j++)
-            ptr[j] = tmp[get_pulses(j)] - 1;
+            ptr[j] = tmp[oaci_get_pulses(j)] - 1;
         ptr[0] = entryK[i];
     }
 
@@ -230,7 +230,7 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
 
 #define ALLOC_STEPS 6
 
-static OAC_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start,
+static OAC_INLINE int oaci_interp_bits2pulses(const CELTMode *m, int start, int end, int skip_start,
                                          const int *bits1, const int *bits2, const int *thresh, const int *cap,
                                          oac_int32 total, oac_int32 *_balance,
                                          int skip_rsv, int *intensity, int intensity_rsv, int *dual_stereo,
@@ -596,7 +596,7 @@ int oaci_clt_compute_allocation(const CELTMode *m, int start, int end, const int
         bits1[j] = bits1j;
         bits2[j] = bits2j;
     }
-    codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
+    codedBands = oaci_interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
          total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
          pulses, ebits, fine_priority, C, LM, ec, encode, prev, signalBandwidth);
     RESTORE_STACK;

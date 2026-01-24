@@ -42,7 +42,7 @@
    N.B., a "Repeat These Extensions" extension (ID==2) does not advance past
     the repeated extension payloads.
    That requires higher-level logic. */
-static oac_int32 skip_extension_payload(const unsigned char **pdata,
+static oac_int32 oaci_skip_extension_payload(const unsigned char **pdata,
                                         oac_int32 len, oac_int32 *pheader_size, int id_byte,
                                         oac_int32 trailing_short_len) {
     const unsigned char *data;
@@ -91,7 +91,7 @@ static oac_int32 skip_extension_payload(const unsigned char **pdata,
     extension ID byte.
    Higher-level logic is required to skip the extension payloads that come
     after it.*/
-static oac_int32 skip_extension(const unsigned char **pdata, oac_int32 len,
+static oac_int32 oaci_skip_extension(const unsigned char **pdata, oac_int32 len,
                                 oac_int32 *pheader_size) {
     const unsigned char *data;
     int id_byte;
@@ -104,7 +104,7 @@ static oac_int32 skip_extension(const unsigned char **pdata, oac_int32 len,
     data = *pdata;
     id_byte = *data++;
     len--;
-    len = skip_extension_payload(&data, len, pheader_size, id_byte, 0);
+    len = oaci_skip_extension_payload(&data, len, pheader_size, id_byte, 0);
     if (len >= 0) {
         *pdata = data;
         (*pheader_size)++;
@@ -158,7 +158,7 @@ static int oac_extension_iterator_next_repeat(OacExtensionIterator *iter,
             const unsigned char *curr_data0;
             int repeat_id_byte;
             repeat_id_byte = *iter->src_data;
-            iter->src_len = skip_extension(&iter->src_data, iter->src_len,
+            iter->src_len = oaci_skip_extension(&iter->src_data, iter->src_len,
           &header_size);
             /* We skipped this extension earlier, so it should not fail now. */
             celt_assert(iter->src_len >= 0);
@@ -173,7 +173,7 @@ static int oac_extension_iterator_next_repeat(OacExtensionIterator *iter,
                 repeat_id_byte &= ~1;
             }
             curr_data0 = iter->curr_data;
-            iter->curr_len = skip_extension_payload(&iter->curr_data,
+            iter->curr_len = oaci_skip_extension_payload(&iter->curr_data,
           iter->curr_len, &header_size, repeat_id_byte,
           iter->trailing_short_len);
             if (iter->curr_len < 0) {
@@ -242,7 +242,7 @@ int oac_extension_iterator_next(OacExtensionIterator *iter,
         curr_data0 = iter->curr_data;
         id = *curr_data0>>1;
         L = *curr_data0&1;
-        iter->curr_len = skip_extension(&iter->curr_data, iter->curr_len,
+        iter->curr_len = oaci_skip_extension(&iter->curr_data, iter->curr_len,
        &header_size);
         if (iter->curr_len < 0) {
             return OAC_INVALID_PACKET;
@@ -411,7 +411,7 @@ oac_int32 oac_packet_extensions_parse_ext(const unsigned char *data,
     return ret;
 }
 
-static int write_extension_payload(unsigned char *data, oac_int32 len,
+static int oaci_write_extension_payload(unsigned char *data, oac_int32 len,
                                    oac_int32 pos, const oac_extension_data *ext, int last) {
     celt_assert(ext->id >= 3 && ext->id <= 127);
     if (ext->id < 32) {
@@ -454,7 +454,7 @@ static int write_extension(unsigned char *data, oac_int32 len, oac_int32 pos,
     celt_assert(ext->id >= 3 && ext->id <= 127);
     if (data) data[pos] = (ext->id<<1) + (ext->id < 32 ? ext->len : !last);
     pos++;
-    return write_extension_payload(data, len, pos, ext, last);
+    return oaci_write_extension_payload(data, len, pos, ext, last);
 }
 
 oac_int32 oac_packet_extensions_generate(unsigned char *data, oac_int32 len,
@@ -582,7 +582,7 @@ oac_int32 oac_packet_extensions_generate(unsigned char *data, oac_int32 len,
                         int j;
                         for (j = frame_min_idx[g]; j < frame_repeat_idx[g]; j++) {
                             if (extensions[j].frame == g) {
-                                pos = write_extension_payload(data, len, pos,
+                                pos = oaci_write_extension_payload(data, len, pos,
                          extensions + j, last && j == last_long_idx);
                                 if (pos < 0) return pos;
                                 written++;

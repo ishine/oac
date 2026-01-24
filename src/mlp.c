@@ -36,7 +36,7 @@
 #include "mlp.h"
 
 #define fmadd(a, b, c) ((a)*(b) + (c))
-static OAC_INLINE float tansig_approx(float x) {
+static OAC_INLINE float oaci_tansig_approx(float x) {
     const float N0 = 952.52801514f;
     const float N1 = 96.39235687f;
     const float N2 = 0.60863042f;
@@ -51,11 +51,11 @@ static OAC_INLINE float tansig_approx(float x) {
     return MAX32(-1.f, MIN32(1.f, num));
 }
 
-static OAC_INLINE float sigmoid_approx(float x) {
-    return .5f + .5f*tansig_approx(.5f*x);
+static OAC_INLINE float oaci_sigmoid_approx(float x) {
+    return .5f + .5f*oaci_tansig_approx(.5f*x);
 }
 
-static void gemm_accum(float *out, const oac_int8 *weights, int rows, int cols, int col_stride, const float *x) {
+static void oaci_gemm_accum(float *out, const oac_int8 *weights, int rows, int cols, int col_stride, const float *x) {
     int i, j;
     for (i = 0; i < rows; i++) {
         for (j = 0; j < cols; j++)
@@ -72,15 +72,15 @@ void oaci_analysis_compute_dense(const AnalysisDenseLayer *layer, float *output,
     stride = N;
     for (i = 0; i < N; i++)
         output[i] = layer->bias[i];
-    gemm_accum(output, layer->input_weights, N, M, stride, input);
+    oaci_gemm_accum(output, layer->input_weights, N, M, stride, input);
     for (i = 0; i < N; i++)
         output[i] *= WEIGHTS_SCALE;
     if (layer->sigmoid) {
         for (i = 0; i < N; i++)
-            output[i] = sigmoid_approx(output[i]);
+            output[i] = oaci_sigmoid_approx(output[i]);
     } else {
         for (i = 0; i < N; i++)
-            output[i] = tansig_approx(output[i]);
+            output[i] = oaci_tansig_approx(output[i]);
     }
 }
 
@@ -98,28 +98,28 @@ void oaci_analysis_compute_gru(const AnalysisGRULayer *gru, float *state, const 
     /* Compute update gate. */
     for (i = 0; i < N; i++)
         z[i] = gru->bias[i];
-    gemm_accum(z, gru->input_weights, N, M, stride, input);
-    gemm_accum(z, gru->recurrent_weights, N, N, stride, state);
+    oaci_gemm_accum(z, gru->input_weights, N, M, stride, input);
+    oaci_gemm_accum(z, gru->recurrent_weights, N, N, stride, state);
     for (i = 0; i < N; i++)
-        z[i] = sigmoid_approx(WEIGHTS_SCALE*z[i]);
+        z[i] = oaci_sigmoid_approx(WEIGHTS_SCALE*z[i]);
 
     /* Compute reset gate. */
     for (i = 0; i < N; i++)
         r[i] = gru->bias[N + i];
-    gemm_accum(r, &gru->input_weights[N], N, M, stride, input);
-    gemm_accum(r, &gru->recurrent_weights[N], N, N, stride, state);
+    oaci_gemm_accum(r, &gru->input_weights[N], N, M, stride, input);
+    oaci_gemm_accum(r, &gru->recurrent_weights[N], N, N, stride, state);
     for (i = 0; i < N; i++)
-        r[i] = sigmoid_approx(WEIGHTS_SCALE*r[i]);
+        r[i] = oaci_sigmoid_approx(WEIGHTS_SCALE*r[i]);
 
     /* Compute output. */
     for (i = 0; i < N; i++)
         h[i] = gru->bias[2*N + i];
     for (i = 0; i < N; i++)
         tmp[i] = state[i]*r[i];
-    gemm_accum(h, &gru->input_weights[2*N], N, M, stride, input);
-    gemm_accum(h, &gru->recurrent_weights[2*N], N, N, stride, tmp);
+    oaci_gemm_accum(h, &gru->input_weights[2*N], N, M, stride, input);
+    oaci_gemm_accum(h, &gru->recurrent_weights[2*N], N, N, stride, tmp);
     for (i = 0; i < N; i++)
-        h[i] = z[i]*state[i] + (1 - z[i])*tansig_approx(WEIGHTS_SCALE*h[i]);
+        h[i] = z[i]*state[i] + (1 - z[i])*oaci_tansig_approx(WEIGHTS_SCALE*h[i]);
     for (i = 0; i < N; i++)
         state[i] = h[i];
 }

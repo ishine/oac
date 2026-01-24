@@ -236,7 +236,7 @@ static OAC_INLINE oac_int32 silk_index_of_first_equal_epi32(__m128i a, __m128i b
     return __builtin_ctz(mask)>>2;
 }
 
-static __m128i silk_index_to_selector(oac_int32 index) {
+static __m128i oaci_silk_index_to_selector(oac_int32 index) {
     silk_assert(index < 4);
     index <<= 2;
     return _mm_set_epi8(
@@ -302,7 +302,7 @@ static OAC_INLINE void silk_LPC_analysis_filter_avx2(
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-static OAC_INLINE void silk_noise_shape_quantizer_del_dec_avx2(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_avx2(
     silk_nsq_state *NSQ,                        /* I/O  NSQ state                          */
     NSQ_del_dec_struct psDelDec[],              /* I/O  Delayed decision states            */
     oac_int signalType,                        /* I    Signal type                        */
@@ -456,7 +456,7 @@ void oaci_silk_NSQ_del_dec_avx2(
                     /* Find winner */
                     RDmin_Q10 = silk_mm_mask_hmin_epi32(psDelDec.RD_Q10, MaskDelDec);
                     Winner_ind = silk_index_of_first_equal_epi32(RDmin_Q10, psDelDec.RD_Q10);
-                    Winner_selector = silk_index_to_selector(Winner_ind);
+                    Winner_selector = oaci_silk_index_to_selector(Winner_ind);
                     psDelDec.RD_Q10 = _mm_add_epi32(
                         psDelDec.RD_Q10,
                         _mm_blendv_epi8(
@@ -496,7 +496,7 @@ void oaci_silk_NSQ_del_dec_avx2(
         silk_nsq_del_dec_scale_states_avx2(psEncC, NSQ, &psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
                                            LTP_scale_Q14, Gains_Q16, pitchL, psIndices->signalType, decisionDelay);
 
-        silk_noise_shape_quantizer_del_dec_avx2(NSQ, &psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15,
+        oaci_silk_noise_shape_quantizer_del_dec_avx2(NSQ, &psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15,
                                                 delayedGain_Q10, A_Q12, B_Q14, AR_shp_Q13, lag, HarmShapeFIRPacked_Q14,
         Tilt_Q14[k], LF_shp_Q14[k],
                                                 Gains_Q16[k], Lambda_Q10, offset_Q10, psEncC->subfr_length, subfr++,
@@ -511,7 +511,7 @@ void oaci_silk_NSQ_del_dec_avx2(
 
     /* Find winner */
     RDmin_Q10 = silk_mm_mask_hmin_epi32(psDelDec.RD_Q10, MaskDelDec);
-    Winner_selector = silk_index_to_selector(silk_index_of_first_equal_epi32(RDmin_Q10, psDelDec.RD_Q10));
+    Winner_selector = oaci_silk_index_to_selector(silk_index_of_first_equal_epi32(RDmin_Q10, psDelDec.RD_Q10));
 
     /* Copy final part of signals from winner state to output and long-term filter states */
     psIndices->Seed = silk_select_winner(psDelDec.SeedInit, Winner_selector);
@@ -554,7 +554,7 @@ void oaci_silk_NSQ_del_dec_avx2(
     RESTORE_STACK;
 }
 
-static OAC_INLINE __m128i silk_noise_shape_quantizer_short_prediction_x4(const __m128i *buf32, const oac_int16 *coef16,
+static OAC_INLINE __m128i oaci_silk_noise_shape_quantizer_short_prediction_x4(const __m128i *buf32, const oac_int16 *coef16,
                                                                          oac_int order) {
     __m256i out;
     silk_assert(order == 10 || order == 16);
@@ -602,7 +602,7 @@ static OAC_INLINE __m128i silk_noise_shape_quantizer_short_prediction_x4(const _
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-static OAC_INLINE void silk_noise_shape_quantizer_del_dec_avx2(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_avx2(
     silk_nsq_state *NSQ,                        /* I/O  NSQ state                          */
     NSQ_del_dec_struct *psDelDec,               /* I/O  Delayed decision states            */
     oac_int signalType,                        /* I    Signal type                        */
@@ -695,7 +695,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_avx2(
         psDelDec->Seed = silk_mm256_rand_epi32(psDelDec->Seed);
 
         /* Short-term prediction */
-        LPC_pred_Q14 = silk_noise_shape_quantizer_short_prediction_x4(&psDelDec->sLPC_Q14[NSQ_LPC_BUF_LENGTH - 1 + i],
+        LPC_pred_Q14 = oaci_silk_noise_shape_quantizer_short_prediction_x4(&psDelDec->sLPC_Q14[NSQ_LPC_BUF_LENGTH - 1 + i],
         a_Q12, predictLPCOrder);
         LPC_pred_Q14 = _mm_slli_epi32(LPC_pred_Q14, 4); /* Q10 -> Q14 */
 
@@ -804,7 +804,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_avx2(
 
         /* Find winner */
         RDmin_Q10 = silk_mm_mask_hmin_epi32(_mm256_castsi256_si128(SS_RD_Q10), MaskDelDec);
-        Winner_selector = silk_index_to_selector(silk_index_of_first_equal_epi32(RDmin_Q10,
+        Winner_selector = oaci_silk_index_to_selector(silk_index_of_first_equal_epi32(RDmin_Q10,
         _mm256_castsi256_si128(SS_RD_Q10)));
 
         /* Increase RD values of expired states */
@@ -829,7 +829,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_avx2(
             tmp1 = _mm_cvtepi8_epi32(_mm_cvtsi32_si128(0xFFU<<(unsigned)(RDmax_ind<<3)));
             tmp0 = _mm_blendv_epi8(
                 _mm_set_epi8(0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0),
-                silk_index_to_selector(RDmin_ind),
+                oaci_silk_index_to_selector(RDmin_ind),
                 tmp1);
             for (t = i; t < MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH; t++) {
                 psDelDec->sLPC_Q14[t] = _mm_shuffle_epi8(psDelDec->sLPC_Q14[t], tmp0);

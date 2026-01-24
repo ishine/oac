@@ -166,7 +166,7 @@ int oaci_encode_size(int size, unsigned char *data) {
     }
 }
 
-static int parse_size(const unsigned char *data, oac_int32 len, oac_int16 *size) {
+static int oaci_parse_size(const unsigned char *data, oac_int32 len, oac_int16 *size) {
     if (len < 1) {
         *size = -1;
         return -1;
@@ -251,7 +251,7 @@ int oac_packet_parse_impl(const unsigned char *data, oac_int32 len,
         /* Two VBR frames */
         case 2:
             count = 2;
-            bytes = parse_size(data, len, size);
+            bytes = oaci_parse_size(data, len, size);
             len -= bytes;
             if (size[0] < 0 || size[0] > len)
                 return OAC_INVALID_PACKET;
@@ -290,7 +290,7 @@ int oac_packet_parse_impl(const unsigned char *data, oac_int32 len,
                 /* VBR case */
                 last_size = len;
                 for (i = 0; i < count - 1; i++) {
-                    bytes = parse_size(data, len, size + i);
+                    bytes = oaci_parse_size(data, len, size + i);
                     len -= bytes;
                     if (size[i] < 0 || size[i] > len)
                         return OAC_INVALID_PACKET;
@@ -311,7 +311,7 @@ int oac_packet_parse_impl(const unsigned char *data, oac_int32 len,
     }
     /* Self-delimited framing has an extra size for the last frame. */
     if (self_delimited) {
-        bytes = parse_size(data, len, size + count - 1);
+        bytes = oaci_parse_size(data, len, size + count - 1);
         len -= bytes;
         if (size[count - 1] < 0 || size[count - 1] > len)
             return OAC_INVALID_PACKET;

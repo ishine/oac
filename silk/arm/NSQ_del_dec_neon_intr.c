@@ -66,7 +66,7 @@ typedef struct {
     oac_int32 LPC_exc_Q14[  NEON_MAX_DEL_DEC_STATES ];
 } NSQ_samples_struct;
 
-static OAC_INLINE void silk_nsq_del_dec_scale_states_neon(
+static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_neon(
     const silk_encoder_state *psEncC,               /* I    Encoder State                       */
     silk_nsq_state      *NSQ,                       /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],                 /* I/O  Delayed decision states             */
@@ -85,7 +85,7 @@ static OAC_INLINE void silk_nsq_del_dec_scale_states_neon(
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-static OAC_INLINE void silk_noise_shape_quantizer_del_dec_neon(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_neon(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],             /* I/O  Delayed decision states             */
     oac_int signalType,                        /* I    Signal type                         */
@@ -392,10 +392,10 @@ void oaci_silk_NSQ_del_dec_neon(
                 }
             }
 
-            silk_nsq_del_dec_scale_states_neon( psEncC, NSQ, psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
+            oaci_silk_nsq_del_dec_scale_states_neon( psEncC, NSQ, psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
                 LTP_scale_Q14, Gains_Q16, pitchL, psIndices->signalType, decisionDelay );
 
-            silk_noise_shape_quantizer_del_dec_neon( NSQ, psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq,
+            oaci_silk_noise_shape_quantizer_del_dec_neon( NSQ, psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq,
             sLTP_Q15,
                 delayedGain_Q10, A_Q12, B_Q14, AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ],
                 Gains_Q16[ k ], Lambda_Q10, offset_Q10, psEncC->subfr_length, subfr++, psEncC->shapingLPCOrder,
@@ -517,9 +517,9 @@ static OAC_INLINE int32x4_t silk_SMLAWB_lane1_neon(
     return vaddq_s32( out_s32x4, vqdmulhq_lane_s32( in_s32x4, coef_s32x2, 1 ));
 }
 
-/* Note: This function has different return value than silk_noise_shape_quantizer_short_prediction_neon(). */
+/* Note: This function has different return value than oaci_silk_noise_shape_quantizer_short_prediction_neon(). */
 /*       Therefore here we append "_local" to the function name to avoid confusion.                        */
-static OAC_INLINE int32x4_t silk_noise_shape_quantizer_short_prediction_neon_local(const oac_int32 *buf32,
+static OAC_INLINE int32x4_t oaci_silk_noise_shape_quantizer_short_prediction_neon_local(const oac_int32 *buf32,
                                                                                    const oac_int32 *a_Q12_arch,
                                                                                    oac_int order) {
     const int32x4_t a_Q12_arch0_s32x4 = vld1q_s32( a_Q12_arch + 0 );
@@ -567,7 +567,7 @@ static OAC_INLINE int32x4_t silk_noise_shape_quantizer_short_prediction_neon_loc
     return LPC_pred_Q14_s32x4;
 }
 
-static OAC_INLINE void silk_noise_shape_quantizer_del_dec_neon(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_neon(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],             /* I/O  Delayed decision states             */
     oac_int signalType,                        /* I    Signal type                         */
@@ -676,7 +676,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_neon(
 
         /* Short-term prediction */
         LPC_pred_Q14_s32x4 =
-            silk_noise_shape_quantizer_short_prediction_neon_local(psDelDec->sLPC_Q14[ NSQ_LPC_BUF_LENGTH - 16 + i ],
+            oaci_silk_noise_shape_quantizer_short_prediction_neon_local(psDelDec->sLPC_Q14[ NSQ_LPC_BUF_LENGTH - 16 + i ],
         a_Q12_arch, predictLPCOrder);
         LPC_pred_Q14_s32x4 = vshlq_n_s32( LPC_pred_Q14_s32x4, 4 ); /* Q10 -> Q14 */
 
@@ -1051,7 +1051,7 @@ static OAC_INLINE void silk_SMULWW_loop_neon(
     }
 }
 
-static OAC_INLINE void silk_nsq_del_dec_scale_states_neon(
+static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_neon(
     const silk_encoder_state *psEncC,               /* I    Encoder State                       */
     silk_nsq_state      *NSQ,                       /* I/O  NSQ state                           */
     NSQ_del_decs_struct psDelDec[],                 /* I/O  Delayed decision states             */

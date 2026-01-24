@@ -50,7 +50,7 @@ static OAC_INLINE void silk_nsq_scale_states_sse4_1(
     const oac_int signal_type                     /* I    Signal type                     */
     );
 
-static OAC_INLINE void silk_noise_shape_quantizer_10_16_sse4_1(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_10_16_sse4_1(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     oac_int signalType,                        /* I    Signal type                     */
     const oac_int32 x_sc_Q10[],                /* I                                    */
@@ -243,7 +243,7 @@ void oaci_silk_NSQ_sse4_1(
         psIndices->signalType );
 
         if (oac_likely((10 == psEncC->shapingLPCOrder) && (16 == psEncC->predictLPCOrder))) {
-            silk_noise_shape_quantizer_10_16_sse4_1( NSQ, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15, A_Q12,
+            oaci_silk_noise_shape_quantizer_10_16_sse4_1( NSQ, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15, A_Q12,
             B_Q14,
                 AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ], Gains_Q16[ k ], Lambda_Q10,
                 offset_Q10, psEncC->subfr_length, &(table[32]));
@@ -277,9 +277,9 @@ void oaci_silk_NSQ_sse4_1(
 }
 
 /************************************/
-/* silk_noise_shape_quantizer_10_16 */
+/* oaci_silk_noise_shape_quantizer_10_16 */
 /************************************/
-static OAC_INLINE void silk_noise_shape_quantizer_10_16_sse4_1(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_10_16_sse4_1(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     oac_int signalType,                        /* I    Signal type                     */
     const oac_int32 x_sc_Q10[],                /* I                                    */

@@ -77,19 +77,19 @@ int oaci_parse_weights(WeightArray **list, const void *data, int len) {
     return nb_arrays;
 }
 
-static const WeightArray *find_array_entry(const WeightArray *arrays, const char *name) {
+static const WeightArray *oaci_find_array_entry(const WeightArray *arrays, const char *name) {
     while (arrays->name && strcmp(arrays->name, name) != 0) arrays++;
     return arrays;
 }
 
-static const void *find_array_check(const WeightArray *arrays, const char *name, int size) {
-    const WeightArray *a = find_array_entry(arrays, name);
+static const void *oaci_find_array_check(const WeightArray *arrays, const char *name, int size) {
+    const WeightArray *a = oaci_find_array_entry(arrays, name);
     if (a->name && a->size == size) return a->data;
     else return NULL;
 }
 
-static const void *opt_array_check(const WeightArray *arrays, const char *name, int size, int *error) {
-    const WeightArray *a = find_array_entry(arrays, name);
+static const void *oaci_opt_array_check(const WeightArray *arrays, const char *name, int size, int *error) {
+    const WeightArray *a = oaci_find_array_entry(arrays, name);
     *error = (a->name != NULL && a->size != size);
     if (a->name && a->size == size) return a->data;
     else return NULL;
@@ -99,7 +99,7 @@ static const void *find_idx_check(const WeightArray *arrays, const char *name, i
                                   int *total_blocks) {
     int remain;
     const int *idx;
-    const WeightArray *a = find_array_entry(arrays, name);
+    const WeightArray *a = oaci_find_array_entry(arrays, name);
     *total_blocks = 0;
     if (a == NULL) return NULL;
     idx = (const int*)a->data;
@@ -140,11 +140,11 @@ int oaci_linear_init(LinearLayer *layer, const WeightArray *arrays,
     layer->diag = NULL;
     layer->scale = NULL;
     if (bias != NULL) {
-        if ((layer->bias = (const float*)find_array_check(arrays, bias,
+        if ((layer->bias = (const float*)oaci_find_array_check(arrays, bias,
         nb_outputs*sizeof(layer->bias[0]))) == NULL) return 1;
     }
     if (subias != NULL) {
-        if ((layer->subias = (const float*)find_array_check(arrays, subias,
+        if ((layer->subias = (const float*)oaci_find_array_check(arrays, subias,
         nb_outputs*sizeof(layer->subias[0]))) == NULL) return 1;
     }
     if (weights_idx != NULL) {
@@ -152,31 +152,31 @@ int oaci_linear_init(LinearLayer *layer, const WeightArray *arrays,
         if ((layer->weights_idx = (const int*)find_idx_check(arrays, weights_idx, nb_inputs, nb_outputs,
         &total_blocks)) == NULL) return 1;
         if (weights != NULL) {
-            if ((layer->weights = (const oac_int8*)find_array_check(arrays, weights,
+            if ((layer->weights = (const oac_int8*)oaci_find_array_check(arrays, weights,
             SPARSE_BLOCK_SIZE*total_blocks*sizeof(layer->weights[0]))) == NULL) return 1;
         }
         if (float_weights != NULL) {
-            layer->float_weights = (const float*)opt_array_check(arrays, float_weights,
+            layer->float_weights = (const float*)oaci_opt_array_check(arrays, float_weights,
             SPARSE_BLOCK_SIZE*total_blocks*sizeof(layer->float_weights[0]), &err);
             if (err) return 1;
         }
     } else {
         if (weights != NULL) {
-            if ((layer->weights = (const oac_int8*)find_array_check(arrays, weights,
+            if ((layer->weights = (const oac_int8*)oaci_find_array_check(arrays, weights,
             nb_inputs*nb_outputs*sizeof(layer->weights[0]))) == NULL) return 1;
         }
         if (float_weights != NULL) {
-            layer->float_weights = (const float*)opt_array_check(arrays, float_weights,
+            layer->float_weights = (const float*)oaci_opt_array_check(arrays, float_weights,
             nb_inputs*nb_outputs*sizeof(layer->float_weights[0]), &err);
             if (err) return 1;
         }
     }
     if (diag != NULL) {
-        if ((layer->diag = (const float*)find_array_check(arrays, diag,
+        if ((layer->diag = (const float*)oaci_find_array_check(arrays, diag,
         nb_outputs*sizeof(layer->diag[0]))) == NULL) return 1;
     }
     if (weights != NULL) {
-        if ((layer->scale = (const float*)find_array_check(arrays, scale,
+        if ((layer->scale = (const float*)oaci_find_array_check(arrays, scale,
         nb_outputs*sizeof(layer->scale[0]))) == NULL) return 1;
     }
     layer->nb_inputs = nb_inputs;
@@ -195,11 +195,11 @@ int oaci_conv2d_init(Conv2dLayer *layer, const WeightArray *arrays,
     layer->bias = NULL;
     layer->float_weights = NULL;
     if (bias != NULL) {
-        if ((layer->bias = (const float*)find_array_check(arrays, bias,
+        if ((layer->bias = (const float*)oaci_find_array_check(arrays, bias,
         out_channels*sizeof(layer->bias[0]))) == NULL) return 1;
     }
     if (float_weights != NULL) {
-        layer->float_weights = (const float*)opt_array_check(arrays, float_weights,
+        layer->float_weights = (const float*)oaci_opt_array_check(arrays, float_weights,
         in_channels*out_channels*ktime*kheight*sizeof(layer->float_weights[0]), &err);
         if (err) return 1;
     }

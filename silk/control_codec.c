@@ -39,7 +39,7 @@
 #include "tuning_parameters.h"
 #include "pitch_est_defines.h"
 
-static oac_int silk_setup_resamplers(
+static oac_int oaci_silk_setup_resamplers(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
     oac_int fs_kHz                                     /* I                        */
     );
@@ -85,7 +85,7 @@ oac_int oaci_silk_control_encoder(
     if (psEnc->sCmn.controlled_since_last_payload != 0 && psEnc->sCmn.prefillFlag == 0) {
         if (psEnc->sCmn.API_fs_Hz != psEnc->sCmn.prev_API_fs_Hz && psEnc->sCmn.fs_kHz > 0) {
             /* Change in API sampling rate in the middle of encoding a packet */
-            ret += silk_setup_resamplers( psEnc, psEnc->sCmn.fs_kHz );
+            ret += oaci_silk_setup_resamplers( psEnc, psEnc->sCmn.fs_kHz );
         }
         return ret;
     }
@@ -102,7 +102,7 @@ oac_int oaci_silk_control_encoder(
     /********************************************/
     /* Prepare resampler and buffered data      */
     /********************************************/
-    ret += silk_setup_resamplers( psEnc, fs_kHz );
+    ret += oaci_silk_setup_resamplers( psEnc, fs_kHz );
 
     /********************************************/
     /* Set internal sampling frequency          */
@@ -129,7 +129,7 @@ oac_int oaci_silk_control_encoder(
     return ret;
 }
 
-static oac_int silk_setup_resamplers(
+static oac_int oaci_silk_setup_resamplers(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
     oac_int fs_kHz                                      /* I                        */
     ) {

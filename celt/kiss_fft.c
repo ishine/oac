@@ -49,7 +49,7 @@
    complex numbers.  It also declares the kf_ internal functions.
  */
 
-static void kf_bfly2(
+static void oaci_kf_bfly2(
     kiss_fft_cpx * Fout,
     int m,
     int N) {
@@ -100,7 +100,7 @@ static void kf_bfly2(
     }
 }
 
-static void kf_bfly4(
+static void oaci_kf_bfly4(
     kiss_fft_cpx * Fout,
     const size_t fstride,
     const kiss_fft_state *st,
@@ -166,7 +166,7 @@ static void kf_bfly4(
 
 #ifndef RADIX_TWO_ONLY
 
-static void kf_bfly3(
+static void oaci_kf_bfly3(
     kiss_fft_cpx * Fout,
     const size_t fstride,
     const kiss_fft_state *st,
@@ -221,8 +221,8 @@ static void kf_bfly3(
 }
 
 
-# ifndef OVERRIDE_kf_bfly5
-static void kf_bfly5(
+# ifndef OVERRIDE_oaci_kf_bfly5
+static void oaci_kf_bfly5(
     kiss_fft_cpx * Fout,
     const size_t fstride,
     const kiss_fft_state *st,
@@ -295,7 +295,7 @@ static void kf_bfly5(
         }
     }
 }
-# endif /* OVERRIDE_kf_bfly5 */
+# endif /* OVERRIDE_oaci_kf_bfly5 */
 
 
 #endif
@@ -304,7 +304,7 @@ static void kf_bfly5(
 #ifdef CUSTOM_MODES
 
 static
-void compute_bitrev_table(
+void oaci_compute_bitrev_table(
     int Fout,
     oac_int16 *f,
     const size_t fstride,
@@ -324,7 +324,7 @@ void compute_bitrev_table(
     } else {
         int j;
         for (j = 0; j < p; j++) {
-            compute_bitrev_table( Fout, f, fstride*p, in_stride, factors, st);
+            oaci_compute_bitrev_table( Fout, f, fstride*p, in_stride, factors, st);
             f += fstride*in_stride;
             Fout += m;
         }
@@ -386,7 +386,7 @@ int kf_factor(int n, oac_int16 * facbuf) {
     return 1;
 }
 
-static void compute_twiddles(kiss_twiddle_cpx *twiddles, int nfft) {
+static void oaci_compute_twiddles(kiss_twiddle_cpx *twiddles, int nfft) {
     int i;
 # ifdef FIXED_POINT
     for (i = 0; i < nfft; ++i) {
@@ -432,7 +432,7 @@ kiss_fft_state *oac_fft_alloc_twiddles(int nfft, void * mem, size_t * lenmem,
 
         st->nfft = nfft;
 # ifdef FIXED_POINT
-        st->scale_shift = celt_ilog2(st->nfft);
+        st->scale_shift = oaci_celt_ilog2(st->nfft);
         if (st->nfft == 1<<st->scale_shift)
             st->scale = QCONST32(1.0f, 30);
         else
@@ -449,7 +449,7 @@ kiss_fft_state *oac_fft_alloc_twiddles(int nfft, void * mem, size_t * lenmem,
                 goto fail;
         } else {
             st->twiddles = twiddles = (kiss_twiddle_cpx*)KISS_FFT_MALLOC(sizeof(kiss_twiddle_cpx)*nfft);
-            compute_twiddles(twiddles, nfft);
+            oaci_compute_twiddles(twiddles, nfft);
             st->shift = -1;
         }
         if (!kf_factor(nfft, st->factors)) {
@@ -460,7 +460,7 @@ kiss_fft_state *oac_fft_alloc_twiddles(int nfft, void * mem, size_t * lenmem,
         st->bitrev = bitrev = (oac_int16*)KISS_FFT_MALLOC(sizeof(oac_int16)*nfft);
         if (st->bitrev == NULL)
             goto fail;
-        compute_bitrev_table(0, bitrev, 1, 1, st->factors, st);
+        oaci_compute_bitrev_table(0, bitrev, 1, 1, st->factors, st);
 
         /* Initialize architecture specific fft parameters */
         if (oac_fft_alloc_arch(st, arch))
@@ -493,8 +493,8 @@ void oac_fft_free(const kiss_fft_state *cfg, int arch) {
 #endif /* CUSTOM_MODES */
 
 #ifdef FIXED_POINT
-# ifndef OVERRIDE_fft_downshift
-static void fft_downshift(kiss_fft_cpx *x, int N, int *total, int step) {
+# ifndef OVERRIDE_oaci_fft_downshift
+static void oaci_fft_downshift(kiss_fft_cpx *x, int N, int *total, int step) {
     int shift;
     shift = IMIN(step, *total);
     *total -= shift;
@@ -512,9 +512,9 @@ static void fft_downshift(kiss_fft_cpx *x, int N, int *total, int step) {
         }
     }
 }
-# endif /* OVERRIDE_fft_downshift */
+# endif /* OVERRIDE_oaci_fft_downshift */
 #else
-# define fft_downshift(x, N, total, step)
+# define oaci_fft_downshift(x, N, total, step)
 #endif
 
 void oac_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout ARG_FIXED(int downshift)) {
@@ -544,27 +544,27 @@ void oac_fft_impl(const kiss_fft_state *st, kiss_fft_cpx *fout ARG_FIXED(int dow
             m2 = 1;
         switch (st->factors[2*i]) {
             case 2:
-                fft_downshift(fout, st->nfft, &downshift, 1);
-                kf_bfly2(fout, m, fstride[i]);
+                oaci_fft_downshift(fout, st->nfft, &downshift, 1);
+                oaci_kf_bfly2(fout, m, fstride[i]);
                 break;
             case 4:
-                fft_downshift(fout, st->nfft, &downshift, 2);
-                kf_bfly4(fout, fstride[i]<<shift, st, m, fstride[i], m2);
+                oaci_fft_downshift(fout, st->nfft, &downshift, 2);
+                oaci_kf_bfly4(fout, fstride[i]<<shift, st, m, fstride[i], m2);
                 break;
 #ifndef RADIX_TWO_ONLY
             case 3:
-                fft_downshift(fout, st->nfft, &downshift, 2);
-                kf_bfly3(fout, fstride[i]<<shift, st, m, fstride[i], m2);
+                oaci_fft_downshift(fout, st->nfft, &downshift, 2);
+                oaci_kf_bfly3(fout, fstride[i]<<shift, st, m, fstride[i], m2);
                 break;
             case 5:
-                fft_downshift(fout, st->nfft, &downshift, 3);
-                kf_bfly5(fout, fstride[i]<<shift, st, m, fstride[i], m2);
+                oaci_fft_downshift(fout, st->nfft, &downshift, 3);
+                oaci_kf_bfly5(fout, fstride[i]<<shift, st, m, fstride[i], m2);
                 break;
 #endif
         }
         m = m2;
     }
-    fft_downshift(fout, st->nfft, &downshift, downshift);
+    oaci_fft_downshift(fout, st->nfft, &downshift, downshift);
 }
 
 void oac_fft_c(const kiss_fft_state *st, const kiss_fft_cpx *fin, kiss_fft_cpx *fout) {

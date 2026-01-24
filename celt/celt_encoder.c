@@ -252,7 +252,7 @@ void oac_custom_encoder_destroy(CELTEncoder *st) {
 #endif /* CUSTOM_MODES */
 
 
-static int transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
+static int oaci_transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
                               oac_val16 *tf_estimate, int *tf_chan, int allow_weak_transients,
                               int *weak_transient, oac_val16 tone_freq, oac_val32 toneishness) {
     int i;
@@ -282,7 +282,7 @@ static int transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
     };
     SAVE_STACK;
 #ifdef FIXED_POINT
-    int in_shift = IMAX(0, celt_ilog2(1 + celt_maxabs32(in, C*len)) - 14);
+    int in_shift = IMAX(0, oaci_celt_ilog2(1 + celt_maxabs32(in, C*len)) - 14);
 #endif
     ALLOC(tmp, len, oac_val16);
 
@@ -337,7 +337,7 @@ static int transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
         /* Normalize tmp to max range */
         {
             int shift = 0;
-            shift = 14 - celt_ilog2(MAX16(1, celt_maxabs16(tmp, len)));
+            shift = 14 - oaci_celt_ilog2(MAX16(1, oaci_celt_maxabs16(tmp, len)));
             if (shift != 0) {
                 for (i = 0; i < len; i++)
                     tmp[i] = SHL16(tmp[i], shift);
@@ -449,7 +449,7 @@ static int transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, int C,
 
 /* Looks for sudden increases of energy to decide whether we need to patch
    the transient decision */
-static int patch_transient_decision(celt_glog *newE, celt_glog *oldE, int nbEBands,
+static int oaci_patch_transient_decision(celt_glog *newE, celt_glog *oldE, int nbEBands,
                                     int start, int end, int C) {
     int i, c;
     oac_val32 mean_diff = 0;
@@ -484,7 +484,7 @@ static int patch_transient_decision(celt_glog *newE, celt_glog *oldE, int nbEBan
 
 /** Apply window and compute the MDCT for all sub-frames and
     all channels in a frame */
-static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OAC_RESTRICT in,
+static void oaci_compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OAC_RESTRICT in,
                           celt_sig * OAC_RESTRICT out, int C, int CC, int LM, int upsample,
                           int arch) {
     const int overlap = mode->overlap;
@@ -596,7 +596,7 @@ void oaci_celt_preemphasis(const oac_res * OAC_RESTRICT pcmp, celt_sig * OAC_RES
 
 
 
-static oac_val32 l1_metric(const celt_norm *tmp, int N, int LM, oac_val16 bias) {
+static oac_val32 oaci_l1_metric(const celt_norm *tmp, int N, int LM, oac_val16 bias) {
     int i;
     oac_val32 L1;
     L1 = 0;
@@ -608,7 +608,7 @@ static oac_val32 l1_metric(const celt_norm *tmp, int N, int LM, oac_val16 bias) 
 
 }
 
-static int tf_analysis(const CELTMode *m, int len, int isTransient,
+static int oaci_tf_analysis(const CELTMode *m, int len, int isTransient,
                        int *tf_res, int lambda, celt_norm *X, int N0, int LM,
                        oac_val16 tf_estimate, int tf_chan, int *importance) {
     int i;
@@ -647,13 +647,13 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
         /*if (C==2)
            for (j=0;j<N;j++)
               tmp[j] = ADD16(SHR16(tmp[j], 1),SHR16(X[N0+j+(m->eBands[i]<<LM)], 1));*/
-        L1 = l1_metric(tmp, N, isTransient ? LM : 0, bias);
+        L1 = oaci_l1_metric(tmp, N, isTransient ? LM : 0, bias);
         best_L1 = L1;
         /* Check the -1 case for transients */
         if (isTransient && !narrow) {
             OAC_COPY(tmp_1, tmp, N);
             oaci_haar1(tmp_1, N>>LM, 1<<LM);
-            L1 = l1_metric(tmp_1, N, LM + 1, bias);
+            L1 = oaci_l1_metric(tmp_1, N, LM + 1, bias);
             if (L1 < best_L1) {
                 best_L1 = L1;
                 best_level = -1;
@@ -670,7 +670,7 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
 
             oaci_haar1(tmp, N>>k, 1<<k);
 
-            L1 = l1_metric(tmp, N, B, bias);
+            L1 = oaci_l1_metric(tmp, N, B, bias);
 
             if (L1 < best_L1) {
                 best_L1 = L1;
@@ -759,7 +759,7 @@ static int tf_analysis(const CELTMode *m, int len, int isTransient,
     return tf_select;
 }
 
-static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, int tf_select, ec_enc *enc) {
+static void oaci_tf_encode(int start, int end, int isTransient, int *tf_res, int LM, int tf_select, ec_enc *enc) {
     int curr, i;
     int tf_select_rsv;
     int tf_changed;
@@ -767,7 +767,7 @@ static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, 
     oac_uint32 budget;
     oac_uint32 tell;
     budget = enc->storage*8;
-    tell = ec_tell(enc);
+    tell = oaci_ec_tell(enc);
     logp = isTransient ? 2 : 4;
     /* Reserve space to code the tf_select decision. */
     tf_select_rsv = LM > 0 && tell + logp + 1 <= budget;
@@ -776,7 +776,7 @@ static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, 
     for (i = start; i < end; i++) {
         if (tell + logp <= budget) {
             oaci_ec_enc_bit_logp(enc, tf_res[i]^curr, logp);
-            tell = ec_tell(enc);
+            tell = oaci_ec_tell(enc);
             curr = tf_res[i];
             tf_changed |= curr;
         } else
@@ -796,7 +796,7 @@ static void tf_encode(int start, int end, int isTransient, int *tf_res, int LM, 
 }
 
 
-static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
+static int oaci_alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
                                const celt_glog *bandLogE, int end, int LM, int C, int N0,
                                AnalysisInfo *analysis, oac_val16 *stereo_saving, oac_val16 tf_estimate,
                                int intensity, celt_glog surround_trim, oac_int32 equiv_rate, int arch) {
@@ -836,9 +836,9 @@ static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
         minXC = MIN16(QCONST16(1.f, 10), ABS16(minXC));
         /*printf ("%f\n", sum);*/
         /* mid-side savings estimations based on the LF average*/
-        logXC = celt_log2(QCONST32(1.001f, 20) - MULT16_16(sum, sum));
+        logXC = oaci_celt_log2(QCONST32(1.001f, 20) - MULT16_16(sum, sum));
         /* mid-side savings estimations based on min correlation */
-        logXC2 = MAX16(HALF16(logXC), celt_log2(QCONST32(1.001f, 20) - MULT16_16(minXC, minXC)));
+        logXC2 = MAX16(HALF16(logXC), oaci_celt_log2(QCONST32(1.001f, 20) - MULT16_16(minXC, minXC)));
 #ifdef FIXED_POINT
         /* Compensate for Q20 vs Q14 input and convert output to Q8 */
         logXC = PSHR32(logXC - QCONST16(6.f, 10), 10 - 8);
@@ -883,7 +883,7 @@ static int alloc_trim_analysis(const CELTMode *m, const celt_norm *X,
     return trim_index;
 }
 
-static int stereo_analysis(const CELTMode *m, const celt_norm *X,
+static int oaci_stereo_analysis(const CELTMode *m, const celt_norm *X,
                            int LM, int N0) {
     int i;
     int thetas;
@@ -913,7 +913,7 @@ static int stereo_analysis(const CELTMode *m, const celt_norm *X,
 }
 
 #define MSWAP(a, b) do {celt_glog tmp = a; a = b; b = tmp;} while (0)
-static celt_glog median_of_5(const celt_glog *x) {
+static celt_glog oaci_median_of_5(const celt_glog *x) {
     celt_glog t0, t1, t2, t3, t4;
     t2 = x[2];
     if (x[0] > x[1]) {
@@ -947,7 +947,7 @@ static celt_glog median_of_5(const celt_glog *x) {
     }
 }
 
-static celt_glog median_of_3(const celt_glog *x) {
+static celt_glog oaci_median_of_3(const celt_glog *x) {
     celt_glog t0, t1, t2;
     if (x[0] > x[1]) {
         t0 = x[1];
@@ -965,7 +965,7 @@ static celt_glog median_of_3(const celt_glog *x) {
         return t0;
 }
 
-static celt_glog dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *bandLogE2, const celt_glog *oldBandE,
+static celt_glog oaci_dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *bandLogE2, const celt_glog *oldBandE,
                                    int nbEBands, int start, int end, int C, int *offsets, int lsb_depth,
                                    const oac_int16 *logN,
                                    int isTransient, int vbr, int constrained_vbr, const oac_int16 *eBands, int LM,
@@ -1071,11 +1071,11 @@ static celt_glog dynalloc_analysis(const celt_glog *bandLogE, const celt_glog *b
                reduces the impact of the median filter and makes dynalloc use more bits. */
             offset = GCONST(1.f);
             for (i = 2; i < end - 2; i++)
-                f[i] = MAXG(f[i], median_of_5(&bandLogE3[i - 2]) - offset);
-            tmp = median_of_3(&bandLogE3[0]) - offset;
+                f[i] = MAXG(f[i], oaci_median_of_5(&bandLogE3[i - 2]) - offset);
+            tmp = oaci_median_of_3(&bandLogE3[0]) - offset;
             f[0] = MAXG(f[0], tmp);
             f[1] = MAXG(f[1], tmp);
-            tmp = median_of_3(&bandLogE3[end - 3]) - offset;
+            tmp = oaci_median_of_3(&bandLogE3[end - 3]) - offset;
             f[end - 2] = MAXG(f[end - 2], tmp);
             f[end - 1] = MAXG(f[end - 1], tmp);
 
@@ -1189,7 +1189,7 @@ void oaci_normalize_tone_input(oac_val16 *x, int len) {
     for (i = 0; i < len; i++) {
         ac0 = ADD32(ac0, SHR32(MULT16_16(x[i], x[i]), 10));
     }
-    shift = 5 - (28 - celt_ilog2(ac0))/2;
+    shift = 5 - (28 - oaci_celt_ilog2(ac0))/2;
     if (shift > 0) {
         for (i = 0; i < len; i++) {
             x[i] = PSHR32(x[i], shift);
@@ -1211,7 +1211,7 @@ int oaci_acos_approx(oac_val32 x) {
 #endif
 
 /* Compute the LPC coefficients using a least-squares fit for both forward and backward prediction. */
-static int tone_lpc(const oac_val16 *x, int len, int delay, oac_val32 *lpc) {
+static int oaci_tone_lpc(const oac_val16 *x, int len, int delay, oac_val32 *lpc) {
     int i;
     oac_val32 r00 = 0, r01 = 0, r11 = 0, r02 = 0, r12 = 0, r22 = 0;
     oac_val32 edges;
@@ -1270,7 +1270,7 @@ static int tone_lpc(const oac_val16 *x, int len, int delay, oac_val32 *lpc) {
 }
 
 /* Detects pure of nearly pure tones so we can prevent them from causing problems with the encoder. */
-static oac_val16 tone_detect(const celt_sig *in, int CC, int N, oac_val32 *toneishness, oac_int32 Fs) {
+static oac_val16 oaci_tone_detect(const celt_sig *in, int CC, int N, oac_val32 *toneishness, oac_int32 Fs) {
     int i;
     int delay = 1;
     int fail;
@@ -1288,11 +1288,11 @@ static oac_val16 tone_detect(const celt_sig *in, int CC, int N, oac_val32 *tonei
 #ifdef FIXED_POINT
     oaci_normalize_tone_input(x, N);
 #endif
-    fail = tone_lpc(x, N, delay, lpc);
+    fail = oaci_tone_lpc(x, N, delay, lpc);
     /* If our LPC filter resonates too close to DC, retry the analysis with down-sampling. */
     while (delay <= Fs/3000 && (fail || (lpc[0] > QCONST32(1.f, 29) && lpc[1] < 0))) {
         delay *= 2;
-        fail = tone_lpc(x, N, delay, lpc);
+        fail = oaci_tone_lpc(x, N, delay, lpc);
     }
     /* Check that our filter has complex roots. */
     if (!fail && MULT32_32_Q31(lpc[0], lpc[0]) + MULT32_32_Q31(QCONST32(3.999999, 29), lpc[1]) < 0) {
@@ -1312,7 +1312,7 @@ static oac_val16 tone_detect(const celt_sig *in, int CC, int N, oac_val32 *tonei
     return freq;
 }
 
-static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem, int CC, int N,
+static int oaci_run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem, int CC, int N,
                          int prefilter_tapset, int *pitch, oac_val16 *gain, int *qgain, int enabled, int complexity,
                          oac_val16 tf_estimate,
                          int nbAvailableBytes, AnalysisInfo *analysis, oac_val16 tone_freq, oac_val32 toneishness,
@@ -1517,7 +1517,7 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
     return pf_on;
 }
 
-static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, oac_int32 base_target,
+static int oaci_compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, oac_int32 base_target,
                        int LM, oac_int32 bitrate, int lastCodedBands, int C, int intensity,
                        int constrained_vbr, oac_val16 stereo_saving, int tot_boost,
                        oac_val16 tf_estimate, int pitch_change, celt_glog maxDepth,
@@ -1596,7 +1596,7 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, oac_int32 b
         oac_int32 floor_depth;
         int bins;
         bins = eBands[nbEBands - 2]<<LM;
-        /*floor_depth = SHR32(MULT16_16((C*bins<<BITRES),celt_log2(SHL32(MAX16(1,sample_max),13))), DB_SHIFT);*/
+        /*floor_depth = SHR32(MULT16_16((C*bins<<BITRES),oaci_celt_log2(SHL32(MAX16(1,sample_max),13))), DB_SHIFT);*/
         floor_depth = (oac_int32)SHR32(MULT16_32_Q15((C*bins<<BITRES), maxDepth), DB_SHIFT - 15);
         floor_depth = IMAX(floor_depth, target>>2);
         target = IMIN(target, floor_depth);
@@ -1741,7 +1741,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
         nbFilledBytes = 0;
     } else {
         tell0_frac = oaci_ec_tell_frac(enc);
-        tell = ec_tell(enc);
+        tell = oaci_ec_tell(enc);
         nbFilledBytes = (tell + 4)>>3;
     }
 
@@ -1863,7 +1863,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
         /* Pretend we've filled all the remaining bits with zeros
               (that's what the initialiser did anyway) */
         tell = nbCompressedBytes*8;
-        enc->nbits_total += tell - ec_tell(enc);
+        enc->nbits_total += tell - oaci_ec_tell(enc);
     }
     c = 0; do {
         int need_clip = 0;
@@ -1878,7 +1878,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     } while (++c < CC);
 
 
-    tone_freq = tone_detect(in, CC, N + overlap, &toneishness, mode->Fs);
+    tone_freq = oaci_tone_detect(in, CC, N + overlap, &toneishness, mode->Fs);
     isTransient = 0;
     shortBlocks = 0;
     if (st->complexity >= 1 && !st->lfe) {
@@ -1886,7 +1886,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
            in hybrid mode. It seems like we still want to have real transients on vowels
            though (small SILK quantization offset value). */
         int allow_weak_transients = hybrid && effectiveBytes < 15 && st->silk_info.signalType != 2;
-        isTransient = transient_analysis(in, N + overlap, CC,
+        isTransient = oaci_transient_analysis(in, N + overlap, CC,
             &tf_estimate, &tf_chan, allow_weak_transients, &weak_transient, tone_freq, toneishness);
     }
     toneishness = MIN32(toneishness, QCONST32(1.f, 29) - SHL32(tf_estimate, 15));
@@ -1898,7 +1898,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
                   && tell + 16 <= total_bits && !st->disable_pf;
 
         prefilter_tapset = st->tapset_decision;
-        pf_on = run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled,
+        pf_on = oaci_run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled,
         st->complexity, tf_estimate, nbAvailableBytes, &st->analysis, tone_freq, toneishness, qext_scale);
         if ((gain1 > QCONST16(.4f, 15) || st->prefilter_gain > QCONST16(.4f,
         15)) && (!st->analysis.valid || st->analysis.tonality > .3)
@@ -1921,7 +1921,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
             oaci_ec_enc_icdf(enc, prefilter_tapset, tapset_icdf, 4);
         }
     }
-    if (LM > 0 && ec_tell(enc) + 3 <= total_bits) {
+    if (LM > 0 && oaci_ec_tell(enc) + 3 <= total_bits) {
         if (isTransient)
             shortBlocks = M;
     } else {
@@ -1936,7 +1936,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     secondMdct = shortBlocks && st->complexity >= 8;
     ALLOC(bandLogE2, C*nbEBands, celt_glog);
     if (secondMdct) {
-        compute_mdcts(mode, 0, in, freq, C, CC, LM, st->upsample, st->arch);
+        oaci_compute_mdcts(mode, 0, in, freq, C, CC, LM, st->upsample, st->arch);
         oaci_compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
         oaci_amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
         for (c = 0; c < C; c++) {
@@ -1945,7 +1945,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
         }
     }
 
-    compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
+    oaci_compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
     /* This should catch any NaN in the CELT input. Since we're not supposed to see any (they're filtered
        at the Oac layer), just abort. */
     celt_assert(!celt_isnan(freq[0]) && (C == 1 || !celt_isnan(freq[N])));
@@ -2058,11 +2058,11 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
 
     /* Last chance to catch any transient we might have missed in the
        time-domain analysis */
-    if (LM > 0 && ec_tell(enc) + 3 <= total_bits && !isTransient && st->complexity >= 5 && !st->lfe && !hybrid) {
-        if (patch_transient_decision(bandLogE, oldBandE, nbEBands, start, end, C)) {
+    if (LM > 0 && oaci_ec_tell(enc) + 3 <= total_bits && !isTransient && st->complexity >= 5 && !st->lfe && !hybrid) {
+        if (oaci_patch_transient_decision(bandLogE, oldBandE, nbEBands, start, end, C)) {
             isTransient = 1;
             shortBlocks = M;
-            compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
+            oaci_compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
             oaci_compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
             oaci_amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
             /* Compensate for the scaling of short vs long mdcts */
@@ -2074,7 +2074,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
         }
     }
 
-    if (LM > 0 && ec_tell(enc) + 3 <= total_bits)
+    if (LM > 0 && oaci_ec_tell(enc) + 3 <= total_bits)
         oaci_ec_enc_bit_logp(enc, isTransient, 3);
 
     ALLOC(X, C*N, celt_norm);        /**< Interleaved normalised MDCTs */
@@ -2089,7 +2089,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     ALLOC(importance, nbEBands, int);
     ALLOC(spread_weight, nbEBands, int);
 
-    maxDepth = dynalloc_analysis(bandLogE, bandLogE2, oldBandE, nbEBands, start, end, C, offsets,
+    maxDepth = oaci_dynalloc_analysis(bandLogE, bandLogE2, oldBandE, nbEBands, start, end, C, offsets,
          st->lsb_depth, mode->logN, isTransient, st->vbr, st->constrained_vbr,
          eBands, LM, effectiveBytes, &tot_boost, st->lfe, surround_dynalloc, &st->analysis, importance, spread_weight,
     tone_freq, toneishness, qext_scale);
@@ -2099,7 +2099,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     if (enable_tf_analysis) {
         int lambda;
         lambda = IMAX(80, 20480/effectiveBytes + 2);
-        tf_select = tf_analysis(mode, effEnd, isTransient, tf_res, lambda, X, N, LM, tf_estimate, tf_chan, importance);
+        tf_select = oaci_tf_analysis(mode, effEnd, isTransient, tf_res, lambda, X, N, LM, tf_estimate, tf_chan, importance);
         for (i = effEnd; i < end; i++)
             tf_res[i] = tf_res[effEnd - 1];
     } else if (hybrid && weak_transient) {
@@ -2137,9 +2137,9 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
          C, LM, nbAvailableBytes, st->force_intra,
          &st->delayedIntra, st->complexity >= 4, st->loss_rate, st->lfe);
 
-    tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc);
+    oaci_tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc);
 
-    if (ec_tell(enc) + 4 <= total_bits) {
+    if (oaci_ec_tell(enc) + 4 <= total_bits) {
         if (st->lfe) {
             st->tapset_decision = 0;
             st->spread_decision = SPREAD_NORMAL;
@@ -2234,7 +2234,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
 
         /* Always use MS for 2.5 ms frames until we can do a better analysis */
         if (LM != 0)
-            dual_stereo = stereo_analysis(mode, X, LM, N);
+            dual_stereo = oaci_stereo_analysis(mode, X, LM, N);
 
         st->intensity = oaci_hysteresis_decision((oac_val16)(equiv_rate/1000),
             intensity_thresholds, intensity_histeresis, 21, st->intensity);
@@ -2247,7 +2247,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
             st->stereo_saving = 0;
             alloc_trim = 5;
         } else {
-            alloc_trim = alloc_trim_analysis(mode, X, bandLogE,
+            alloc_trim = oaci_alloc_trim_analysis(mode, X, bandLogE,
             end, LM, C, N, &st->analysis, &st->stereo_saving, tf_estimate,
             st->intensity, surround_trim, equiv_rate, st->arch);
         }
@@ -2287,7 +2287,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
             base_target += (st->vbr_offset>>lm_diff);
 
         if (!hybrid) {
-            target = compute_vbr(mode, &st->analysis, base_target, LM, equiv_rate,
+            target = oaci_compute_vbr(mode, &st->analysis, base_target, LM, equiv_rate,
            st->lastCodedBands, C, st->intensity, st->constrained_vbr,
            st->stereo_saving, tot_boost, tf_estimate, pitch_change, maxDepth,
            st->lfe, st->energy_mask != NULL, surround_masking,
@@ -2414,7 +2414,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
         oaci_ec_enc_bits(enc, anti_collapse_on, 1);
     }
     oaci_quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority,
-    nbCompressedBytes*8 - ec_tell(enc), enc, C);
+    nbCompressedBytes*8 - oaci_ec_tell(enc), enc, C);
     c = 0;
     do {
         for (i = start; i < end; i++) {

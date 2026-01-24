@@ -71,7 +71,7 @@ oac_val32 oaci_celt_inner_prod_norm_shift(const celt_norm *x, const celt_norm *y
 #endif
 
 #ifndef OVERRIDE_vq_exp_rotation1
-static void exp_rotation1(celt_norm *X, int len, int stride, oac_val16 c, oac_val16 s) {
+static void oaci_exp_rotation1(celt_norm *X, int len, int stride, oac_val16 c, oac_val16 s) {
     int i;
     oac_val16 ms;
     celt_norm *Xptr;
@@ -123,23 +123,23 @@ void oaci_exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int sp
             stride2++;
     }
     /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
-       extract_collapse_mask().*/
+       oaci_extract_collapse_mask().*/
     len = celt_udiv(len, stride);
     for (i = 0; i < stride; i++) {
         if (dir < 0) {
             if (stride2)
-                exp_rotation1(X + i*len, len, stride2, s, c);
-            exp_rotation1(X + i*len, len, 1, c, s);
+                oaci_exp_rotation1(X + i*len, len, stride2, s, c);
+            oaci_exp_rotation1(X + i*len, len, 1, c, s);
         } else {
-            exp_rotation1(X + i*len, len, 1, c, -s);
+            oaci_exp_rotation1(X + i*len, len, 1, c, -s);
             if (stride2)
-                exp_rotation1(X + i*len, len, stride2, s, -c);
+                oaci_exp_rotation1(X + i*len, len, stride2, s, -c);
         }
     }
 }
 
 /** Normalizes the decoded integer pvq codeword to unit norm. */
-static void normalise_residual(int * OAC_RESTRICT iy, celt_norm * OAC_RESTRICT X,
+static void oaci_normalise_residual(int * OAC_RESTRICT iy, celt_norm * OAC_RESTRICT X,
                                int N, oac_val32 Ryy, oac_val32 gain, int shift) {
     int i;
 #ifdef FIXED_POINT
@@ -149,7 +149,7 @@ static void normalise_residual(int * OAC_RESTRICT iy, celt_norm * OAC_RESTRICT X
     oac_val32 g;
 
 #ifdef FIXED_POINT
-    k = celt_ilog2(Ryy)>>1;
+    k = oaci_celt_ilog2(Ryy)>>1;
 #endif
     t = VSHR32(Ryy, 2*(k - 7) - 15);
     g = MULT32_32_Q31(oaci_celt_rsqrt_norm32(t), gain);
@@ -171,7 +171,7 @@ static void normalise_residual(int * OAC_RESTRICT iy, celt_norm * OAC_RESTRICT X
     while (++i < N);
 }
 
-static unsigned extract_collapse_mask(int *iy, int N, int B) {
+static unsigned oaci_extract_collapse_mask(int *iy, int N, int B) {
     unsigned collapse_mask;
     int N0;
     int i;
@@ -207,7 +207,7 @@ oac_val16 oaci_op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
     ALLOC(signx, N, int);
 #ifdef FIXED_POINT
     {
-        int shift = (celt_ilog2(1 + oaci_celt_inner_prod_norm_shift(X, X, N, arch)) + 1)/2;
+        int shift = (oaci_celt_ilog2(1 + oaci_celt_inner_prod_norm_shift(X, X, N, arch)) + 1)/2;
         shift = IMAX(0, shift + (NORM_SHIFT - 14) - 14);
         oaci_norm_scaledown(X, N, shift);
     }
@@ -292,7 +292,7 @@ oac_val16 oaci_op_pvq_search_c(celt_norm *X, int *iy, int K, int N, int arch) {
         int rshift;
 #endif
 #ifdef FIXED_POINT
-        rshift = 1 + celt_ilog2(K - pulsesLeft + i + 1);
+        rshift = 1 + oaci_celt_ilog2(K - pulsesLeft + i + 1);
 #endif
         best_id = 0;
         /* The squared magnitude term gets added anyway, so we might as well
@@ -377,9 +377,9 @@ unsigned oaci_alg_quant(celt_norm *X, int N, int K, int spread, int B, ec_enc *e
     oaci_exp_rotation(X, N, 1, B, K, spread);
 
     yy = oaci_op_pvq_search(X, iy, K, N, arch);
-    collapse_mask = extract_collapse_mask(iy, N, B);
+    collapse_mask = oaci_extract_collapse_mask(iy, N, B);
     oaci_encode_pulses(iy, N, K, enc);
-    if (resynth) normalise_residual(iy, X, N, yy, gain, 0);
+    if (resynth) oaci_normalise_residual(iy, X, N, yy, gain, 0);
 
     if (resynth)
         oaci_exp_rotation(X, N, -1, B, K, spread);
@@ -402,9 +402,9 @@ unsigned oaci_alg_unquant(celt_norm *X, int N, int K, int spread, int B,
     celt_assert2(N > 1, "oaci_alg_unquant() needs at least two dimensions");
     ALLOC(iy, N, int);
     Ryy = oaci_decode_pulses(iy, N, K, dec);
-    normalise_residual(iy, X, N, Ryy, gain, yy_shift);
+    oaci_normalise_residual(iy, X, N, Ryy, gain, yy_shift);
     oaci_exp_rotation(X, N, -1, B, K, spread);
-    collapse_mask = extract_collapse_mask(iy, N, B);
+    collapse_mask = oaci_extract_collapse_mask(iy, N, B);
     RESTORE_STACK;
     return collapse_mask;
 }
@@ -422,7 +422,7 @@ void oaci_renormalise_vector(celt_norm *X, int N, oac_val32 gain, int arch) {
     oaci_norm_scaledown(X, N, NORM_SHIFT - 14);
     E = EPSILON + oaci_celt_inner_prod_norm(X, X, N, arch);
 # ifdef FIXED_POINT
-    k = celt_ilog2(E)>>1;
+    k = oaci_celt_ilog2(E)>>1;
 # endif
     t = VSHR32(E, 2*(k - 7));
     g = MULT32_32_Q31(oaci_celt_rsqrt_norm(t), gain);
@@ -467,13 +467,13 @@ oac_int32 oaci_stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo,
     return itheta;
 }
 
-static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int sign, oac_val32 gain) {
+static void oaci_cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int sign, oac_val32 gain) {
     int i;
     oac_val32 sum = 0;
     oac_val32 mag;
 #ifdef FIXED_POINT
     int sum_shift;
-    int shift = IMAX(celt_ilog2(K) + celt_ilog2(N)/2 - 13, 0);
+    int shift = IMAX(oaci_celt_ilog2(K) + oaci_celt_ilog2(N)/2 - 13, 0);
 #endif
     for (i = 0; i < N; i++) {
         X[i] = (1 + 2*iy[i]) - K;
@@ -483,7 +483,7 @@ static void cubic_synthesis(celt_norm *X, int *iy, int N, int K, int face, int s
         sum += PSHR32(MULT16_16(X[i], X[i]), 2*shift);
     }
 #ifdef FIXED_POINT
-    sum_shift = (29 - celt_ilog2(sum))>>1;
+    sum_shift = (29 - oaci_celt_ilog2(sum))>>1;
     mag = oaci_celt_rsqrt_norm32(SHL32(sum, 2*sum_shift + 1));
     for (i = 0; i < N; i++) {
         X[i] = VSHR32(MULT16_32_Q15(X[i], MULT32_32_Q31(mag, gain)), shift - sum_shift + 29 - NORM_SHIFT);
@@ -525,7 +525,7 @@ unsigned oaci_cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_
     oaci_ec_enc_bits(enc, sign, 1);
 #ifdef FIXED_POINT
     if (faceval != 0) {
-        int face_shift = 30 - celt_ilog2(faceval);
+        int face_shift = 30 - oaci_celt_ilog2(faceval);
         norm = oaci_celt_rcp_norm32(SHL32(faceval, face_shift));
         norm = MULT16_32_Q15(K, norm);
         for (i = 0; i < N; i++) {
@@ -545,7 +545,7 @@ unsigned oaci_cubic_quant(celt_norm *X, int N, int res, int B, ec_enc *enc, oac_
         if (i != face) oaci_ec_enc_bits(enc, iy[i], res);
     }
     if (resynth) {
-        cubic_synthesis(X, iy, N, K, face, sign, gain);
+        oaci_cubic_synthesis(X, iy, N, K, face, sign, gain);
     }
     RESTORE_STACK;
     return (1<<B) - 1;
@@ -573,7 +573,7 @@ unsigned oaci_cubic_unquant(celt_norm *X, int N, int res, int B, ec_dec *dec, oa
         if (i != face) iy[i] = oaci_ec_dec_bits(dec, res);
     }
     iy[face] = 0;
-    cubic_synthesis(X, iy, N, K, face, sign, gain);
+    oaci_cubic_synthesis(X, iy, N, K, face, sign, gain);
     RESTORE_STACK;
     return (1<<B) - 1;
 }

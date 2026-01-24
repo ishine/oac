@@ -139,7 +139,7 @@ static const unsigned char e_prob_model[4][2][42] = {
 
 static const unsigned char small_energy_icdf[3] = {2, 1, 0};
 
-static oac_val32 loss_distortion(const celt_glog *eBands, celt_glog *oldEBands, int start, int end, int len, int C) {
+static oac_val32 oaci_loss_distortion(const celt_glog *eBands, celt_glog *oldEBands, int start, int end, int len, int C) {
     int c, i;
     oac_val32 dist = 0;
     c = 0; do {
@@ -151,7 +151,7 @@ static oac_val32 loss_distortion(const celt_glog *eBands, celt_glog *oldEBands, 
     return MIN32(200, SHR32(dist, 14));
 }
 
-static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
+static int oaci_quant_coarse_energy_impl(const CELTMode *m, int start, int end,
                                     const celt_glog *eBands, celt_glog *oldEBands,
                                     oac_int32 budget, oac_int32 tell,
                                     const unsigned char *prob_model, celt_glog *error, ec_enc *enc,
@@ -206,7 +206,7 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
             qi0 = qi;
             /* If we don't have enough bits to encode all the energy, just assume
                 something safe. */
-            tell = ec_tell(enc);
+            tell = oaci_ec_tell(enc);
             bits_left = budget - tell - 3*C*(end - i);
             if (i != start && bits_left < 30) {
                 if (bits_left < 24)
@@ -261,9 +261,9 @@ void oaci_quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
 
     intra = force_intra || (!two_pass && *delayedIntra > 2*C*(end - start) && nbAvailableBytes > (end - start)*C);
     intra_bias = (oac_int32)((budget**delayedIntra*loss_rate)/(C*512));
-    new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m->nbEBands, C);
+    new_distortion = oaci_loss_distortion(eBands, oldEBands, start, effEnd, m->nbEBands, C);
 
-    tell = ec_tell(enc);
+    tell = oaci_ec_tell(enc);
     if (tell + 3 > budget)
         two_pass = intra = 0;
 
@@ -284,7 +284,7 @@ void oaci_quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
     OAC_COPY(oldEBands_intra, oldEBands, C*m->nbEBands);
 
     if (two_pass || intra) {
-        badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget,
+        badness1 = oaci_quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget,
             tell, e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
     }
 
@@ -314,7 +314,7 @@ void oaci_quant_coarse_energy(const CELTMode *m, int start, int end, int effEnd,
 
         *enc = enc_start_state;
 
-        badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget,
+        badness2 = oaci_quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget,
             tell, e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
 
         if (two_pass
@@ -350,7 +350,7 @@ void oaci_quant_fine_energy(const CELTMode *m, int start, int end, celt_glog *ol
         extra = 1<<extra_quant[i];
         if (extra_quant[i] <= 0)
             continue;
-        if (ec_tell(enc) + C*extra_quant[i] > (oac_int32)enc->storage*8) continue;
+        if (oaci_ec_tell(enc) + C*extra_quant[i] > (oac_int32)enc->storage*8) continue;
         prev = (prev_quant != NULL) ? prev_quant[i] : 0;
         c = 0;
         do {
@@ -440,7 +440,7 @@ void oaci_unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog
                test on C at function entry, but that isn't enough
                to make the static analyzer happy. */
             celt_sig_assert(c < 2);
-            tell = ec_tell(dec);
+            tell = oaci_ec_tell(dec);
             if (budget - tell >= 15) {
                 int pi;
                 pi = 2*IMIN(i, 20);
@@ -475,7 +475,7 @@ void oaci_unquant_fine_energy(const CELTMode *m, int start, int end, celt_glog *
         extra = extra_quant[i];
         if (extra_quant[i] <= 0)
             continue;
-        if (ec_tell(dec) + C*extra_quant[i] > (oac_int32)dec->storage*8) continue;
+        if (oaci_ec_tell(dec) + C*extra_quant[i] > (oac_int32)dec->storage*8) continue;
         prev = (prev_quant != NULL) ? prev_quant[i] : 0;
         c = 0;
         do {
@@ -527,10 +527,10 @@ void oaci_amp2Log2(const CELTMode *m, int effEnd, int end,
     do {
         for (i = 0; i < effEnd; i++) {
             bandLogE[i + c*m->nbEBands] =
-                celt_log2_db(bandE[i + c*m->nbEBands])
+                oaci_celt_log2_db(bandE[i + c*m->nbEBands])
                 - SHL32((celt_glog)oaci_eMeans[i], DB_SHIFT - 4);
 #ifdef FIXED_POINT
-            /* Compensate for bandE[] being Q12 but celt_log2() taking a Q14 input. */
+            /* Compensate for bandE[] being Q12 but oaci_celt_log2() taking a Q14 input. */
             bandLogE[i + c*m->nbEBands] += GCONST(2.f);
 #endif
         }

@@ -220,7 +220,7 @@ oac_int oaci_silk_encode_frame_FLP(
                 oaci_silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                       psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
 
-                nBits = ec_tell( psRangeEnc );
+                nBits = oaci_ec_tell( psRangeEnc );
 
                 /* If we still bust after the last iteration, do some damage control. */
                 if (iter == maxIter && !found_lower && nBits > maxBits) {
@@ -246,7 +246,7 @@ oac_int oaci_silk_encode_frame_FLP(
                     oaci_silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                         psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
 
-                    nBits = ec_tell( psRangeEnc );
+                    nBits = oaci_ec_tell( psRangeEnc );
                 }
 
                 if (useCBR == 0 && iter == 0 && nBits <= maxBits) {
@@ -379,7 +379,7 @@ oac_int oaci_silk_encode_frame_FLP(
     /****************************************/
     psEnc->sCmn.first_frame_after_reset = 0;
     /* Payload size */
-    *pnBytesOut = silk_RSHIFT( ec_tell( psRangeEnc ) + 7, 3 );
+    *pnBytesOut = silk_RSHIFT( oaci_ec_tell( psRangeEnc ) + 7, 3 );
 
     RESTORE_STACK;
     return ret;

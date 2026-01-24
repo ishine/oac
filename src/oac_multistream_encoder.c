@@ -67,7 +67,7 @@ static const VorbisLayout vorbis_mappings[8] = {
 # define MAX_OVERLAP 120
 #endif
 
-static oac_val32 *ms_get_preemph_mem(OacMSEncoder *st) {
+static oac_val32 *oaci_ms_get_preemph_mem(OacMSEncoder *st) {
     int s;
     char *ptr;
     int coupled_size, mono_size;
@@ -85,7 +85,7 @@ static oac_val32 *ms_get_preemph_mem(OacMSEncoder *st) {
     return (oac_val32*)(void*)(ptr + st->layout.nb_channels*MAX_OVERLAP*sizeof(oac_val32));
 }
 
-static oac_val32 *ms_get_window_mem(OacMSEncoder *st) {
+static oac_val32 *oaci_ms_get_window_mem(OacMSEncoder *st) {
     int s;
     char *ptr;
     int coupled_size, mono_size;
@@ -103,7 +103,7 @@ static oac_val32 *ms_get_window_mem(OacMSEncoder *st) {
     return (oac_val32*)(void*)ptr;
 }
 
-static int validate_ambisonics(int nb_channels, int *nb_streams, int *nb_coupled_streams) {
+static int oaci_validate_ambisonics(int nb_channels, int *nb_streams, int *nb_coupled_streams) {
     int order_plus_one;
     int acn_channels;
     int nondiegetic_channels;
@@ -177,7 +177,7 @@ static void channel_pos(int channels, int pos[8]) {
 
 #if 1
 /* Computes a rough approximation of log2(2^a + 2^b) */
-static oac_val16 logSum(celt_glog a, celt_glog b) {
+static oac_val16 oaci_logSum(celt_glog a, celt_glog b) {
     celt_glog max;
     celt_glog diff;
     celt_glog frac;
@@ -206,7 +206,7 @@ static oac_val16 logSum(celt_glog a, celt_glog b) {
     return max + diff_table[low] + MULT16_32_Q15(frac, SUB32(diff_table[low + 1], diff_table[low]));
 }
 #else
-oac_val16 logSum(oac_val16 a, oac_val16 b) {
+oac_val16 oaci_logSum(oac_val16 a, oac_val16 b) {
     return log2(pow(4, a) + pow(4, b))/2;
 }
 #endif
@@ -295,14 +295,14 @@ void oaci_surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glo
             bandLogE[21*c + i] = MAXG(bandLogE[21*c + i], bandLogE[21*c + i + 1] - GCONST(2.f));
         if (pos[c] == 1) {
             for (i = 0; i < 21; i++)
-                maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21*c + i]);
+                maskLogE[0][i] = oaci_logSum(maskLogE[0][i], bandLogE[21*c + i]);
         } else if (pos[c] == 3) {
             for (i = 0; i < 21; i++)
-                maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21*c + i]);
+                maskLogE[2][i] = oaci_logSum(maskLogE[2][i], bandLogE[21*c + i]);
         } else if (pos[c] == 2) {
             for (i = 0; i < 21; i++) {
-                maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21*c + i] - GCONST(.5f));
-                maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21*c + i] - GCONST(.5f));
+                maskLogE[0][i] = oaci_logSum(maskLogE[0][i], bandLogE[21*c + i] - GCONST(.5f));
+                maskLogE[2][i] = oaci_logSum(maskLogE[2][i], bandLogE[21*c + i] - GCONST(.5f));
             }
         }
 #if 0
@@ -317,7 +317,7 @@ void oaci_surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glo
     }
     for (i = 0; i < 21; i++)
         maskLogE[1][i] = MIN32(maskLogE[0][i], maskLogE[2][i]);
-    channel_offset = HALF16(celt_log2(QCONST32(2.f, 14)/(channels - 1)));
+    channel_offset = HALF16(oaci_celt_log2(QCONST32(2.f, 14)/(channels - 1)));
     for (c = 0; c < 3; c++)
         for (i = 0; i < 21; i++)
             maskLogE[c][i] += channel_offset;
@@ -386,7 +386,7 @@ oac_int32 oac_multistream_surround_encoder_get_size(int channels, int mapping_fa
         nb_streams = channels;
         nb_coupled_streams = 0;
     } else if (mapping_family == 2) {
-        if (!validate_ambisonics(channels, &nb_streams, &nb_coupled_streams))
+        if (!oaci_validate_ambisonics(channels, &nb_streams, &nb_coupled_streams))
             return 0;
     } else
         return 0;
@@ -449,7 +449,7 @@ static int oac_multistream_encoder_init_impl(
     if (!validate_encoder_layout(&st->layout))
         return OAC_BAD_ARG;
     if (mapping_type == MAPPING_TYPE_AMBISONICS
-        && !validate_ambisonics(st->layout.nb_channels, NULL, NULL))
+        && !oaci_validate_ambisonics(st->layout.nb_channels, NULL, NULL))
         return OAC_BAD_ARG;
     ptr = (char*)st + align(sizeof(OacMSEncoder));
     for (i = 0; i < st->layout.nb_coupled_streams; i++) {
@@ -467,8 +467,8 @@ static int oac_multistream_encoder_init_impl(
         ptr += align(mono_size);
     }
     if (mapping_type == MAPPING_TYPE_SURROUND) {
-        OAC_CLEAR(ms_get_preemph_mem(st), channels);
-        OAC_CLEAR(ms_get_window_mem(st), channels*MAX_OVERLAP);
+        OAC_CLEAR(oaci_ms_get_preemph_mem(st), channels);
+        OAC_CLEAR(oaci_ms_get_window_mem(st), channels*MAX_OVERLAP);
     }
     st->mapping_type = mapping_type;
     return OAC_OK;
@@ -530,7 +530,7 @@ int oac_multistream_surround_encoder_init(
             mapping[i] = i;
     } else if (mapping_family == 2) {
         int i;
-        if (!validate_ambisonics(channels, streams, coupled_streams))
+        if (!oaci_validate_ambisonics(channels, streams, coupled_streams))
             return OAC_BAD_ARG;
         for (i = 0; i < (*streams - *coupled_streams); i++)
             mapping[i] = i + (*coupled_streams*2);
@@ -791,8 +791,8 @@ int oac_multistream_encode_native
     ALLOC_STACK;
 
     if (st->mapping_type == MAPPING_TYPE_SURROUND) {
-        preemph_mem = ms_get_preemph_mem(st);
-        mem = ms_get_window_mem(st);
+        preemph_mem = oaci_ms_get_preemph_mem(st);
+        mem = oaci_ms_get_window_mem(st);
     }
 
     ptr = (char*)st + align(sizeof(OacMSEncoder));
@@ -1196,8 +1196,8 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
         {
             int s;
             if (st->mapping_type == MAPPING_TYPE_SURROUND) {
-                OAC_CLEAR(ms_get_preemph_mem(st), st->layout.nb_channels);
-                OAC_CLEAR(ms_get_window_mem(st), st->layout.nb_channels*MAX_OVERLAP);
+                OAC_CLEAR(oaci_ms_get_preemph_mem(st), st->layout.nb_channels);
+                OAC_CLEAR(oaci_ms_get_window_mem(st), st->layout.nb_channels*MAX_OVERLAP);
             }
             for (s = 0; s < st->layout.nb_streams; s++) {
                 OacEncoder *enc;

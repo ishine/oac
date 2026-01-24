@@ -49,11 +49,11 @@
 
 #define MAX_ACTIVATIONS (4096)
 
-static OAC_INLINE void vec_swish(float *y, const float *x, int N) {
+static OAC_INLINE void oaci_vec_swish(float *y, const float *x, int N) {
     int i;
     float tmp[MAX_ACTIVATIONS];
     celt_assert(N <= MAX_ACTIVATIONS);
-    vec_sigmoid(tmp, x, N);
+    oaci_vec_sigmoid(tmp, x, N);
     for (i = 0; i < N; i++)
         y[i] = x[i]*tmp[i];
 }
@@ -73,7 +73,7 @@ void RTCD_SUF(oaci_compute_activation_)(float *output, const float *input, int N
             output[n] = 1.f/(1 + exp(-input[n]));
         }
 #else
-        vec_sigmoid(output, input, N);
+        oaci_vec_sigmoid(output, input, N);
 #endif
    } else if (activation == ACTIVATION_TANH) {
 #ifdef HIGH_ACCURACY
@@ -81,10 +81,10 @@ void RTCD_SUF(oaci_compute_activation_)(float *output, const float *input, int N
             output[n] = tanh(input[n]);
         }
 #else
-        vec_tanh(output, input, N);
+        oaci_vec_tanh(output, input, N);
 #endif
    } else if (activation == ACTIVATION_SWISH) {
-        vec_swish(output, input, N);
+        oaci_vec_swish(output, input, N);
    } else if (activation == ACTIVATION_RELU) {
         for (i = 0; i < N; i++)
             output[i] = relu(input[i]);
@@ -95,7 +95,7 @@ void RTCD_SUF(oaci_compute_activation_)(float *output, const float *input, int N
            output[i] = input[i];*/
 #else
         float sum = 0;
-        softmax(output, input, N);
+        oaci_softmax(output, input, N);
         for (i = 0; i < N; i++) {
             sum += output[i];
         }
@@ -104,7 +104,7 @@ void RTCD_SUF(oaci_compute_activation_)(float *output, const float *input, int N
             output[i] = sum*output[i];
 #endif
    } else if (activation == ACTIVATION_EXP) {
-        softmax(output, input, N);
+        oaci_softmax(output, input, N);
    } else {
         celt_assert(activation == ACTIVATION_LINEAR);
         if (input != output) {
@@ -124,12 +124,12 @@ void RTCD_SUF(oaci_compute_linear_) (const LinearLayer *linear, float *out, cons
    M = linear->nb_inputs;
    N = linear->nb_outputs;
    if (linear->float_weights != NULL) {
-        if (linear->weights_idx != NULL) sparse_sgemv8x4(out, linear->float_weights, linear->weights_idx, N, in);
-        else sgemv(out, linear->float_weights, N, M, N, in);
+        if (linear->weights_idx != NULL) oaci_sparse_sgemv8x4(out, linear->float_weights, linear->weights_idx, N, in);
+        else oaci_sgemv(out, linear->float_weights, N, M, N, in);
    } else if (linear->weights != NULL) {
-        if (linear->weights_idx != NULL) sparse_cgemv8x4(out, linear->weights, linear->weights_idx, linear->scale, N, M,
+        if (linear->weights_idx != NULL) oaci_sparse_cgemv8x4(out, linear->weights, linear->weights_idx, linear->scale, N, M,
             in);
-        else cgemv8x4(out, linear->weights, linear->scale, N, M, in);
+        else oaci_cgemv8x4(out, linear->weights, linear->scale, N, M, in);
         /* Only use SU biases on for integer matrices on SU archs. */
 #ifdef USE_SU_BIAS
         bias = linear->subias;
@@ -154,7 +154,7 @@ void RTCD_SUF(oaci_compute_linear_) (const LinearLayer *linear, float *out, cons
    storing the output as [ out_channels x len2 ].
    We assume that the output dimension along the ksize1 axis is 1,
    i.e. processing one frame at a time. */
-static void conv2d_float(float *out, const float *weights, int in_channels, int out_channels, int ktime, int kheight,
+static void oaci_conv2d_float(float *out, const float *weights, int in_channels, int out_channels, int ktime, int kheight,
                          const float *in, int height, int hstride) {
     int i;
     int in_stride;
@@ -180,7 +180,7 @@ static void conv2d_float(float *out, const float *weights, int in_channels, int 
 
 /* There's no intrinsics in this function (or the one above) because the gcc (and hopefully other compiler) auto-vectorizer is smart enough to
    produce the right code by itself based on the compile flags. */
-static void conv2d_3x3_float(float *out, const float *weights, int in_channels, int out_channels, const float *in,
+static void oaci_conv2d_3x3_float(float *out, const float *weights, int in_channels, int out_channels, const float *in,
                              int height, int hstride) {
     int i;
     int in_stride;
@@ -234,9 +234,9 @@ int hstride, int activation)
    OAC_COPY(mem, &in_buf[time_stride], (conv->ktime - 1)*time_stride);
    bias = conv->bias;
    if (conv->kheight == 3 && conv->ktime == 3)
-        conv2d_3x3_float(out, conv->float_weights, conv->in_channels, conv->out_channels, in_buf, height, hstride);
+        oaci_conv2d_3x3_float(out, conv->float_weights, conv->in_channels, conv->out_channels, in_buf, height, hstride);
    else
-        conv2d_float(out, conv->float_weights, conv->in_channels, conv->out_channels, conv->ktime, conv->kheight,
+        oaci_conv2d_float(out, conv->float_weights, conv->in_channels, conv->out_channels, conv->ktime, conv->kheight,
         in_buf, height, hstride);
    if (bias != NULL) {
         for (i = 0; i < conv->out_channels; i++) {

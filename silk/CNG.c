@@ -33,7 +33,7 @@
 #include "stack_alloc.h"
 
 /* Generates excitation for CNG LPC synthesis */
-static OAC_INLINE void silk_CNG_exc(
+static OAC_INLINE void oaci_silk_CNG_exc(
     oac_int32 exc_Q14[],                                /* O    CNG excitation signal Q10                   */
     oac_int32 exc_buf_Q14[],                            /* I    Random samples buffer Q10                   */
     oac_int length,                                     /* I    Length                                      */
@@ -146,7 +146,7 @@ void oaci_silk_CNG(
         }
         gain_Q10 = silk_RSHIFT( gain_Q16, 6 );
 
-        silk_CNG_exc( CNG_sig_Q14 + MAX_LPC_ORDER, psCNG->CNG_exc_buf_Q14, length, &psCNG->rand_seed );
+        oaci_silk_CNG_exc( CNG_sig_Q14 + MAX_LPC_ORDER, psCNG->CNG_exc_buf_Q14, length, &psCNG->rand_seed );
 
         /* Convert CNG NLSF to filter representation */
         oaci_silk_NLSF2A( A_Q12, psCNG->CNG_smth_NLSF_Q15, psDec->LPC_order, psDec->arch );

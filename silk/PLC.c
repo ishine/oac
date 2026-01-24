@@ -42,12 +42,12 @@ static const oac_int16 HARM_ATT_Q15[NB_ATT]              = { 32440, 31130 }; /* 
 static const oac_int16 PLC_RAND_ATTENUATE_V_Q15[NB_ATT]  = { 31130, 26214 }; /* 0.95, 0.8 */
 static const oac_int16 PLC_RAND_ATTENUATE_UV_Q15[NB_ATT] = { 32440, 29491 }; /* 0.99, 0.9 */
 
-static OAC_INLINE void silk_PLC_update(
+static OAC_INLINE void oaci_silk_PLC_update(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl          /* I/O Decoder control      */
     );
 
-static OAC_INLINE void silk_PLC_conceal(
+static OAC_INLINE void oaci_silk_PLC_conceal(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     oac_int16 frame[],                                     /* O LPC residual signal    */
@@ -88,7 +88,7 @@ void oaci_silk_PLC(
         /****************************/
         /* Generate Signal          */
         /****************************/
-        silk_PLC_conceal( psDec, psDecCtrl, frame,
+        oaci_silk_PLC_conceal( psDec, psDecCtrl, frame,
 #ifdef ENABLE_DEEP_PLC
             lpcnet,
 #endif
@@ -99,7 +99,7 @@ void oaci_silk_PLC(
         /****************************/
         /* Update state             */
         /****************************/
-        silk_PLC_update( psDec, psDecCtrl );
+        oaci_silk_PLC_update( psDec, psDecCtrl );
 #ifdef ENABLE_DEEP_PLC
         if (lpcnet != NULL && psDec->sPLC.fs_kHz == 16) {
             int k;
@@ -114,7 +114,7 @@ void oaci_silk_PLC(
 /**************************************************/
 /* Update state of PLC                            */
 /**************************************************/
-static OAC_INLINE void silk_PLC_update(
+static OAC_INLINE void oaci_silk_PLC_update(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl          /* I/O Decoder control      */
     ) {
@@ -210,7 +210,7 @@ static OAC_INLINE void silk_PLC_energy(oac_int32 *energy1, oac_int *shift1, oac_
     RESTORE_STACK;
 }
 
-static OAC_INLINE void silk_PLC_conceal(
+static OAC_INLINE void oaci_silk_PLC_conceal(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     oac_int16 frame[],                                     /* O LPC residual signal    */

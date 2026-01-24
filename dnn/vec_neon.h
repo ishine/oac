@@ -83,7 +83,7 @@ static inline float32x4_t exp4_approx(float32x4_t x) {
     return Y;
 }
 
-static inline float32x4_t tanh4_approx(float32x4_t X) {
+static inline float32x4_t oaci_tanh4_approx(float32x4_t X) {
     const float32x4_t N0 = vdupq_n_f32(952.52801514f);
     const float32x4_t N1 = vdupq_n_f32(96.39235687f);
     const float32x4_t N2 = vdupq_n_f32(0.60863042f);
@@ -102,7 +102,7 @@ static inline float32x4_t tanh4_approx(float32x4_t X) {
     return vmaxq_f32(min_out, vminq_f32(max_out, num));
 }
 
-static inline float32x4_t sigmoid4_approx(float32x4_t X) {
+static inline float32x4_t oaci_sigmoid4_approx(float32x4_t X) {
     const float32x4_t N0 = vdupq_n_f32(238.13200378f);
     const float32x4_t N1 = vdupq_n_f32(6.02452230f);
     const float32x4_t N2 = vdupq_n_f32(0.00950985f);
@@ -122,7 +122,7 @@ static inline float32x4_t sigmoid4_approx(float32x4_t X) {
     return vmaxq_f32(min_out, vminq_f32(max_out, num));
 }
 
-static inline float lpcnet_exp(float x) {
+static inline float oaci_lpcnet_exp(float x) {
     float out[4];
     float32x4_t X, Y;
     X = vdupq_n_f32(x);
@@ -131,25 +131,25 @@ static inline float lpcnet_exp(float x) {
     return out[0];
 }
 
-static inline float tanh_approx(float x) {
+static inline float oaci_tanh_approx(float x) {
     float out[4];
     float32x4_t X, Y;
     X = vdupq_n_f32(x);
-    Y = tanh4_approx(X);
+    Y = oaci_tanh4_approx(X);
     vst1q_f32(out, Y);
     return out[0];
 }
 
-static inline float sigmoid_approx(float x) {
+static inline float oaci_sigmoid_approx(float x) {
     float out[4];
     float32x4_t X, Y;
     X = vdupq_n_f32(x);
-    Y = sigmoid4_approx(X);
+    Y = oaci_sigmoid4_approx(X);
     vst1q_f32(out, Y);
     return out[0];
 }
 
-static inline void softmax(float *y, const float *x, int N) {
+static inline void oaci_softmax(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 3; i += 4) {
         float32x4_t X, Y;
@@ -158,41 +158,41 @@ static inline void softmax(float *y, const float *x, int N) {
         vst1q_f32(&y[i], Y);
     }
     for (; i < N; i++)
-        y[i] = lpcnet_exp(x[i]);
+        y[i] = oaci_lpcnet_exp(x[i]);
 }
 
-static inline void vec_tanh(float *y, const float *x, int N) {
+static inline void oaci_vec_tanh(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 3; i += 4) {
         float32x4_t X, Y;
         X = vld1q_f32(&x[i]);
-        Y = tanh4_approx(X);
+        Y = oaci_tanh4_approx(X);
         vst1q_f32(&y[i], Y);
     }
     for (; i < N; i++) {
         float ex2;
-        ex2 = lpcnet_exp(2*x[i]);
+        ex2 = oaci_lpcnet_exp(2*x[i]);
         y[i] = (ex2 - 1)/(ex2 + 1);
     }
 }
 
-static inline void vec_sigmoid(float *y, const float *x, int N) {
+static inline void oaci_vec_sigmoid(float *y, const float *x, int N) {
     int i;
     for (i = 0; i < N - 3; i += 4) {
         float32x4_t X, Y;
         X = vld1q_f32(&x[i]);
-        Y = sigmoid4_approx(X);
+        Y = oaci_sigmoid4_approx(X);
         vst1q_f32(&y[i], Y);
     }
     for (; i < N; i++) {
         float ex;
-        ex = lpcnet_exp(x[i]);
+        ex = oaci_lpcnet_exp(x[i]);
         y[i] = (ex)/(ex + 1);
     }
 }
 #endif
 
-static inline void sgemv16x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+static inline void oaci_sgemv16x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
     int i, j;
     for (i = 0; i < rows; i += 16) {
         float * restrict y = &out[i];
@@ -233,7 +233,7 @@ static inline void sgemv16x1(float *out, const float *weights, int rows, int col
     }
 }
 
-static inline void sgemv8x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+static inline void oaci_sgemv8x1(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
     int i, j;
     for (i = 0; i < rows; i += 8) {
         float * restrict y = &out[i];
@@ -265,9 +265,9 @@ static inline void sgemv8x1(float *out, const float *weights, int rows, int cols
     }
 }
 
-static inline void sgemv(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
-    if ((rows&0xf) == 0) sgemv16x1(out, weights, rows, cols, col_stride, x);
-    else if ((rows&0x7) == 0) sgemv8x1(out, weights, rows, cols, col_stride, x);
+static inline void oaci_sgemv(float *out, const float *weights, int rows, int cols, int col_stride, const float *x) {
+    if ((rows&0xf) == 0) oaci_sgemv16x1(out, weights, rows, cols, col_stride, x);
+    else if ((rows&0x7) == 0) oaci_sgemv8x1(out, weights, rows, cols, col_stride, x);
     else {
         int i, j;
         for (i = 0; i < rows; i++) {
@@ -278,7 +278,7 @@ static inline void sgemv(float *out, const float *weights, int rows, int cols, i
 }
 
 /* Temporarily use unoptimized version */
-static inline void sparse_sgemv8x4(float *out, const float *w, const int *idx, int rows, const float *x) {
+static inline void oaci_sparse_sgemv8x4(float *out, const float *w, const int *idx, int rows, const float *x) {
     int i, j;
     OAC_CLEAR(out, rows);
     for (i = 0; i < rows; i += 8) {
@@ -351,7 +351,7 @@ static inline int32x4_t vdotprod(int32x4_t acc, int8x16_t a, int8x16_t b) {
 }
 #endif
 
-static inline void cgemv8x4(float *_out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
+static inline void oaci_cgemv8x4(float *_out, const oac_int8 *w, const float *scale, int rows, int cols, const float *_x) {
     int i, j;
     oac_int32 x_int[MAX_INPUTS/4];
     oac_int8 *x = (oac_int8*) x_int;
@@ -402,7 +402,7 @@ static inline void cgemv8x4(float *_out, const oac_int8 *w, const float *scale, 
     }
 }
 
-static inline void sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *idx, const float *scale, int rows,
+static inline void oaci_sparse_cgemv8x4(float *_out, const oac_int8 *w, const int *idx, const float *scale, int rows,
                                    int cols, const float *_x) {
     int i, j;
     oac_int32 x_int[MAX_INPUTS/4];

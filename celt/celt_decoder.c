@@ -453,7 +453,7 @@ void oaci_celt_synthesis(const CELTMode *mode, celt_norm *X, celt_sig * out_syn[
     RESTORE_STACK;
 }
 
-static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, ec_dec *dec) {
+static void oaci_tf_decode(int start, int end, int isTransient, int *tf_res, int LM, ec_dec *dec) {
     int i, curr, tf_select;
     int tf_select_rsv;
     int tf_changed;
@@ -462,7 +462,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
     oac_uint32 tell;
 
     budget = dec->storage*8;
-    tell = ec_tell(dec);
+    tell = oaci_ec_tell(dec);
     logp = isTransient ? 2 : 4;
     tf_select_rsv = LM > 0 && tell + logp + 1 <= budget;
     budget -= tf_select_rsv;
@@ -470,7 +470,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
     for (i = start; i < end; i++) {
         if (tell + logp <= budget) {
             curr ^= oaci_ec_dec_bit_logp(dec, logp);
-            tell = ec_tell(dec);
+            tell = oaci_ec_tell(dec);
             tf_changed |= curr;
         }
         tf_res[i] = curr;
@@ -487,7 +487,7 @@ static void tf_decode(int start, int end, int isTransient, int *tf_res, int LM, 
     }
 }
 
-static int celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[2], int C, int arch) {
+static int oaci_celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[2], int C, int arch) {
     int pitch_index;
 #ifdef ENABLE_QEXT
     int qext_scale;
@@ -510,7 +510,7 @@ static int celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[2], int C
     return QEXT_SCALE(pitch_index);
 }
 
-static void prefilter_and_fold(CELTDecoder * OAC_RESTRICT st, int N) {
+static void oaci_prefilter_and_fold(CELTDecoder * OAC_RESTRICT st, int N) {
     int c;
     int CC;
     int i;
@@ -606,7 +606,7 @@ void oaci_update_plc_state(LPCNetPLCState *lpcnet, celt_sig *decode_mem[2], floa
 }
 #endif
 
-static void celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
+static void oaci_celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
 #ifdef ENABLE_DEEP_PLC
                              , LPCNetPLCState *lpcnet
 #endif
@@ -684,7 +684,7 @@ static void celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
         } while (++c < C);
 
         if (st->prefilter_and_fold) {
-            prefilter_and_fold(st, N);
+            oaci_prefilter_and_fold(st, N);
         }
 
         /* Energy decay */
@@ -748,7 +748,7 @@ static void celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
         curr_neural = curr_frame_type == FRAME_PLC_NEURAL || curr_frame_type == FRAME_DRED;
         last_neural = st->last_frame_type == FRAME_PLC_NEURAL || st->last_frame_type == FRAME_DRED;
         if (st->last_frame_type != FRAME_PLC_PERIODIC && !(last_neural && curr_neural)) {
-            st->last_pitch_index = pitch_index = celt_plc_pitch_search(st, decode_mem, C, st->arch);
+            st->last_pitch_index = pitch_index = oaci_celt_plc_pitch_search(st, decode_mem, C, st->arch);
         } else {
             pitch_index = st->last_pitch_index;
             fade = QCONST16(.8f, 15);
@@ -835,7 +835,7 @@ static void celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
                 oac_val32 E1 = 1, E2 = 1;
                 int decay_length;
 #ifdef FIXED_POINT
-                int shift = IMAX(0, 2*celt_zlog2(celt_maxabs16(&exc[max_period - exc_length], exc_length)) - 20);
+                int shift = IMAX(0, 2*oaci_celt_zlog2(oaci_celt_maxabs16(&exc[max_period - exc_length], exc_length)) - 20);
 # ifdef ENABLE_QEXT
                 if (st->qext_scale == 2) shift++;
 # endif
@@ -1159,7 +1159,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
         effEnd = mode->effEBands;
 
     if (data == NULL || len <= 1) {
-        celt_decode_lost(st, N, LM
+        oaci_celt_decode_lost(st, N, LM
 #ifdef ENABLE_DEEP_PLC
             , lpcnet
 #endif
@@ -1190,7 +1190,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     }
 
     total_bits = len*8;
-    tell = ec_tell(dec);
+    tell = oaci_ec_tell(dec);
 
     if (tell >= total_bits)
         silence = 1;
@@ -1201,7 +1201,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     if (silence) {
         /* Pretend we've read all the remaining bits */
         tell = len*8;
-        dec->nbits_total += tell - ec_tell(dec);
+        dec->nbits_total += tell - oaci_ec_tell(dec);
     }
 
     postfilter_gain = 0;
@@ -1213,16 +1213,16 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
             octave = oaci_ec_dec_uint(dec, 6);
             postfilter_pitch = (16<<octave) + oaci_ec_dec_bits(dec, 4 + octave) - 1;
             qg = oaci_ec_dec_bits(dec, 3);
-            if (ec_tell(dec) + 2 <= total_bits)
+            if (oaci_ec_tell(dec) + 2 <= total_bits)
                 postfilter_tapset = oaci_ec_dec_icdf(dec, tapset_icdf, 4);
             postfilter_gain = QCONST16(.09375f, 15)*(qg + 1);
         }
-        tell = ec_tell(dec);
+        tell = oaci_ec_tell(dec);
     }
 
     if (LM > 0 && tell + 3 <= total_bits) {
         isTransient = oaci_ec_dec_bit_logp(dec, 3);
-        tell = ec_tell(dec);
+        tell = oaci_ec_tell(dec);
     } else
         isTransient = 0;
 
@@ -1268,9 +1268,9 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
          intra_ener, dec, C, LM);
 
     ALLOC(tf_res, nbEBands, int);
-    tf_decode(start, end, isTransient, tf_res, LM, dec);
+    oaci_tf_decode(start, end, isTransient, tf_res, LM, dec);
 
-    tell = ec_tell(dec);
+    tell = oaci_ec_tell(dec);
     spread_decision = SPREAD_NORMAL;
     if (tell + 4 <= total_bits)
         spread_decision = oaci_ec_dec_icdf(dec, spread_icdf, 5);
@@ -1346,7 +1346,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     }
 
     oaci_unquant_energy_finalise(mode, start, end, oldBandE,
-         fine_quant, fine_priority, len*8 - ec_tell(dec), dec, C);
+         fine_quant, fine_priority, len*8 - oaci_ec_tell(dec), dec, C);
 
     if (anti_collapse_on)
         oaci_anti_collapse(mode, X, collapse_masks, LM, C, N,
@@ -1357,7 +1357,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
             oldBandE[i] = -GCONST(28.f);
     }
     if (st->prefilter_and_fold) {
-        prefilter_and_fold(st, N);
+        oaci_prefilter_and_fold(st, N);
     }
     oaci_celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
                   C, CC, isTransient, LM, st->downsample, silence, st->arch);
@@ -1422,7 +1422,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     st->last_frame_type = FRAME_NORMAL;
     st->prefilter_and_fold = 0;
     RESTORE_STACK;
-    if (ec_tell(dec) > 8*len)
+    if (oaci_ec_tell(dec) > 8*len)
         return OAC_INTERNAL_ERROR;
     if (ec_get_error(dec))
         st->error = 1;

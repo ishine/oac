@@ -544,7 +544,7 @@ oac_val32 oaci_decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
 /*Computes the next row/column of any recurrence that obeys the relation
    u[i][j]=u[i-1][j]+u[i][j-1]+u[i-1][j-1].
    _ui0 is the base case for the new row/column.*/
-static OAC_INLINE void unext(oac_uint32 *_ui, unsigned _len, oac_uint32 _ui0) {
+static OAC_INLINE void oaci_unext(oac_uint32 *_ui, unsigned _len, oac_uint32 _ui0) {
     oac_uint32 ui1;
     unsigned j;
     /*This do-while will overrun the array if we don't have storage for at least
@@ -575,7 +575,7 @@ static OAC_INLINE void uprev(oac_uint32 *_ui, unsigned _n, oac_uint32 _ui0) {
 
 /*Compute V(_n,_k), as well as U(_n,0..._k+1).
    _u: On exit, _u[i] contains U(_n,i) for i in [0..._k+1].*/
-static oac_uint32 ncwrs_urow(unsigned _n, unsigned _k, oac_uint32 *_u) {
+static oac_uint32 oaci_ncwrs_urow(unsigned _n, unsigned _k, oac_uint32 *_u) {
     oac_uint32 um2;
     unsigned len;
     unsigned k;
@@ -592,7 +592,7 @@ static oac_uint32 ncwrs_urow(unsigned _n, unsigned _k, oac_uint32 *_u) {
     k = 2;
     do _u[k] = (k<<1) - 1;
     while (++k < len);
-    for (k = 2; k < _n; k++) unext(_u + 1, _k + 1, 1);
+    for (k = 2; k < _n; k++) oaci_unext(_u + 1, _k + 1, 1);
     return _u[_k] + _u[_k + 1];
 }
 
@@ -655,7 +655,7 @@ static OAC_INLINE oac_uint32 icwrs(int _n, int _k, oac_uint32 *_nc, const int *_
     k += abs(_y[j]);
     if (_y[j] < 0) i += _u[k + 1];
     while (j-- > 0) {
-        unext(_u, _k + 2, 0);
+        oaci_unext(_u, _k + 2, 0);
         i += _u[k];
         k += abs(_y[j]);
         if (_y[j] < 0) i += _u[k + 1];
@@ -677,7 +677,7 @@ void oaci_get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
         VARDECL(oac_uint32, u);
         SAVE_STACK;
         ALLOC(u, _maxk + 2U, oac_uint32);
-        ncwrs_urow(_n, _maxk, u);
+        oaci_ncwrs_urow(_n, _maxk, u);
         for (k = 1; k <= _maxk; k++)
             _bits[k] = oaci_log2_frac(u[k] + u[k + 1], _frac);
         RESTORE_STACK;
@@ -703,7 +703,7 @@ oac_val32 oaci_decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
     SAVE_STACK;
     celt_assert(_k > 0);
     ALLOC(u, _k + 2U, oac_uint32);
-    ret = cwrsi(_n, _k, oaci_ec_dec_uint(_dec, ncwrs_urow(_n, _k, u)), _y, u);
+    ret = cwrsi(_n, _k, oaci_ec_dec_uint(_dec, oaci_ncwrs_urow(_n, _k, u)), _y, u);
     RESTORE_STACK;
     return ret;
 }

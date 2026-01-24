@@ -106,7 +106,7 @@ int oaci_dred_ec_decode(OacDRED *dec, const oac_uint8 *bytes, int num_bytes, int
     /* decode newest to oldest and store oldest to newest */
     for (i = 0; i < IMIN(DRED_NUM_REDUNDANCY_FRAMES, (min_feature_frames + 1)/2); i += 2) {
         /* FIXME: Figure out how to avoid missing a last frame that would take up < 8 bits. */
-        if (8*num_bytes - ec_tell(&ec) <= 7)
+        if (8*num_bytes - oaci_ec_tell(&ec) <= 7)
             break;
         q_level = oaci_compute_quantizer(q0, dQ, qmax, i/2);
         offset = q_level*DRED_LATENT_DIM;

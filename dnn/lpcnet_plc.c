@@ -103,7 +103,7 @@ void oaci_lpcnet_plc_fec_clear(LPCNetPLCState *st) {
 }
 
 
-static void compute_plc_pred(LPCNetPLCState *st, float *out, const float *in) {
+static void oaci_compute_plc_pred(LPCNetPLCState *st, float *out, const float *in) {
     float tmp[PLC_DENSE_IN_OUT_SIZE];
     PLCModel *model = &st->model;
     PLCNetState *net = &st->plc_net;
@@ -114,7 +114,7 @@ static void compute_plc_pred(LPCNetPLCState *st, float *out, const float *in) {
     oaci_compute_generic_dense(&model->plc_dense_out, out, net->gru2_state, ACTIVATION_LINEAR, st->arch);
 }
 
-static int get_fec_or_pred(LPCNetPLCState *st, float *out) {
+static int oaci_get_fec_or_pred(LPCNetPLCState *st, float *out) {
     if (st->fec_read_pos != st->fec_fill_pos && st->fec_skip == 0) {
         float plc_features[2*NB_BANDS + NB_FEATURES + 1] = {0};
         float discard[NB_FEATURES];
@@ -123,22 +123,22 @@ static int get_fec_or_pred(LPCNetPLCState *st, float *out) {
         /* Update PLC state using FEC, so without Burg features. */
         OAC_COPY(&plc_features[2*NB_BANDS], out, NB_FEATURES);
         plc_features[2*NB_BANDS + NB_FEATURES] = -1;
-        compute_plc_pred(st, discard, plc_features);
+        oaci_compute_plc_pred(st, discard, plc_features);
         return 1;
     } else {
         float zeros[2*NB_BANDS + NB_FEATURES + 1] = {0};
-        compute_plc_pred(st, out, zeros);
+        oaci_compute_plc_pred(st, out, zeros);
         if (st->fec_skip > 0) st->fec_skip--;
         return 0;
     }
 }
 
-static void queue_features(LPCNetPLCState *st, const float *features) {
+static void oaci_queue_features(LPCNetPLCState *st, const float *features) {
     OAC_MOVE(&st->cont_features[0], &st->cont_features[NB_FEATURES], (CONT_VECTORS - 1)*NB_FEATURES);
     OAC_COPY(&st->cont_features[(CONT_VECTORS - 1)*NB_FEATURES], features, NB_FEATURES);
 }
 
-/* In this causal version of the code, the DNN model implemented by compute_plc_pred()
+/* In this causal version of the code, the DNN model implemented by oaci_compute_plc_pred()
    needs to generate two feature vectors to conceal the first lost packet.*/
 
 int oaci_lpcnet_plc_update(LPCNetPLCState *st, oac_int16 *pcm) {
@@ -168,35 +168,35 @@ int oaci_lpcnet_plc_conceal(LPCNetPLCState *st, oac_int16 *pcm) {
             oaci_burg_cepstral_analysis(plc_features, x);
             oaci_lpcnet_compute_single_frame_features_float(&st->enc, x, st->features, st->arch);
             if ((!st->analysis_gap || count > 0) && st->analysis_pos >= st->predict_pos) {
-                queue_features(st, st->features);
+                oaci_queue_features(st, st->features);
                 OAC_COPY(&plc_features[2*NB_BANDS], st->features, NB_FEATURES);
                 plc_features[2*NB_BANDS + NB_FEATURES] = 1;
                 st->plc_bak[0] = st->plc_bak[1];
                 st->plc_bak[1] = st->plc_net;
-                compute_plc_pred(st, st->features, plc_features);
+                oaci_compute_plc_pred(st, st->features, plc_features);
             }
             st->analysis_pos += FRAME_SIZE;
             count++;
         }
         st->plc_bak[0] = st->plc_bak[1];
         st->plc_bak[1] = st->plc_net;
-        get_fec_or_pred(st, st->features);
-        queue_features(st, st->features);
+        oaci_get_fec_or_pred(st, st->features);
+        oaci_queue_features(st, st->features);
         st->plc_bak[0] = st->plc_bak[1];
         st->plc_bak[1] = st->plc_net;
-        get_fec_or_pred(st, st->features);
-        queue_features(st, st->features);
+        oaci_get_fec_or_pred(st, st->features);
+        oaci_queue_features(st, st->features);
         oaci_fargan_cont(&st->fargan, &st->pcm[PLC_BUF_SIZE - FARGAN_CONT_SAMPLES], st->cont_features);
         st->analysis_gap = 0;
     }
     st->plc_bak[0] = st->plc_bak[1];
     st->plc_bak[1] = st->plc_net;
-    if (get_fec_or_pred(st, st->features)) st->loss_count = 0;
+    if (oaci_get_fec_or_pred(st, st->features)) st->loss_count = 0;
     else st->loss_count++;
     if (st->loss_count >= 10) st->features[0] = MAX16(-15, st->features[0] + att_table[9] - 2*(st->loss_count - 9));
     else st->features[0] = MAX16(-15, st->features[0] + att_table[st->loss_count]);
     oaci_fargan_synthesize_int(&st->fargan, pcm, &st->features[0]);
-    queue_features(st, st->features);
+    oaci_queue_features(st, st->features);
     if (st->analysis_pos - FRAME_SIZE >= 0) st->analysis_pos -= FRAME_SIZE;
     else st->analysis_gap = 1;
     st->predict_pos = PLC_BUF_SIZE;

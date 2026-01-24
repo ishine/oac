@@ -112,7 +112,7 @@ static const int tbands[NB_TBANDS + 1] = {
 
 # define NB_TONAL_SKIP_BANDS 9
 
-static oac_val32 silk_resampler_down2_hp(
+static oac_val32 oaci_silk_resampler_down2_hp(
     oac_val32                  *S,                 /* I/O  State vector [ 2 ]                                          */
     oac_val32                  *out,               /* O    Output signal [ floor(len/2) ]                              */
     const oac_val32            *in,                /* I    Input signal [ len ]                                        */
@@ -161,7 +161,7 @@ static oac_val32 silk_resampler_down2_hp(
     return (oac_val32)hp_ener;
 }
 
-static oac_val32 downmix_and_resample(downmix_func oaci_downmix, const void *_x, oac_val32 *y, oac_val32 S[3], int subframe,
+static oac_val32 oaci_downmix_and_resample(downmix_func oaci_downmix, const void *_x, oac_val32 *y, oac_val32 S[3], int subframe,
                                       int offset, int c1, int c2, int C, int Fs) {
     VARDECL(oac_val32, tmp);
     int j;
@@ -185,7 +185,7 @@ static oac_val32 downmix_and_resample(downmix_func oaci_downmix, const void *_x,
         }
     }
     if (Fs == 48000) {
-        ret = silk_resampler_down2_hp(S, y, tmp, subframe);
+        ret = oaci_silk_resampler_down2_hp(S, y, tmp, subframe);
     } else if (Fs == 24000) {
         OAC_COPY(y, tmp, subframe);
     } else if (Fs == 16000) {
@@ -199,7 +199,7 @@ static oac_val32 downmix_and_resample(downmix_func oaci_downmix, const void *_x,
             tmp3x[3*j + 1] = tmp[j];
             tmp3x[3*j + 2] = tmp[j];
         }
-        silk_resampler_down2_hp(S, y, tmp3x, 3*subframe);
+        oaci_silk_resampler_down2_hp(S, y, tmp3x, 3*subframe);
     }
     RESTORE_STACK;
 # ifndef FIXED_POINT
@@ -426,7 +426,7 @@ static int is_digital_silence32(const oac_val32* pcm, int frame_size, int channe
     lsb_depth)
 # endif
 
-static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt_mode, const void *x, int len,
+static void oaci_tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt_mode, const void *x, int len,
                               int offset, int c1, int c2, int C, int lsb_depth, downmix_func oaci_downmix) {
     int i, b;
     const kiss_fft_state *oaci_kfft;
@@ -493,7 +493,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     }
 
     oaci_kfft = celt_mode->mdct.kfft[0];
-    tonal->hp_ener_accum += (float)downmix_and_resample(oaci_downmix, x,
+    tonal->hp_ener_accum += (float)oaci_downmix_and_resample(oaci_downmix, x,
           &tonal->inmem[tonal->mem_fill], tonal->downmix_state,
           IMIN(len, ANALYSIS_BUF_SIZE - tonal->mem_fill), offset, c1, c2, C, tonal->Fs);
     if (tonal->mem_fill + len < ANALYSIS_BUF_SIZE) {
@@ -522,7 +522,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
     }
     OAC_MOVE(tonal->inmem, tonal->inmem + ANALYSIS_BUF_SIZE - 240, 240);
     remaining = len - (ANALYSIS_BUF_SIZE - tonal->mem_fill);
-    tonal->hp_ener_accum = (float)downmix_and_resample(oaci_downmix, x,
+    tonal->hp_ener_accum = (float)oaci_downmix_and_resample(oaci_downmix, x,
           &tonal->inmem[240], tonal->downmix_state, remaining,
           offset + ANALYSIS_BUF_SIZE - tonal->mem_fill, c1, c2, C, tonal->Fs);
     tonal->mem_fill = 240 + remaining;
@@ -784,7 +784,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
         noise_ratio = tonal->prev_bandwidth == 20 ? 10.f : 30.f;
 
 # ifdef FIXED_POINT
-        /* silk_resampler_down2_hp() shifted right by an extra 8 bits. */
+        /* oaci_silk_resampler_down2_hp() shifted right by an extra 8 bits. */
         E *= 256.f*(1.f/Q15ONE)*(1.f/Q15ONE);
 # endif
         above_max_pitch += E;
@@ -919,7 +919,7 @@ void oaci_run_analysis(TonalityAnalysisState *analysis, const CELTMode *celt_mod
         pcm_len = analysis_frame_size - analysis->analysis_offset;
         offset = analysis->analysis_offset;
         while (pcm_len > 0) {
-            tonality_analysis(analysis, celt_mode, analysis_pcm, IMIN(Fs/50, pcm_len), offset, c1, c2, C, lsb_depth,
+            oaci_tonality_analysis(analysis, celt_mode, analysis_pcm, IMIN(Fs/50, pcm_len), offset, c1, c2, C, lsb_depth,
             oaci_downmix);
             offset += Fs/50;
             pcm_len -= Fs/50;

@@ -493,7 +493,7 @@ int compare_audio(int _argc, const char **_argv, const char *argv0) {
                 float f, thresh;
                 f = xj*OAC_PI/960;
                 /* Shape the lower threshold similar to 1/(1 - 0.85*z^-1)
-                   deemphasis filter at 48 kHz. */
+                   oaci_deemphasis filter at 48 kHz. */
                 thresh = .1/(.15*.15 + f*f);
                 for (ci = 0; ci < nchannels; ci++) {
                     float re;

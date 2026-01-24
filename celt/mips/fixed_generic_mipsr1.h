@@ -74,7 +74,7 @@ static inline int MULT16_16_P15(int a, int b) {
 }
 
 # define OVERRIDE_CELT_MAXABS16
-static OAC_INLINE oac_val32 celt_maxabs16(const oac_val16 *x, int len) {
+static OAC_INLINE oac_val32 oaci_celt_maxabs16(const oac_val16 *x, int len) {
     int i;
     v2i16 v2max = (v2i16) { 0, 0 };
     v2i16 x01, x23;

@@ -128,7 +128,7 @@ extern const WeightArray oaci_bbwenetlayers_arrays[];
 
 #ifndef DISABLE_LACE
 
-static void compute_lace_numbits_embedding(float *emb, float numbits, int dim, float min_val, float max_val,
+static void oaci_compute_lace_numbits_embedding(float *emb, float numbits, int dim, float min_val, float max_val,
                                            int logscale) {
     float x;
     (void) dim;
@@ -147,7 +147,7 @@ static void compute_lace_numbits_embedding(float *emb, float numbits, int dim, f
 }
 
 
-static int init_lace(LACE *hLACE, const WeightArray *weights) {
+static int oaci_init_lace(LACE *hLACE, const WeightArray *weights) {
     int ret = 0;
     OAC_CLEAR(hLACE, 1);
     celt_assert(weights != NULL);
@@ -159,7 +159,7 @@ static int init_lace(LACE *hLACE, const WeightArray *weights) {
     return ret;
 }
 
-static void reset_lace_state(LACEState *state) {
+static void oaci_reset_lace_state(LACEState *state) {
     OAC_CLEAR(state, 1);
 
     oaci_init_adacomb_state(&state->cf1_state);
@@ -167,7 +167,7 @@ static void reset_lace_state(LACEState *state) {
     oaci_init_adaconv_state(&state->af1_state);
 }
 
-static void lace_feature_net(
+static void oaci_lace_feature_net(
     LACE *hLACE,
     LACEState *state,
     float *output,
@@ -181,9 +181,9 @@ static void lace_feature_net(
     float numbits_embedded[2*LACE_NUMBITS_EMBEDDING_DIM];
     int i_subframe;
 
-    compute_lace_numbits_embedding(numbits_embedded, numbits[0], LACE_NUMBITS_EMBEDDING_DIM,
+    oaci_compute_lace_numbits_embedding(numbits_embedded, numbits[0], LACE_NUMBITS_EMBEDDING_DIM,
         log(LACE_NUMBITS_RANGE_LOW), log(LACE_NUMBITS_RANGE_HIGH), 1);
-    compute_lace_numbits_embedding(numbits_embedded + LACE_NUMBITS_EMBEDDING_DIM, numbits[1],
+    oaci_compute_lace_numbits_embedding(numbits_embedded + LACE_NUMBITS_EMBEDDING_DIM, numbits[1],
     LACE_NUMBITS_EMBEDDING_DIM,
         log(LACE_NUMBITS_RANGE_LOW), log(LACE_NUMBITS_RANGE_HIGH), 1);
 
@@ -243,7 +243,7 @@ static void lace_feature_net(
 }
 
 
-static void lace_process_20ms_frame(
+static void oaci_lace_process_20ms_frame(
     LACE* hLACE,
     LACEState *state,
     float *x_out,
@@ -284,7 +284,7 @@ static void lace_process_20ms_frame(
     }
 
     /* run feature encoder */
-    lace_feature_net(hLACE, state, feature_buffer, features, numbits, periods, arch);
+    oaci_lace_feature_net(hLACE, state, feature_buffer, features, numbits, periods, arch);
 # ifdef DEBUG_LACE
     fwrite(features, sizeof(*features), 4*LACE_NUM_FEATURES, f_features);
     fwrite(feature_buffer, sizeof(*feature_buffer), 4*LACE_COND_DIM, f_encfeatures);
@@ -386,7 +386,7 @@ static void lace_process_20ms_frame(
 /* NoLACE */
 #ifndef DISABLE_NOLACE
 
-static void compute_nolace_numbits_embedding(float *emb, float numbits, int dim, float min_val, float max_val,
+static void oaci_compute_nolace_numbits_embedding(float *emb, float numbits, int dim, float min_val, float max_val,
                                              int logscale) {
     float x;
     (void) dim;
@@ -404,7 +404,7 @@ static void compute_nolace_numbits_embedding(float *emb, float numbits, int dim,
     emb[7] = sin(x*NOLACE_NUMBITS_SCALE_7 - 0.5f);
 }
 
-static int init_nolace(NoLACE *hNoLACE, const WeightArray *weights) {
+static int oaci_init_nolace(NoLACE *hNoLACE, const WeightArray *weights) {
     int ret = 0;
     OAC_CLEAR(hNoLACE, 1);
     celt_assert(weights != NULL);
@@ -416,7 +416,7 @@ static int init_nolace(NoLACE *hNoLACE, const WeightArray *weights) {
     return ret;
 }
 
-static void reset_nolace_state(NoLACEState *state) {
+static void oaci_reset_nolace_state(NoLACEState *state) {
     OAC_CLEAR(state, 1);
 
     oaci_init_adacomb_state(&state->cf1_state);
@@ -430,7 +430,7 @@ static void reset_nolace_state(NoLACEState *state) {
     oaci_init_adashape_state(&state->tdshape3_state);
 }
 
-static void nolace_feature_net(
+static void oaci_nolace_feature_net(
     NoLACE *hNoLACE,
     NoLACEState *state,
     float *output,
@@ -443,9 +443,9 @@ static void nolace_feature_net(
     float numbits_embedded[2*NOLACE_NUMBITS_EMBEDDING_DIM];
     int i_subframe;
 
-    compute_nolace_numbits_embedding(numbits_embedded, numbits[0], NOLACE_NUMBITS_EMBEDDING_DIM,
+    oaci_compute_nolace_numbits_embedding(numbits_embedded, numbits[0], NOLACE_NUMBITS_EMBEDDING_DIM,
         log(NOLACE_NUMBITS_RANGE_LOW), log(NOLACE_NUMBITS_RANGE_HIGH), 1);
-    compute_nolace_numbits_embedding(numbits_embedded + NOLACE_NUMBITS_EMBEDDING_DIM, numbits[1],
+    oaci_compute_nolace_numbits_embedding(numbits_embedded + NOLACE_NUMBITS_EMBEDDING_DIM, numbits[1],
     NOLACE_NUMBITS_EMBEDDING_DIM,
         log(NOLACE_NUMBITS_RANGE_LOW), log(NOLACE_NUMBITS_RANGE_HIGH), 1);
 
@@ -505,7 +505,7 @@ static void nolace_feature_net(
 }
 
 
-static void nolace_process_20ms_frame(
+static void oaci_nolace_process_20ms_frame(
     NoLACE* hNoLACE,
     NoLACEState *state,
     float *x_out,
@@ -550,7 +550,7 @@ static void nolace_process_20ms_frame(
     }
 
     /* run feature encoder */
-    nolace_feature_net(hNoLACE, state, feature_buffer, features, numbits, periods, arch);
+    oaci_nolace_feature_net(hNoLACE, state, feature_buffer, features, numbits, periods, arch);
 # ifdef DEBUG_NOLACE
     fwrite(features, sizeof(*features), 4*NOLACE_NUM_FEATURES, f_features);
     fwrite(feature_buffer, sizeof(*feature_buffer), 4*NOLACE_COND_DIM, f_encfeatures);
@@ -841,7 +841,7 @@ static void nolace_process_20ms_frame(
 
 #ifdef ENABLE_OSCE_BWE
 # ifndef DISABLE_BBWENET
-static void bbwe_feature_net(
+static void oaci_bbwe_feature_net(
     BBWENet *hBBWENET,
     BBWENetState *state,
     float *output,
@@ -958,7 +958,7 @@ static float frac_09_24[8] = {
     0.4621277, -0.12075806,  0.0295105, -0.00326538
 };
 
-static void apply_valin_activation(float *x, int len) {
+static void oaci_apply_valin_activation(float *x, int len) {
     int i;
     float y[2*BBWENET_TDSHAPE2_FRAME_SIZE];
     celt_assert(len <= 2*BBWENET_TDSHAPE2_FRAME_SIZE);
@@ -969,13 +969,13 @@ static void apply_valin_activation(float *x, int len) {
         y[i] = celt_log(y[i]);
     }
     for (i = 0; i < len; i++) {
-        x[i] *= celt_sin(y[i]);
+        x[i] *= oaci_celt_sin(y[i]);
     }
 }
 
 
 #  define DELAY_SAMPLES 8 /* ToDo: this probably should be 7, bug in python code? */
-static void interpol_3_2(resamp_state *state, float *x_out, const float *x_in, int num_samples) {
+static void oaci_interpol_3_2(resamp_state *state, float *x_out, const float *x_in, int num_samples) {
     int i_sample, i_out = 0;
     float buffer[8*BBWENET_FRAME_SIZE16 + DELAY_SAMPLES];
 
@@ -1019,7 +1019,7 @@ static void interpol_3_2(resamp_state *state, float *x_out, const float *x_in, i
     OAC_COPY(state->interpol_buffer, buffer + num_samples, DELAY_SAMPLES);
 }
 
-static void upsamp_2x(resamp_state *state, float *x_out, const float *x_in, int num_samples) {
+static void oaci_upsamp_2x(resamp_state *state, float *x_out, const float *x_in, int num_samples) {
     float buffer[4*BBWENET_FRAME_SIZE16];
     float *S_even = state->upsamp_buffer[0];
     float *S_odd = state->upsamp_buffer[1];
@@ -1075,7 +1075,7 @@ static void upsamp_2x(resamp_state *state, float *x_out, const float *x_in, int 
     }
 }
 
-static void bbwenet_process_frames(
+static void oaci_bbwenet_process_frames(
     BBWENet *hBBWENET,
     BBWENetState *state,
     float *x_out,
@@ -1120,7 +1120,7 @@ static void bbwenet_process_frames(
 #  endif
 
     /* feature net */
-    bbwe_feature_net(hBBWENET, state, latent_features, features, num_frames, arch);
+    oaci_bbwe_feature_net(hBBWENET, state, latent_features, features, num_frames, arch);
 #  ifdef DEBUG_BBWENET
     if (f_latent != NULL) {
         fread(latent_features, sizeof(*latent_features), num_subframes*BBWENET_COND_DIM, f_latent);
@@ -1168,7 +1168,7 @@ static void bbwenet_process_frames(
         celt_assert(BBWENET_AF1_OUT_CHANNELS == 3);
         celt_assert(2*BBWENET_AF1_FRAME_SIZE == BBWENET_TDSHAPE1_FRAME_SIZE);
         for (i_channel = 0; i_channel < 3; i_channel++) {
-            upsamp_2x(
+            oaci_upsamp_2x(
                 &state->resampler_state[i_channel],
                 x_buffer2 + i_subframe*BBWENET_TDSHAPE1_FRAME_SIZE*BBWENET_AF1_OUT_CHANNELS + i_channel
                 *BBWENET_TDSHAPE1_FRAME_SIZE,
@@ -1209,7 +1209,7 @@ static void bbwenet_process_frames(
 #  endif
 
         /* non-linear activation of third channel (in place)*/
-        apply_valin_activation(
+        oaci_apply_valin_activation(
             x_buffer2 + i_subframe*BBWENET_AF1_OUT_CHANNELS*BBWENET_TDSHAPE1_FRAME_SIZE + 2*BBWENET_TDSHAPE1_FRAME_SIZE,
             BBWENET_TDSHAPE1_FRAME_SIZE
             );
@@ -1257,7 +1257,7 @@ static void bbwenet_process_frames(
         celt_assert(BBWENET_AF2_OUT_CHANNELS == 3);
         celt_assert(3*BBWENET_AF2_FRAME_SIZE == 2*BBWENET_TDSHAPE2_FRAME_SIZE);
         for (i_channel = 0; i_channel < 3; i_channel++) {
-            interpol_3_2(
+            oaci_interpol_3_2(
                 &state->resampler_state[i_channel],
                 x_buffer2 + i_subframe*BBWENET_AF3_FRAME_SIZE*BBWENET_AF2_OUT_CHANNELS + i_channel
                 *BBWENET_TDSHAPE2_FRAME_SIZE,
@@ -1298,7 +1298,7 @@ static void bbwenet_process_frames(
 #  endif
 
         /* non-linear activation of third channel (in place)*/
-        apply_valin_activation(
+        oaci_apply_valin_activation(
             x_buffer2 + i_subframe*BBWENET_AF2_OUT_CHANNELS*BBWENET_TDSHAPE2_FRAME_SIZE + 2*BBWENET_TDSHAPE2_FRAME_SIZE,
             BBWENET_TDSHAPE2_FRAME_SIZE
             );
@@ -1337,7 +1337,7 @@ static void bbwenet_process_frames(
 #  endif
 }
 
-static void reset_bbwenet_state(BBWENetState *state) {
+static void oaci_reset_bbwenet_state(BBWENetState *state) {
     OAC_CLEAR(state, 1);
 
     oaci_init_adaconv_state(&state->af1_state);
@@ -1347,7 +1347,7 @@ static void reset_bbwenet_state(BBWENetState *state) {
     oaci_init_adashape_state(&state->tdshape2_state);
 }
 
-static int init_bbwenet(BBWENet *hBBWENET, const WeightArray *weights) {
+static int oaci_init_bbwenet(BBWENet *hBBWENET, const WeightArray *weights) {
     int ret = 0;
     OAC_CLEAR(hBBWENET, 1);
     celt_assert(weights != NULL);
@@ -1376,12 +1376,12 @@ void oaci_osce_reset(silk_OSCE_struct *hOSCE, int method) {
             break;
 #ifndef DISABLE_LACE
         case OSCE_METHOD_LACE:
-            reset_lace_state(&state->lace);
+            oaci_reset_lace_state(&state->lace);
             break;
 #endif
 #ifndef DISABLE_NOLACE
         case OSCE_METHOD_NOLACE:
-            reset_nolace_state(&state->nolace);
+            oaci_reset_nolace_state(&state->nolace);
             break;
 #endif
         default:
@@ -1402,7 +1402,7 @@ void oaci_osce_bwe_reset(silk_OSCE_BWE_struct *hOSCEBWE) {
         hOSCEBWE->features.last_spec[2*k] = 1e-9;
     }
 # endif
-    reset_bbwenet_state(&hOSCEBWE->state.bbwenet);
+    oaci_reset_bbwenet_state(&hOSCEBWE->state.bbwenet);
 }
 
 #endif /* ENABLE_OSCE_BWE */
@@ -1419,20 +1419,20 @@ int oaci_osce_load_models(OSCEModel *model, const void *data, int len) {
 
 #ifndef DISABLE_LACE
         if (ret == 0) {
-            ret = init_lace(&model->lace, list);
+            ret = oaci_init_lace(&model->lace, list);
         }
 #endif
 
 #ifndef DISABLE_NOLACE
         if (ret == 0) {
-            ret = init_nolace(&model->nolace, list);
+            ret = oaci_init_nolace(&model->nolace, list);
         }
 #endif
 
 #ifdef ENABLE_OSCE_BWE
 # ifndef DISABLE_BBWENET
         if (ret == 0) {
-            ret = init_bbwenet(&model->bbwenet, list);
+            ret = oaci_init_bbwenet(&model->bbwenet, list);
         }
 # endif
 #endif /* ENABLE_OSCE_BWE */
@@ -1443,20 +1443,20 @@ int oaci_osce_load_models(OSCEModel *model, const void *data, int len) {
 #else
 # ifndef DISABLE_LACE
         if (ret == 0) {
-            ret = init_lace(&model->lace, oaci_lacelayers_arrays);
+            ret = oaci_init_lace(&model->lace, oaci_lacelayers_arrays);
         }
 # endif
 
 # ifndef DISABLE_NOLACE
         if (ret == 0) {
-            ret = init_nolace(&model->nolace, oaci_nolacelayers_arrays);
+            ret = oaci_init_nolace(&model->nolace, oaci_nolacelayers_arrays);
         }
 # endif
 
 # ifdef ENABLE_OSCE_BWE
 #  ifndef DISABLE_BBWENET
         if (ret == 0) {
-            ret = init_bbwenet(&model->bbwenet, oaci_bbwenetlayers_arrays);
+            ret = oaci_init_bbwenet(&model->bbwenet, oaci_bbwenetlayers_arrays);
         }
 #  endif
 # endif /* ENABLE_OSCE_BWE */
@@ -1495,12 +1495,12 @@ void oaci_osce_bwe(
 
 # if 0
     /* just upsampling for now */
-    upsamp_2x(&psOSCEBWE->state.bbwenet.resampler_state[0], out_buffer, in_buffer, xq16_len);
-    interpol_3_2(&psOSCEBWE->state.bbwenet.resampler_state[0], out_buffer, out_buffer, 2*xq16_len);
+    oaci_upsamp_2x(&psOSCEBWE->state.bbwenet.resampler_state[0], out_buffer, in_buffer, xq16_len);
+    oaci_interpol_3_2(&psOSCEBWE->state.bbwenet.resampler_state[0], out_buffer, out_buffer, 2*xq16_len);
 
 # else
     /* process frames */
-    bbwenet_process_frames(
+    oaci_bbwenet_process_frames(
         &model->bbwenet,
         &psOSCEBWE->state.bbwenet,
         out_buffer,
@@ -1571,13 +1571,13 @@ void oaci_osce_enhance_frame(
             break;
 #ifndef DISABLE_LACE
         case OSCE_METHOD_LACE:
-            lace_process_20ms_frame(&model->lace, &psDec->osce.state.lace, out_buffer, in_buffer, features, numbits,
+            oaci_lace_process_20ms_frame(&model->lace, &psDec->osce.state.lace, out_buffer, in_buffer, features, numbits,
         periods, arch);
             break;
 #endif
 #ifndef DISABLE_NOLACE
         case OSCE_METHOD_NOLACE:
-            nolace_process_20ms_frame(&model->nolace, &psDec->osce.state.nolace, out_buffer, in_buffer, features,
+            oaci_nolace_process_20ms_frame(&model->nolace, &psDec->osce.state.nolace, out_buffer, in_buffer, features,
         numbits, periods, arch);
             break;
 #endif
@@ -1696,7 +1696,7 @@ void lace_feature_net_compare(
     float numbits[2];
     int periods[4];
 
-    init_lace(hLACE);
+    oaci_init_lace(hLACE);
 
     FILE *f_in_features, *f_out_features, *f_numbits, *f_periods;
 
@@ -1755,7 +1755,7 @@ void lace_feature_net_compare(
         }
 
 
-        lace_feature_net(hLACE, out_features2, in_features, numbits, periods);
+        oaci_lace_feature_net(hLACE, out_features2, in_features, numbits, periods);
 
         float mse = 0;
         for (int i = 0; i < 4*LACE_COND_DIM; i++) {
@@ -1793,7 +1793,7 @@ void lace_demo(
     int frame_counter = 0;
     FILE *f_features, *f_numbits, *f_periods, *f_x_in, *f_x_out;
 
-    init_lace(&hLACE);
+    oaci_init_lace(&hLACE);
 
     strcpy(feature_file, prefix);
     strcat(feature_file, "_features.f32");
@@ -1855,7 +1855,7 @@ void lace_demo(
             exit(1);
         }
 
-        lace_process_20ms_frame(
+        oaci_lace_process_20ms_frame(
             &hLACE,
             buffer,
             x_in,
@@ -1901,7 +1901,7 @@ void nolace_demo(
     int frame_counter = 0;
     FILE *f_features, *f_numbits, *f_periods, *f_x_in, *f_x_out;
 
-    init_nolace(&hNoLACE);
+    oaci_init_nolace(&hNoLACE);
 
     strcpy(feature_file, prefix);
     strcat(feature_file, "_features.f32");
@@ -1963,7 +1963,7 @@ void nolace_demo(
             exit(1);
         }
 
-        nolace_process_20ms_frame(
+        oaci_nolace_process_20ms_frame(
             &hNoLACE,
             buffer,
             x_in,

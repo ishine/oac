@@ -368,7 +368,7 @@ oac_int oaci_silk_Encode(                                   /* O    Returns erro
                 iCDF[ 0 ] = 256 - silk_RSHIFT( 256,
                     (psEnc->state_Fxx[ 0 ].sCmn.nFramesPerPacket + 1)*encControl->nChannelsInternal );
                 oaci_ec_enc_icdf( psRangeEnc, 0, iCDF, 8 );
-                curr_nBitsUsedLBRR = ec_tell( psRangeEnc );
+                curr_nBitsUsedLBRR = oaci_ec_tell( psRangeEnc );
 
                 /* Encode any LBRR data from previous packet */
                 /* Encode LBRR flags */
@@ -416,7 +416,7 @@ oac_int oaci_silk_Encode(                                   /* O    Returns erro
                     silk_memset( psEnc->state_Fxx[ n ].sCmn.LBRR_flags, 0,
                     sizeof(psEnc->state_Fxx[ n ].sCmn.LBRR_flags));
                 }
-                curr_nBitsUsedLBRR = ec_tell( psRangeEnc ) - curr_nBitsUsedLBRR;
+                curr_nBitsUsedLBRR = oaci_ec_tell( psRangeEnc ) - curr_nBitsUsedLBRR;
             }
 
             oaci_silk_HP_variable_cutoff( psEnc->state_Fxx );
@@ -449,7 +449,7 @@ oac_int oaci_silk_Encode(                                   /* O    Returns erro
             TargetRate_bps -= silk_DIV32_16( silk_MUL( psEnc->nBitsExceeded, 1000 ), BITRESERVOIR_DECAY_TIME_MS );
             if (!prefillFlag && psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded > 0) {
                 /* Compare actual vs target bits so far in this packet */
-                oac_int32 bitsBalance = ec_tell( psRangeEnc ) - psEnc->nBitsUsedLBRR - nBits
+                oac_int32 bitsBalance = oaci_ec_tell( psRangeEnc ) - psEnc->nBitsUsedLBRR - nBits
                                         *psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded;
                 TargetRate_bps -= silk_DIV32_16( silk_MUL( bitsBalance, 1000 ), BITRESERVOIR_DECAY_TIME_MS );
             }

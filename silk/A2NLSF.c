@@ -44,7 +44,7 @@
 
 /* Helper function for A2NLSF(..)                    */
 /* Transforms polynomials from cos(n*f) to cos(f)^n  */
-static OAC_INLINE void silk_A2NLSF_trans_poly(
+static OAC_INLINE void oaci_silk_A2NLSF_trans_poly(
     oac_int32          *p,                     /* I/O    Polynomial                                */
     const oac_int dd                           /* I      Polynomial order (= filter order / 2 )    */
     ) {
@@ -59,7 +59,7 @@ static OAC_INLINE void silk_A2NLSF_trans_poly(
 }
 /* Helper function for A2NLSF(..) */
 /* Polynomial evaluation          */
-static OAC_INLINE oac_int32 silk_A2NLSF_eval_poly( /* return the polynomial evaluation, in Q16     */
+static OAC_INLINE oac_int32 oaci_silk_A2NLSF_eval_poly( /* return the polynomial evaluation, in Q16     */
     oac_int32          *p,                     /* I    Polynomial, Q16                         */
     const oac_int32 x,                         /* I    Evaluation point, Q12                   */
     const oac_int dd                           /* I    Order                                   */
@@ -87,7 +87,7 @@ static OAC_INLINE oac_int32 silk_A2NLSF_eval_poly( /* return the polynomial eval
     return y32;
 }
 
-static OAC_INLINE void silk_A2NLSF_init(
+static OAC_INLINE void oaci_silk_A2NLSF_init(
     const oac_int32    *a_Q16,
     oac_int32          *P,
     oac_int32          *Q,
@@ -111,8 +111,8 @@ static OAC_INLINE void silk_A2NLSF_init(
     }
 
     /* Transform polynomials from cos(n*f) to cos(f)^n */
-    silk_A2NLSF_trans_poly( P, dd );
-    silk_A2NLSF_trans_poly( Q, dd );
+    oaci_silk_A2NLSF_trans_poly( P, dd );
+    oaci_silk_A2NLSF_trans_poly( Q, dd );
 }
 
 /* Compute Normalized Line Spectral Frequencies (NLSFs) from whitening filter coefficients      */
@@ -137,19 +137,19 @@ void oaci_silk_A2NLSF(
 
     dd = silk_RSHIFT( d, 1 );
 
-    silk_A2NLSF_init( a_Q16, P, Q, dd );
+    oaci_silk_A2NLSF_init( a_Q16, P, Q, dd );
 
     /* Find roots, alternating between P and Q */
     p = P;                          /* Pointer to polynomial */
 
     xlo = oaci_silk_LSFCosTab_FIX_Q12[ 0 ]; /* Q12*/
-    ylo = silk_A2NLSF_eval_poly( p, xlo, dd );
+    ylo = oaci_silk_A2NLSF_eval_poly( p, xlo, dd );
 
     if (ylo < 0) {
         /* Set the first NLSF to zero and move on to the next */
         NLSF[ 0 ] = 0;
         p = Q;                      /* Pointer to polynomial */
-        ylo = silk_A2NLSF_eval_poly( p, xlo, dd );
+        ylo = oaci_silk_A2NLSF_eval_poly( p, xlo, dd );
         root_ix = 1;                /* Index of current root */
     } else {
         root_ix = 0;                /* Index of current root */
@@ -160,7 +160,7 @@ void oaci_silk_A2NLSF(
     while (1) {
         /* Evaluate polynomial */
         xhi = oaci_silk_LSFCosTab_FIX_Q12[ k ]; /* Q12 */
-        yhi = silk_A2NLSF_eval_poly( p, xhi, dd );
+        yhi = oaci_silk_A2NLSF_eval_poly( p, xhi, dd );
 
         /* Detect zero crossing */
         if ((ylo <= 0 && yhi >= thr) || (ylo >= 0 && yhi <= -thr)) {
@@ -176,7 +176,7 @@ void oaci_silk_A2NLSF(
             for (m = 0; m < BIN_DIV_STEPS_A2NLSF_FIX; m++) {
                 /* Evaluate polynomial */
                 xmid = silk_RSHIFT_ROUND( xlo + xhi, 1 );
-                ymid = silk_A2NLSF_eval_poly( p, xmid, dd );
+                ymid = oaci_silk_A2NLSF_eval_poly( p, xmid, dd );
 
                 /* Detect zero crossing */
                 if ((ylo <= 0 && ymid >= 0) || (ylo >= 0 && ymid <= 0)) {
@@ -239,15 +239,15 @@ void oaci_silk_A2NLSF(
                 /* Error: Apply progressively more bandwidth expansion and run again */
                 oaci_silk_bwexpander_32( a_Q16, d, 65536 - silk_LSHIFT( 1, i ));
 
-                silk_A2NLSF_init( a_Q16, P, Q, dd );
+                oaci_silk_A2NLSF_init( a_Q16, P, Q, dd );
                 p = P;                            /* Pointer to polynomial */
                 xlo = oaci_silk_LSFCosTab_FIX_Q12[ 0 ]; /* Q12*/
-                ylo = silk_A2NLSF_eval_poly( p, xlo, dd );
+                ylo = oaci_silk_A2NLSF_eval_poly( p, xlo, dd );
                 if (ylo < 0) {
                     /* Set the first NLSF to zero and move on to the next */
                     NLSF[ 0 ] = 0;
                     p = Q;                        /* Pointer to polynomial */
-                    ylo = silk_A2NLSF_eval_poly( p, xlo, dd );
+                    ylo = oaci_silk_A2NLSF_eval_poly( p, xlo, dd );
                     root_ix = 1;                  /* Index of current root */
                 } else {
                     root_ix = 0;                  /* Index of current root */

@@ -40,7 +40,7 @@
 
 #define FARGAN_FEATURES (NB_FEATURES)
 
-static void compute_fargan_cond(FARGANState *st, float *cond, const float *features, int period) {
+static void oaci_compute_fargan_cond(FARGANState *st, float *cond, const float *features, int period) {
     FARGAN *model;
     float dense_in[NB_FEATURES + COND_NET_PEMBED_OUT_SIZE];
     float conv1_in[COND_NET_FCONV1_IN_SIZE];
@@ -60,7 +60,7 @@ static void compute_fargan_cond(FARGANState *st, float *cond, const float *featu
     oaci_compute_generic_dense(&model->cond_net_fdense2, cond, fdense2_in, ACTIVATION_TANH, st->arch);
 }
 
-static void fargan_deemphasis(float *pcm, float *deemph_mem) {
+static void oaci_fargan_deemphasis(float *pcm, float *deemph_mem) {
     int i;
     for (i = 0; i < FARGAN_SUBFRAME_SIZE; i++) {
         pcm[i] += FARGAN_DEEMPHASIS**deemph_mem;
@@ -68,7 +68,7 @@ static void fargan_deemphasis(float *pcm, float *deemph_mem) {
     }
 }
 
-static void run_fargan_subframe(FARGANState *st, float *pcm, const float *cond, int period) {
+static void oaci_run_fargan_subframe(FARGANState *st, float *pcm, const float *cond, int period) {
     int i, pos;
     float fwc0_in[SIG_NET_INPUT_SIZE];
     float gru1_in[SIG_NET_FWC0_CONV_OUT_SIZE + 2*FARGAN_SUBFRAME_SIZE];
@@ -144,7 +144,7 @@ static void run_fargan_subframe(FARGANState *st, float *pcm, const float *cond, 
 
     OAC_MOVE(st->pitch_buf, &st->pitch_buf[FARGAN_SUBFRAME_SIZE], PITCH_MAX_PERIOD - FARGAN_SUBFRAME_SIZE);
     OAC_COPY(&st->pitch_buf[PITCH_MAX_PERIOD - FARGAN_SUBFRAME_SIZE], pcm, FARGAN_SUBFRAME_SIZE);
-    fargan_deemphasis(pcm, &st->deemph_mem);
+    oaci_fargan_deemphasis(pcm, &st->deemph_mem);
 }
 
 void oaci_fargan_cont(FARGANState *st, const float *pcm0, const float *features0) {
@@ -159,7 +159,7 @@ void oaci_fargan_cont(FARGANState *st, const float *pcm0, const float *features0
         const float *features = &features0[i*NB_FEATURES];
         st->last_period = period;
         period = (int)floor(.5 + 256./pow(2.f, ((1./60.)*((features[NB_BANDS] + 1.5)*60))));
-        compute_fargan_cond(st, cond, features, period);
+        oaci_compute_fargan_cond(st, cond, features, period);
     }
 
     x0[0] = 0;
@@ -171,7 +171,7 @@ void oaci_fargan_cont(FARGANState *st, const float *pcm0, const float *features0
     st->cont_initialized = 1;
 
     for (i = 0; i < FARGAN_NB_SUBFRAMES; i++) {
-        run_fargan_subframe(st, dummy, &cond[i*FARGAN_COND_SIZE], st->last_period);
+        oaci_run_fargan_subframe(st, dummy, &cond[i*FARGAN_COND_SIZE], st->last_period);
         OAC_COPY(&st->pitch_buf[PITCH_MAX_PERIOD - FARGAN_SUBFRAME_SIZE],
         &x0[FARGAN_FRAME_SIZE + i*FARGAN_SUBFRAME_SIZE], FARGAN_SUBFRAME_SIZE);
     }
@@ -201,24 +201,24 @@ int oaci_fargan_load_model(FARGANState *st, const void *data, int len) {
     else return -1;
 }
 
-static void fargan_synthesize_impl(FARGANState *st, float *pcm, const float *features) {
+static void oaci_fargan_synthesize_impl(FARGANState *st, float *pcm, const float *features) {
     int subframe;
     float cond[COND_NET_FDENSE2_OUT_SIZE];
     int period;
     celt_assert(st->cont_initialized);
 
     period = (int)floor(.5 + 256./pow(2.f, ((1./60.)*((features[NB_BANDS] + 1.5)*60))));
-    compute_fargan_cond(st, cond, features, period);
+    oaci_compute_fargan_cond(st, cond, features, period);
     for (subframe = 0; subframe < FARGAN_NB_SUBFRAMES; subframe++) {
         float *sub_cond;
         sub_cond = &cond[subframe*FARGAN_COND_SIZE];
-        run_fargan_subframe(st, &pcm[subframe*FARGAN_SUBFRAME_SIZE], sub_cond, st->last_period);
+        oaci_run_fargan_subframe(st, &pcm[subframe*FARGAN_SUBFRAME_SIZE], sub_cond, st->last_period);
     }
     st->last_period = period;
 }
 
 void oaci_fargan_synthesize(FARGANState *st, float *pcm, const float *features) {
-    fargan_synthesize_impl(st, pcm, features);
+    oaci_fargan_synthesize_impl(st, pcm, features);
 }
 
 void oaci_fargan_synthesize_int(FARGANState *st, oac_int16 *pcm, const float *features) {

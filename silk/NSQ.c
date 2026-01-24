@@ -34,7 +34,7 @@
 #include "NSQ.h"
 
 
-static OAC_INLINE void silk_nsq_scale_states(
+static OAC_INLINE void oaci_silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     const oac_int16 x16[],                     /* I    input                           */
@@ -152,7 +152,7 @@ void oaci_silk_NSQ_c
             }
         }
 
-        silk_nsq_scale_states( psEncC, NSQ, x16, x_sc_Q10, sLTP, sLTP_Q15, k, LTP_scale_Q14, Gains_Q16, pitchL,
+        oaci_silk_nsq_scale_states( psEncC, NSQ, x16, x_sc_Q10, sLTP, sLTP_Q15, k, LTP_scale_Q14, Gains_Q16, pitchL,
         psIndices->signalType );
 
         oaci_silk_noise_shape_quantizer( NSQ, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15, A_Q12, B_Q14,
@@ -230,7 +230,7 @@ void oaci_silk_noise_shape_quantizer(
         NSQ->rand_seed = silk_RAND( NSQ->rand_seed );
 
         /* Short-term prediction */
-        LPC_pred_Q10 = silk_noise_shape_quantizer_short_prediction(psLPC_Q14, a_Q12, a_Q12_arch, predictLPCOrder, arch);
+        LPC_pred_Q10 = oaci_silk_noise_shape_quantizer_short_prediction(psLPC_Q14, a_Q12, a_Q12_arch, predictLPCOrder, arch);
 
         /* Long-term prediction */
         if (signalType == TYPE_VOICED) {
@@ -249,7 +249,7 @@ void oaci_silk_noise_shape_quantizer(
 
         /* Noise shape feedback */
         celt_assert((shapingLPCOrder&1) == 0 );        /* check that order is even */
-        n_AR_Q12 = silk_NSQ_noise_shape_feedback_loop(&NSQ->sDiff_shp_Q14, NSQ->sAR2_Q14, AR_shp_Q13, shapingLPCOrder,
+        n_AR_Q12 = oaci_silk_NSQ_noise_shape_feedback_loop(&NSQ->sDiff_shp_Q14, NSQ->sAR2_Q14, AR_shp_Q13, shapingLPCOrder,
         arch);
 
         n_AR_Q12 = silk_SMLAWB( n_AR_Q12, NSQ->sLF_AR_shp_Q14, Tilt_Q14 );
@@ -367,7 +367,7 @@ void oaci_silk_noise_shape_quantizer(
     silk_memcpy( NSQ->sLPC_Q14, &NSQ->sLPC_Q14[ length ], NSQ_LPC_BUF_LENGTH*sizeof(oac_int32));
 }
 
-static OAC_INLINE void silk_nsq_scale_states(
+static OAC_INLINE void oaci_silk_nsq_scale_states(
     const silk_encoder_state *psEncC,           /* I    Encoder State                   */
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                       */
     const oac_int16 x16[],                     /* I    input                           */

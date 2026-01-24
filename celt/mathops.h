@@ -82,7 +82,7 @@ static OAC_INLINE float fast_atan2f(float y, float x) {
 
 
 #ifndef OVERRIDE_CELT_MAXABS16
-static OAC_INLINE oac_val32 celt_maxabs16(const oac_val16 *x, int len) {
+static OAC_INLINE oac_val32 oaci_celt_maxabs16(const oac_val16 *x, int len) {
     int i;
     oac_val16 maxval = 0;
     oac_val16 minval = 0;
@@ -108,7 +108,7 @@ static OAC_INLINE oac_res celt_maxabs_res(const oac_res *x, int len) {
     return MAX32(maxval, -minval);
 }
 #else
-# define celt_maxabs_res celt_maxabs16
+# define celt_maxabs_res oaci_celt_maxabs16
 #endif
 
 
@@ -125,14 +125,14 @@ static OAC_INLINE oac_val32 celt_maxabs32(const oac_val32 *x, int len) {
     return MAX32(maxval, -minval);
 }
 # else
-#  define celt_maxabs32(x, len) celt_maxabs16(x, len)
+#  define celt_maxabs32(x, len) oaci_celt_maxabs16(x, len)
 # endif
 #endif
 
 #ifndef FIXED_POINT
 /* Calculates the arctangent of x using a Remez approximation of order 15,
  * incorporating only odd-powered terms. */
-static OAC_INLINE float celt_atan_norm(float x) {
+static OAC_INLINE float oaci_celt_atan_norm(float x) {
 # define ATAN2_2_OVER_PI 0.636619772367581f
     float x_sq = x*x;
 
@@ -168,9 +168,9 @@ static OAC_INLINE float celt_atan2p_norm(float y, float x) {
     }
 
     if (y < x) {
-        return celt_atan_norm(y/x);
+        return oaci_celt_atan_norm(y/x);
     } else {
-        return 1.f - celt_atan_norm(x/y);
+        return 1.f - oaci_celt_atan_norm(x/y);
     }
 }
 #endif
@@ -257,7 +257,7 @@ static const float log2_y_norm_coeff[8] = {
     5.849624872207641601562500e-01f, 7.004396915435791015625000e-01f,
     8.073549270629882812500000e-01f, 9.068905711174011230468750e-01f};
 
-static OAC_INLINE float celt_log2(float x) {
+static OAC_INLINE float oaci_celt_log2(float x) {
     oac_int32 integer;
     oac_int32 range_idx;
     union {
@@ -297,7 +297,7 @@ static OAC_INLINE float celt_log2(float x) {
  * of order 5, ensuring a controlled relative error.
  * exp2(x) = exp2(integer + fraction)
  *         = exp2(integer) * exp2(fraction) */
-static OAC_INLINE float celt_exp2(float x) {
+static OAC_INLINE float oaci_celt_exp2(float x) {
     oac_int32 integer;
     float frac;
     union {
@@ -329,16 +329,16 @@ static OAC_INLINE float celt_exp2(float x) {
 }
 
 # else
-#  define celt_log2(x) ((float)(1.442695040888963387*log(x)))
-#  define celt_exp2(x) ((float)exp(0.6931471805599453094*(x)))
+#  define oaci_celt_log2(x) ((float)(1.442695040888963387*log(x)))
+#  define oaci_celt_exp2(x) ((float)exp(0.6931471805599453094*(x)))
 # endif
 
-# define celt_exp2_db celt_exp2
-# define celt_log2_db celt_log2
+# define celt_exp2_db oaci_celt_exp2
+# define oaci_celt_log2_db oaci_celt_log2
 
-# define celt_sin(x) celt_cos_norm2((0.5f*PI)*(x) - 1.0f)
-# define celt_log(x) (celt_log2(x)*0.6931471805599453f)
-# define celt_exp(x) (celt_exp2((x)*1.4426950408889634f))
+# define oaci_celt_sin(x) celt_cos_norm2((0.5f*PI)*(x) - 1.0f)
+# define celt_log(x) (oaci_celt_log2(x)*0.6931471805599453f)
+# define celt_exp(x) (oaci_celt_exp2((x)*1.4426950408889634f))
 
 #endif
 
@@ -348,7 +348,7 @@ static OAC_INLINE float celt_exp2(float x) {
 
 # ifndef OVERRIDE_CELT_ILOG2
 /** Integer log in base2. Undefined for zero and negative numbers */
-static OAC_INLINE oac_int16 celt_ilog2(oac_int32 x) {
+static OAC_INLINE oac_int16 oaci_celt_ilog2(oac_int32 x) {
     celt_sig_assert(x > 0);
     return EC_ILOG(x) - 1;
 }
@@ -356,8 +356,8 @@ static OAC_INLINE oac_int16 celt_ilog2(oac_int32 x) {
 
 
 /** Integer log in base2. Defined for zero, but not for negative numbers */
-static OAC_INLINE oac_int16 celt_zlog2(oac_val32 x) {
-    return x <= 0 ? 0 : celt_ilog2(x);
+static OAC_INLINE oac_int16 oaci_celt_zlog2(oac_val32 x) {
+    return x <= 0 ? 0 : oaci_celt_ilog2(x);
 }
 
 oac_val16 oaci_celt_rsqrt_norm(oac_val32 x);
@@ -373,7 +373,7 @@ oac_val16 oaci_celt_cos_norm(oac_val32 x);
 oac_val32 oaci_celt_cos_norm32(oac_val32 x);
 
 /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
-static OAC_INLINE oac_val16 celt_log2(oac_val32 x) {
+static OAC_INLINE oac_val16 oaci_celt_log2(oac_val32 x) {
     int i;
     oac_val16 n, frac;
     /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605,
@@ -381,7 +381,7 @@ static OAC_INLINE oac_val16 celt_log2(oac_val32 x) {
     static const oac_val16 C[5] = {-6801 + (1<<(13 - 10)), 15746, -5217, 2545, -1401};
     if (x == 0)
         return -32767;
-    i = celt_ilog2(x);
+    i = oaci_celt_ilog2(x);
     n = VSHR32(x, i - 15) - 32768 - 16384;
     frac = ADD16(C[0],
     MULT16_16_Q15(n,
@@ -400,7 +400,7 @@ static OAC_INLINE oac_val16 celt_log2(oac_val32 x) {
 # define D2 14819
 # define D3 10204
 
-static OAC_INLINE oac_val32 celt_exp2_frac(oac_val16 x) {
+static OAC_INLINE oac_val32 oaci_celt_exp2_frac(oac_val16 x) {
     oac_val16 frac;
     frac = SHL16(x, 4);
     return ADD16(D0, MULT16_16_Q15(frac, ADD16(D1, MULT16_16_Q15(frac, ADD16(D2, MULT16_16_Q15(D3, frac))))));
@@ -412,7 +412,7 @@ static OAC_INLINE oac_val32 celt_exp2_frac(oac_val16 x) {
 # undef D3
 
 /** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
-static OAC_INLINE oac_val32 celt_exp2(oac_val16 x) {
+static OAC_INLINE oac_val32 oaci_celt_exp2(oac_val16 x) {
     int integer;
     oac_val16 frac;
     integer = SHR16(x, 10);
@@ -420,13 +420,13 @@ static OAC_INLINE oac_val32 celt_exp2(oac_val16 x) {
         return 0x7f000000;
     else if (integer < -15)
         return 0;
-    frac = celt_exp2_frac(x - SHL16(integer, 10));
+    frac = oaci_celt_exp2_frac(x - SHL16(integer, 10));
     return VSHR32(EXTEND32(frac), -integer - 2);
 }
 
 /* Calculates the base-2 logarithm of a Q14 input value. The result is returned
  * in Q(DB_SHIFT). If the input value is 0, the function will output -32.0f. */
-static OAC_INLINE oac_val32 celt_log2_db(oac_val32 x) {
+static OAC_INLINE oac_val32 oaci_celt_log2_db(oac_val32 x) {
     /* Q30 */
     static const oac_val32 log2_x_norm_coeff[8] = {
         1073741824, 954437184, 858993472, 780903168,
@@ -446,7 +446,7 @@ static OAC_INLINE oac_val32 celt_log2_db(oac_val32 x) {
     if (x == 0) {
         return -536870912; /* -32.0f */
     }
-    integer =  SUB32(celt_ilog2(x), 14); /* Q0 */
+    integer =  SUB32(oaci_celt_ilog2(x), 14); /* Q0 */
     mantissa = VSHR32(x, integer + 14 - 29); /* Q29 */
     norm_coeff_idx = SHR32(mantissa, 29 - 3)&0x7;
     /* mantissa is in Q28 (29 + Q_NORM_CONST - 31 where Q_NORM_CONST is Q30)
@@ -471,7 +471,7 @@ static OAC_INLINE oac_val32 celt_log2_db(oac_val32 x) {
 
 /* Calculates exp2 for Q28 within a specific range (0 to 1.0) using fixed-point
  * arithmetic. The input number must be adjusted for Q DB_SHIFT. */
-static OAC_INLINE oac_val32 celt_exp2_db_frac(oac_val32 x) {
+static OAC_INLINE oac_val32 oaci_celt_exp2_db_frac(oac_val32 x) {
     /* Approximation constants. */
     static const oac_int32 EXP2_COEFF_A0 = 268435440;  /* Q28 */
     static const oac_int32 EXP2_COEFF_A1 = 744267456;  /* Q30 */
@@ -500,7 +500,7 @@ static OAC_INLINE oac_val32 celt_exp2_db(oac_val32 x) {
         return 0x7f000000;
     else if (integer <= -17)
         return 0;
-    frac = celt_exp2_db_frac(x - SHL32(integer, DB_SHIFT)); /* Q28 */
+    frac = oaci_celt_exp2_db_frac(x - SHL32(integer, DB_SHIFT)); /* Q28 */
     return VSHR32(frac, -integer + 28 - 16); /* Q16 */
 }
 
@@ -517,7 +517,7 @@ oac_val32 oaci_frac_div32(oac_val32 a, oac_val32 b);
 /* Computes atan(x) multiplied by 2/PI. The input value (x) should be within the
  * range of -1 to 1 and represented in Q30 format. The function will return the
  * result in Q30 format. */
-static OAC_INLINE oac_val32 celt_atan_norm(oac_val32 x) {
+static OAC_INLINE oac_val32 oaci_celt_atan_norm(oac_val32 x) {
     /* Approximation constants. */
     static const oac_int32 ATAN_2_OVER_PI = 1367130551;  /* Q31 */
     static const oac_int32 ATAN_COEFF_A03 = -715791936;  /* Q31 */
@@ -564,11 +564,11 @@ static OAC_INLINE oac_val32 celt_atan2p_norm(oac_val32 y, oac_val32 x) {
     if (y == 0 && x == 0) {
         return 0;
     } else if (y < x) {
-        return celt_atan_norm(SHR32(oaci_frac_div32(y, x), 1));
+        return oaci_celt_atan_norm(SHR32(oaci_frac_div32(y, x), 1));
     } else {
         celt_sig_assert(y > 0);
         return 1073741824 /* 1.0f Q30 */
-               - celt_atan_norm(SHR32(oaci_frac_div32(x, y), 1));
+               - oaci_celt_atan_norm(SHR32(oaci_frac_div32(x, y), 1));
     }
 }
 
@@ -579,7 +579,7 @@ static OAC_INLINE oac_val32 celt_atan2p_norm(oac_val32 y, oac_val32 x) {
 
 /* Atan approximation using a 4th order polynomial. Input is in Q15 format
    and normalized by pi/4. Output is in Q15 format */
-static OAC_INLINE oac_val16 celt_atan01(oac_val16 x) {
+static OAC_INLINE oac_val16 oaci_celt_atan01(oac_val16 x) {
     return MULT16_16_P15(x, ADD32(M1, MULT16_16_P15(x, ADD32(M2, MULT16_16_P15(x, ADD32(M3, MULT16_16_P15(M4, x)))))));
 }
 
@@ -589,7 +589,7 @@ static OAC_INLINE oac_val16 celt_atan01(oac_val16 x) {
 # undef M4
 
 /* atan2() approximation valid for positive input values */
-static OAC_INLINE oac_val16 celt_atan2p(oac_val16 y, oac_val16 x) {
+static OAC_INLINE oac_val16 oaci_celt_atan2p(oac_val16 y, oac_val16 x) {
     if (x == 0 && y == 0) {
         return 0;
     } else if (y < x) {
@@ -597,13 +597,13 @@ static OAC_INLINE oac_val16 celt_atan2p(oac_val16 y, oac_val16 x) {
         arg = oaci_celt_div(SHL32(EXTEND32(y), 15), x);
         if (arg >= 32767)
             arg = 32767;
-        return SHR16(celt_atan01(EXTRACT16(arg)), 1);
+        return SHR16(oaci_celt_atan01(EXTRACT16(arg)), 1);
     } else {
         oac_val32 arg;
         arg = oaci_celt_div(SHL32(EXTEND32(x), 15), y);
         if (arg >= 32767)
             arg = 32767;
-        return 25736 - SHR16(celt_atan01(EXTRACT16(arg)), 1);
+        return 25736 - SHR16(oaci_celt_atan01(EXTRACT16(arg)), 1);
     }
 }
 

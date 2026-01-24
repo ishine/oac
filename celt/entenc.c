@@ -57,13 +57,13 @@
    URL="http://www.stanford.edu/class/ee398/handouts/papers/Moffat98ArithmCoding.pdf"
    }*/
 
-static int ec_write_byte(ec_enc *_this, unsigned _value) {
+static int oaci_ec_write_byte(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
     _this->buf[_this->offs++] = (unsigned char)_value;
     return 0;
 }
 
-static int ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
+static int oaci_ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
     if (_this->offs + _this->end_offs >= _this->storage) return -1;
     _this->buf[_this->storage - ++(_this->end_offs)] = (unsigned char)_value;
     return 0;
@@ -79,28 +79,28 @@ static int ec_write_byte_at_end(ec_enc *_this, unsigned _value) {
    32-bit systems.
    The alternative is to truncate the range in order to force a carry, but
    requires similar carry tracking in the decoder, needlessly slowing it down.*/
-static void ec_enc_carry_out(ec_enc *_this, int _c) {
+static void oaci_ec_enc_carry_out(ec_enc *_this, int _c) {
     if (_c != EC_SYM_MAX) {
         /*No further carry propagation possible, flush buffer.*/
         int carry;
         carry = _c>>EC_SYM_BITS;
         /*Don't output a byte on the first write.
            This compare should be taken care of by branch-prediction thereafter.*/
-        if (_this->rem >= 0) _this->error |= ec_write_byte(_this, _this->rem + carry);
+        if (_this->rem >= 0) _this->error |= oaci_ec_write_byte(_this, _this->rem + carry);
         if (_this->ext > 0) {
             unsigned sym;
             sym = (EC_SYM_MAX + carry)&EC_SYM_MAX;
-            do _this->error |= ec_write_byte(_this, sym);
+            do _this->error |= oaci_ec_write_byte(_this, sym);
             while (--(_this->ext) > 0);
         }
         _this->rem = _c&EC_SYM_MAX;
     } else _this->ext++;
 }
 
-static OAC_INLINE void ec_enc_normalize(ec_enc *_this) {
+static OAC_INLINE void oaci_ec_enc_normalize(ec_enc *_this) {
     /*If the range is too small, output some bits and rescale it.*/
     while (_this->rng <= EC_CODE_BOT) {
-        ec_enc_carry_out(_this, (int)(_this->val>>EC_CODE_SHIFT));
+        oaci_ec_enc_carry_out(_this, (int)(_this->val>>EC_CODE_SHIFT));
         /*Move the next-to-high-order symbol into the high-order position.*/
         _this->val = (_this->val<<EC_SYM_BITS)&(EC_CODE_TOP - 1);
         _this->rng <<= EC_SYM_BITS;
@@ -113,7 +113,7 @@ void oaci_ec_enc_init(ec_enc *_this, unsigned char *_buf, oac_uint32 _size) {
     _this->end_offs = 0;
     _this->end_window = 0;
     _this->nend_bits = 0;
-    /*This is the offset from which ec_tell() will subtract partial bits.*/
+    /*This is the offset from which oaci_ec_tell() will subtract partial bits.*/
     _this->nbits_total = EC_CODE_BITS + 1;
     _this->offs = 0;
     _this->rng = EC_CODE_TOP;
@@ -131,7 +131,7 @@ void oaci_ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
         _this->val += _this->rng - IMUL32(r, (_ft - _fl));
         _this->rng = IMUL32(r, (_fh - _fl));
     } else _this->rng -= IMUL32(r, (_ft - _fh));
-    ec_enc_normalize(_this);
+    oaci_ec_enc_normalize(_this);
 }
 
 void oaci_ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bits) {
@@ -141,7 +141,7 @@ void oaci_ec_encode_bin(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _bit
         _this->val += _this->rng - IMUL32(r, ((1U<<_bits) - _fl));
         _this->rng = IMUL32(r, (_fh - _fl));
     } else _this->rng -= IMUL32(r, ((1U<<_bits) - _fh));
-    ec_enc_normalize(_this);
+    oaci_ec_enc_normalize(_this);
 }
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
@@ -155,7 +155,7 @@ void oaci_ec_enc_bit_logp(ec_enc *_this, int _val, unsigned _logp) {
     r -= s;
     if (_val) _this->val = l + r;
     _this->rng = _val?s:r;
-    ec_enc_normalize(_this);
+    oaci_ec_enc_normalize(_this);
 }
 
 void oaci_ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigned _ftb) {
@@ -165,7 +165,7 @@ void oaci_ec_enc_icdf(ec_enc *_this, int _s, const unsigned char *_icdf, unsigne
         _this->val += _this->rng - IMUL32(r, _icdf[_s - 1]);
         _this->rng = IMUL32(r, _icdf[_s - 1] - _icdf[_s]);
     } else _this->rng -= IMUL32(r, _icdf[_s]);
-    ec_enc_normalize(_this);
+    oaci_ec_enc_normalize(_this);
 }
 
 void oaci_ec_enc_icdf16(ec_enc *_this, int _s, const oac_uint16 *_icdf, unsigned _ftb) {
@@ -175,7 +175,7 @@ void oaci_ec_enc_icdf16(ec_enc *_this, int _s, const oac_uint16 *_icdf, unsigned
         _this->val += _this->rng - IMUL32(r, _icdf[_s - 1]);
         _this->rng = IMUL32(r, _icdf[_s - 1] - _icdf[_s]);
     } else _this->rng -= IMUL32(r, _icdf[_s]);
-    ec_enc_normalize(_this);
+    oaci_ec_enc_normalize(_this);
 }
 
 void oaci_ec_enc_uint(ec_enc *_this, oac_uint32 _fl, oac_uint32 _ft) {
@@ -203,7 +203,7 @@ void oaci_ec_enc_bits(ec_enc *_this, oac_uint32 _fl, unsigned _bits) {
     celt_assert(_bits > 0);
     if (used + _bits > EC_WINDOW_SIZE) {
         do {
-            _this->error |= ec_write_byte_at_end(_this, (unsigned)window&EC_SYM_MAX);
+            _this->error |= oaci_ec_write_byte_at_end(_this, (unsigned)window&EC_SYM_MAX);
             window >>= EC_SYM_BITS;
             used -= EC_SYM_BITS;
         } while (used >= EC_SYM_BITS);
@@ -260,17 +260,17 @@ void oaci_ec_enc_done(ec_enc *_this) {
         end = (_this->val + msk)&~msk;
     }
     while (l > 0) {
-        ec_enc_carry_out(_this, (int)(end>>EC_CODE_SHIFT));
+        oaci_ec_enc_carry_out(_this, (int)(end>>EC_CODE_SHIFT));
         end = (end<<EC_SYM_BITS)&(EC_CODE_TOP - 1);
         l -= EC_SYM_BITS;
     }
     /*If we have a buffered byte flush it into the output buffer.*/
-    if (_this->rem >= 0 || _this->ext > 0) ec_enc_carry_out(_this, 0);
+    if (_this->rem >= 0 || _this->ext > 0) oaci_ec_enc_carry_out(_this, 0);
     /*If we have buffered extra bits, flush them as well.*/
     window = _this->end_window;
     used = _this->nend_bits;
     while (used >= EC_SYM_BITS) {
-        _this->error |= ec_write_byte_at_end(_this, (unsigned)window&EC_SYM_MAX);
+        _this->error |= oaci_ec_write_byte_at_end(_this, (unsigned)window&EC_SYM_MAX);
         window >>= EC_SYM_BITS;
         used -= EC_SYM_BITS;
     }

@@ -91,9 +91,9 @@ int main(int _argc, char **_argv) {
     for (ftb = 1; ftb < 16; ftb++) {
         for (i = 0; i < (1<<ftb); i++) {
             entropy += ftb;
-            nbits = ec_tell(&enc);
+            nbits = oaci_ec_tell(&enc);
             oaci_ec_enc_bits(&enc, i, ftb);
-            nbits2 = ec_tell(&enc);
+            nbits2 = oaci_ec_tell(&enc);
             if (nbits2 - nbits != ftb) {
                 fprintf(stderr, "Used %li bits to encode %i bits directly.\n",
          nbits2 - nbits, ftb);
@@ -188,17 +188,17 @@ int main(int _argc, char **_argv) {
             tell[j + 1] = oaci_ec_tell_frac(&enc);
         }
         if (rand()%2 == 0)
-            while (ec_tell(&enc)%8 != 0)
+            while (oaci_ec_tell(&enc)%8 != 0)
                 oaci_ec_enc_uint(&enc, rand()%2, 2);
-        tell_bits = ec_tell(&enc);
+        tell_bits = oaci_ec_tell(&enc);
         oaci_ec_enc_done(&enc);
-        if (tell_bits != (unsigned)ec_tell(&enc)) {
-            fprintf(stderr, "ec_tell() changed after oaci_ec_enc_done(): %i instead of %i (Random seed: %u)\n",
-       ec_tell(&enc), tell_bits, seed);
+        if (tell_bits != (unsigned)oaci_ec_tell(&enc)) {
+            fprintf(stderr, "oaci_ec_tell() changed after oaci_ec_enc_done(): %i instead of %i (Random seed: %u)\n",
+       oaci_ec_tell(&enc), tell_bits, seed);
             ret = -1;
         }
         if ((tell_bits + 7)/8 < ec_range_bytes(&enc)) {
-            fprintf (stderr, "ec_tell() lied, there's %i bytes instead of %d (Random seed: %u)\n",
+            fprintf (stderr, "oaci_ec_tell() lied, there's %i bytes instead of %d (Random seed: %u)\n",
                ec_range_bytes(&enc), (tell_bits + 7)/8, seed);
             ret = -1;
         }
@@ -265,9 +265,9 @@ int main(int _argc, char **_argv) {
             tell[j + 1] = oaci_ec_tell_frac(&enc);
         }
         oaci_ec_enc_done(&enc);
-        if ((ec_tell(&enc) + 7U)/8U < ec_range_bytes(&enc)) {
+        if ((oaci_ec_tell(&enc) + 7U)/8U < ec_range_bytes(&enc)) {
             fprintf(stderr, "tell() lied, there's %i bytes instead of %d (Random seed: %u)\n",
-       ec_range_bytes(&enc), (ec_tell(&enc) + 7)/8, seed);
+       ec_range_bytes(&enc), (oaci_ec_tell(&enc) + 7)/8, seed);
             ret = -1;
         }
         oaci_ec_dec_init(&dec, ptr, DATA_SIZE2);

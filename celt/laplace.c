@@ -41,7 +41,7 @@
 #define LAPLACE_NMIN (16)
 
 /* When called, decay is positive and at most 11456. */
-static unsigned ec_laplace_get_freq1(unsigned fs0, int decay) {
+static unsigned oaci_ec_laplace_get_freq1(unsigned fs0, int decay) {
     unsigned ft;
     ft = 32768 - LAPLACE_MINP*(2*LAPLACE_NMIN) - fs0;
     return ft*(oac_int32)(16384 - decay)>>15;
@@ -57,7 +57,7 @@ void oaci_ec_laplace_encode(ec_enc *enc, int *value, unsigned fs, int decay) {
         s = -(val < 0);
         val = (val + s)^s;
         fl = fs;
-        fs = ec_laplace_get_freq1(fs, decay);
+        fs = oaci_ec_laplace_get_freq1(fs, decay);
         /* Search the decaying part of the PDF.*/
         for (i = 1; fs > 0 && i < val; i++) {
             fs *= 2;
@@ -93,7 +93,7 @@ int oaci_ec_laplace_decode(ec_dec *dec, unsigned fs, int decay) {
     if (fm >= fs) {
         val++;
         fl = fs;
-        fs = ec_laplace_get_freq1(fs, decay) + LAPLACE_MINP;
+        fs = oaci_ec_laplace_get_freq1(fs, decay) + LAPLACE_MINP;
         /* Search the decaying part of the PDF.*/
         while (fs > LAPLACE_MINP && fm >= fl + 2*fs) {
             fs *= 2;

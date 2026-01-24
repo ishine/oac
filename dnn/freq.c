@@ -53,7 +53,7 @@ static const float compensation[] = {
 };
 
 
-static void compute_band_energy_inverse(float *bandE, const kiss_fft_cpx *X) {
+static void oaci_compute_band_energy_inverse(float *bandE, const kiss_fft_cpx *X) {
     int i;
     float sum[NB_BANDS] = {0};
     for (i = 0; i < NB_BANDS - 1; i++) {
@@ -77,7 +77,7 @@ static void compute_band_energy_inverse(float *bandE, const kiss_fft_cpx *X) {
     }
 }
 
-static float lpcn_lpc(
+static float oaci_lpcn_lpc(
     oac_val16 *lpc,   /* out: [0...p-1] LPC coefficients      */
     oac_val16 *rc,
     const oac_val32 *ac, /* in:  [0...p] autocorrelation values  */
@@ -141,7 +141,7 @@ void oaci_lpcn_compute_band_energy(float *bandE, const kiss_fft_cpx *X) {
     }
 }
 
-static void compute_burg_cepstrum(const float *pcm, float *burg_cepstrum, int len, int order) {
+static void oaci_compute_burg_cepstrum(const float *pcm, float *burg_cepstrum, int len, int order) {
     int i;
     float burg_in[FRAME_SIZE];
     float burg_lpc[LPC_ORDER];
@@ -161,7 +161,7 @@ static void compute_burg_cepstrum(const float *pcm, float *burg_cepstrum, int le
     x[0] = 1;
     for (i = 0; i < order; i++) x[i + 1] = -burg_lpc[i]*pow(.995, i + 1);
     oaci_forward_transform(LPC, x);
-    compute_band_energy_inverse(Eburg, LPC);
+    oaci_compute_band_energy_inverse(Eburg, LPC);
     for (i = 0; i < NB_BANDS; i++) Eburg[i] *= .45*g*(1.f/((float)WINDOW_SIZE*WINDOW_SIZE*WINDOW_SIZE));
     for (i = 0; i < NB_BANDS; i++) {
         Ly[i] = log10(1e-2 + Eburg[i]);
@@ -175,8 +175,8 @@ static void compute_burg_cepstrum(const float *pcm, float *burg_cepstrum, int le
 
 void oaci_burg_cepstral_analysis(float *ceps, const float *x) {
     int i;
-    compute_burg_cepstrum(x,                &ceps[0       ], FRAME_SIZE/2, LPC_ORDER);
-    compute_burg_cepstrum(&x[FRAME_SIZE/2], &ceps[NB_BANDS], FRAME_SIZE/2, LPC_ORDER);
+    oaci_compute_burg_cepstrum(x,                &ceps[0       ], FRAME_SIZE/2, LPC_ORDER);
+    oaci_compute_burg_cepstrum(&x[FRAME_SIZE/2], &ceps[NB_BANDS], FRAME_SIZE/2, LPC_ORDER);
     for (i = 0; i < NB_BANDS; i++) {
         float c0, c1;
         c0 = ceps[i];
@@ -214,7 +214,7 @@ void oaci_dct(float *out, const float *in) {
     }
 }
 
-static void idct(float *out, const float *in) {
+static void oaci_idct(float *out, const float *in) {
     int i;
     for (i = 0; i < NB_BANDS; i++) {
         int j;
@@ -240,7 +240,7 @@ void oaci_forward_transform(kiss_fft_cpx *out, const float *in) {
     }
 }
 
-static void inverse_transform(float *out, const kiss_fft_cpx *in) {
+static void oaci_inverse_transform(float *out, const kiss_fft_cpx *in) {
     int i;
     kiss_fft_cpx x[WINDOW_SIZE];
     kiss_fft_cpx y[WINDOW_SIZE];
@@ -259,7 +259,7 @@ static void inverse_transform(float *out, const kiss_fft_cpx *in) {
     }
 }
 
-static float lpc_from_bands(float *lpc, const float *Ex) {
+static float oaci_lpc_from_bands(float *lpc, const float *Ex) {
     int i;
     float e;
     float ac[LPC_ORDER + 1];
@@ -271,14 +271,14 @@ static float lpc_from_bands(float *lpc, const float *Ex) {
     Xr[FREQ_SIZE - 1] = 0;
     OAC_CLEAR(X_auto, FREQ_SIZE);
     for (i = 0; i < FREQ_SIZE; i++) X_auto[i].r = Xr[i];
-    inverse_transform(x_auto, X_auto);
+    oaci_inverse_transform(x_auto, X_auto);
     for (i = 0; i < LPC_ORDER + 1; i++) ac[i] = x_auto[i];
 
     /* -40 dB noise floor. */
     ac[0] += ac[0]*1e-4 + 320/12/38.;
     /* Lag windowing. */
     for (i = 1; i < LPC_ORDER + 1; i++) ac[i] *= (1 - 6e-5*i*i);
-    e = lpcn_lpc(lpc, rc, ac, LPC_ORDER);
+    e = oaci_lpcn_lpc(lpc, rc, ac, LPC_ORDER);
     return e;
 }
 
@@ -297,9 +297,9 @@ float oaci_lpc_from_cepstrum(float *lpc, const float *cepstrum) {
     float tmp[NB_BANDS];
     OAC_COPY(tmp, cepstrum, NB_BANDS);
     tmp[0] += 4;
-    idct(Ex, tmp);
+    oaci_idct(Ex, tmp);
     for (i = 0; i < NB_BANDS; i++) Ex[i] = pow(10.f, Ex[i])*compensation[i];
-    return lpc_from_bands(lpc, Ex);
+    return oaci_lpc_from_bands(lpc, Ex);
 }
 
 void oaci_apply_window(float *x) {

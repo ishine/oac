@@ -57,7 +57,7 @@ typedef struct ec_ctx ec_dec;
 # define BITRES 3
 
 /*The entropy encoder/decoder context.
-   We use the same structure for both, so that common functions like ec_tell()
+   We use the same structure for both, so that common functions like oaci_ec_tell()
    can be used on either one.*/
 struct ec_ctx {
     /*Buffered input/output.*/
@@ -108,7 +108,7 @@ static OAC_INLINE int ec_get_error(ec_ctx *_this) {
    Return: The number of bits.
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
-static OAC_INLINE int ec_tell(ec_ctx *_this) {
+static OAC_INLINE int oaci_ec_tell(ec_ctx *_this) {
     return _this->nbits_total - EC_ILOG(_this->rng);
 }
 

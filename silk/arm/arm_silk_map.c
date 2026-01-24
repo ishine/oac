@@ -87,7 +87,7 @@ void  (*const oaci_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
     oaci_silk_NSQ_del_dec_neon,   /* dotprod */
 };
 
-/*There is no table for silk_noise_shape_quantizer_short_prediction because the
+/*There is no table for oaci_silk_noise_shape_quantizer_short_prediction because the
    NEON version takes different parameters than the C version.
    Instead RTCD is done via if statements at the call sites.
    See NSQ_neon.h for details.*/
@@ -96,11 +96,11 @@ oac_int32
 (*const SILK_NSQ_NOISE_SHAPE_FEEDBACK_LOOP_IMPL[OAC_ARCHMASK + 1])(
  const oac_int32 *data0, oac_int32 *data1, const oac_int16 *coef,
  oac_int order) = {
-    silk_NSQ_noise_shape_feedback_loop_c,  /* ARMv4 */
-    silk_NSQ_noise_shape_feedback_loop_c,  /* EDSP */
-    silk_NSQ_noise_shape_feedback_loop_c,  /* Media */
-    silk_NSQ_noise_shape_feedback_loop_neon, /* NEON */
-    silk_NSQ_noise_shape_feedback_loop_neon, /* dotprod */
+    oaci_silk_NSQ_noise_shape_feedback_loop_c,  /* ARMv4 */
+    oaci_silk_NSQ_noise_shape_feedback_loop_c,  /* EDSP */
+    oaci_silk_NSQ_noise_shape_feedback_loop_c,  /* Media */
+    oaci_silk_NSQ_noise_shape_feedback_loop_neon, /* NEON */
+    oaci_silk_NSQ_noise_shape_feedback_loop_neon, /* dotprod */
 };
 
 # endif

@@ -88,7 +88,7 @@ static const oac_int16 bark_freq[BARK_BANDS + 1] = {
     20000
 };
 
-static oac_int16 *compute_ebands(oac_int32 Fs, int frame_size, int res, int *nbEBands) {
+static oac_int16 *oaci_compute_ebands(oac_int32 Fs, int frame_size, int res, int *nbEBands) {
     oac_int16 *eBands;
     int i, j, lin, low, high, nBark, offset = 0;
 
@@ -159,7 +159,7 @@ static oac_int16 *compute_ebands(oac_int32 Fs, int frame_size, int res, int *nbE
     return eBands;
 }
 
-static void compute_allocation_table(CELTMode *mode) {
+static void oaci_compute_allocation_table(CELTMode *mode) {
     int i, j;
     unsigned char *allocVectors;
     int maxBands = sizeof(eband5ms)/sizeof(eband5ms[0]) - 1;
@@ -333,7 +333,7 @@ CELTMode *oac_custom_mode_create(oac_int32 Fs, int frame_size, int *error) {
     mode->shortMdctSize = frame_size/mode->nbShortMdcts;
     res = (mode->Fs + mode->shortMdctSize)/(2*mode->shortMdctSize);
 
-    mode->eBands = compute_ebands(Fs, mode->shortMdctSize, res, &mode->nbEBands);
+    mode->eBands = oaci_compute_ebands(Fs, mode->shortMdctSize, res, &mode->nbEBands);
     if (mode->eBands == NULL)
         goto failure;
 # if !defined(SMALL_FOOTPRINT)
@@ -352,7 +352,7 @@ CELTMode *oac_custom_mode_create(oac_int32 Fs, int frame_size, int *error) {
     /* Overlap must be divisible by 4 */
     mode->overlap = ((mode->shortMdctSize>>2)<<2);
 
-    compute_allocation_table(mode);
+    oaci_compute_allocation_table(mode);
     if (mode->allocVectors == NULL)
         goto failure;
 

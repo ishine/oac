@@ -64,7 +64,7 @@ typedef struct {
 
 typedef NSQ_sample_struct NSQ_sample_pair[ 2 ];
 
-static OAC_INLINE void silk_nsq_del_dec_scale_states_sse4_1(
+static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_sse4_1(
     const silk_encoder_state *psEncC,               /* I    Encoder State                       */
     silk_nsq_state      *NSQ,                       /* I/O  NSQ state                           */
     NSQ_del_dec_struct psDelDec[],                  /* I/O  Delayed decision states             */
@@ -84,7 +84,7 @@ static OAC_INLINE void silk_nsq_del_dec_scale_states_sse4_1(
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-static OAC_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_sse4_1(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                           */
     NSQ_del_dec_struct psDelDec[],              /* I/O  Delayed decision states             */
     oac_int signalType,                        /* I    Signal type                         */
@@ -291,10 +291,10 @@ void oaci_silk_NSQ_del_dec_sse4_1(
             }
         }
 
-        silk_nsq_del_dec_scale_states_sse4_1( psEncC, NSQ, psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
+        oaci_silk_nsq_del_dec_scale_states_sse4_1( psEncC, NSQ, psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
             psEncC->nStatesDelayedDecision, LTP_scale_Q14, Gains_Q16, pitchL, psIndices->signalType, decisionDelay );
 
-        silk_noise_shape_quantizer_del_dec_sse4_1( NSQ, psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq,
+        oaci_silk_noise_shape_quantizer_del_dec_sse4_1( NSQ, psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq,
         sLTP_Q15,
             delayedGain_Q10, A_Q12, B_Q14, AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ],
             Gains_Q16[ k ], Lambda_Q10, offset_Q10, psEncC->subfr_length, subfr++, psEncC->shapingLPCOrder,
@@ -356,7 +356,7 @@ void oaci_silk_NSQ_del_dec_sse4_1(
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-static OAC_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
+static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_sse4_1(
     silk_nsq_state      *NSQ,                   /* I/O  NSQ state                           */
     NSQ_del_dec_struct psDelDec[],              /* I/O  Delayed decision states             */
     oac_int signalType,                        /* I    Signal type                         */
@@ -788,7 +788,7 @@ static OAC_INLINE void silk_noise_shape_quantizer_del_dec_sse4_1(
     RESTORE_STACK;
 }
 
-static OAC_INLINE void silk_nsq_del_dec_scale_states_sse4_1(
+static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_sse4_1(
     const silk_encoder_state *psEncC,               /* I    Encoder State                       */
     silk_nsq_state      *NSQ,                       /* I/O  NSQ state                           */
     NSQ_del_dec_struct psDelDec[],                  /* I/O  Delayed decision states             */
