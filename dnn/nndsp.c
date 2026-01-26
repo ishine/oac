@@ -137,7 +137,7 @@ static void oaci_scale_kernel(
     }
 }
 
-static void transform_gains(
+static void oaci_transform_gains(
     float *gains,
     int num_gains,
     float filter_gain_a,
@@ -210,7 +210,7 @@ void oaci_adaconv_process_frame(
     print_float_vector("adaconv_kernel_raw", kernel_buffer, in_channels*out_channels*kernel_size);
     print_float_vector("adaconv_gain_raw", gain_buffer, out_channels);
 #endif
-    transform_gains(gain_buffer, out_channels, filter_gain_a, filter_gain_b);
+    oaci_transform_gains(gain_buffer, out_channels, filter_gain_a, filter_gain_b);
     oaci_scale_kernel(kernel_buffer, in_channels, out_channels, kernel_size, gain_buffer);
 
 #ifdef DEBUG_NNDSP

@@ -95,7 +95,7 @@ static OAC_INLINE void silk_CLZ_FRAC(
 /* Approximation of square root                                          */
 /* Accuracy: < +/- 10%  for output values > 15                           */
 /*           < +/- 2.5% for output values > 120                          */
-static OAC_INLINE oac_int32 silk_SQRT_APPROX( oac_int32 x ) {
+static OAC_INLINE oac_int32 oaci_silk_SQRT_APPROX( oac_int32 x ) {
     oac_int32 y, lz, frac_Q7;
 
     if (x <= 0) {
@@ -165,7 +165,7 @@ static OAC_INLINE oac_int32 silk_DIV32_varQ(   /* O    returns a good approximat
 }
 
 /* Invert int32 value and return result as int32 in a given Q-domain */
-static OAC_INLINE oac_int32 silk_INVERSE32_varQ(   /* O    returns a good approximation of "(1 << Qres) / b32" */
+static OAC_INLINE oac_int32 oaci_silk_INVERSE32_varQ(   /* O    returns a good approximation of "(1 << Qres) / b32" */
     const oac_int32 b32,                       /* I    denominator (Q0)                */
     const oac_int Qres                         /* I    Q-domain of result (> 0)        */
     ) {

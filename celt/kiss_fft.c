@@ -369,7 +369,7 @@ void oaci_compute_bitrev_table(
     p[i] * m[i] = m[i-1]
     m0 = n                  */
 static
-int kf_factor(int n, oac_int16 * facbuf) {
+int oaci_kf_factor(int n, oac_int16 * facbuf) {
     int p = 4;
     int i;
     int stages = 0;
@@ -485,7 +485,7 @@ kiss_fft_state *oac_fft_alloc_twiddles(int nfft, void * mem, size_t * lenmem,
             oaci_compute_twiddles(twiddles, nfft);
             st->shift = -1;
         }
-        if (!kf_factor(nfft, st->factors)) {
+        if (!oaci_kf_factor(nfft, st->factors)) {
             goto fail;
         }
 

@@ -98,14 +98,14 @@
 #if defined(__GNUC__) && defined(__SSE__)
 
 # include <xmmintrin.h>
-static OAC_INLINE oac_int32 float2int(float x) {
+static OAC_INLINE oac_int32 oaci_float2int(float x) {
     return _mm_cvt_ss2si(_mm_set_ss(x));
 }
 
 #elif (defined(_MSC_VER) && _MSC_VER >= 1400) && (defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1))
 
 # include <xmmintrin.h>
-static OAC_INLINE oac_int32 float2int(float value) {
+static OAC_INLINE oac_int32 oaci_float2int(float value) {
     /* _mm_load_ss will generate same code as _mm_set_ss
     ** in _MSC_VER >= 1914 /02 so keep __mm_load__ss
     ** for backward compatibility.
@@ -121,7 +121,7 @@ static OAC_INLINE oac_int32 float2int(float value) {
 **      Therefore implement OAC_INLINE versions of these functions here.
 */
 
-static OAC_INLINE oac_int32 float2int (float flt)                             {
+static OAC_INLINE oac_int32 oaci_float2int (float flt)                             {
     int intgr;
 
     _asm
@@ -134,7 +134,7 @@ static OAC_INLINE oac_int32 float2int (float flt)                             {
 #elif defined(__aarch64__)
 
 # include <arm_neon.h>
-static OAC_INLINE oac_int32 float2int(float flt) {
+static OAC_INLINE oac_int32 oaci_float2int(float flt) {
     return vcvtns_s32_f32(flt);
 }
 
@@ -154,7 +154,7 @@ static OAC_INLINE oac_int32 float2int(float flt) {
 # define __USE_ISOC99 1
 
 # include <math.h>
-# define float2int(x) lrintf(x)
+# define oaci_float2int(x) lrintf(x)
 
 #elif defined(HAVE_LRINT) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 
@@ -165,7 +165,7 @@ static OAC_INLINE oac_int32 float2int(float flt) {
 # define __USE_ISOC99 1
 
 # include <math.h>
-# define float2int(x) lrint(x)
+# define oaci_float2int(x) lrint(x)
 
 #else
 
@@ -175,7 +175,7 @@ static OAC_INLINE oac_int32 float2int(float flt) {
 #  warning "Replacing these functions with a standard C cast."
 # endif /* __STDC_VERSION__ >= 199901L */
 # include <math.h>
-# define float2int(flt) ((int)(floor(.5 + flt)))
+# define oaci_float2int(flt) ((int)(floor(.5 + flt)))
 #endif
 
 #ifndef DISABLE_FLOAT_API
@@ -183,21 +183,21 @@ static OAC_INLINE oac_int16 FLOAT2INT16(float x) {
     x = x*CELT_SIG_SCALE;
     x = MAX32(x, -32768);
     x = MIN32(x, 32767);
-    return (oac_int16)float2int(x);
+    return (oac_int16)oaci_float2int(x);
 }
 
 static OAC_INLINE oac_int32 FLOAT2INT24(float x) {
     x = x*(CELT_SIG_SCALE*256.f);
     x = MAX32(x, -16777216);
     x = MIN32(x, 16777216);
-    return float2int(x);
+    return oaci_float2int(x);
 }
 # ifdef FIXED_POINT
 static OAC_INLINE oac_int32 FLOAT2SIG(float x) {
     x = x*((oac_int32)32768<<SIG_SHIFT);
     x = MAX32(x, -(65536<<SIG_SHIFT));
     x = MIN32(x, 65536<<SIG_SHIFT);
-    return float2int(x);
+    return oaci_float2int(x);
 }
 # endif
 #endif /* DISABLE_FLOAT_API */

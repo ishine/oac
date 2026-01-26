@@ -75,7 +75,7 @@
 #include "celt/x86/x86cpu.h"
 
 /* Returns TRUE if all assumptions met */
-static OAC_INLINE int verify_assumptions(const silk_encoder_state *psEncC) {
+static OAC_INLINE int oaci_verify_assumptions(const silk_encoder_state *psEncC) {
     /* This optimization is based on these assumptions        */
     /* These assumptions are fundamental and hence assert are */
     /* used. Should any assert triggers, we have to re-visit  */
@@ -279,7 +279,7 @@ static __m128i oaci_silk_index_to_selector(oac_int32 index) {
         index + 3, index + 2, index + 1, index + 0);
 }
 
-static oac_int32 silk_select_winner(__m128i num, __m128i selector) {
+static oac_int32 oaci_silk_select_winner(__m128i num, __m128i selector) {
     return _mm_cvtsi128_si32(_mm_shuffle_epi8(num, selector));
 }
 
@@ -302,7 +302,7 @@ typedef struct {
     NSQ_del_dec_sample_struct Samples[DECISION_DELAY];
 } NSQ_del_dec_struct;
 
-static OAC_INLINE void silk_nsq_del_dec_scale_states_avx2(
+static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_avx2(
     const silk_encoder_state *psEncC,          /* I    Encoder State                   */
     silk_nsq_state *NSQ,                       /* I/O  NSQ state                       */
     NSQ_del_dec_struct *psDelDec,              /* I/O  Delayed decision states         */
@@ -324,7 +324,7 @@ static OAC_INLINE void silk_nsq_del_dec_scale_states_avx2(
 /* filter always starts with zero state    */
 /* first d output samples are set to zero  */
 /*******************************************/
-static OAC_INLINE void silk_LPC_analysis_filter_avx2(
+static OAC_INLINE void oaci_silk_LPC_analysis_filter_avx2(
     oac_int16                  *out,               /* O    Output signal                           */
     const oac_int16            *in,                /* I    Input signal                            */
     const oac_int16            *B,                 /* I    MA prediction coefficients, Q12 [order] */
@@ -395,7 +395,7 @@ void oaci_silk_NSQ_del_dec_avx2(
                        pitchL, Lambda_Q10, LTP_scale_Q14);
 #endif
 
-    if (!verify_assumptions(psEncC)) {
+    if (!oaci_verify_assumptions(psEncC)) {
         oaci_silk_NSQ_del_dec_c(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14,
         Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14);
         return;
@@ -503,12 +503,12 @@ void oaci_silk_NSQ_del_dec_avx2(
                         last_smple_idx = (last_smple_idx + DECISION_DELAY - 1)%DECISION_DELAY;
                         psSample = &psDelDec.Samples[last_smple_idx];
                         pulses[i - decisionDelay] =
-                            (oac_int8)silk_sar_round_32(silk_select_winner(psSample->Q_Q10, Winner_selector), 10);
+                            (oac_int8)silk_sar_round_32(oaci_silk_select_winner(psSample->Q_Q10, Winner_selector), 10);
                         pxq[i - decisionDelay] =
-                            silk_sat16((oac_int32)silk_sar_round_smulww(silk_select_winner(psSample->Xq_Q14,
+                            silk_sat16((oac_int32)silk_sar_round_smulww(oaci_silk_select_winner(psSample->Xq_Q14,
                         Winner_selector), Gains_Q16[1], 14));
                         NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - decisionDelay + i] =
-                            silk_select_winner(psSample->Shape_Q14, Winner_selector);
+                            oaci_silk_select_winner(psSample->Shape_Q14, Winner_selector);
                     }
 
                     subfr = 0;
@@ -518,7 +518,7 @@ void oaci_silk_NSQ_del_dec_avx2(
                 start_idx = psEncC->ltp_mem_length - lag - psEncC->predictLPCOrder - LTP_ORDER/2;
                 silk_assert(start_idx > 0);
 
-                silk_LPC_analysis_filter_avx2(&sLTP[start_idx], &NSQ->xq[start_idx + k*psEncC->subfr_length],
+                oaci_silk_LPC_analysis_filter_avx2(&sLTP[start_idx], &NSQ->xq[start_idx + k*psEncC->subfr_length],
                                               A_Q12, psEncC->ltp_mem_length - start_idx, psEncC->predictLPCOrder);
 
                 NSQ->sLTP_buf_idx = psEncC->ltp_mem_length;
@@ -526,7 +526,7 @@ void oaci_silk_NSQ_del_dec_avx2(
             }
         }
 
-        silk_nsq_del_dec_scale_states_avx2(psEncC, NSQ, &psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
+        oaci_silk_nsq_del_dec_scale_states_avx2(psEncC, NSQ, &psDelDec, x16, x_sc_Q10, sLTP, sLTP_Q15, k,
                                            LTP_scale_Q14, Gains_Q16, pitchL, psIndices->signalType, decisionDelay);
 
         oaci_silk_noise_shape_quantizer_del_dec_avx2(NSQ, &psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15,
@@ -547,7 +547,7 @@ void oaci_silk_NSQ_del_dec_avx2(
     Winner_selector = oaci_silk_index_to_selector(silk_index_of_first_equal_epi32(RDmin_Q10, psDelDec.RD_Q10));
 
     /* Copy final part of signals from winner state to output and long-term filter states */
-    psIndices->Seed = silk_select_winner(psDelDec.SeedInit, Winner_selector);
+    psIndices->Seed = oaci_silk_select_winner(psDelDec.SeedInit, Winner_selector);
     last_smple_idx = smpl_buf_idx + decisionDelay;
     Gain_Q10 = Gains_Q16[psEncC->nb_subfr - 1]>>6;
     for (i = 0; i < decisionDelay; i++) {
@@ -555,23 +555,23 @@ void oaci_silk_NSQ_del_dec_avx2(
         psSample = &psDelDec.Samples[last_smple_idx];
 
         pulses[i - decisionDelay] =
-            (oac_int8)silk_sar_round_32(silk_select_winner(psSample->Q_Q10, Winner_selector), 10);
+            (oac_int8)silk_sar_round_32(oaci_silk_select_winner(psSample->Q_Q10, Winner_selector), 10);
         pxq[i - decisionDelay] =
-            silk_sat16((oac_int32)silk_sar_round_smulww(silk_select_winner(psSample->Xq_Q14, Winner_selector), Gain_Q10,
+            silk_sat16((oac_int32)silk_sar_round_smulww(oaci_silk_select_winner(psSample->Xq_Q14, Winner_selector), Gain_Q10,
         8));
         NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - decisionDelay + i] =
-            silk_select_winner(psSample->Shape_Q14, Winner_selector);
+            oaci_silk_select_winner(psSample->Shape_Q14, Winner_selector);
     }
     for (i = 0; i < NSQ_LPC_BUF_LENGTH; i++) {
-        NSQ->sLPC_Q14[i] = silk_select_winner(psDelDec.sLPC_Q14[i], Winner_selector);
+        NSQ->sLPC_Q14[i] = oaci_silk_select_winner(psDelDec.sLPC_Q14[i], Winner_selector);
     }
     for (i = 0; i < MAX_SHAPE_LPC_ORDER; i++) {
-        NSQ->sAR2_Q14[i] = silk_select_winner(psDelDec.sAR2_Q14[i], Winner_selector);
+        NSQ->sAR2_Q14[i] = oaci_silk_select_winner(psDelDec.sAR2_Q14[i], Winner_selector);
     }
 
     /* Update states */
-    NSQ->sLF_AR_shp_Q14 = silk_select_winner(psDelDec.LF_AR_Q14, Winner_selector);
-    NSQ->sDiff_shp_Q14 = silk_select_winner(psDelDec.Diff_Q14, Winner_selector);
+    NSQ->sLF_AR_shp_Q14 = oaci_silk_select_winner(psDelDec.LF_AR_Q14, Winner_selector);
+    NSQ->sDiff_shp_Q14 = oaci_silk_select_winner(psDelDec.Diff_Q14, Winner_selector);
     NSQ->lagPrev = pitchL[psEncC->nb_subfr - 1];
 
     /* Save quantized speech signal */
@@ -893,14 +893,14 @@ static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_avx2(
         /* Write samples from winner to output and long-term filter states */
         if (subfr > 0 || i >= decisionDelay) {
             pulses[i - decisionDelay] =
-                (oac_int8)silk_sar_round_32(silk_select_winner(psLastSample->Q_Q10, Winner_selector), 10);
+                (oac_int8)silk_sar_round_32(oaci_silk_select_winner(psLastSample->Q_Q10, Winner_selector), 10);
             xq[i - decisionDelay] =
-                silk_sat16((oac_int32)silk_sar_round_smulww(silk_select_winner(psLastSample->Xq_Q14, Winner_selector),
+                silk_sat16((oac_int32)silk_sar_round_smulww(oaci_silk_select_winner(psLastSample->Xq_Q14, Winner_selector),
             delayedGain_Q10[last_smple_idx], 8));
             NSQ->sLTP_shp_Q14[NSQ->sLTP_shp_buf_idx - decisionDelay] =
-                silk_select_winner(psLastSample->Shape_Q14, Winner_selector);
+                oaci_silk_select_winner(psLastSample->Shape_Q14, Winner_selector);
             sLTP_Q15[NSQ->sLTP_buf_idx - decisionDelay] =
-                silk_select_winner(psLastSample->Pred_Q15, Winner_selector);
+                oaci_silk_select_winner(psLastSample->Pred_Q15, Winner_selector);
         }
         NSQ->sLTP_shp_buf_idx++;
         NSQ->sLTP_buf_idx++;
@@ -925,7 +925,7 @@ static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_avx2(
     }
 }
 
-static OAC_INLINE void silk_nsq_del_dec_scale_states_avx2(
+static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_avx2(
     const silk_encoder_state *psEncC,          /* I    Encoder State                   */
     silk_nsq_state *NSQ,                       /* I/O  NSQ state                       */
     NSQ_del_dec_struct *psDelDec,              /* I/O  Delayed decision states         */
@@ -946,7 +946,7 @@ static OAC_INLINE void silk_nsq_del_dec_scale_states_avx2(
     NSQ_del_dec_sample_struct *psSample;
 
     lag = pitchL[subfr];
-    inv_gain_Q31 = silk_INVERSE32_varQ(silk_max(Gains_Q16[subfr], 1), 47);
+    inv_gain_Q31 = oaci_silk_INVERSE32_varQ(silk_max(Gains_Q16[subfr], 1), 47);
     silk_assert(inv_gain_Q31 != 0);
 
     /* Scale input */
@@ -1009,7 +1009,7 @@ static OAC_INLINE void silk_nsq_del_dec_scale_states_avx2(
     }
 }
 
-static OAC_INLINE void silk_LPC_analysis_filter_avx2(
+static OAC_INLINE void oaci_silk_LPC_analysis_filter_avx2(
     oac_int16                  *out,               /* O    Output signal                           */
     const oac_int16            *in,                /* I    Input signal                            */
     const oac_int16            *B,                 /* I    MA prediction coefficients, Q12 [order] */

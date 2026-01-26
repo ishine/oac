@@ -205,7 +205,7 @@ typedef oac_val32 celt_coef;
 # define MULT_COEF_TAPS(a, b) SHL32(MULT16_16(a, b), 1)
 # define COEF2VAL16(x) EXTRACT16(SHR32(x, 16))
 
-# define celt_isnan(x) 0
+# define oaci_celt_isnan(x) 0
 
 # define Q15ONE 32767
 # define Q31ONE 2147483647
@@ -276,7 +276,7 @@ typedef float celt_coef;
 # ifdef FLOAT_APPROX
 /* This code should reliably detect NaN/inf even when -ffast-math is used.
    Assumes IEEE 754 format. */
-static OAC_INLINE int celt_isnan(float x) {
+static OAC_INLINE int oaci_celt_isnan(float x) {
     union {float f; oac_uint32 i;} in;
     in.f = x;
     return ((in.i>>23)&0xFF) == 0xFF && (in.i&0x007FFFFF) != 0;
@@ -286,7 +286,7 @@ static OAC_INLINE int celt_isnan(float x) {
 #   error \
     Cannot build liboac with -ffast-math unless FLOAT_APPROX is defined. This could result in crashes on extreme (e.g. NaN) input
 #  endif
-#  define celt_isnan(x) ((x) != (x))
+#  define oaci_celt_isnan(x) ((x) != (x))
 # endif
 
 # define Q15ONE 1.0f
@@ -378,7 +378,7 @@ static OAC_INLINE int celt_isnan(float x) {
 
 # define SIG2RES(a)      ((1/CELT_SIG_SCALE)*(a))
 # define RES2INT16(a)    FLOAT2INT16(a)
-# define RES2INT24(a)    float2int(32768.f*256.f*(a))
+# define RES2INT24(a)    oaci_float2int(32768.f*256.f*(a))
 # define RES2FLOAT(a)    (a)
 # define INT16TORES(a)   ((a)*(1/CELT_SIG_SCALE))
 # define INT24TORES(a)   ((1.f/32768.f/256.f)*(a))

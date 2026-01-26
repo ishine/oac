@@ -75,7 +75,7 @@
 /************************************************************/
 /* Internally used functions                                */
 /************************************************************/
-static void silk_P_Ana_calc_corr_st3(
+static void oaci_silk_P_Ana_calc_corr_st3(
     silk_float cross_corr_st3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ][ PE_NB_STAGE3_LAGS ], /* O 3 DIM correlation array */
     const silk_float frame[],               /* I vector to correlate                                            */
     oac_int start_lag,                     /* I start lag                                                      */
@@ -85,7 +85,7 @@ static void silk_P_Ana_calc_corr_st3(
     int arch                                /* I Run-time architecture                                          */
     );
 
-static void silk_P_Ana_calc_energy_st3(
+static void oaci_silk_P_Ana_calc_energy_st3(
     silk_float energies_st3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ][ PE_NB_STAGE3_LAGS ], /* O 3 DIM correlation array */
     const silk_float frame[],               /* I vector to correlate                                            */
     oac_int start_lag,                     /* I start lag                                                      */
@@ -171,14 +171,14 @@ oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voic
         silk_float2short_array( frame_16_FIX, frame, frame_length );
         silk_memset( filt_state, 0, 2*sizeof(oac_int32));
         oaci_silk_resampler_down2( filt_state, frame_8_FIX, frame_16_FIX, frame_length );
-        silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
+        oaci_silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
     } else if (Fs_kHz == 12) {
         /* Resample to 12 -> 8 khz */
         oac_int16 frame_12_FIX[ 12*PE_MAX_FRAME_LENGTH_MS ];
         silk_float2short_array( frame_12_FIX, frame, frame_length );
         silk_memset( filt_state, 0, 6*sizeof(oac_int32));
         oaci_silk_resampler_down2_3( filt_state, frame_8_FIX, frame_12_FIX, frame_length );
-        silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
+        oaci_silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
     } else {
         celt_assert( Fs_kHz == 8 );
         silk_float2short_array( frame_8_FIX, frame, frame_length_8kHz );
@@ -187,7 +187,7 @@ oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voic
     /* Decimate again to 4 kHz */
     silk_memset( filt_state, 0, 2*sizeof(oac_int32));
     oaci_silk_resampler_down2( filt_state, frame_4_FIX, frame_8_FIX, frame_length_8kHz );
-    silk_short2float_array( frame_4kHz, frame_4_FIX, frame_length_4kHz );
+    oaci_silk_short2float_array( frame_4kHz, frame_4_FIX, frame_length_4kHz );
 
     /* Low-pass filter */
     for (i = frame_length_4kHz - 1; i > 0; i--) {
@@ -351,7 +351,7 @@ oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voic
         } else if (Fs_kHz == 16) {
             prevLag = silk_RSHIFT( prevLag, 1 );
         }
-        prevLag_log2 = silk_log2((silk_float)prevLag );
+        prevLag_log2 = oaci_silk_log2((silk_float)prevLag );
     } else {
         prevLag_log2 = 0;
     }
@@ -392,7 +392,7 @@ oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voic
         }
 
         /* Bias towards shorter lags */
-        lag_log2 = silk_log2((silk_float)d );
+        lag_log2 = oaci_silk_log2((silk_float)d );
         CCmax_new_b = CCmax_new - PE_SHORTLAG_BIAS*nb_subfr*lag_log2;
 
         /* Bias towards previous lag */
@@ -445,8 +445,8 @@ oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voic
         CCmax = -1000.0f;
 
         /* Calculate the correlations and energies needed in stage 3 */
-        silk_P_Ana_calc_corr_st3( cross_corr_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
-        silk_P_Ana_calc_energy_st3( energies_st3, frame, start_lag, sf_length, nb_subfr, complexity );
+        oaci_silk_P_Ana_calc_corr_st3( cross_corr_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
+        oaci_silk_P_Ana_calc_energy_st3( energies_st3, frame, start_lag, sf_length, nb_subfr, complexity );
 
         lag_counter = 0;
         silk_assert( lag == silk_SAT16( lag ));
@@ -523,7 +523,7 @@ oac_int oaci_silk_pitch_analysis_core_FLP(      /* O    Voicing estimate: 0 voic
 * In total 48 correlations. The direct implementation computed in worst
 * case 4*12*5 = 240 correlations, but more likely around 120.
 ***********************************************************************/
-static void silk_P_Ana_calc_corr_st3(
+static void oaci_silk_P_Ana_calc_corr_st3(
     silk_float cross_corr_st3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ][ PE_NB_STAGE3_LAGS ], /* O 3 DIM correlation array */
     const silk_float frame[],               /* I vector to correlate                                            */
     oac_int start_lag,                     /* I start lag                                                      */
@@ -590,7 +590,7 @@ static void silk_P_Ana_calc_corr_st3(
 /* Calculate the energies for first two subframes. The energies are */
 /* calculated recursively.                                          */
 /********************************************************************/
-static void silk_P_Ana_calc_energy_st3(
+static void oaci_silk_P_Ana_calc_energy_st3(
     silk_float energies_st3[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ][ PE_NB_STAGE3_LAGS ], /* O 3 DIM correlation array */
     const silk_float frame[],               /* I vector to correlate                                            */
     oac_int start_lag,                     /* I start lag                                                      */

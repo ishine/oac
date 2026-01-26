@@ -385,7 +385,7 @@ static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec(
     oac_int32 q1_Q0, q1_Q10, q2_Q10, exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
     oac_int32 tmp1, tmp2, sLF_AR_shp_Q14;
     oac_int32   *pred_lag_ptr, *shp_lag_ptr, *psLPC_Q14;
-# ifdef silk_short_prediction_create_arch_coef
+# ifdef oaci_silk_short_prediction_create_arch_coef
     oac_int32 a_Q12_arch[MAX_LPC_ORDER];
 # endif
 
@@ -401,8 +401,8 @@ static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec(
     pred_lag_ptr = &sLTP_Q15[ NSQ->sLTP_buf_idx - lag + LTP_ORDER/2 ];
     Gain_Q10     = silk_RSHIFT( Gain_Q16, 6 );
 
-# ifdef silk_short_prediction_create_arch_coef
-    silk_short_prediction_create_arch_coef(a_Q12_arch, a_Q12, predictLPCOrder);
+# ifdef oaci_silk_short_prediction_create_arch_coef
+    oaci_silk_short_prediction_create_arch_coef(a_Q12_arch, a_Q12, predictLPCOrder);
 # endif
 
     for (i = 0; i < length; i++) {
@@ -706,7 +706,7 @@ static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states(
     NSQ_del_dec_struct  *psDD;
 
     lag          = pitchL[ subfr ];
-    inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
+    inv_gain_Q31 = oaci_silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
     silk_assert( inv_gain_Q31 != 0 );
 
     /* Scale input */

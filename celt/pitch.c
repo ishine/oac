@@ -130,7 +130,7 @@ static void oaci_find_best_pitch(oac_val32 *xcorr, oac_val16 *y, int len,
     }
 }
 
-static void celt_fir5(oac_val16 *x,
+static void oaci_celt_fir5(oac_val16 *x,
                       const oac_val16 *num,
                       int N) {
     int i;
@@ -240,7 +240,7 @@ void oaci_pitch_downsample(celt_sig * OAC_RESTRICT x[], oac_val16 * OAC_RESTRICT
     lpc2[2] = lpc[2] + MULT16_16_Q15(c1, lpc[1]);
     lpc2[3] = lpc[3] + MULT16_16_Q15(c1, lpc[2]);
     lpc2[4] = MULT16_16_Q15(c1, lpc[3]);
-    celt_fir5(x_lp, lpc2, len);
+    oaci_celt_fir5(x_lp, lpc2, len);
 }
 
 /* Pure C implementation. */
@@ -504,7 +504,7 @@ oac_val16 oaci_remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
         oac_val16 g1;
         oac_val16 cont = 0;
         oac_val16 thresh;
-        T1 = celt_udiv(2*T0 + k, 2*k);
+        T1 = oaci_celt_udiv(2*T0 + k, 2*k);
         if (T1 < minperiod)
             break;
         /* Look for another strong correlation at T1b */
@@ -514,7 +514,7 @@ oac_val16 oaci_remove_doubling(oac_val16 *x, int maxperiod, int minperiod,
             else
                 T1b = T0 + T1;
         } else {
-            T1b = celt_udiv(2*second_check[k]*T0 + k, 2*k);
+            T1b = oaci_celt_udiv(2*second_check[k]*T0 + k, 2*k);
         }
         oaci_dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2, arch);
         xy = HALF32(xy + xy2);

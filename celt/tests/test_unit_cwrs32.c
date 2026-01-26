@@ -154,14 +154,14 @@ int main(void) {
                 int j;
 #if defined(SMALL_FOOTPRINT)
                 memcpy(u, uu, (k + 2U)*sizeof(*u));
-                cwrsi(n, k, i, y, u);
+                oaci_cwrsi(n, k, i, y, u);
 #else
-                cwrsi(n, k, i, y);
+                oaci_cwrsi(n, k, i, y);
 #endif
                 sy = 0;
                 for (j = 0; j < n; j++) sy += abs(y[j]);
                 if (sy != k) {
-                    fprintf(stderr, "N=%d Pulse count mismatch in cwrsi (%d!=%d).\n",
+                    fprintf(stderr, "N=%d Pulse count mismatch in oaci_cwrsi (%d!=%d).\n",
            n, sy, k);
                     return 99;
                 }
@@ -169,9 +169,9 @@ int main(void) {
                    for(j=0;j<n;j++)printf(" %+3i",y[j]);
                    printf(" ->");*/
 #if defined(SMALL_FOOTPRINT)
-                ii = icwrs(n, k, &v, y, u);
+                ii = oaci_icwrs(n, k, &v, y, u);
 #else
-                ii = icwrs(n, y);
+                ii = oaci_icwrs(n, y);
                 v = CELT_PVQ_V(n, k);
 #endif
                 if (ii != i) {

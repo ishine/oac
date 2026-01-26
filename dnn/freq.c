@@ -220,7 +220,7 @@ void oaci_burg_cepstral_analysis(float *ceps, const float *x) {
 }
 
 
-static void interp_band_gain(float *g, const float *bandE) {
+static void oaci_interp_band_gain(float *g, const float *bandE) {
     int i;
     memset(g, 0, FREQ_SIZE);
     for (i = 0; i < NB_BANDS - 1; i++) {
@@ -300,7 +300,7 @@ static float oaci_lpc_from_bands(float *lpc, const float *Ex) {
     float Xr[FREQ_SIZE];
     kiss_fft_cpx X_auto[FREQ_SIZE];
     float x_auto[WINDOW_SIZE];
-    interp_band_gain(Xr, Ex);
+    oaci_interp_band_gain(Xr, Ex);
     Xr[FREQ_SIZE - 1] = 0;
     OAC_CLEAR(X_auto, FREQ_SIZE);
     for (i = 0; i < FREQ_SIZE; i++) X_auto[i].r = Xr[i];

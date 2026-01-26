@@ -126,7 +126,7 @@ static OAC_INLINE oac_int32 oaci_LPC_inverse_pred_gain_QA_neon( /* O   Returns i
 
         /* rc_mult2 range: [ 2^30 : silk_int32_MAX ] */
         mult2Q = 32 - silk_CLZ32( silk_abs( rc_mult1_Q30 ));
-        rc_mult2 = silk_INVERSE32_varQ( rc_mult1_Q30, mult2Q + 30 );
+        rc_mult2 = oaci_silk_INVERSE32_varQ( rc_mult1_Q30, mult2Q + 30 );
 
         /* Update AR coefficient */
         rc_Q31_s32x2   = vdup_n_s32( rc_Q31 );

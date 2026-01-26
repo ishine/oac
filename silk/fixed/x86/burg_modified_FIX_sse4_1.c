@@ -331,7 +331,7 @@ void oaci_silk_burg_modified_sse4_1(
         if (tmp1 <= minInvGain_Q30) {
             /* Max prediction gain exceeded; set reflection coefficient such that max prediction gain is exactly hit */
             tmp2 = ((oac_int32)1<<30) - silk_DIV32_varQ( minInvGain_Q30, invGain_Q30, 30 );                /* Q30 */
-            rc_Q31 = silk_SQRT_APPROX( tmp2 );                                                  /* Q15 */
+            rc_Q31 = oaci_silk_SQRT_APPROX( tmp2 );                                                  /* Q15 */
             if (rc_Q31 > 0) {
                 /* Newton-Raphson iteration */
                 rc_Q31 = silk_RSHIFT32( rc_Q31 + silk_DIV32( tmp2, rc_Q31 ), 1 );                   /* Q15 */

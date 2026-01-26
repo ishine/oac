@@ -157,7 +157,7 @@ void oaci_exp_rotation(celt_norm *X, int len, int dir, int stride, int K, int sp
     }
     /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
        oaci_extract_collapse_mask().*/
-    len = celt_udiv(len, stride);
+    len = oaci_celt_udiv(len, stride);
     for (i = 0; i < stride; i++) {
         if (dir < 0) {
             if (stride2)
@@ -212,7 +212,7 @@ static unsigned oaci_extract_collapse_mask(int *iy, int N, int B) {
         return 1;
     /*NOTE: As a minor optimization, we could be passing around log2(B), not B, for both this and for
        oaci_exp_rotation().*/
-    N0 = celt_udiv(N, B);
+    N0 = oaci_celt_udiv(N, B);
     collapse_mask = 0;
     i = 0; do {
         int j;
@@ -492,9 +492,9 @@ oac_int32 oaci_stereo_itheta(const celt_norm *X, const celt_norm *Y, int stereo,
     mid = oaci_celt_sqrt32(Emid);
     side = oaci_celt_sqrt32(Eside);
 #if defined(FIXED_POINT)
-    itheta = celt_atan2p_norm(side, mid);
+    itheta = oaci_celt_atan2p_norm(side, mid);
 #else
-    itheta = (int)floor(.5f + 65536.f*16384*celt_atan2p_norm(side, mid));
+    itheta = (int)floor(.5f + 65536.f*16384*oaci_celt_atan2p_norm(side, mid));
 #endif
 
     return itheta;

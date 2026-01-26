@@ -480,7 +480,7 @@ static int oaci_write_extension_payload(unsigned char *data, oac_int32 len,
     return pos;
 }
 
-static int write_extension(unsigned char *data, oac_int32 len, oac_int32 pos,
+static int oaci_write_extension(unsigned char *data, oac_int32 len, oac_int32 pos,
                            const oac_extension_data *ext, int last) {
     if (len - pos < 1)
         return OAC_BUFFER_TOO_SMALL;
@@ -594,7 +594,7 @@ oac_int32 oac_packet_extensions_generate(unsigned char *data, oac_int32 len,
                     curr_frame = f;
                 }
 
-                pos = write_extension(data, len, pos, extensions + i,
+                pos = oaci_write_extension(data, len, pos, extensions + i,
              written == nb_extensions - 1);
                 if (pos < 0) return pos;
                 written++;

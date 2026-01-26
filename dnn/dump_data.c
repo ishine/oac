@@ -198,7 +198,7 @@ static float randf(float f) {
     return f*rand()/(double)RAND_MAX;
 }
 
-static void biquad(float *y, float mem[2], const float *x, const float *b, const float *a, int N) {
+static void oaci_biquad(float *y, float mem[2], const float *x, const float *b, const float *a, int N) {
     int i;
     for (i = 0; i < N; i++) {
         float xi, yi;
@@ -252,7 +252,7 @@ static float weighted_rms(float *x) {
     float weighting_a[2] = {-1.89f, .895f};
     float mem[2] = {0};
     float mse = 1e-15f;
-    biquad(tmp, mem, x, weighting_b, weighting_a, SEQUENCE_SAMPLES);
+    oaci_biquad(tmp, mem, x, weighting_b, weighting_a, SEQUENCE_SAMPLES);
     for (i = 0; i < SEQUENCE_SAMPLES; i++) mse += tmp[i]*tmp[i];
     return 0.9506*sqrt(mse/SEQUENCE_SAMPLES);
 }
@@ -429,13 +429,13 @@ int main(int argc, char **argv) {
         }
 
         OAC_CLEAR(mem, 2);
-        biquad(x, mem, x, b_hp, a_hp, SEQUENCE_LENGTH*FRAME_SIZE);
+        oaci_biquad(x, mem, x, b_hp, a_hp, SEQUENCE_LENGTH*FRAME_SIZE);
         OAC_CLEAR(mem, 2);
-        biquad(x, mem, x, b_sig, a_sig, SEQUENCE_LENGTH*FRAME_SIZE);
+        oaci_biquad(x, mem, x, b_sig, a_sig, SEQUENCE_LENGTH*FRAME_SIZE);
         OAC_CLEAR(mem, 2);
-        biquad(n, mem, n, b_hp, a_hp, SEQUENCE_LENGTH*FRAME_SIZE);
+        oaci_biquad(n, mem, n, b_hp, a_hp, SEQUENCE_LENGTH*FRAME_SIZE);
         OAC_CLEAR(mem, 2);
-        biquad(n, mem, n, b_noise, a_noise, SEQUENCE_LENGTH*FRAME_SIZE);
+        oaci_biquad(n, mem, n, b_noise, a_noise, SEQUENCE_LENGTH*FRAME_SIZE);
 
         speech_rms = weighted_rms(x);
         noise_rms = weighted_rms(n);

@@ -90,7 +90,7 @@ unsigned oaci_isqrt32(oac_uint32 _val);
 # define cB 0.67848403f
 # define cC 0.08595542f
 # define cE ((float)PI/2)
-static OAC_INLINE float fast_atan2f(float y, float x) {
+static OAC_INLINE float oaci_fast_atan2f(float y, float x) {
     float x2, y2;
     x2 = x*x;
     y2 = y*y;
@@ -192,7 +192,7 @@ static OAC_INLINE float oaci_celt_atan_norm(float x) {
 /* Calculates the arctangent of y/x, returning an approximate value in radians.
  * Please refer to the linked wiki page (https://en.wikipedia.org/wiki/Atan2)
  * to learn how atan2 results are computed. */
-static OAC_INLINE float celt_atan2p_norm(float y, float x) {
+static OAC_INLINE float oaci_celt_atan2p_norm(float y, float x) {
     celt_sig_assert(x >= 0 && y >= 0);
 
     /* For very small values, we don't care about the answer. */
@@ -211,7 +211,7 @@ static OAC_INLINE float celt_atan2p_norm(float y, float x) {
 #if !defined(FIXED_POINT)
 /* Computes estimated cosine values for (PI/2 * x) using only terms with even
  * exponents. */
-static OAC_INLINE float celt_cos_norm2(float x) {
+static OAC_INLINE float oaci_celt_cos_norm2(float x) {
     float x_norm_sq;
     int output_sign;
     /* Restrict x to [-1, 3]. */
@@ -369,7 +369,7 @@ static OAC_INLINE float oaci_celt_exp2(float x) {
 # define celt_exp2_db oaci_celt_exp2
 # define oaci_celt_log2_db oaci_celt_log2
 
-# define oaci_celt_sin(x) celt_cos_norm2((0.5f*PI)*(x) - 1.0f)
+# define oaci_celt_sin(x) oaci_celt_cos_norm2((0.5f*PI)*(x) - 1.0f)
 # define celt_log(x) (oaci_celt_log2(x)*0.6931471805599453f)
 # define celt_exp(x) (oaci_celt_exp2((x)*1.4426950408889634f))
 
@@ -592,7 +592,7 @@ static OAC_INLINE oac_val32 oaci_celt_atan_norm(oac_val32 x) {
  * the value in Q30 format. Both input values (x and y) must be within the range
  * of 0 to 1 and represented in Q30 format. Inputs must be zero or greater, and
  * at least one input must be non-zero. */
-static OAC_INLINE oac_val32 celt_atan2p_norm(oac_val32 y, oac_val32 x) {
+static OAC_INLINE oac_val32 oaci_celt_atan2p_norm(oac_val32 y, oac_val32 x) {
     celt_sig_assert(x >= 0 && y >= 0);
     if (y == 0 && x == 0) {
         return 0;

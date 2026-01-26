@@ -225,7 +225,7 @@ int oac_decode_native(OacDecoder *st, const unsigned char *data, oac_int32 len,
     oac_int32 *packet_offset, int soft_clip, const OacDRED *dred, oac_int32 dred_offset);
 
 /* Make sure everything is properly aligned. */
-static OAC_INLINE int align(int i) {
+static OAC_INLINE int oaci_align(int i) {
     struct foo {char c; union { void* p; oac_int32 i; oac_val32 v; } u;};
 
     unsigned int alignment = offsetof(struct foo, u);

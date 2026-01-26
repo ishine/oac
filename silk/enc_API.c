@@ -81,7 +81,7 @@
 /***************************************/
 /* Read control structure from encoder */
 /***************************************/
-static oac_int silk_QueryEncoder(                      /* O    Returns error code                              */
+static oac_int oaci_silk_QueryEncoder(                      /* O    Returns error code                              */
     const void                      *encState,          /* I    State                                           */
     silk_EncControlStruct           *encStatus          /* O    Encoder Status                                  */
     );
@@ -131,7 +131,7 @@ oac_int oaci_silk_InitEncoder(                              /* O    Returns erro
     psEnc->nChannelsInternal = 1;
 
     /* Read control structure */
-    if (ret += silk_QueryEncoder( encState, encStatus )) {
+    if (ret += oaci_silk_QueryEncoder( encState, encStatus )) {
         celt_assert( 0 );
     }
 
@@ -141,7 +141,7 @@ oac_int oaci_silk_InitEncoder(                              /* O    Returns erro
 /***************************************/
 /* Read control structure from encoder */
 /***************************************/
-static oac_int silk_QueryEncoder(                      /* O    Returns error code                              */
+static oac_int oaci_silk_QueryEncoder(                      /* O    Returns error code                              */
     const void                      *encState,          /* I    State                                           */
     silk_EncControlStruct           *encStatus          /* O    Encoder Status                                  */
     ) {

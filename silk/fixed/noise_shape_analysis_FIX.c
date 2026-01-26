@@ -70,7 +70,7 @@
 /* non-warped frequency scale. (So that it can be implemented with a minimum-phase monic filter.) */
 /* Note: A monic filter is one with the first coefficient equal to 1.0. In Silk we omit the first */
 /* coefficient in an array of coefficients, for monic filters.                                    */
-static OAC_INLINE oac_int32 warped_gain( /* gain in Q16*/
+static OAC_INLINE oac_int32 oaci_warped_gain( /* gain in Q16*/
     const oac_int32     *coefs_Q24,
     oac_int lambda_Q16,
     oac_int order) {
@@ -83,7 +83,7 @@ static OAC_INLINE oac_int32 warped_gain( /* gain in Q16*/
         gain_Q24 = silk_SMLAWB( coefs_Q24[ i ], gain_Q24, lambda_Q16 );
     }
     gain_Q24  = silk_SMLAWB( SILK_FIX_CONST( 1.0, 24 ), gain_Q24, -lambda_Q16 );
-    return silk_INVERSE32_varQ( gain_Q24, 40 );
+    return oaci_silk_INVERSE32_varQ( gain_Q24, 40 );
 }
 
 /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
@@ -132,7 +132,7 @@ static OAC_INLINE void oaci_limit_warped_coefs(
         for (i = 1; i < order; i++) {
             coefs_Q24[ i - 1 ] = silk_SMLAWB( coefs_Q24[ i - 1 ], coefs_Q24[ i ], lambda_Q16 );
         }
-        gain_Q16 = silk_INVERSE32_varQ( gain_Q16, 32 );
+        gain_Q16 = oaci_silk_INVERSE32_varQ( gain_Q16, 32 );
         for (i = 0; i < order; i++) {
             coefs_Q24[ i ] = silk_SMULWW( gain_Q16, coefs_Q24[ i ] );
         }
@@ -317,14 +317,14 @@ void oaci_silk_noise_shape_analysis_FIX(
             nrg >>= 1;
         }
 
-        tmp32 = silk_SQRT_APPROX( nrg );
+        tmp32 = oaci_silk_SQRT_APPROX( nrg );
         Qnrg >>= 1;             /* range: -6...15*/
 
         psEncCtrl->Gains_Q16[ k ] = silk_LSHIFT_SAT32( tmp32, 16 - Qnrg );
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Adjust gain for warping */
-            gain_mult_Q16 = warped_gain( AR_Q24, warping_Q16, psEnc->sCmn.shapingLPCOrder );
+            gain_mult_Q16 = oaci_warped_gain( AR_Q24, warping_Q16, psEnc->sCmn.shapingLPCOrder );
             silk_assert( psEncCtrl->Gains_Q16[ k ] > 0 );
             if (psEncCtrl->Gains_Q16[ k ] < SILK_FIX_CONST( 0.25, 16 )) {
                 psEncCtrl->Gains_Q16[ k ] = silk_SMULWW( psEncCtrl->Gains_Q16[ k ], gain_mult_Q16 );
@@ -419,7 +419,7 @@ void oaci_silk_noise_shape_analysis_FIX(
 
         /* Less harmonic noise shaping for less periodic signals */
         HarmShapeGain_Q16 = silk_SMULWB( silk_LSHIFT( HarmShapeGain_Q16, 1 ),
-            silk_SQRT_APPROX( silk_LSHIFT( psEnc->LTPCorr_Q15, 15 )));
+            oaci_silk_SQRT_APPROX( silk_LSHIFT( psEnc->LTPCorr_Q15, 15 )));
     } else {
         HarmShapeGain_Q16 = 0;
     }

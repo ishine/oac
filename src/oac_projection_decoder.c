@@ -139,16 +139,16 @@ static void oac_projection_copy_channel_out_int24(
       src_stride, short_dst, dst_stride, frame_size);
 }
 
-static MappingMatrix *get_dec_demixing_matrix(OacProjectionDecoder *st) {
-    /* void* cast avoids clang -Wcast-align warning */
+static MappingMatrix *oaci_get_dec_demixing_matrix(OacProjectionDecoder *st) {
+    /* void* cast avoids clang -Wcast-oaci_align warning */
     return (MappingMatrix*)(void*)((char*)st
-                                   + align(sizeof(OacProjectionDecoder)));
+                                   + oaci_align(sizeof(OacProjectionDecoder)));
 }
 
 static OacMSDecoder *oaci_get_multistream_decoder(OacProjectionDecoder *st) {
-    /* void* cast avoids clang -Wcast-align warning */
+    /* void* cast avoids clang -Wcast-oaci_align warning */
     return (OacMSDecoder*)(void*)((char*)st
-                                  + align(sizeof(OacProjectionDecoder)
+                                  + oaci_align(sizeof(OacProjectionDecoder)
                                       + st->demixing_matrix_size_in_bytes));
 }
 
@@ -166,7 +166,7 @@ oac_int32 oac_projection_decoder_get_size(int channels, int streams,
     if (!decoder_size)
         return 0;
 
-    return align(sizeof(OacProjectionDecoder)) + matrix_size + decoder_size;
+    return oaci_align(sizeof(OacProjectionDecoder)) + matrix_size + decoder_size;
 }
 
 int oac_projection_decoder_init(OacProjectionDecoder *st, oac_int32 Fs,
@@ -203,7 +203,7 @@ int oac_projection_decoder_init(OacProjectionDecoder *st, oac_int32 Fs,
         return OAC_BAD_ARG;
     }
 
-    oaci_mapping_matrix_init(get_dec_demixing_matrix(st), channels, nb_input_streams, 0,
+    oaci_mapping_matrix_init(oaci_get_dec_demixing_matrix(st), channels, nb_input_streams, 0,
     buf, demixing_matrix_size);
 
     /* Set trivial mapping so each input channel pairs with a matrix column. */
@@ -260,7 +260,7 @@ int oac_projection_decode(OacProjectionDecoder *st, const unsigned char *data,
                           int decode_fec) {
     return oac_multistream_decode_native(oaci_get_multistream_decoder(st), data, len,
     pcm, oac_projection_copy_channel_out_short, frame_size, decode_fec, OPTIONAL_CLIP,
-    get_dec_demixing_matrix(st));
+    oaci_get_dec_demixing_matrix(st));
 }
 
 int oac_projection_decode24(OacProjectionDecoder *st, const unsigned char *data,
@@ -268,7 +268,7 @@ int oac_projection_decode24(OacProjectionDecoder *st, const unsigned char *data,
                             int decode_fec) {
     return oac_multistream_decode_native(oaci_get_multistream_decoder(st), data, len,
     pcm, oac_projection_copy_channel_out_int24, frame_size, decode_fec, 0,
-    get_dec_demixing_matrix(st));
+    oaci_get_dec_demixing_matrix(st));
 }
 
 #ifndef DISABLE_FLOAT_API
@@ -276,7 +276,7 @@ int oac_projection_decode_float(OacProjectionDecoder *st, const unsigned char *d
                                 oac_int32 len, float *pcm, int frame_size, int decode_fec) {
     return oac_multistream_decode_native(oaci_get_multistream_decoder(st), data, len,
     pcm, oac_projection_copy_channel_out_float, frame_size, decode_fec, 0,
-    get_dec_demixing_matrix(st));
+    oaci_get_dec_demixing_matrix(st));
 }
 #endif
 

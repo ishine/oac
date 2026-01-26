@@ -171,7 +171,7 @@ void oaci_ec_dec_init(ec_dec *_this, unsigned char *_buf, oac_uint32 _storage) {
 
 unsigned oaci_ec_decode(ec_dec *_this, unsigned _ft) {
     unsigned s;
-    _this->ext = celt_udiv(_this->rng, _ft);
+    _this->ext = oaci_celt_udiv(_this->rng, _ft);
     s = (unsigned)(_this->val/_this->ext);
     return _ft - EC_MINI(s + 1, _ft);
 }

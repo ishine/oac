@@ -219,7 +219,7 @@ static OAC_INLINE void oaci_silk_PLC_update(
     psPLC->nb_subfr = psDec->nb_subfr;
 }
 
-static OAC_INLINE void silk_PLC_energy(oac_int32 *energy1, oac_int *shift1, oac_int32 *energy2, oac_int *shift2,
+static OAC_INLINE void oaci_silk_PLC_energy(oac_int32 *energy1, oac_int *shift1, oac_int32 *energy2, oac_int *shift2,
                                        const oac_int32 *exc_Q14, const oac_int32 *prevGain_Q10, int subfr_length,
                                        int nb_subfr) {
     int i, k;
@@ -286,7 +286,7 @@ static OAC_INLINE void oaci_silk_PLC_conceal(
         silk_memset( psPLC->prevLPC_Q12, 0, sizeof(psPLC->prevLPC_Q12));
     }
 
-    silk_PLC_energy(&energy1, &shift1, &energy2, &shift2, psDec->exc_Q14, prevGain_Q10, psDec->subfr_length,
+    oaci_silk_PLC_energy(&energy1, &shift1, &energy2, &shift2, psDec->exc_Q14, prevGain_Q10, psDec->subfr_length,
     psDec->nb_subfr);
 
     if (silk_RSHIFT( energy1, shift2 ) < silk_RSHIFT( energy2, shift1 )) {
@@ -350,7 +350,7 @@ static OAC_INLINE void oaci_silk_PLC_conceal(
     oaci_silk_LPC_analysis_filter( &sLTP[ idx ], &psDec->outBuf[ idx ], A_Q12, psDec->ltp_mem_length - idx, psDec->LPC_order,
     arch );
     /* Scale LTP state */
-    inv_gain_Q30 = silk_INVERSE32_varQ( psPLC->prevGain_Q16[ 1 ], 46 );
+    inv_gain_Q30 = oaci_silk_INVERSE32_varQ( psPLC->prevGain_Q16[ 1 ], 46 );
     inv_gain_Q30 = silk_min( inv_gain_Q30, silk_int32_MAX>>1 );
     for (i = idx + psDec->LPC_order; i < psDec->ltp_mem_length; i++) {
         sLTP_Q14[ i ] = silk_SMULWB( inv_gain_Q30, sLTP[ i ] );
@@ -503,7 +503,7 @@ void oaci_silk_PLC_glue_frames(
 
                 frac_Q24 = silk_DIV32( psPLC->conc_energy, silk_max( energy, 1 ));
 
-                gain_Q16 = silk_LSHIFT( silk_SQRT_APPROX( frac_Q24 ), 4 );
+                gain_Q16 = silk_LSHIFT( oaci_silk_SQRT_APPROX( frac_Q24 ), 4 );
                 slope_Q16 = silk_DIV32_16(((oac_int32)1<<16) - gain_Q16, length );
                 /* Make slope 4x steeper to avoid missing onsets after DTX */
                 slope_Q16 = silk_LSHIFT( slope_Q16, 2 );

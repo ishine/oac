@@ -83,12 +83,12 @@ oac_int32 oaci_mapping_matrix_get_size(int rows, int cols) {
     if (size > 65004)
         return 0;
 
-    return align(sizeof(MappingMatrix)) + align(size);
+    return oaci_align(sizeof(MappingMatrix)) + oaci_align(size);
 }
 
 oac_int16 *oaci_mapping_matrix_get_data(const MappingMatrix *matrix) {
-    /* void* cast avoids clang -Wcast-align warning */
-    return (oac_int16*)(void*)((char*)matrix + align(sizeof(MappingMatrix)));
+    /* void* cast avoids clang -Wcast-oaci_align warning */
+    return (oac_int16*)(void*)((char*)matrix + oaci_align(sizeof(MappingMatrix)));
 }
 
 void oaci_mapping_matrix_init(MappingMatrix * const matrix,
@@ -99,7 +99,7 @@ void oaci_mapping_matrix_init(MappingMatrix * const matrix,
 #if !defined(ENABLE_ASSERTIONS)
     (void)data_size;
 #endif
-    celt_assert(align(data_size) == align(rows*cols*sizeof(oac_int16)));
+    celt_assert(oaci_align(data_size) == oaci_align(rows*cols*sizeof(oac_int16)));
 
     matrix->rows = rows;
     matrix->cols = cols;

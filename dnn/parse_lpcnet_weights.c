@@ -128,7 +128,7 @@ static const void *oaci_opt_array_check(const WeightArray *arrays, const char *n
     else return NULL;
 }
 
-static const void *find_idx_check(const WeightArray *arrays, const char *name, int nb_in, int nb_out,
+static const void *oaci_find_idx_check(const WeightArray *arrays, const char *name, int nb_in, int nb_out,
                                   int *total_blocks) {
     int remain;
     const int *idx;
@@ -182,7 +182,7 @@ int oaci_linear_init(LinearLayer *layer, const WeightArray *arrays,
     }
     if (weights_idx != NULL) {
         int total_blocks;
-        if ((layer->weights_idx = (const int*)find_idx_check(arrays, weights_idx, nb_inputs, nb_outputs,
+        if ((layer->weights_idx = (const int*)oaci_find_idx_check(arrays, weights_idx, nb_inputs, nb_outputs,
         &total_blocks)) == NULL) return 1;
         if (weights != NULL) {
             if ((layer->weights = (const oac_int8*)oaci_find_array_check(arrays, weights,

@@ -179,13 +179,13 @@ double oaci_silk_energy_FLP(
 #define silk_abs_float( a )                     ((silk_float)fabs(a))
 
 /* sigmoid function */
-static OAC_INLINE silk_float silk_sigmoid( silk_float x ) {
+static OAC_INLINE silk_float oaci_silk_sigmoid( silk_float x ) {
     return (silk_float)(1.0/(1.0 + exp(-x)));
 }
 
 /* floating-point to integer conversion (rounding) */
 static OAC_INLINE oac_int32 silk_float2int( silk_float x ) {
-    return (oac_int32)float2int( x );
+    return (oac_int32)oaci_float2int( x );
 }
 
 /* floating-point to integer conversion (rounding) */
@@ -195,12 +195,12 @@ static OAC_INLINE void silk_float2short_array(
     oac_int32 length) {
     oac_int32 k;
     for (k = length - 1; k >= 0; k--) {
-        out[k] = silk_SAT16((oac_int32)float2int( in[k] ));
+        out[k] = silk_SAT16((oac_int32)oaci_float2int( in[k] ));
     }
 }
 
 /* integer to floating-point conversion */
-static OAC_INLINE void silk_short2float_array(
+static OAC_INLINE void oaci_silk_short2float_array(
     silk_float       *out,
     const oac_int16 *in,
     oac_int32 length) {
@@ -211,7 +211,7 @@ static OAC_INLINE void silk_short2float_array(
 }
 
 /* using log2() helps the fixed-point conversion */
-static OAC_INLINE silk_float silk_log2( double x ) {
+static OAC_INLINE silk_float oaci_silk_log2( double x ) {
     return ( silk_float )(3.32192809488736*log10( x ));
 }
 

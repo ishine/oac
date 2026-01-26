@@ -472,7 +472,7 @@ void oaci_get_required_bits(oac_int16 *_bits, int _n, int _maxk, int _frac) {
 }
 # endif
 
-static oac_uint32 icwrs(int _n, const int *_y) {
+static oac_uint32 oaci_icwrs(int _n, const int *_y) {
     oac_uint32 i;
     int j;
     int k;
@@ -491,10 +491,10 @@ static oac_uint32 icwrs(int _n, const int *_y) {
 
 void oaci_encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
     celt_assert(_k > 0);
-    oaci_ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
+    oaci_ec_enc_uint(_enc, oaci_icwrs(_n, _y), CELT_PVQ_V(_n, _k));
 }
 
-static oac_val32 cwrsi(int _n, int _k, oac_uint32 _i, int *_y) {
+static oac_val32 oaci_cwrsi(int _n, int _k, oac_uint32 _i, int *_y) {
     oac_uint32 p;
     int s;
     int k0;
@@ -569,7 +569,7 @@ static oac_val32 cwrsi(int _n, int _k, oac_uint32 _i, int *_y) {
 }
 
 oac_val32 oaci_decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
-    return cwrsi(_n, _k, oaci_ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
+    return oaci_cwrsi(_n, _k, oaci_ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
 }
 
 #else /* SMALL_FOOTPRINT */
@@ -634,7 +634,7 @@ static oac_uint32 oaci_ncwrs_urow(unsigned _n, unsigned _k, oac_uint32 *_u) {
    _y: Returns the vector of pulses.
    _u: Must contain entries [0..._k+1] of row _n of U() on input.
       Its contents will be destructively modified.*/
-static oac_val32 cwrsi(int _n, int _k, oac_uint32 _i, int *_y, oac_uint32 *_u) {
+static oac_val32 oaci_cwrsi(int _n, int _k, oac_uint32 _i, int *_y, oac_uint32 *_u) {
     int j;
     oac_int16 val;
     oac_val32 yy = 0;
@@ -673,7 +673,7 @@ static OAC_INLINE oac_uint32 icwrs1(const int *_y, int *_k) {
    of size _n with associated sign bits.
    _y:  The vector of pulses, whose sum of absolute values must be _k.
    _nc: Returns V(_n,_k).*/
-static OAC_INLINE oac_uint32 icwrs(int _n, int _k, oac_uint32 *_nc, const int *_y,
+static OAC_INLINE oac_uint32 oaci_icwrs(int _n, int _k, oac_uint32 *_nc, const int *_y,
                                    oac_uint32 *_u) {
     oac_uint32 i;
     int j;
@@ -725,7 +725,7 @@ void oaci_encode_pulses(const int *_y, int _n, int _k, ec_enc *_enc) {
     SAVE_STACK;
     celt_assert(_k > 0);
     ALLOC(u, _k + 2U, oac_uint32);
-    i = icwrs(_n, _k, &nc, _y, u);
+    i = oaci_icwrs(_n, _k, &nc, _y, u);
     oaci_ec_enc_uint(_enc, i, nc);
     RESTORE_STACK;
 }
@@ -736,7 +736,7 @@ oac_val32 oaci_decode_pulses(int *_y, int _n, int _k, ec_dec *_dec) {
     SAVE_STACK;
     celt_assert(_k > 0);
     ALLOC(u, _k + 2U, oac_uint32);
-    ret = cwrsi(_n, _k, oaci_ec_dec_uint(_dec, oaci_ncwrs_urow(_n, _k, u)), _y, u);
+    ret = oaci_cwrsi(_n, _k, oaci_ec_dec_uint(_dec, oaci_ncwrs_urow(_n, _k, u)), _y, u);
     RESTORE_STACK;
     return ret;
 }

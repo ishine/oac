@@ -77,7 +77,7 @@ void oaci_silk_process_gains_FIX(
 
     /* Gain reduction when LTP coding gain is high */
     if (psEnc->sCmn.indices.signalType == TYPE_VOICED) {
-        /*s = -0.5f * silk_sigmoid( 0.25f * ( psEncCtrl->LTPredCodGain - 12.0f ) ); */
+        /*s = -0.5f * oaci_silk_sigmoid( 0.25f * ( psEncCtrl->LTPredCodGain - 12.0f ) ); */
         s_Q16 = -oaci_silk_sigm_Q15( silk_RSHIFT_ROUND( psEncCtrl->LTPredCodGain_Q7 - SILK_FIX_CONST( 12.0, 7 ), 4 ));
         for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {
             psEncCtrl->Gains_Q16[ k ] = silk_SMLAWB( psEncCtrl->Gains_Q16[ k ], psEncCtrl->Gains_Q16[ k ], s_Q16 );
@@ -109,11 +109,11 @@ void oaci_silk_process_gains_FIX(
             /* recalculate with higher precision */
             gain_squared = silk_SMLAWW( silk_LSHIFT( ResNrgPart, 16 ), gain, gain );
             silk_assert( gain_squared > 0 );
-            gain = silk_SQRT_APPROX( gain_squared );                    /* Q8   */
+            gain = oaci_silk_SQRT_APPROX( gain_squared );                    /* Q8   */
             gain = silk_min( gain, silk_int32_MAX>>8 );
             psEncCtrl->Gains_Q16[ k ] = silk_LSHIFT_SAT32( gain, 8 );   /* Q16  */
         } else {
-            gain = silk_SQRT_APPROX( gain_squared );                    /* Q0   */
+            gain = oaci_silk_SQRT_APPROX( gain_squared );                    /* Q0   */
             gain = silk_min( gain, silk_int32_MAX>>16 );
             psEncCtrl->Gains_Q16[ k ] = silk_LSHIFT_SAT32( gain, 16 );  /* Q16  */
         }

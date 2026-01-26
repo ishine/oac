@@ -346,7 +346,7 @@ static OAC_INLINE int oaci_interp_bits2pulses(const CELTMode *m, int start, int 
         /*Figure out how many left-over bits we would be adding to this band.
            This can include bits we've stolen back from higher, skipped bands.*/
         left = total - psum;
-        percoeff = celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
+        percoeff = oaci_celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
         left -= (m->eBands[codedBands] - m->eBands[start])*percoeff;
         rem = IMAX(left - (m->eBands[j] - m->eBands[start]), 0);
         band_width = m->eBands[codedBands] - m->eBands[j];
@@ -425,7 +425,7 @@ static OAC_INLINE int oaci_interp_bits2pulses(const CELTMode *m, int start, int 
 
     /* Allocate the remaining bits */
     left = total - psum;
-    percoeff = celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
+    percoeff = oaci_celt_udiv(left, m->eBands[codedBands] - m->eBands[start]);
     left -= (m->eBands[codedBands] - m->eBands[start])*percoeff;
     for (j = start; j < codedBands; j++)
         bits[j] += ((int)percoeff*(m->eBands[j + 1] - m->eBands[j]));
@@ -474,7 +474,7 @@ static OAC_INLINE int oaci_interp_bits2pulses(const CELTMode *m, int start, int 
 
             /* Divide with rounding */
             ebits[j] = IMAX(0, (bits[j] + offset + (den<<(BITRES - 1))));
-            ebits[j] = celt_udiv(ebits[j], den)>>BITRES;
+            ebits[j] = oaci_celt_udiv(ebits[j], den)>>BITRES;
 
             /* Make sure not to bust */
             if (C*ebits[j] > (bits[j]>>BITRES))

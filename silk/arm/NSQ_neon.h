@@ -63,9 +63,9 @@
 #include "cpu_support.h"
 #include "SigProc_FIX.h"
 
-#undef silk_short_prediction_create_arch_coef
+#undef oaci_silk_short_prediction_create_arch_coef
 /* For vectorized calc, reverse a_Q12 coefs, convert to 32-bit, and shift for vqdmulhq_s32. */
-static OAC_INLINE void silk_short_prediction_create_arch_coef_neon(oac_int32 *out, const oac_int16 *in, oac_int order) {
+static OAC_INLINE void oaci_silk_short_prediction_create_arch_coef_neon(oac_int32 *out, const oac_int16 *in, oac_int order) {
     out[15] = silk_LSHIFT32(in[0], 15);
     out[14] = silk_LSHIFT32(in[1], 15);
     out[13] = silk_LSHIFT32(in[2], 15);
@@ -96,13 +96,13 @@ static OAC_INLINE void silk_short_prediction_create_arch_coef_neon(oac_int32 *ou
 
 #if defined(OAC_ARM_PRESUME_NEON_INTR)
 
-# define silk_short_prediction_create_arch_coef(out, in, order) \
-        (silk_short_prediction_create_arch_coef_neon(out, in, order))
+# define oaci_silk_short_prediction_create_arch_coef(out, in, order) \
+        (oaci_silk_short_prediction_create_arch_coef_neon(out, in, order))
 
 #elif defined(OAC_HAVE_RTCD) && defined(OAC_ARM_MAY_HAVE_NEON_INTR)
 
-# define silk_short_prediction_create_arch_coef(out, in, order) \
-        do { if (arch >= OAC_ARCH_ARM_NEON) { silk_short_prediction_create_arch_coef_neon(out, in, order); } } while (0)
+# define oaci_silk_short_prediction_create_arch_coef(out, in, order) \
+        do { if (arch >= OAC_ARCH_ARM_NEON) { oaci_silk_short_prediction_create_arch_coef_neon(out, in, order); } } while (0)
 
 #endif
 

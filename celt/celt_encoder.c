@@ -434,8 +434,8 @@ static int oaci_transient_analysis(const oac_val32 * OAC_RESTRICT in, int len, i
            before it does any damage later on. If these asserts are disabled (no hardening), then the table
            lookup a few lines below (id = ...) is likely to crash dur to an out-of-bounds read. DO NOT FIX
            that crash on NaN since it could result in a worse issue later on. */
-        celt_assert(!celt_isnan(tmp[0]));
-        celt_assert(!celt_isnan(norm));
+        celt_assert(!oaci_celt_isnan(tmp[0]));
+        celt_assert(!oaci_celt_isnan(norm));
         for (i = 12; i < len2 - 5; i += 4) {
             int id;
 #ifdef FIXED_POINT
@@ -1790,7 +1790,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
         if (mode->Fs == 48000 && mode->shortMdctSize == 120)
 # endif
         {
-            int c0 = toOac(compressed[0]);
+            int c0 = oaci_toOac(compressed[0]);
             if (c0 < 0) {
                 RESTORE_STACK;
                 return OAC_BAD_ARG;
@@ -1808,7 +1808,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     nbCompressedBytes = IMIN(nbCompressedBytes, packet_size_cap);
 
     if (st->vbr && st->bitrate != OAC_BITRATE_MAX) {
-        vbr_rate = bitrate_to_bits(st->bitrate, mode->Fs, frame_size)<<BITRES;
+        vbr_rate = oaci_bitrate_to_bits(st->bitrate, mode->Fs, frame_size)<<BITRES;
 #if defined(CUSTOM_MODES) || defined(ENABLE_OAC_CUSTOM_API)
         if (st->signalling)
             vbr_rate -= 8<<BITRES;
@@ -1981,7 +1981,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     oaci_compute_mdcts(mode, shortBlocks, in, freq, C, CC, LM, st->upsample, st->arch);
     /* This should catch any NaN in the CELT input. Since we're not supposed to see any (they're filtered
        at the Oac layer), just abort. */
-    celt_assert(!celt_isnan(freq[0]) && (C == 1 || !celt_isnan(freq[N])));
+    celt_assert(!oaci_celt_isnan(freq[0]) && (C == 1 || !oaci_celt_isnan(freq[N])));
     if (CC == 2 && C == 1)
         tf_chan = 0;
     oaci_compute_band_energies(mode, freq, bandE, effEnd, C, LM, st->arch);
@@ -2551,7 +2551,7 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
 #endif
 
     RESTORE_STACK;
-    if (ec_get_error(enc))
+    if (oaci_ec_get_error(enc))
         return OAC_INTERNAL_ERROR;
     else
         return nbCompressedBytes;

@@ -105,7 +105,7 @@ int main(void) {
 
     oaci_ec_enc_done(&enc);
 
-    oaci_ec_dec_init(&dec, ec_get_buffer(&enc), ec_range_bytes(&enc));
+    oaci_ec_dec_init(&dec, oaci_ec_get_buffer(&enc), oaci_ec_range_bytes(&enc));
 
     for (i = 0; i < 10000; i++) {
         int d = oaci_ec_laplace_decode(&dec,

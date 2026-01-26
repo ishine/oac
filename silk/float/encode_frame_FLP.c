@@ -68,7 +68,7 @@
 #include "stack_alloc.h"
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate */
-static OAC_INLINE void silk_LBRR_encode_FLP(
+static OAC_INLINE void oaci_silk_LBRR_encode_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     const silk_float xfw[],                                             /* I    Input signal                                */
@@ -167,7 +167,7 @@ oac_int oaci_silk_encode_frame_FLP(
     /*******************************************/
     /* Copy new frame to front of input buffer */
     /*******************************************/
-    silk_short2float_array( x_frame + LA_SHAPE_MS*psEnc->sCmn.fs_kHz, psEnc->sCmn.inputBuf + 1,
+    oaci_silk_short2float_array( x_frame + LA_SHAPE_MS*psEnc->sCmn.fs_kHz, psEnc->sCmn.inputBuf + 1,
     psEnc->sCmn.frame_length );
 
     /* Add tiny signal to avoid high CPU load from denormalized floating point numbers */
@@ -200,7 +200,7 @@ oac_int oaci_silk_encode_frame_FLP(
         /****************************************/
         /* Low Bitrate Redundant Encoding       */
         /****************************************/
-        silk_LBRR_encode_FLP( psEnc, &sEncCtrl, x_frame, condCoding );
+        oaci_silk_LBRR_encode_FLP( psEnc, &sEncCtrl, x_frame, condCoding );
 
         /* Loop over quantizer and entroy coding to control bitrate */
         maxIter = 6;
@@ -419,7 +419,7 @@ oac_int oaci_silk_encode_frame_FLP(
 }
 
 /* Low-Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode excitation at lower bitrate  */
-static OAC_INLINE void silk_LBRR_encode_FLP(
+static OAC_INLINE void oaci_silk_LBRR_encode_FLP(
     silk_encoder_state_FLP          *psEnc,                             /* I/O  Encoder state FLP                           */
     silk_encoder_control_FLP        *psEncCtrl,                         /* I/O  Encoder control FLP                         */
     const silk_float xfw[],                                             /* I    Input signal                                */

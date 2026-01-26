@@ -77,7 +77,7 @@
 # if defined(_MSC_VER)
 
 #  include <intrin.h>
-static _inline void cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
+static _inline void oaci_cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
     __cpuid((int*)CPUInfo, InfoType);
 }
 
@@ -87,7 +87,7 @@ static _inline void cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
 #   include <cpuid.h>
 #  endif
 
-static void cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
+static void oaci_cpuid(unsigned int CPUInfo[4], unsigned int InfoType) {
 #  if defined(CPU_INFO_BY_ASM)
 #   if defined(__i386__) && defined(__PIC__)
 /* %ebx is PIC register in 32-bit, so mustn't clobber it. */
@@ -143,17 +143,17 @@ static void oac_cpu_feature_check(CPU_Feature *cpu_feature) {
     unsigned int info[4];
     unsigned int nIds = 0;
 
-    cpuid(info, 0);
+    oaci_cpuid(info, 0);
     nIds = info[0];
 
     if (nIds >= 1) {
-        cpuid(info, 1);
+        oaci_cpuid(info, 1);
         cpu_feature->HW_SSE = (info[3]&(1<<25)) != 0;
         cpu_feature->HW_SSE2 = (info[3]&(1<<26)) != 0;
         cpu_feature->HW_SSE41 = (info[2]&(1<<19)) != 0;
         cpu_feature->HW_AVX2 = (info[2]&(1<<28)) != 0 && (info[2]&(1<<12)) != 0;
         if (cpu_feature->HW_AVX2 && nIds >= 7) {
-            cpuid(info, 7);
+            oaci_cpuid(info, 7);
             cpu_feature->HW_AVX2 = cpu_feature->HW_AVX2 && (info[1]&(1<<5)) != 0;
         } else {
             cpu_feature->HW_AVX2 = 0;

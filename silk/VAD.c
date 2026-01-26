@@ -250,7 +250,7 @@ oac_int oaci_silk_VAD_GetSA_Q8_c(                                   /* O    Retu
             /* Tilt measure */
             if (speech_nrg < ((oac_int32)1<<20)) {
                 /* Scale down SNR value for small subband speech energies */
-                SNR_Q7 = silk_SMULWB( silk_LSHIFT( silk_SQRT_APPROX( speech_nrg ), 6 ), SNR_Q7 );
+                SNR_Q7 = silk_SMULWB( silk_LSHIFT( oaci_silk_SQRT_APPROX( speech_nrg ), 6 ), SNR_Q7 );
             }
             input_tilt = silk_SMLAWB( input_tilt, tiltWeights[ b ], SNR_Q7 );
         } else {
@@ -262,7 +262,7 @@ oac_int oaci_silk_VAD_GetSA_Q8_c(                                   /* O    Retu
     sumSquared = silk_DIV32_16( sumSquared, VAD_N_BANDS ); /* Q14 */
 
     /* Root-mean-square approximation, scale to dBs, and write to output pointer */
-    pSNR_dB_Q7 = (oac_int16)(3*silk_SQRT_APPROX( sumSquared ));     /* Q7 */
+    pSNR_dB_Q7 = (oac_int16)(3*oaci_silk_SQRT_APPROX( sumSquared ));     /* Q7 */
 
     /*********************************/
     /* Speech Probability Estimation */
@@ -293,7 +293,7 @@ oac_int oaci_silk_VAD_GetSA_Q8_c(                                   /* O    Retu
         speech_nrg = silk_LSHIFT32( speech_nrg, 16 );
 
         /* square-root */
-        speech_nrg = silk_SQRT_APPROX( speech_nrg );
+        speech_nrg = oaci_silk_SQRT_APPROX( speech_nrg );
         SA_Q15 = silk_SMULWB( 32768 + speech_nrg, SA_Q15 );
     }
 

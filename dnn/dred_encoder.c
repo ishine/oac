@@ -80,7 +80,7 @@
 #include "dred_rdovae_stats_data.h"
 
 
-static void DRED_rdovae_init_encoder(RDOVAEEncState *enc_state) {
+static void oaci_DRED_rdovae_init_encoder(RDOVAEEncState *enc_state) {
     memset(enc_state, 0, sizeof(*enc_state));
 }
 
@@ -103,7 +103,7 @@ void oaci_dred_encoder_reset(DREDEnc* enc) {
         - ((char*)&enc->DREDENC_RESET_START - (char*)enc));
     enc->input_buffer_fill = DRED_SILK_ENCODER_DELAY;
     oaci_lpcnet_encoder_init(&enc->lpcnet_enc_state);
-    DRED_rdovae_init_encoder(&enc->rdovae_enc);
+    oaci_DRED_rdovae_init_encoder(&enc->rdovae_enc);
 }
 
 void oaci_dred_encoder_init(DREDEnc* enc, oac_int32 Fs, int channels) {
@@ -303,7 +303,7 @@ static void oaci_dred_encode_latents(ec_enc *enc, const float *x, const oac_uint
     }
 }
 
-static int dred_voice_active(const unsigned char *activity_mem, int offset) {
+static int oaci_dred_voice_active(const unsigned char *activity_mem, int offset) {
     int i;
     for (i = 0; i < 16; i++) {
         if (activity_mem[8*offset + i] == 1) return 1;
@@ -336,7 +336,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
         delayed_dred = 1;
         enc->last_extra_dred_offset = 0;
     }
-    while (latent_offset < enc->latents_buffer_fill && !dred_voice_active(activity_mem, latent_offset)) {
+    while (latent_offset < enc->latents_buffer_fill && !oaci_dred_voice_active(activity_mem, latent_offset)) {
         latent_offset++;
         extra_dred_offset++;
     }
@@ -399,7 +399,7 @@ int oaci_dred_encode_silk_frame(DREDEnc *enc, unsigned char *buf, int max_chunks
             if (i == 0) return 0;
             break;
         }
-        active = dred_voice_active(activity_mem, i + latent_offset);
+        active = oaci_dred_voice_active(activity_mem, i + latent_offset);
         if (active || prev_active) {
             ec_bak = ec_encoder;
             dred_encoded = i + 2;

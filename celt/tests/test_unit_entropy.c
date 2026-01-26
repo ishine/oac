@@ -139,7 +139,7 @@ int main(int _argc, char **_argv) {
     fprintf(stderr,
    "Encoded %0.2f bits of entropy to %0.2f bits (%0.3f%% wasted).\n",
    entropy, ldexp(nbits, -3), 100*(nbits - ldexp(entropy, 3))/nbits);
-    fprintf(stderr, "Packed to %li bytes.\n", (long)ec_range_bytes(&enc));
+    fprintf(stderr, "Packed to %li bytes.\n", (long)oaci_ec_range_bytes(&enc));
     oaci_ec_dec_init(&dec, ptr, DATA_SIZE);
     for (ft = 2; ft < 1024; ft++) {
         for (i = 0; i < ft; i++) {
@@ -230,9 +230,9 @@ int main(int _argc, char **_argv) {
        oaci_ec_tell(&enc), tell_bits, seed);
             ret = -1;
         }
-        if ((tell_bits + 7)/8 < ec_range_bytes(&enc)) {
+        if ((tell_bits + 7)/8 < oaci_ec_range_bytes(&enc)) {
             fprintf (stderr, "oaci_ec_tell() lied, there's %i bytes instead of %d (Random seed: %u)\n",
-               ec_range_bytes(&enc), (tell_bits + 7)/8, seed);
+               oaci_ec_range_bytes(&enc), (tell_bits + 7)/8, seed);
             ret = -1;
         }
         oaci_ec_dec_init(&dec, ptr, DATA_SIZE2);
@@ -298,9 +298,9 @@ int main(int _argc, char **_argv) {
             tell[j + 1] = oaci_ec_tell_frac(&enc);
         }
         oaci_ec_enc_done(&enc);
-        if ((oaci_ec_tell(&enc) + 7U)/8U < ec_range_bytes(&enc)) {
+        if ((oaci_ec_tell(&enc) + 7U)/8U < oaci_ec_range_bytes(&enc)) {
             fprintf(stderr, "tell() lied, there's %i bytes instead of %d (Random seed: %u)\n",
-       ec_range_bytes(&enc), (oaci_ec_tell(&enc) + 7)/8, seed);
+       oaci_ec_range_bytes(&enc), (oaci_ec_tell(&enc) + 7)/8, seed);
             ret = -1;
         }
         oaci_ec_dec_init(&dec, ptr, DATA_SIZE2);
@@ -372,7 +372,7 @@ int main(int _argc, char **_argv) {
         ret = -1;
     }
     oaci_ec_enc_done(&enc);
-    if (ec_range_bytes(&enc) != 1 || ptr[0] != 192) {
+    if (oaci_ec_range_bytes(&enc) != 1 || ptr[0] != 192) {
         fprintf(stderr, "Got %d when expecting 192 for patch_initial_bits", ptr[0]);
         ret = -1;
     }
@@ -387,7 +387,7 @@ int main(int _argc, char **_argv) {
         ret = -1;
     }
     oaci_ec_enc_done(&enc);
-    if (ec_range_bytes(&enc) != 2 || ptr[0] != 63) {
+    if (oaci_ec_range_bytes(&enc) != 2 || ptr[0] != 63) {
         fprintf(stderr, "Got %d when expecting 63 for patch_initial_bits", ptr[0]);
         ret = -1;
     }

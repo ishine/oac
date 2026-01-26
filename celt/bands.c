@@ -290,7 +290,7 @@ void oaci_anti_collapse(const CELTMode *m, celt_norm *X_, unsigned char *collaps
         N0 = m->eBands[i + 1] - m->eBands[i];
         /* depth in 1/8 bits */
         celt_sig_assert(pulses[i] >= 0);
-        depth = celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i]))>>LM;
+        depth = oaci_celt_udiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i]))>>LM;
 
 #ifdef FIXED_POINT
         thresh32 = SHR32(oaci_celt_exp2(-SHL16(depth, 10 - BITRES)), 1);
@@ -508,7 +508,7 @@ int oaci_spreading_decision(const CELTMode *m, const celt_norm *X, int *average,
 
             /* Only include four last bands (8 kHz and up) */
             if (i > m->nbEBands - 4)
-                hf_sum += celt_udiv(32*(tcount[1] + tcount[0]), N);
+                hf_sum += oaci_celt_udiv(32*(tcount[1] + tcount[0]), N);
             tmp = (2*tcount[2] >= N) + (2*tcount[1] >= N) + (2*tcount[0] >= N);
             sum += tmp*spread_weight[i];
             nbBands += spread_weight[i];
@@ -517,7 +517,7 @@ int oaci_spreading_decision(const CELTMode *m, const celt_norm *X, int *average,
 
     if (update_hf) {
         if (hf_sum)
-            hf_sum = celt_udiv(hf_sum, C*(4 - m->nbEBands + end));
+            hf_sum = oaci_celt_udiv(hf_sum, C*(4 - m->nbEBands + end));
         *hf_average = (*hf_average + hf_sum)>>1;
         hf_sum = *hf_average;
         if (*tapset_decision == 2)
@@ -534,7 +534,7 @@ int oaci_spreading_decision(const CELTMode *m, const celt_norm *X, int *average,
     /*printf("%d %d %d\n", hf_sum, *hf_average, *tapset_decision);*/
     celt_assert(nbBands > 0); /* end has to be non-zero */
     celt_assert(sum >= 0);
-    sum = celt_udiv((oac_int32)sum<<8, nbBands);
+    sum = oaci_celt_udiv((oac_int32)sum<<8, nbBands);
     /* Recursive averaging */
     sum = (sum + *average)>>1;
     *average = sum;
@@ -634,7 +634,7 @@ static int oaci_compute_qn(int N, int b, int offset, int pulse_cap, int stereo) 
     /* The upper limit ensures that in a stereo split with itheta==16384, we'll
         always have enough bits left over to code at least one pulse in the
         side; otherwise it would collapse, since it doesn't get folded. */
-    qb = celt_sudiv(b + N2*offset, N2);
+    qb = oaci_celt_sudiv(b + N2*offset, N2);
     qb = IMIN(b - pulse_cap - (4<<BITRES), qb);
 
     qb = IMIN(8<<BITRES, qb);
@@ -727,7 +727,7 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
                     /* Check if the selected value of theta will cause the bit allocation
                        to inject noise on one side. If so, make sure the energy of that side
                        is zero. */
-                    int unquantized = celt_udiv((oac_int32)itheta*16384, qn);
+                    int unquantized = oaci_celt_udiv((oac_int32)itheta*16384, qn);
                     imid = oaci_bitexact_cos((oac_int16)unquantized);
                     iside = oaci_bitexact_cos((oac_int16)(16384 - unquantized));
                     delta = FRAC_MUL16((N - 1)<<7, oaci_bitexact_log2tan(iside, imid));
@@ -806,7 +806,7 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
             }
         }
         celt_assert(itheta >= 0);
-        itheta = celt_udiv((oac_int32)itheta*16384, qn);
+        itheta = oaci_celt_udiv((oac_int32)itheta*16384, qn);
         itheta_q30 = (oac_int32)itheta<<16;
         if (encode && stereo) {
             if (itheta == 0)
@@ -954,8 +954,8 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
         mid = oaci_celt_cos_norm32(sctx.itheta_q30);
         side = oaci_celt_cos_norm32((1<<30) - sctx.itheta_q30);
 #else
-        mid = celt_cos_norm2(sctx.itheta_q30*(1.f/(1<<30)));
-        side = celt_cos_norm2(1.f - sctx.itheta_q30*(1.f/(1<<30)));
+        mid = oaci_celt_cos_norm2(sctx.itheta_q30*(1.f/(1<<30)));
+        side = oaci_celt_cos_norm2(1.f - sctx.itheta_q30*(1.f/(1<<30)));
 #endif
 
         /* Give more bits to low-energy MDCTs than they would otherwise deserve */
@@ -1103,8 +1103,8 @@ unsigned oaci_cubic_quant_partition(struct band_ctx *ctx, celt_norm *X, int N, i
         g1 = oaci_celt_cos_norm32(itheta_q30);
         g2 = oaci_celt_cos_norm32((1<<30) - itheta_q30);
 #else
-        g1 = celt_cos_norm2(itheta_q30*(1.f/(1<<30)));
-        g2 = celt_cos_norm2(1.f - itheta_q30*(1.f/(1<<30)));
+        g1 = oaci_celt_cos_norm2(itheta_q30*(1.f/(1<<30)));
+        g2 = oaci_celt_cos_norm2(1.f - itheta_q30*(1.f/(1<<30)));
 #endif
         if (itheta_q30 == 0) {
             b1 = b;
@@ -1144,7 +1144,7 @@ static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
 
     longBlocks = B0 == 1;
 
-    N_B = celt_udiv(N_B, B);
+    N_B = oaci_celt_udiv(N_B, B);
 
     /* Special case for one sample */
     if (N == 1) {
@@ -1287,8 +1287,8 @@ static unsigned oaci_quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_
     mid = oaci_celt_cos_norm32(sctx.itheta_q30);
     side = oaci_celt_cos_norm32((1<<30) - sctx.itheta_q30);
 #else
-    mid = celt_cos_norm2(sctx.itheta_q30*(1.f/(1<<30)));
-    side = celt_cos_norm2(1.f - sctx.itheta_q30*(1.f/(1<<30)));
+    mid = oaci_celt_cos_norm2(sctx.itheta_q30*(1.f/(1<<30)));
+    side = oaci_celt_cos_norm2(1.f - sctx.itheta_q30*(1.f/(1<<30)));
 #endif
 
     /* This is a special case for N=2 that only works for stereo and takes
@@ -1510,7 +1510,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
         remaining_bits = total_bits - tell;
         ctx.total_bits = total_bits;
         if (i <= codedBands - 1) {
-            curr_balance = celt_sudiv(balance, IMIN(3, codedBands - i));
+            curr_balance = oaci_celt_sudiv(balance, IMIN(3, codedBands - i));
             b = IMAX(0, IMIN(16383, IMIN(remaining_bits, pulses[i] + curr_balance)));
         } else {
             b = 0;

@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
 #ifdef USE_WEIGHTS_FILE
         oaci_fargan_load_model(&fargan, data, len);
 #endif
-        /* uncomment the following to align with Python code */
+        /* uncomment the following to oaci_align with Python code */
         ret = fread(&in_features[0], sizeof(in_features[0]), NB_FEATURES, fin);
         for (i = 1; i < 5; i++) {
             OAC_COPY(&in_features[i*NB_FEATURES], &in_features[0], NB_FEATURES);

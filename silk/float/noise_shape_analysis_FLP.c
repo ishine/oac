@@ -69,7 +69,7 @@
 /* non-warped frequency scale. (So that it can be implemented with a minimum-phase monic filter.) */
 /* Note: A monic filter is one with the first coefficient equal to 1.0. In Silk we omit the first */
 /* coefficient in an array of coefficients, for monic filters.                                    */
-static OAC_INLINE silk_float warped_gain(
+static OAC_INLINE silk_float oaci_warped_gain(
     const silk_float     *coefs,
     silk_float lambda,
     oac_int order) {
@@ -86,7 +86,7 @@ static OAC_INLINE silk_float warped_gain(
 
 /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
 /* amplitude of monic warped coefficients by using bandwidth expansion on the true coefficients */
-static OAC_INLINE void warped_true2monic_coefs(
+static OAC_INLINE void oaci_warped_true2monic_coefs(
     silk_float           *coefs,
     silk_float lambda,
     silk_float limit,
@@ -144,7 +144,7 @@ static OAC_INLINE void warped_true2monic_coefs(
     silk_assert( 0 );
 }
 
-static OAC_INLINE void limit_coefs(
+static OAC_INLINE void oaci_limit_coefs(
     silk_float           *coefs,
     silk_float limit,
     oac_int order) {
@@ -204,7 +204,7 @@ void oaci_silk_noise_shape_analysis_FLP(
                                *(1.0f/32768.0f);
 
     /* Coding quality level, between 0.0 and 1.0 */
-    psEncCtrl->coding_quality = silk_sigmoid( 0.25f*(SNR_adj_dB - 20.0f));
+    psEncCtrl->coding_quality = oaci_silk_sigmoid( 0.25f*(SNR_adj_dB - 20.0f));
 
     if (psEnc->sCmn.useCBR == 0) {
         /* Reduce coding SNR during low speech activity */
@@ -236,7 +236,7 @@ void oaci_silk_noise_shape_analysis_FLP(
         nSegs = silk_SMULBB( SUB_FRAME_LENGTH_MS, psEnc->sCmn.nb_subfr )/2;
         for (k = 0; k < nSegs; k++) {
             nrg = ( silk_float )nSamples + ( silk_float )oaci_silk_energy_FLP( pitch_res_ptr, nSamples );
-            log_energy = silk_log2( nrg );
+            log_energy = oaci_silk_log2( nrg );
             if (k > 0) {
                 energy_variation += silk_abs_float( log_energy - log_energy_prev );
             }
@@ -300,7 +300,7 @@ void oaci_silk_noise_shape_analysis_FLP(
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Adjust gain for warping */
-            psEncCtrl->Gains[ k ] *= warped_gain( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], warping,
+            psEncCtrl->Gains[ k ] *= oaci_warped_gain( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], warping,
             psEnc->sCmn.shapingLPCOrder );
         }
 
@@ -309,11 +309,11 @@ void oaci_silk_noise_shape_analysis_FLP(
 
         if (psEnc->sCmn.warping_Q16 > 0) {
             /* Convert to monic warped prediction coefficients and limit absolute values */
-            warped_true2monic_coefs( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], warping, 3.999f,
+            oaci_warped_true2monic_coefs( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], warping, 3.999f,
             psEnc->sCmn.shapingLPCOrder );
         } else {
             /* Limit absolute values */
-            limit_coefs( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], 3.999f, psEnc->sCmn.shapingLPCOrder );
+            oaci_limit_coefs( &psEncCtrl->AR[ k*MAX_SHAPE_LPC_ORDER ], 3.999f, psEnc->sCmn.shapingLPCOrder );
         }
     }
 
