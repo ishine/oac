@@ -810,7 +810,7 @@ static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_sse4_1(
     __m128i xmm_inv_gain_Q26, xmm_x16_x2x0, xmm_x16_x3x1;
 
     lag          = pitchL[ subfr ];
-    inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
+    inv_gain_Q31 = oaci_silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
     silk_assert( inv_gain_Q31 != 0 );
 
     /* Scale input */

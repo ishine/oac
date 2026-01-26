@@ -220,16 +220,16 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int application
     ret = oaci_silk_Get_Encoder_Size( &silkEncSizeBytes, channels );
     if (ret)
         return OAC_BAD_ARG;
-    silkEncSizeBytes = align(silkEncSizeBytes);
+    silkEncSizeBytes = oaci_align(silkEncSizeBytes);
     if (application == OAC_APPLICATION_RESTRICTED_CELT)
         silkEncSizeBytes = 0;
     if (application != OAC_APPLICATION_RESTRICTED_SILK)
         celtEncSizeBytes = oaci_celt_encoder_get_size(channels);
-    base_size = align(sizeof(OacEncoder));
+    base_size = oaci_align(sizeof(OacEncoder));
     if (application == OAC_APPLICATION_RESTRICTED_SILK || application == OAC_APPLICATION_RESTRICTED_CELT) {
-        base_size = align(base_size - MAX_ENCODER_BUFFER*2*sizeof(oac_res));
+        base_size = oaci_align(base_size - MAX_ENCODER_BUFFER*2*sizeof(oac_res));
     } else if (channels == 1)
-        base_size = align(base_size - MAX_ENCODER_BUFFER*sizeof(oac_res));
+        base_size = oaci_align(base_size - MAX_ENCODER_BUFFER*sizeof(oac_res));
     tot_size = base_size + silkEncSizeBytes + celtEncSizeBytes;
     if (st == NULL) {
         return tot_size;
@@ -422,7 +422,7 @@ static void oaci_silk_biquad_res(
 }
 #endif
 
-static void hp_cutoff(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_val32 *hp_mem, int len, int channels,
+static void oaci_hp_cutoff(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_val32 *hp_mem, int len, int channels,
                       oac_int32 Fs, int arch) {
     oac_int32 B_Q28[ 3 ], A_Q28[ 2 ];
     oac_int32 Fc_Q19, r_Q28, r_Q22;
@@ -452,7 +452,7 @@ static void hp_cutoff(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_
 }
 
 #ifdef FIXED_POINT
-static void dc_reject(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_val32 *hp_mem, int len, int channels,
+static void oaci_dc_reject(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_val32 *hp_mem, int len, int channels,
                       oac_int32 Fs) {
     int c, i;
     int shift;
@@ -474,7 +474,7 @@ static void dc_reject(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out, oac_
 }
 
 #else
-static void dc_reject(const oac_val16 *in, oac_int32 cutoff_Hz, oac_val16 *out, oac_val32 *hp_mem, int len,
+static void oaci_dc_reject(const oac_val16 *in, oac_int32 cutoff_Hz, oac_val16 *out, oac_val32 *hp_mem, int len,
                       int channels, oac_int32 Fs) {
     int i;
     float coef, coef2;
@@ -620,7 +620,7 @@ OacEncoder *oac_encoder_create(oac_int32 Fs, int channels, int application, int 
 
 static const float dred_bits_table[16] = {73.2f, 68.1f, 62.5f, 57.0f, 51.5f, 45.7f, 39.9f, 32.4f, 26.4f, 20.4f, 16.3f,
                                           13.f, 9.3f, 8.2f, 7.2f, 6.4f};
-static int estimate_dred_bitrate(int q0, int dQ, int qmax, int duration, oac_int32 target_bits, int *target_chunks) {
+static int oaci_estimate_dred_bitrate(int q0, int dQ, int qmax, int duration, oac_int32 target_bits, int *target_chunks) {
     int dred_chunks;
     int i;
     float bits;
@@ -638,7 +638,7 @@ static int estimate_dred_bitrate(int q0, int dQ, int qmax, int duration, oac_int
     return (int)floor(.5f + bits);
 }
 
-static oac_int32 compute_dred_bitrate(OacEncoder *st, oac_int32 bitrate_bps, int frame_size) {
+static oac_int32 oaci_compute_dred_bitrate(OacEncoder *st, oac_int32 bitrate_bps, int frame_size) {
     float dred_frac;
     int bitrate_offset;
     oac_int32 dred_bitrate;
@@ -665,13 +665,13 @@ static oac_int32 compute_dred_bitrate(OacEncoder *st, oac_int32 bitrate_bps, int
     qmax = 15;
     target_dred_bitrate = IMAX(0, (int)(dred_frac*(bitrate_bps - bitrate_offset)));
     if (st->dred_duration > 0) {
-        oac_int32 target_bits = bitrate_to_bits(target_dred_bitrate, st->Fs, frame_size);
-        max_dred_bits = estimate_dred_bitrate(q0, dQ, qmax, st->dred_duration, target_bits, &target_chunks);
+        oac_int32 target_bits = oaci_bitrate_to_bits(target_dred_bitrate, st->Fs, frame_size);
+        max_dred_bits = oaci_estimate_dred_bitrate(q0, dQ, qmax, st->dred_duration, target_bits, &target_chunks);
     } else {
         max_dred_bits = 0;
         target_chunks = 0;
     }
-    dred_bitrate = IMIN(target_dred_bitrate, bits_to_bitrate(max_dred_bits, st->Fs, frame_size));
+    dred_bitrate = IMIN(target_dred_bitrate, oaci_bits_to_bitrate(max_dred_bits, st->Fs, frame_size));
     /* If we can't afford enough bits, don't bother with DRED at all. */
     if (target_chunks < 2)
         dred_bitrate = 0;
@@ -686,7 +686,7 @@ static oac_int32 compute_dred_bitrate(OacEncoder *st, oac_int32 bitrate_bps, int
 static oac_int32 oaci_user_bitrate_to_bitrate(OacEncoder *st, int frame_size, int max_data_bytes) {
     oac_int32 max_bitrate, user_bitrate;
     if (!frame_size) frame_size = st->Fs/400;
-    max_bitrate = bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
+    max_bitrate = oaci_bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
     if (st->user_bitrate_bps == OAC_AUTO)
         user_bitrate = 60*st->Fs/frame_size + st->Fs*st->channels;
     else if (st->user_bitrate_bps == OAC_BITRATE_MAX)
@@ -719,7 +719,7 @@ void oaci_downmix_float(const void *_x, oac_val32 *y, int subframe, int offset, 
     for (j = 0; j < subframe; j++) {
         if (y[j] < -65536.f) y[j] = -65536.f;
         if (y[j] >  65536.f) y[j] =  65536.f;
-        if (celt_isnan(y[j])) y[j] = 0;
+        if (oaci_celt_isnan(y[j])) y[j] = 0;
     }
 # endif
 }
@@ -834,7 +834,7 @@ oac_val16 oaci_compute_stereo_width(const oac_res *pcm, int frame_size, oac_int3
         yy += SHR32(pyy, shift);
     }
 #ifndef FIXED_POINT
-    if (!(xx < 1e9f) || celt_isnan(xx) || !(yy < 1e9f) || celt_isnan(yy)) {
+    if (!(xx < 1e9f) || oaci_celt_isnan(xx) || !(yy < 1e9f) || oaci_celt_isnan(yy)) {
         xy = xx = yy = 0;
     }
 #endif
@@ -869,7 +869,7 @@ oac_val16 oaci_compute_stereo_width(const oac_res *pcm, int frame_size, oac_int3
     return EXTRACT16(MIN32(Q15ONE, MULT16_16(20, mem->max_follower)));
 }
 
-static int decide_fec(int useInBandFEC, int PacketLoss_perc, int last_fec, int mode, int *bandwidth, oac_int32 rate) {
+static int oaci_decide_fec(int useInBandFEC, int PacketLoss_perc, int last_fec, int mode, int *bandwidth, oac_int32 rate) {
     int orig_bandwidth;
     if (!useInBandFEC || PacketLoss_perc == 0 || mode == MODE_CELT_ONLY)
         return 0;
@@ -1034,7 +1034,7 @@ static oac_val32 oaci_compute_frame_energy(const oac_val16 *pcm, int frame_size,
 #endif
 
 /* Decides if DTX should be turned on (=1) or off (=0) */
-static int decide_dtx_mode(oac_int activity,            /* indicates if this frame contains speech/music */
+static int oaci_decide_dtx_mode(oac_int activity,            /* indicates if this frame contains speech/music */
                            int *nb_no_activity_ms_Q1,    /* number of consecutive milliseconds with no activity, in Q1 */
                            int frame_size_ms_Q1          /* number of milliseconds in this update, in Q1 */
                            ) {
@@ -1235,14 +1235,14 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
 
     frame_rate = st->Fs/frame_size;
     if (!st->use_vbr) {
-        cbr_bytes = IMIN((bitrate_to_bits(st->bitrate_bps, st->Fs, frame_size) + 4)/8, max_data_bytes);
-        st->bitrate_bps = bits_to_bitrate(cbr_bytes*8, st->Fs, frame_size);
+        cbr_bytes = IMIN((oaci_bitrate_to_bits(st->bitrate_bps, st->Fs, frame_size) + 4)/8, max_data_bytes);
+        st->bitrate_bps = oaci_bits_to_bitrate(cbr_bytes*8, st->Fs, frame_size);
         /* Make sure we provide at least one byte to avoid failing. */
         max_data_bytes = IMAX(1, cbr_bytes);
     }
 #ifdef ENABLE_DRED
     /* Allocate some of the bits to DRED if needed. */
-    dred_bitrate_bps = compute_dred_bitrate(st, st->bitrate_bps, frame_size);
+    dred_bitrate_bps = oaci_compute_dred_bitrate(st, st->bitrate_bps, frame_size);
     st->bitrate_bps -= dred_bitrate_bps;
 #endif
     if (max_data_bytes < 3 || st->bitrate_bps < 3*frame_rate*8
@@ -1305,7 +1305,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
         RESTORE_STACK;
         return ret;
     }
-    max_rate = bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
+    max_rate = oaci_bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
 
     /* Equivalent 20-ms rate for mode/channel/bandwidth decisions */
     equiv_rate = oaci_compute_equiv_rate(st->bitrate_bps, st->channels, st->Fs/frame_size,
@@ -1420,7 +1420,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
 #endif
 
         /* If max_data_bytes represents less than 6 kb/s, switch to CELT-only mode */
-        if (max_data_bytes < bitrate_to_bits(frame_rate > 50 ? 9000 : 6000, st->Fs, frame_size)/8)
+        if (max_data_bytes < oaci_bitrate_to_bits(frame_rate > 50 ? 9000 : 6000, st->Fs, frame_size)/8)
             st->mode = MODE_CELT_ONLY;
     } else {
         st->mode = st->user_forced_mode;
@@ -1559,7 +1559,7 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
         st->bandwidth = IMIN(st->bandwidth, st->detected_bandwidth);
     }
 #endif
-    st->silk_mode.LBRR_coded = decide_fec(st->silk_mode.useInBandFEC, st->silk_mode.packetLossPercentage,
+    st->silk_mode.LBRR_coded = oaci_decide_fec(st->silk_mode.useInBandFEC, st->silk_mode.packetLossPercentage,
           st->silk_mode.LBRR_coded, st->mode, &st->bandwidth, equiv_rate);
     if (st->application != OAC_APPLICATION_RESTRICTED_SILK)
         celt_encoder_ctl(celt_enc, OAC_SET_LSB_DEPTH(lsb_depth));
@@ -1657,11 +1657,11 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
             frame_to_celt = to_celt && i == nb_frames - 1;
             frame_redundancy = redundancy && (frame_to_celt || (!to_celt && i == 0));
 
-            curr_max = IMIN(bitrate_to_bits(st->bitrate_bps, st->Fs, enc_frame_size)/8, max_len_sum/nb_frames);
+            curr_max = IMIN(oaci_bitrate_to_bits(st->bitrate_bps, st->Fs, enc_frame_size)/8, max_len_sum/nb_frames);
 #ifdef ENABLE_DRED
             curr_max = IMIN(curr_max,
-                (max_len_sum - bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8)/nb_frames);
-            if (first_frame) curr_max += bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8;
+                (max_len_sum - oaci_bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8)/nb_frames);
+            if (first_frame) curr_max += oaci_bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8;
 #endif
             curr_max = IMIN(max_len_sum - tot_size, curr_max);
 #ifndef DISABLE_FLOAT_API
@@ -1822,7 +1822,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     }
 
     /* printf("%d %d %d %d\n", st->bitrate_bps, st->stream_channels, st->mode, curr_bandwidth); */
-    bits_target = IMIN(8*(max_data_bytes - redundancy_bytes), bitrate_to_bits(st->bitrate_bps, st->Fs, frame_size)) - 8;
+    bits_target = IMIN(8*(max_data_bytes - redundancy_bytes), oaci_bitrate_to_bits(st->bitrate_bps, st->Fs, frame_size)) - 8;
 
     data += 1;
 
@@ -1843,7 +1843,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     cutoff_Hz = oaci_silk_log2lin( silk_RSHIFT( st->variable_HP_smth2_Q15, 8 ));
 
     if (st->application == OAC_APPLICATION_VOIP) {
-        hp_cutoff(pcm, cutoff_Hz, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs,
+        oaci_hp_cutoff(pcm, cutoff_Hz, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs,
         st->arch);
 
 #ifdef ENABLE_OSCE_TRAINING_DATA
@@ -1863,7 +1863,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         }
 #endif
     } else {
-        dc_reject(pcm, 3, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs);
+        oaci_dc_reject(pcm, 3, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs);
     }
 #ifndef FIXED_POINT
     if (float_api) {
@@ -1872,7 +1872,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         frame_size*st->channels, st->arch);
         /* This should filter out both NaNs and ridiculous signals that could
            cause NaNs further down. */
-        if (!(sum < 1e9f) || celt_isnan(sum)) {
+        if (!(sum < 1e9f) || oaci_celt_isnan(sum)) {
             OAC_CLEAR(&pcm_buf[total_buffer*st->channels], frame_size*st->channels);
             st->hp_mem[0] = st->hp_mem[1] = st->hp_mem[2] = st->hp_mem[3] = 0;
         }
@@ -1905,7 +1905,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         const oac_res *pcm_silk;
 
         /* Distribute bits between SILK and CELT */
-        total_bitRate = bits_to_bitrate(bits_target, st->Fs, frame_size);
+        total_bitRate = oaci_bits_to_bitrate(bits_target, st->Fs, frame_size);
         if (st->mode == MODE_HYBRID) {
             /* Base rate for SILK */
             st->silk_mode.bitRate = oaci_compute_silk_rate_for_hybrid(total_bitRate,
@@ -1978,7 +1978,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 
         st->silk_mode.maxInternalSampleRate = 16000;
         if (st->mode == MODE_SILK_ONLY) {
-            oac_int32 effective_max_rate = bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
+            oac_int32 effective_max_rate = oaci_bits_to_bitrate(max_data_bytes*8, st->Fs, frame_size);
             if (frame_rate > 50)
                 effective_max_rate = effective_max_rate*2/3;
             if (effective_max_rate < 8000) {
@@ -2029,7 +2029,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
                 oac_int32 maxBitRate = oaci_compute_silk_rate_for_hybrid(st->silk_mode.maxBits*st->Fs/frame_size,
                     curr_bandwidth, st->Fs == 50*frame_size, st->use_vbr, st->silk_mode.LBRR_coded,
                     st->stream_channels);
-                st->silk_mode.maxBits = bitrate_to_bits(maxBitRate, st->Fs, frame_size);
+                st->silk_mode.maxBits = oaci_bitrate_to_bits(maxBitRate, st->Fs, frame_size);
             }
         }
 
@@ -2225,7 +2225,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 #ifdef ENABLE_DRED
         if (st->dred_duration > 0) {
             int max_celt_bytes;
-            oac_int32 dred_bytes = bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8;
+            oac_int32 dred_bytes = oaci_bitrate_to_bits(dred_bitrate_bps, st->Fs, frame_size)/8;
             /* Allow CELT to steal up to 25% of the remaining bits. */
             max_celt_bytes = nb_compr_bytes - dred_bytes*3/4;
             /* But try to give CELT at least 5 bytes to prevent a mismatch with
@@ -2370,7 +2370,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
 
     /* DTX decision */
     if (st->use_dtx && !st->silk_mode.useDTX) {
-        if (decide_dtx_mode(activity, &st->nb_no_activity_ms_Q1, 2*1000*frame_size/st->Fs)) {
+        if (oaci_decide_dtx_mode(activity, &st->nb_no_activity_ms_Q1, 2*1000*frame_size/st->Fs)) {
             st->rangeFinal = 0;
             data[0] = oaci_gen_toc(st->mode, st->Fs/frame_size, curr_bandwidth, st->stream_channels);
             RESTORE_STACK;

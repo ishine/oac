@@ -221,7 +221,7 @@ static void oaci_mag_spec_320_onesided(float *out, float *in) {
 }
 
 
-static void calculate_log_spectrum_from_lpc(float *spec, oac_int16 *a_q12, int lpc_order) {
+static void oaci_calculate_log_spectrum_from_lpc(float *spec, oac_int16 *a_q12, int lpc_order) {
     float buffer[OSCE_SPEC_WINDOW_SIZE] = {0};
     int i;
 
@@ -386,7 +386,7 @@ void oaci_osce_calculate_features(
 
         /* clean spectrum from lpcs (update every other frame) */
         if (k%2 == 0) {
-            calculate_log_spectrum_from_lpc(pfeatures + OSCE_CLEAN_SPEC_START, psDecCtrl->PredCoef_Q12[k>>1],
+            oaci_calculate_log_spectrum_from_lpc(pfeatures + OSCE_CLEAN_SPEC_START, psDecCtrl->PredCoef_Q12[k>>1],
             psDec->LPC_order);
         } else {
             OAC_COPY(pfeatures + OSCE_CLEAN_SPEC_START, pfeatures + OSCE_CLEAN_SPEC_START - OSCE_FEATURE_DIM,

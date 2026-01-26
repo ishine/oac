@@ -1517,14 +1517,14 @@ void oaci_osce_bwe(
         float tmp = 32768.f*out_buffer[i];
         if (tmp > 32767.f) tmp = 32767.f;
         if (tmp < -32767.f) tmp = -32767.f;
-        xq48[i + OSCE_BWE_OUTPUT_DELAY] = float2int(tmp);
+        xq48[i + OSCE_BWE_OUTPUT_DELAY] = oaci_float2int(tmp);
     }
 
     for (i = 0; i < OSCE_BWE_OUTPUT_DELAY; i++) {
         float tmp = 32768.f*out_buffer[3*xq16_len - OSCE_BWE_OUTPUT_DELAY + i];
         if (tmp > 32767.f) tmp = 32767.f;
         if (tmp < -32767.f) tmp = -32767.f;
-        psOSCEBWE->state.bbwenet.outbut_buffer[i] = float2int(tmp);
+        psOSCEBWE->state.bbwenet.outbut_buffer[i] = oaci_float2int(tmp);
     }
 
 
@@ -1669,7 +1669,7 @@ void oaci_osce_enhance_frame(
         float tmp = 32768.f*out_buffer[i];
         if (tmp > 32767.f) tmp = 32767.f;
         if (tmp < -32767.f) tmp = -32767.f;
-        xq[i] = float2int(tmp);
+        xq[i] = oaci_float2int(tmp);
     }
 
 }

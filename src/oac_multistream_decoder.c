@@ -40,10 +40,10 @@
 /* DECODER */
 
 #if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
-static void validate_ms_decoder(OacMSDecoder *st) {
+static void oaci_validate_ms_decoder(OacMSDecoder *st) {
     oaci_validate_layout(&st->layout);
 }
-# define VALIDATE_MS_DECODER(st) validate_ms_decoder(st)
+# define VALIDATE_MS_DECODER(st) oaci_validate_ms_decoder(st)
 #else
 # define VALIDATE_MS_DECODER(st)
 #endif
@@ -56,9 +56,9 @@ oac_int32 oac_multistream_decoder_get_size(int nb_streams, int nb_coupled_stream
     if (nb_streams < 1 || nb_coupled_streams > nb_streams || nb_coupled_streams < 0) return 0;
     coupled_size = oac_decoder_get_size(2);
     mono_size = oac_decoder_get_size(1);
-    return align(sizeof(OacMSDecoder))
-           + nb_coupled_streams*align(coupled_size)
-           + (nb_streams - nb_coupled_streams)*align(mono_size);
+    return oaci_align(sizeof(OacMSDecoder))
+           + nb_coupled_streams*oaci_align(coupled_size)
+           + (nb_streams - nb_coupled_streams)*oaci_align(mono_size);
 }
 
 int oac_multistream_decoder_init(
@@ -86,19 +86,19 @@ int oac_multistream_decoder_init(
     if (!oaci_validate_layout(&st->layout))
         return OAC_BAD_ARG;
 
-    ptr = (char*)st + align(sizeof(OacMSDecoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSDecoder));
     coupled_size = oac_decoder_get_size(2);
     mono_size = oac_decoder_get_size(1);
 
     for (i = 0; i < st->layout.nb_coupled_streams; i++) {
         ret = oac_decoder_init((OacDecoder*)ptr, Fs, 2);
         if (ret != OAC_OK) return ret;
-        ptr += align(coupled_size);
+        ptr += oaci_align(coupled_size);
     }
     for (; i < st->layout.nb_streams; i++) {
         ret = oac_decoder_init((OacDecoder*)ptr, Fs, 1);
         if (ret != OAC_OK) return ret;
-        ptr += align(mono_size);
+        ptr += oaci_align(mono_size);
     }
     return OAC_OK;
 }
@@ -190,7 +190,7 @@ int oac_multistream_decode_native(
     MUST_SUCCEED(oac_multistream_decoder_ctl(st, OAC_GET_SAMPLE_RATE(&Fs)));
     frame_size = IMIN(frame_size, Fs/25*3);
     ALLOC(buf, 2*frame_size, oac_res);
-    ptr = (char*)st + align(sizeof(OacMSDecoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSDecoder));
     coupled_size = oac_decoder_get_size(2);
     mono_size = oac_decoder_get_size(1);
 
@@ -220,7 +220,7 @@ int oac_multistream_decode_native(
         int ret;
 
         dec = (OacDecoder*)ptr;
-        ptr += (s < st->layout.nb_coupled_streams) ? align(coupled_size) : align(mono_size);
+        ptr += (s < st->layout.nb_coupled_streams) ? oaci_align(coupled_size) : oaci_align(mono_size);
 
         if (!do_plc && len <= 0) {
             RESTORE_STACK;
@@ -385,7 +385,7 @@ int oac_multistream_decoder_ctl_va_list(OacMSDecoder *st, int request,
 
     coupled_size = oac_decoder_get_size(2);
     mono_size = oac_decoder_get_size(1);
-    ptr = (char*)st + align(sizeof(OacMSDecoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSDecoder));
     switch (request) {
         case OAC_GET_BANDWIDTH_REQUEST:
         case OAC_GET_SAMPLE_RATE_REQUEST:
@@ -414,9 +414,9 @@ int oac_multistream_decoder_ctl_va_list(OacMSDecoder *st, int request,
                 OacDecoder *dec;
                 dec = (OacDecoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 ret = oac_decoder_ctl(dec, request, &tmp);
                 if (ret != OAC_OK) break;
                 *value ^= tmp;
@@ -431,9 +431,9 @@ int oac_multistream_decoder_ctl_va_list(OacMSDecoder *st, int request,
 
                 dec = (OacDecoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 ret = oac_decoder_ctl(dec, OAC_RESET_STATE);
                 if (ret != OAC_OK)
                     break;
@@ -454,9 +454,9 @@ int oac_multistream_decoder_ctl_va_list(OacMSDecoder *st, int request,
             }
             for (s = 0; s < stream_id; s++) {
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
             }
             *value = (OacDecoder*)ptr;
         }
@@ -473,9 +473,9 @@ int oac_multistream_decoder_ctl_va_list(OacMSDecoder *st, int request,
 
                 dec = (OacDecoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 ret = oac_decoder_ctl(dec, request, value);
                 if (ret != OAC_OK)
                     break;

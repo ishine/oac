@@ -39,7 +39,7 @@
 
 /* Compute inverse of LPC prediction gain, and                          */
 /* test if LPC coefficients are stable (all poles within unit circle)   */
-static oac_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse prediction gain in energy domain, Q30    */
+static oac_int32 oaci_LPC_inverse_pred_gain_QA_c(               /* O   Returns inverse prediction gain in energy domain, Q30    */
     oac_int32 A_QA[ SILK_MAX_ORDER_LPC ],                  /* I   Prediction coefficients                                  */
     const oac_int order                                    /* I   Prediction order                                         */
     ) {
@@ -72,7 +72,7 @@ static oac_int32 LPC_inverse_pred_gain_QA_c(               /* O   Returns invers
 
         /* rc_mult2 range: [ 2^30 : silk_int32_MAX ] */
         mult2Q = 32 - silk_CLZ32( silk_abs( rc_mult1_Q30 ));
-        rc_mult2 = silk_INVERSE32_varQ( rc_mult1_Q30, mult2Q + 30 );
+        rc_mult2 = oaci_silk_INVERSE32_varQ( rc_mult1_Q30, mult2Q + 30 );
 
         /* Update AR coefficient */
         for (n = 0; n < (k + 1)>>1; n++) {
@@ -135,5 +135,5 @@ oac_int32 oaci_silk_LPC_inverse_pred_gain_c(            /* O   Returns inverse p
     if (DC_resp >= 4096) {
         return 0;
     }
-    return LPC_inverse_pred_gain_QA_c( Atmp_QA, order );
+    return oaci_LPC_inverse_pred_gain_QA_c( Atmp_QA, order );
 }

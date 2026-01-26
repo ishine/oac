@@ -33,7 +33,7 @@
 #include "resampler_private.h"
 #include "stack_alloc.h"
 
-static OAC_INLINE oac_int16 *silk_resampler_private_IIR_FIR_INTERPOL(
+static OAC_INLINE oac_int16 *oaci_silk_resampler_private_IIR_FIR_INTERPOL(
     oac_int16  *out,
     oac_int16  *buf,
     oac_int32 max_index_Q16,
@@ -86,7 +86,7 @@ void oaci_silk_resampler_private_IIR_FIR(
         oaci_silk_resampler_private_up2_HQ( S->sIIR, &buf[ RESAMPLER_ORDER_FIR_12 ], in, nSamplesIn );
 
         max_index_Q16 = silk_LSHIFT32( nSamplesIn, 16 + 1 );         /* + 1 because 2x upsampling */
-        out = silk_resampler_private_IIR_FIR_INTERPOL( out, buf, max_index_Q16, index_increment_Q16 );
+        out = oaci_silk_resampler_private_IIR_FIR_INTERPOL( out, buf, max_index_Q16, index_increment_Q16 );
         in += nSamplesIn;
         inLen -= nSamplesIn;
 

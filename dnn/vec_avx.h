@@ -303,7 +303,7 @@ static inline mm256i_emu mm256_cvtps_epi32(mm256_emu a) {
 #endif
 
 #ifdef __AVX2__
-static inline __m256 exp8_approx(__m256 X) {
+static inline __m256 oaci_exp8_approx(__m256 X) {
     const __m256 K0 = _mm256_set1_ps(0.99992522f);
     const __m256 K1 = _mm256_set1_ps(0.69583354f);
     const __m256 K2 = _mm256_set1_ps(0.22606716f);
@@ -324,7 +324,7 @@ static inline __m256 exp8_approx(__m256 X) {
     return Y;
 }
 
-static inline void vector_ps_to_epi8(unsigned char *x, const float *_x, int len) {
+static inline void oaci_vector_ps_to_epi8(unsigned char *x, const float *_x, int len) {
     int i;
     __m256 const127 = _mm256_set1_ps(127.f);
     for (i = 0; i < len; i += 8) {
@@ -342,7 +342,7 @@ static inline void vector_ps_to_epi8(unsigned char *x, const float *_x, int len)
 }
 
 #else
-static inline __m128 exp4_approx(__m128 X) {
+static inline __m128 oaci_exp4_approx(__m128 X) {
     const __m128 K0 = _mm_set1_ps(0.99992522f);
     const __m128 K1 = _mm_set1_ps(0.69583354f);
     const __m128 K2 = _mm_set1_ps(0.22606716f);
@@ -363,19 +363,19 @@ static inline __m128 exp4_approx(__m128 X) {
     Y = _mm_castsi128_ps(_mm_and_si128(mask, _mm_add_epi32(I, _mm_castps_si128(Y))));
     return Y;
 }
-static inline __m256 exp8_approx(__m256 X) {
+static inline __m256 oaci_exp8_approx(__m256 X) {
     __m256 Y;
     __m128 Xhi, Xlo, Yhi, Ylo;
     Xhi = _mm256_extractf128_ps(X, 1);
     Xlo = _mm256_extractf128_ps(X, 0);
-    Yhi = exp4_approx(Xhi);
-    Ylo = exp4_approx(Xlo);
+    Yhi = oaci_exp4_approx(Xhi);
+    Ylo = oaci_exp4_approx(Xlo);
     Y = _mm256_insertf128_ps(_mm256_setzero_ps(), Yhi, 1);
     Y = _mm256_insertf128_ps(Y, Ylo, 0);
     return Y;
 }
 
-static inline void vector_ps_to_epi8(unsigned char *x, const float *_x, int len) {
+static inline void oaci_vector_ps_to_epi8(unsigned char *x, const float *_x, int len) {
     int i;
     for (i = 0; i < len; i++)x[i] = 127 + (int)floor(.5 + 127*_x[i]);
 }
@@ -524,7 +524,7 @@ static inline float oaci_lpcnet_exp(float x) {
     float out[8];
     __m256 X, Y;
     X = _mm256_set1_ps(x);
-    Y = exp8_approx(X);
+    Y = oaci_exp8_approx(X);
     _mm256_storeu_ps(out, Y);
     return out[0];
 }
@@ -534,7 +534,7 @@ static inline void oaci_softmax(float *y, const float *x, int N) {
     for (i = 0; i < N - 7; i += 8) {
         __m256 X, Y;
         X = _mm256_loadu_ps(&x[i]);
-        Y = exp8_approx(X);
+        Y = oaci_exp8_approx(X);
         _mm256_storeu_ps(&y[i], Y);
     }
     for (; i < N; i++)
@@ -745,7 +745,7 @@ static inline void oaci_sparse_cgemv8x4(float *_out, const oac_int8 *w, const in
     int i, j;
     unsigned char x[MAX_INPUTS];
     /*for (i=0;i<cols;i++) x[i] = 127+floor(.5+127*_x[i]);*/
-    vector_ps_to_epi8(x, _x, cols);
+    oaci_vector_ps_to_epi8(x, _x, cols);
     for (i = 0; i < rows; i += 8) {
         int colblocks;
         __m256i vy0;
@@ -792,7 +792,7 @@ static inline void oaci_cgemv8x4(float *_out, const oac_int8 *w, const float *sc
     int i, j;
     unsigned char x[MAX_INPUTS];
     /*for (i=0;i<cols;i++) x[i] = 127+floor(.5+127*_x[i]);*/
-    vector_ps_to_epi8(x, _x, cols);
+    oaci_vector_ps_to_epi8(x, _x, cols);
     for (i = 0; i < rows; i += 8) {
         __m256i vy0;
         __m256 vout;

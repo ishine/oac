@@ -68,7 +68,7 @@ typedef union {
     float f;
 } float_bits;
 
-static void biquad(float *y, float mem[2], const float *x,
+static void oaci_biquad(float *y, float mem[2], const float *x,
                    const float *b, const float *a, int N) {
     int i;
     for (i = 0; i < N; i++) {
@@ -158,7 +158,7 @@ static size_t read_pcm(float **_samples, FILE *_fin, int _nchannels,
     }
     *_samples = (float *)oac_realloc(samples,
    _nchannels*nsamples*sizeof(*samples));
-    biquad(*_samples, mem, *_samples, b_hp, a_hp, nsamples);
+    oaci_biquad(*_samples, mem, *_samples, b_hp, a_hp, nsamples);
     return nsamples;
 }
 

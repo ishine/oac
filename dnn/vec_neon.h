@@ -56,7 +56,7 @@ static OAC_INLINE int16x8_t vmull_high_s8(int8x16_t a, int8x16_t b) {
 #endif
 
 #ifndef LPCNET_TEST
-static inline float32x4_t exp4_approx(float32x4_t x) {
+static inline float32x4_t oaci_exp4_approx(float32x4_t x) {
     int32x4_t i;
     float32x4_t xf;
 
@@ -126,7 +126,7 @@ static inline float oaci_lpcnet_exp(float x) {
     float out[4];
     float32x4_t X, Y;
     X = vdupq_n_f32(x);
-    Y = exp4_approx(X);
+    Y = oaci_exp4_approx(X);
     vst1q_f32(out, Y);
     return out[0];
 }
@@ -154,7 +154,7 @@ static inline void oaci_softmax(float *y, const float *x, int N) {
     for (i = 0; i < N - 3; i += 4) {
         float32x4_t X, Y;
         X = vld1q_f32(&x[i]);
-        Y = exp4_approx(X);
+        Y = oaci_exp4_approx(X);
         vst1q_f32(&y[i], Y);
     }
     for (; i < N; i++)

@@ -90,15 +90,15 @@ struct ec_ctx {
     int error;
 };
 
-static OAC_INLINE oac_uint32 ec_range_bytes(ec_ctx *_this) {
+static OAC_INLINE oac_uint32 oaci_ec_range_bytes(ec_ctx *_this) {
     return _this->offs;
 }
 
-static OAC_INLINE unsigned char *ec_get_buffer(ec_ctx *_this) {
+static OAC_INLINE unsigned char *oaci_ec_get_buffer(ec_ctx *_this) {
     return _this->buf;
 }
 
-static OAC_INLINE int ec_get_error(ec_ctx *_this) {
+static OAC_INLINE int oaci_ec_get_error(ec_ctx *_this) {
     return _this->error;
 }
 
@@ -121,7 +121,7 @@ static OAC_INLINE int oaci_ec_tell(ec_ctx *_this) {
 oac_uint32 oaci_ec_tell_frac(ec_ctx *_this);
 
 /* Tested exhaustively for all n and for 1<=d<=256 */
-static OAC_INLINE oac_uint32 celt_udiv(oac_uint32 n, oac_uint32 d) {
+static OAC_INLINE oac_uint32 oaci_celt_udiv(oac_uint32 n, oac_uint32 d) {
     celt_sig_assert(d > 0);
 # ifdef USE_SMALL_DIV_TABLE
     if (d > 256)
@@ -137,13 +137,13 @@ static OAC_INLINE oac_uint32 celt_udiv(oac_uint32 n, oac_uint32 d) {
 # endif
 }
 
-static OAC_INLINE oac_int32 celt_sudiv(oac_int32 n, oac_int32 d) {
+static OAC_INLINE oac_int32 oaci_celt_sudiv(oac_int32 n, oac_int32 d) {
     celt_sig_assert(d > 0);
 # ifdef USE_SMALL_DIV_TABLE
     if (n < 0)
-        return -(oac_int32)celt_udiv(-n, d);
+        return -(oac_int32)oaci_celt_udiv(-n, d);
     else
-        return celt_udiv(n, d);
+        return oaci_celt_udiv(n, d);
 # else
     return n/d;
 # endif

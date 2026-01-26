@@ -44,18 +44,18 @@ static oac_int oaci_silk_setup_resamplers(
     oac_int fs_kHz                                     /* I                        */
     );
 
-static oac_int silk_setup_fs(
+static oac_int oaci_silk_setup_fs(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
     oac_int fs_kHz,                                    /* I                        */
     oac_int PacketSize_ms                              /* I                        */
     );
 
-static oac_int silk_setup_complexity(
+static oac_int oaci_silk_setup_complexity(
     silk_encoder_state              *psEncC,            /* I/O                      */
     oac_int Complexity                                 /* I                        */
     );
 
-static OAC_INLINE oac_int silk_setup_LBRR(
+static OAC_INLINE oac_int oaci_silk_setup_LBRR(
     silk_encoder_state              *psEncC,            /* I/O                      */
     const silk_EncControlStruct     *encControl         /* I                        */
     );
@@ -107,12 +107,12 @@ oac_int oaci_silk_control_encoder(
     /********************************************/
     /* Set internal sampling frequency          */
     /********************************************/
-    ret += silk_setup_fs( psEnc, fs_kHz, encControl->payloadSize_ms );
+    ret += oaci_silk_setup_fs( psEnc, fs_kHz, encControl->payloadSize_ms );
 
     /********************************************/
     /* Set encoding complexity                  */
     /********************************************/
-    ret += silk_setup_complexity( &psEnc->sCmn, encControl->complexity  );
+    ret += oaci_silk_setup_complexity( &psEnc->sCmn, encControl->complexity  );
 
     /********************************************/
     /* Set packet loss rate measured by farend  */
@@ -122,7 +122,7 @@ oac_int oaci_silk_control_encoder(
     /********************************************/
     /* Set LBRR usage                           */
     /********************************************/
-    ret += silk_setup_LBRR( &psEnc->sCmn, encControl );
+    ret += oaci_silk_setup_LBRR( &psEnc->sCmn, encControl );
 
     psEnc->sCmn.controlled_since_last_payload = 1;
 
@@ -183,7 +183,7 @@ static oac_int oaci_silk_setup_resamplers(
             ret += oaci_silk_resampler( &psEnc->sCmn.resampler_state, x_bufFIX, x_buf_API_fs_Hz, api_buf_samples );
 
 #ifndef FIXED_POINT
-            silk_short2float_array( psEnc->x_buf, x_bufFIX, new_buf_samples);
+            oaci_silk_short2float_array( psEnc->x_buf, x_bufFIX, new_buf_samples);
 #endif
         }
     }
@@ -194,7 +194,7 @@ static oac_int oaci_silk_setup_resamplers(
     return ret;
 }
 
-static oac_int silk_setup_fs(
+static oac_int oaci_silk_setup_fs(
     silk_encoder_state_Fxx          *psEnc,             /* I/O                      */
     oac_int fs_kHz,                                    /* I                        */
     oac_int PacketSize_ms                              /* I                        */
@@ -301,7 +301,7 @@ static oac_int silk_setup_fs(
     return ret;
 }
 
-static oac_int silk_setup_complexity(
+static oac_int oaci_silk_setup_complexity(
     silk_encoder_state              *psEncC,            /* I/O                      */
     oac_int Complexity                                 /* I                        */
     ) {
@@ -396,7 +396,7 @@ static oac_int silk_setup_complexity(
     return ret;
 }
 
-static OAC_INLINE oac_int silk_setup_LBRR(
+static OAC_INLINE oac_int oaci_silk_setup_LBRR(
     silk_encoder_state          *psEncC,            /* I/O                      */
     const silk_EncControlStruct *encControl         /* I                        */
     ) {

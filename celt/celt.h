@@ -135,11 +135,11 @@ typedef struct {
 #define CELT_SET_SILK_INFO(x) CELT_SET_SILK_INFO_REQUEST, celt_check_silkinfo_ptr(x)
 
 
-static OAC_INLINE oac_int32 bits_to_bitrate(oac_int32 bits, oac_int32 Fs, oac_int32 frame_size) {
+static OAC_INLINE oac_int32 oaci_bits_to_bitrate(oac_int32 bits, oac_int32 Fs, oac_int32 frame_size) {
     return bits*(6*Fs/frame_size)/6;
 }
 
-static OAC_INLINE oac_int32 bitrate_to_bits(oac_int32 bitrate, oac_int32 Fs, oac_int32 frame_size) {
+static OAC_INLINE oac_int32 oaci_bitrate_to_bits(oac_int32 bitrate, oac_int32 Fs, oac_int32 frame_size) {
     return bitrate*6/(6*Fs/frame_size);
 }
 
@@ -204,7 +204,7 @@ static const unsigned char fromOacTable[16] = {
     0x00, 0x08, 0x10, 0x18
 };
 
-static OAC_INLINE int toOac(unsigned char c) {
+static OAC_INLINE int oaci_toOac(unsigned char c) {
     int ret = 0;
     if (c < 0xA0)
         ret = toOacTable[c>>3];
@@ -214,7 +214,7 @@ static OAC_INLINE int toOac(unsigned char c) {
         return ret|(c&0x7);
 }
 
-static OAC_INLINE int fromOac(unsigned char c) {
+static OAC_INLINE int oaci_fromOac(unsigned char c) {
     if (c < 0x80)
         return -1;
     else

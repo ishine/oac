@@ -126,7 +126,7 @@ void oaci_ec_enc_init(ec_enc *_this, unsigned char *_buf, oac_uint32 _size) {
 
 void oaci_ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {
     oac_uint32 r;
-    r = celt_udiv(_this->rng, _ft);
+    r = oaci_celt_udiv(_this->rng, _ft);
     if (_fl > 0) {
         _this->val += _this->rng - IMUL32(r, (_ft - _fl));
         _this->rng = IMUL32(r, (_fh - _fl));

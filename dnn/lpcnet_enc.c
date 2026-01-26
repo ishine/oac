@@ -71,7 +71,7 @@ void oaci_lpcnet_encoder_destroy(LPCNetEncState *st) {
     oac_free(st);
 }
 
-static void frame_analysis(LPCNetEncState *st, kiss_fft_cpx *X, float *Ex, const float *in) {
+static void oaci_frame_analysis(LPCNetEncState *st, kiss_fft_cpx *X, float *Ex, const float *in) {
     float x[WINDOW_SIZE];
     OAC_COPY(x, st->analysis_mem, OVERLAP_SIZE);
     OAC_COPY(&x[OVERLAP_SIZE], in, FRAME_SIZE);
@@ -81,7 +81,7 @@ static void frame_analysis(LPCNetEncState *st, kiss_fft_cpx *X, float *Ex, const
     oaci_lpcn_compute_band_energy(Ex, X);
 }
 
-static void biquad(float *y, float mem[2], const float *x, const float *b, const float *a, int N) {
+static void oaci_biquad(float *y, float mem[2], const float *x, const float *b, const float *a, int N) {
     int i;
     float mem0, mem1;
     mem0 = mem[0];
@@ -125,7 +125,7 @@ void oaci_compute_frame_features(LPCNetEncState *st, const float *in, int arch) 
     static const float lp_b[2] = {-0.84946f, 1.f};
     static const float lp_a[2] = {-1.54220f, 0.70781f};
     OAC_COPY(aligned_in, &st->analysis_mem[OVERLAP_SIZE - TRAINING_OFFSET], TRAINING_OFFSET);
-    frame_analysis(st, X, Ex, in);
+    oaci_frame_analysis(st, X, Ex, in);
     st->if_features[0] = MAX16(-1.f, MIN16(1.f, (1.f/64)*(10.f*celt_log10(1e-15f + X[0].r*X[0].r) - 6.f)));
     for (i = 1; i < PITCH_IF_MAX_FREQ; i++) {
         kiss_fft_cpx prod;
@@ -164,7 +164,7 @@ void oaci_compute_frame_features(LPCNetEncState *st, const float *in, int arch) 
         st->pitch_filt = st->lp_buf[PITCH_MAX_PERIOD + i];
         /*printf("%f\n", st->exc_buf[PITCH_MAX_PERIOD+i]);*/
     }
-    biquad(&st->lp_buf[PITCH_MAX_PERIOD], st->lp_mem, &st->lp_buf[PITCH_MAX_PERIOD], lp_b, lp_a, FRAME_SIZE);
+    oaci_biquad(&st->lp_buf[PITCH_MAX_PERIOD], st->lp_mem, &st->lp_buf[PITCH_MAX_PERIOD], lp_b, lp_a, FRAME_SIZE);
     {
         double ener1;
         float *buf = st->exc_buf;

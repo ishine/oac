@@ -202,20 +202,20 @@ void test_cos(void) {
     float error_threshold = 6.0e-07;
     float max_error = 0;
     for (x = -4.0f; x < 4.0f; x += 0.0007f) {
-        float error = fabs((float)cos((.5f*PI)*(x)) - celt_cos_norm2(x));
+        float error = fabs((float)cos((.5f*PI)*(x)) - oaci_celt_cos_norm2(x));
         if (max_error < error) {
             max_error = error;
         }
 
         if (error > error_threshold) {
             fprintf (stderr,
-                  "celt_cos_norm2 failed: "
-                  "fabs(ref_x-(celt_cos_norm2(x)))>%15.25e "
+                  "oaci_celt_cos_norm2 failed: "
+                  "fabs(ref_x-(oaci_celt_cos_norm2(x)))>%15.25e "
                   "(x = %f, error = %15.25e)\n", error_threshold, x, error);
             ret = 1;
         }
     }
-    fprintf (stdout, "celt_cos_norm2 max_error: %15.25e\n", max_error);
+    fprintf (stdout, "oaci_celt_cos_norm2 max_error: %15.25e\n", max_error);
 }
 
 void test_atan2(void) {
@@ -228,22 +228,22 @@ void test_atan2(void) {
                 /* atan2(0,0) is undefined behavior. */
                 continue;
             }
-            float error = fabs(0.636619772367581f*(float)atan2((double)y, (double)x) - celt_atan2p_norm(y, x));
+            float error = fabs(0.636619772367581f*(float)atan2((double)y, (double)x) - oaci_celt_atan2p_norm(y, x));
             if (max_error < error) {
                 max_error = error;
             }
 
             if (error > error_threshold) {
                 fprintf (stderr,
-                     "celt_atan2p_norm failed: "
-                     "(fabs)(2/pi*atan2(y,x) - celt_atan2p_norm(y,x))>%15.25e "
+                     "oaci_celt_atan2p_norm failed: "
+                     "(fabs)(2/pi*atan2(y,x) - oaci_celt_atan2p_norm(y,x))>%15.25e "
                      "(x = %f, y = %f, error = %15.25e)\n",
                      error_threshold, x, y, error);
                 ret = 1;
             }
         }
     }
-    fprintf (stdout, "celt_atan2p_norm max_error: %15.25e\n", max_error);
+    fprintf (stdout, "oaci_celt_atan2p_norm max_error: %15.25e\n", max_error);
 }
 
 #else
@@ -453,19 +453,19 @@ void testatan2p_norm(void) {
 
             error = fabs(atan2(FIX_INT_TO_DOUBLE(y, q_input),
                             FIX_INT_TO_DOUBLE(x, q_input))*ATAN2_2_OVER_PI
-                - FIX_INT_TO_DOUBLE(celt_atan2p_norm(y, x), q_output));
+                - FIX_INT_TO_DOUBLE(oaci_celt_atan2p_norm(y, x), q_output));
             if (error > max_error) {
                 max_error = error;
             }
             if (error > error_threshold) {
                 fprintf(stderr,
-                  "celt_atan2p_norm failed: error: [%.5e > %.5e] (x = %f)\n",
+                  "oaci_celt_atan2p_norm failed: error: [%.5e > %.5e] (x = %f)\n",
                   error, error_threshold, FIX_INT_TO_DOUBLE(x, DB_SHIFT));
                 ret = 1;
             }
         }
     }
-    fprintf(stdout, "celt_atan2p_norm max_error: %.7e\n", max_error);
+    fprintf(stdout, "oaci_celt_atan2p_norm max_error: %.7e\n", max_error);
 }
 
 void testatan(void) {

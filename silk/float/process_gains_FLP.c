@@ -45,7 +45,7 @@ void oaci_silk_process_gains_FLP(
 
     /* Gain reduction when LTP coding gain is high */
     if (psEnc->sCmn.indices.signalType == TYPE_VOICED) {
-        s = 1.0f - 0.5f*silk_sigmoid( 0.25f*(psEncCtrl->LTPredCodGain - 12.0f));
+        s = 1.0f - 0.5f*oaci_silk_sigmoid( 0.25f*(psEncCtrl->LTPredCodGain - 12.0f));
         for (k = 0; k < psEnc->sCmn.nb_subfr; k++) {
             psEncCtrl->Gains[ k ] *= s;
         }

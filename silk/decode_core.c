@@ -108,7 +108,7 @@ void oaci_silk_decode_core(
         signalType   = psDec->indices.signalType;
 
         Gain_Q10     = silk_RSHIFT( psDecCtrl->Gains_Q16[ k ], 6 );
-        inv_gain_Q31 = silk_INVERSE32_varQ( psDecCtrl->Gains_Q16[ k ], 47 );
+        inv_gain_Q31 = oaci_silk_INVERSE32_varQ( psDecCtrl->Gains_Q16[ k ], 47 );
 
         /* Calculate gain adjustment factor */
         if (psDecCtrl->Gains_Q16[ k ] != psDec->prev_gain_Q16) {

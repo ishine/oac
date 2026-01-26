@@ -30,7 +30,7 @@
 
 #include "SigProc_FIX.h"
 
-#undef silk_short_prediction_create_arch_coef
+#undef oaci_silk_short_prediction_create_arch_coef
 
 static OAC_INLINE oac_int32 oaci_silk_noise_shape_quantizer_short_prediction_c(const oac_int32 *buf32,
                                                                           const oac_int16 *coef16, oac_int order) {

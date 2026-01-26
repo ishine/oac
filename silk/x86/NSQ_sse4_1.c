@@ -36,7 +36,7 @@
 #include "celt/x86/x86cpu.h"
 #include "stack_alloc.h"
 
-static OAC_INLINE void silk_nsq_scale_states_sse4_1(
+static OAC_INLINE void oaci_silk_nsq_scale_states_sse4_1(
     const silk_encoder_state *psEncC,              /* I    Encoder State                   */
     silk_nsq_state      *NSQ,                      /* I/O  NSQ state                       */
     const oac_int16 x16[],                        /* I    input                           */
@@ -239,7 +239,7 @@ void oaci_silk_NSQ_sse4_1(
             }
         }
 
-        silk_nsq_scale_states_sse4_1( psEncC, NSQ, x16, x_sc_Q10, sLTP, sLTP_Q15, k, LTP_scale_Q14, Gains_Q16, pitchL,
+        oaci_silk_nsq_scale_states_sse4_1( psEncC, NSQ, x16, x_sc_Q10, sLTP, sLTP_Q15, k, LTP_scale_Q14, Gains_Q16, pitchL,
         psIndices->signalType );
 
         if (oac_likely((10 == psEncC->shapingLPCOrder) && (16 == psEncC->predictLPCOrder))) {
@@ -650,7 +650,7 @@ static OAC_INLINE void oaci_silk_noise_shape_quantizer_10_16_sse4_1(
     silk_memcpy( NSQ->sLPC_Q14, &NSQ->sLPC_Q14[ length ], NSQ_LPC_BUF_LENGTH*sizeof(oac_int32));
 }
 
-static OAC_INLINE void silk_nsq_scale_states_sse4_1(
+static OAC_INLINE void oaci_silk_nsq_scale_states_sse4_1(
     const silk_encoder_state *psEncC,              /* I    Encoder State                   */
     silk_nsq_state      *NSQ,                      /* I/O  NSQ state                       */
     const oac_int16 x16[],                        /* I    input                           */
@@ -668,7 +668,7 @@ static OAC_INLINE void silk_nsq_scale_states_sse4_1(
     __m128i xmm_inv_gain_Q26, xmm_x16_x2x0, xmm_x16_x3x1;
 
     lag          = pitchL[ subfr ];
-    inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
+    inv_gain_Q31 = oaci_silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
     silk_assert( inv_gain_Q31 != 0 );
 
     /* Scale input */

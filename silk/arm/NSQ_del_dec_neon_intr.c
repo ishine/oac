@@ -470,9 +470,9 @@ void oaci_silk_NSQ_del_dec_neon(
 /******************************************/
 /* Noise shape quantizer for one subframe */
 /******************************************/
-/* Note: Function silk_short_prediction_create_arch_coef_neon() defined in NSQ_neon.h is actually a hacking C function. */
+/* Note: Function oaci_silk_short_prediction_create_arch_coef_neon() defined in NSQ_neon.h is actually a hacking C function. */
 /*       Therefore here we append "_local" to the NEON function name to avoid confusion.                                */
-static OAC_INLINE void silk_short_prediction_create_arch_coef_neon_local(oac_int32 *out, const oac_int16 *in,
+static OAC_INLINE void oaci_silk_short_prediction_create_arch_coef_neon_local(oac_int32 *out, const oac_int16 *in,
                                                                          oac_int order) {
     int16x8_t t_s16x8;
     int32x4_t t0_s32x4, t1_s32x4, t2_s32x4, t3_s32x4;
@@ -630,7 +630,7 @@ static OAC_INLINE void oaci_silk_noise_shape_quantizer_del_dec_neon(
         AR_shp_Q28[i] = silk_LSHIFT32( AR_shp_Q13[i], 15 );
     }
 
-    silk_short_prediction_create_arch_coef_neon_local( a_Q12_arch, a_Q12, predictLPCOrder );
+    oaci_silk_short_prediction_create_arch_coef_neon_local( a_Q12_arch, a_Q12, predictLPCOrder );
 
     for (i = 0; i < length; i++) {
         int32x4_t Seed_s32x4, LPC_pred_Q14_s32x4;
@@ -1070,7 +1070,7 @@ static OAC_INLINE void oaci_silk_nsq_del_dec_scale_states_neon(
     oac_int32 gain_adj_Q16, inv_gain_Q31, inv_gain_Q26;
 
     lag          = pitchL[ subfr ];
-    inv_gain_Q31 = silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
+    inv_gain_Q31 = oaci_silk_INVERSE32_varQ( silk_max( Gains_Q16[ subfr ], 1 ), 47 );
     silk_assert( inv_gain_Q31 != 0 );
 
     /* Scale input */

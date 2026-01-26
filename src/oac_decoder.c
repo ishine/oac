@@ -131,9 +131,9 @@ int oac_decoder_get_size(int channels) {
     ret = oaci_silk_Get_Decoder_Size( &silkDecSizeBytes );
     if (ret)
         return 0;
-    silkDecSizeBytes = align(silkDecSizeBytes);
+    silkDecSizeBytes = oaci_align(silkDecSizeBytes);
     celtDecSizeBytes = oaci_celt_decoder_get_size(channels);
-    return align(sizeof(OacDecoder)) + silkDecSizeBytes + celtDecSizeBytes;
+    return oaci_align(sizeof(OacDecoder)) + silkDecSizeBytes + celtDecSizeBytes;
 }
 
 int oac_decoder_init(OacDecoder *st, oac_int32 Fs, int channels) {
@@ -155,8 +155,8 @@ int oac_decoder_init(OacDecoder *st, oac_int32 Fs, int channels) {
     if (ret)
         return OAC_INTERNAL_ERROR;
 
-    silkDecSizeBytes = align(silkDecSizeBytes);
-    st->silk_dec_offset = align(sizeof(OacDecoder));
+    silkDecSizeBytes = oaci_align(silkDecSizeBytes);
+    st->silk_dec_offset = oaci_align(sizeof(OacDecoder));
     st->celt_dec_offset = st->silk_dec_offset + silkDecSizeBytes;
     silk_dec = (char*)st + st->silk_dec_offset;
     celt_dec = (CELTDecoder*)((char*)st + st->celt_dec_offset);

@@ -58,7 +58,7 @@ static OAC_INLINE void oaci_vec_swish(float *y, const float *x, int N) {
         y[i] = x[i]*tmp[i];
 }
 
-static OAC_INLINE float relu(float x) {
+static OAC_INLINE float oaci_relu(float x) {
     return x < 0 ? 0 : x;
 }
 
@@ -87,7 +87,7 @@ void RTCD_SUF(oaci_compute_activation_)(float *output, const float *input, int N
         oaci_vec_swish(output, input, N);
    } else if (activation == ACTIVATION_RELU) {
         for (i = 0; i < N; i++)
-            output[i] = relu(input[i]);
+            output[i] = oaci_relu(input[i]);
    } else if (activation == ACTIVATION_SOFTMAX) {
 #ifdef SOFTMAX_HACK
         OAC_COPY(output, input, N);

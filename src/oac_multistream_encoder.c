@@ -74,14 +74,14 @@ static oac_val32 *oaci_ms_get_preemph_mem(OacMSEncoder *st) {
 
     coupled_size = oac_encoder_init(NULL, st->Fs, 2, st->application);
     mono_size = oac_encoder_init(NULL, st->Fs, 1, st->application);
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     for (s = 0; s < st->layout.nb_streams; s++) {
         if (s < st->layout.nb_coupled_streams)
-            ptr += align(coupled_size);
+            ptr += oaci_align(coupled_size);
         else
-            ptr += align(mono_size);
+            ptr += oaci_align(mono_size);
     }
-    /* void* cast avoids clang -Wcast-align warning */
+    /* void* cast avoids clang -Wcast-oaci_align warning */
     return (oac_val32*)(void*)(ptr + st->layout.nb_channels*MAX_OVERLAP*sizeof(oac_val32));
 }
 
@@ -92,14 +92,14 @@ static oac_val32 *oaci_ms_get_window_mem(OacMSEncoder *st) {
 
     coupled_size = oac_encoder_init(NULL, st->Fs, 2, st->application);
     mono_size = oac_encoder_init(NULL, st->Fs, 1, st->application);
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     for (s = 0; s < st->layout.nb_streams; s++) {
         if (s < st->layout.nb_coupled_streams)
-            ptr += align(coupled_size);
+            ptr += oaci_align(coupled_size);
         else
-            ptr += align(mono_size);
+            ptr += oaci_align(mono_size);
     }
-    /* void* cast avoids clang -Wcast-align warning */
+    /* void* cast avoids clang -Wcast-oaci_align warning */
     return (oac_val32*)(void*)ptr;
 }
 
@@ -125,7 +125,7 @@ static int oaci_validate_ambisonics(int nb_channels, int *nb_streams, int *nb_co
     return 1;
 }
 
-static int validate_encoder_layout(const ChannelLayout *layout) {
+static int oaci_validate_encoder_layout(const ChannelLayout *layout) {
     int s;
     for (s = 0; s < layout->nb_streams; s++) {
         if (s < layout->nb_coupled_streams) {
@@ -141,7 +141,7 @@ static int validate_encoder_layout(const ChannelLayout *layout) {
     return 1;
 }
 
-static void channel_pos(int channels, int pos[8]) {
+static void oaci_channel_pos(int channels, int pos[8]) {
     /* Position in the mix: 0 don't mix, 1: left, 2: center, 3:right */
     if (channels == 4) {
         pos[0] = 1;
@@ -244,7 +244,7 @@ void oaci_surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glo
     ALLOC(x, len, oac_res);
     ALLOC(freq, freq_size, oac_val32);
 
-    channel_pos(channels, pos);
+    oaci_channel_pos(channels, pos);
 
     for (c = 0; c < 3; c++)
         for (i = 0; i < 21; i++)
@@ -263,7 +263,7 @@ void oaci_surround_analysis(const CELTMode *celt_mode, const void *pcm, celt_glo
             sum = oaci_celt_inner_prod(in, in, frame_size + overlap, 0);
             /* This should filter out both NaNs and ridiculous signals that could
                cause NaNs further down. */
-            if (!(sum < 1e18f) || celt_isnan(sum)) {
+            if (!(sum < 1e18f) || oaci_celt_isnan(sum)) {
                 OAC_CLEAR(in, frame_size + overlap);
                 preemph_mem[c] = 0;
             }
@@ -360,9 +360,9 @@ oac_int32 oac_multistream_encoder_get_size(int nb_streams, int nb_coupled_stream
     if (nb_streams < 1 || nb_coupled_streams > nb_streams || nb_coupled_streams < 0) return 0;
     coupled_size = oac_encoder_get_size(2);
     mono_size = oac_encoder_get_size(1);
-    return align(sizeof(OacMSEncoder))
-           + nb_coupled_streams*align(coupled_size)
-           + (nb_streams - nb_coupled_streams)*align(mono_size);
+    return oaci_align(sizeof(OacMSEncoder))
+           + nb_coupled_streams*oaci_align(coupled_size)
+           + (nb_streams - nb_coupled_streams)*oaci_align(mono_size);
 }
 
 oac_int32 oac_multistream_surround_encoder_get_size(int channels, int mapping_family) {
@@ -428,8 +428,8 @@ static int oac_multistream_encoder_init_impl(
             surround_size = channels*(MAX_OVERLAP*sizeof(oac_val32) + sizeof(oac_val32));
         }
 
-        return align(sizeof(OacMSEncoder)) + coupled_streams*align(coupled_size)
-               + (streams - coupled_streams)*align(mono_size) + surround_size;
+        return oaci_align(sizeof(OacMSEncoder)) + coupled_streams*oaci_align(coupled_size)
+               + (streams - coupled_streams)*oaci_align(mono_size) + surround_size;
     }
 
     st->arch = oac_select_arch();
@@ -446,25 +446,25 @@ static int oac_multistream_encoder_init_impl(
         st->layout.mapping[i] = mapping[i];
     if (!oaci_validate_layout(&st->layout))
         return OAC_BAD_ARG;
-    if (!validate_encoder_layout(&st->layout))
+    if (!oaci_validate_encoder_layout(&st->layout))
         return OAC_BAD_ARG;
     if (mapping_type == MAPPING_TYPE_AMBISONICS
         && !oaci_validate_ambisonics(st->layout.nb_channels, NULL, NULL))
         return OAC_BAD_ARG;
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     for (i = 0; i < st->layout.nb_coupled_streams; i++) {
         ret = oac_encoder_init((OacEncoder*)ptr, Fs, 2, application);
         if (ret != OAC_OK) return ret;
         if (i == st->lfe_stream)
             oac_encoder_ctl((OacEncoder*)ptr, OAC_SET_LFE(1));
-        ptr += align(coupled_size);
+        ptr += oaci_align(coupled_size);
     }
     for (; i < st->layout.nb_streams; i++) {
         ret = oac_encoder_init((OacEncoder*)ptr, Fs, 1, application);
         if (ret != OAC_OK) return ret;
         if (i == st->lfe_stream)
             oac_encoder_ctl((OacEncoder*)ptr, OAC_SET_LFE(1));
-        ptr += align(mono_size);
+        ptr += oaci_align(mono_size);
     }
     if (mapping_type == MAPPING_TYPE_SURROUND) {
         OAC_CLEAR(oaci_ms_get_preemph_mem(st), channels);
@@ -635,7 +635,7 @@ OacMSEncoder *oac_multistream_surround_encoder_create(
     return st;
 }
 
-static void surround_rate_allocation(
+static void oaci_surround_rate_allocation(
     OacMSEncoder *st,
     oac_int32 *rate,
     int frame_size,
@@ -701,7 +701,7 @@ static void surround_rate_allocation(
     }
 }
 
-static void ambisonics_rate_allocation(
+static void oaci_ambisonics_rate_allocation(
     OacMSEncoder *st,
     oac_int32 *rate,
     int frame_size,
@@ -729,7 +729,7 @@ static void ambisonics_rate_allocation(
     }
 }
 
-static oac_int32 rate_allocation(
+static oac_int32 oaci_rate_allocation(
     OacMSEncoder *st,
     oac_int32 *rate,
     int frame_size) {
@@ -738,13 +738,13 @@ static oac_int32 rate_allocation(
     oac_int32 Fs;
     char *ptr;
 
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     oac_encoder_ctl((OacEncoder*)ptr, OAC_GET_SAMPLE_RATE(&Fs));
 
     if (st->mapping_type == MAPPING_TYPE_AMBISONICS) {
-        ambisonics_rate_allocation(st, rate, frame_size, Fs);
+        oaci_ambisonics_rate_allocation(st, rate, frame_size, Fs);
     } else {
-        surround_rate_allocation(st, rate, frame_size, Fs);
+        oaci_surround_rate_allocation(st, rate, frame_size, Fs);
     }
 
     for (i = 0; i < st->layout.nb_streams; i++) {
@@ -795,7 +795,7 @@ int oac_multistream_encode_native
         mem = oaci_ms_get_window_mem(st);
     }
 
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     oac_encoder_ctl((OacEncoder*)ptr, OAC_GET_SAMPLE_RATE(&Fs));
     oac_encoder_ctl((OacEncoder*)ptr, OAC_GET_VBR(&vbr));
     if (st->application != OAC_APPLICATION_RESTRICTED_SILK)
@@ -827,24 +827,24 @@ int oac_multistream_encode_native
     }
 
     /* Compute bitrate allocation between streams (this could be a lot better) */
-    rate_sum = rate_allocation(st, bitrates, frame_size);
+    rate_sum = oaci_rate_allocation(st, bitrates, frame_size);
 
     if (!vbr) {
         if (st->bitrate_bps == OAC_AUTO) {
-            max_data_bytes = IMIN(max_data_bytes, (bitrate_to_bits(rate_sum, Fs, frame_size) + 4)/8);
+            max_data_bytes = IMIN(max_data_bytes, (oaci_bitrate_to_bits(rate_sum, Fs, frame_size) + 4)/8);
         } else if (st->bitrate_bps != OAC_BITRATE_MAX) {
             max_data_bytes = IMIN(max_data_bytes, IMAX(smallest_packet,
-                (bitrate_to_bits(st->bitrate_bps, Fs, frame_size) + 4)/8));
+                (oaci_bitrate_to_bits(st->bitrate_bps, Fs, frame_size) + 4)/8));
         }
     }
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     for (s = 0; s < st->layout.nb_streams; s++) {
         OacEncoder *enc;
         enc = (OacEncoder*)ptr;
         if (s < st->layout.nb_coupled_streams)
-            ptr += align(coupled_size);
+            ptr += oaci_align(coupled_size);
         else
-            ptr += align(mono_size);
+            ptr += oaci_align(mono_size);
         oac_encoder_ctl(enc, OAC_SET_BITRATE(bitrates[s]));
         if (st->mapping_type == MAPPING_TYPE_SURROUND) {
             oac_int32 equiv_rate;
@@ -869,7 +869,7 @@ int oac_multistream_encode_native
         }
     }
 
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     /* Counting ToC */
     tot_size = 0;
     for (s = 0; s < st->layout.nb_streams; s++) {
@@ -890,7 +890,7 @@ int oac_multistream_encode_native
             pcm, st->layout.nb_channels, left, frame_size, user_data);
             (*copy_channel_in)(buf + 1, 2,
             pcm, st->layout.nb_channels, right, frame_size, user_data);
-            ptr += align(coupled_size);
+            ptr += oaci_align(coupled_size);
             if (st->mapping_type == MAPPING_TYPE_SURROUND && st->application != OAC_APPLICATION_RESTRICTED_SILK) {
                 for (i = 0; i < 21; i++) {
                     bandLogE[i] = bandSMR[21*left + i];
@@ -904,7 +904,7 @@ int oac_multistream_encode_native
             int chan = oaci_get_mono_channel(&st->layout, s, -1);
             (*copy_channel_in)(buf, 1,
             pcm, st->layout.nb_channels, chan, frame_size, user_data);
-            ptr += align(mono_size);
+            ptr += oaci_align(mono_size);
             if (st->mapping_type == MAPPING_TYPE_SURROUND && st->application != OAC_APPLICATION_RESTRICTED_SILK) {
                 for (i = 0; i < 21; i++)
                     bandLogE[i] = bandSMR[21*chan + i];
@@ -925,7 +925,7 @@ int oac_multistream_encode_native
         /* Repacketizer will add one or two bytes for self-delimited frames */
         if (s != st->layout.nb_streams - 1) curr_max -= curr_max > 253 ? 2 : 1;
         if (!vbr && s == st->layout.nb_streams - 1)
-            oac_encoder_ctl(enc, OAC_SET_BITRATE(bits_to_bitrate(curr_max*8, Fs, frame_size)));
+            oac_encoder_ctl(enc, OAC_SET_BITRATE(oaci_bits_to_bitrate(curr_max*8, Fs, frame_size)));
         len = oac_encode_native(enc, buf, frame_size, tmp_data, curr_max, lsb_depth,
             pcm, analysis_frame_size, c1, c2, st->layout.nb_channels, oaci_downmix, float_api);
         if (len < 0) {
@@ -1043,7 +1043,7 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
 
     coupled_size = oac_encoder_init(NULL, st->Fs, 2, st->application);
     mono_size = oac_encoder_init(NULL, st->Fs, 1, st->application);
-    ptr = (char*)st + align(sizeof(OacMSEncoder));
+    ptr = (char*)st + oaci_align(sizeof(OacMSEncoder));
     switch (request) {
         case OAC_SET_BITRATE_REQUEST:
         {
@@ -1069,9 +1069,9 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
                 OacEncoder *enc;
                 enc = (OacEncoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 oac_encoder_ctl(enc, request, &rate);
                 *value += rate;
             }
@@ -1114,9 +1114,9 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
                 OacEncoder *enc;
                 enc = (OacEncoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 ret = oac_encoder_ctl(enc, request, &tmp);
                 if (ret != OAC_OK) break;
                 *value ^= tmp;
@@ -1147,9 +1147,9 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
 
                 enc = (OacEncoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 ret = oac_encoder_ctl(enc, request, value);
                 if (ret != OAC_OK)
                     break;
@@ -1170,9 +1170,9 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
             }
             for (s = 0; s < stream_id; s++) {
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
             }
             *value = (OacEncoder*)ptr;
         }
@@ -1203,9 +1203,9 @@ int oac_multistream_encoder_ctl_va_list(OacMSEncoder *st, int request,
                 OacEncoder *enc;
                 enc = (OacEncoder*)ptr;
                 if (s < st->layout.nb_coupled_streams)
-                    ptr += align(coupled_size);
+                    ptr += oaci_align(coupled_size);
                 else
-                    ptr += align(mono_size);
+                    ptr += oaci_align(mono_size);
                 ret = oac_encoder_ctl(enc, OAC_RESET_STATE);
                 if (ret != OAC_OK)
                     break;

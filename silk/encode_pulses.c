@@ -36,7 +36,7 @@
 /* Encode quantization indices of excitation */
 /*********************************************/
 
-static OAC_INLINE oac_int combine_and_check(    /* return ok                           */
+static OAC_INLINE oac_int oaci_combine_and_check(    /* return ok                           */
     oac_int         *pulses_comb,           /* O                                   */
     const oac_int   *pulses_in,             /* I                                   */
     oac_int max_pulses,                     /* I    max value for sum of pulses    */
@@ -108,13 +108,13 @@ void oaci_silk_encode_pulses(
 
         while (1) {
             /* 1+1 -> 2 */
-            scale_down = combine_and_check( pulses_comb, abs_pulses_ptr, oaci_silk_max_pulses_table[ 0 ], 8 );
+            scale_down = oaci_combine_and_check( pulses_comb, abs_pulses_ptr, oaci_silk_max_pulses_table[ 0 ], 8 );
             /* 2+2 -> 4 */
-            scale_down += combine_and_check( pulses_comb, pulses_comb, oaci_silk_max_pulses_table[ 1 ], 4 );
+            scale_down += oaci_combine_and_check( pulses_comb, pulses_comb, oaci_silk_max_pulses_table[ 1 ], 4 );
             /* 4+4 -> 8 */
-            scale_down += combine_and_check( pulses_comb, pulses_comb, oaci_silk_max_pulses_table[ 2 ], 2 );
+            scale_down += oaci_combine_and_check( pulses_comb, pulses_comb, oaci_silk_max_pulses_table[ 2 ], 2 );
             /* 8+8 -> 16 */
-            scale_down += combine_and_check( &sum_pulses[ i ], pulses_comb, oaci_silk_max_pulses_table[ 3 ], 1 );
+            scale_down += oaci_combine_and_check( &sum_pulses[ i ], pulses_comb, oaci_silk_max_pulses_table[ 3 ], 1 );
 
             if (scale_down) {
                 /* We need to downscale the quantization signal */

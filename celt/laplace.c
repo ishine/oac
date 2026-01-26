@@ -204,7 +204,7 @@ int main() {
 
     oaci_ec_enc_done(&enc);
 
-    oaci_ec_dec_init(&dec, ec_get_buffer(&enc), ec_range_bytes(&enc));
+    oaci_ec_dec_init(&dec, oaci_ec_get_buffer(&enc), oaci_ec_range_bytes(&enc));
 
     for (i = 0; i < NB_VALS; i++) {
         val[i] = oaci_ec_laplace_decode_p0(&dec, p0, decay);

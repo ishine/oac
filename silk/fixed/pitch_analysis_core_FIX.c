@@ -56,7 +56,7 @@ typedef oac_int32 silk_pe_stage3_vals[ PE_NB_STAGE3_LAGS ];
 /************************************************************/
 /* Internally used functions                                */
 /************************************************************/
-static void silk_P_Ana_calc_corr_st3(
+static void oaci_silk_P_Ana_calc_corr_st3(
     silk_pe_stage3_vals cross_corr_st3[],              /* O 3 DIM correlation array */
     const oac_int16 frame[],                          /* I vector to correlate         */
     oac_int start_lag,                                /* I lag offset to search around */
@@ -66,7 +66,7 @@ static void silk_P_Ana_calc_corr_st3(
     int arch                                           /* I Run-time architecture       */
     );
 
-static void silk_P_Ana_calc_energy_st3(
+static void oaci_silk_P_Ana_calc_energy_st3(
     silk_pe_stage3_vals energies_st3[],                /* O 3 DIM energy array */
     const oac_int16 frame[],                          /* I vector to calc energy in    */
     oac_int start_lag,                                /* I lag offset to search around */
@@ -499,8 +499,8 @@ oac_int oaci_silk_pitch_analysis_core(                  /* O    Voicing estimate
         /* Calculate the correlations and energies needed in stage 3 */
         ALLOC( energies_st3, nb_subfr*nb_cbk_search, silk_pe_stage3_vals );
         ALLOC( cross_corr_st3, nb_subfr*nb_cbk_search, silk_pe_stage3_vals );
-        silk_P_Ana_calc_corr_st3(  cross_corr_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
-        silk_P_Ana_calc_energy_st3( energies_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
+        oaci_silk_P_Ana_calc_corr_st3(  cross_corr_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
+        oaci_silk_P_Ana_calc_energy_st3( energies_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
 
         lag_counter = 0;
         silk_assert( lag == silk_SAT16( lag ));
@@ -574,7 +574,7 @@ oac_int oaci_silk_pitch_analysis_core(                  /* O    Voicing estimate
 * In total 48 correlations. The direct implementation computed in worst
 * case 4*12*5 = 240 correlations, but more likely around 120.
 ***********************************************************************/
-static void silk_P_Ana_calc_corr_st3(
+static void oaci_silk_P_Ana_calc_corr_st3(
     silk_pe_stage3_vals cross_corr_st3[],              /* O 3 DIM correlation array */
     const oac_int16 frame[],                          /* I vector to correlate         */
     oac_int start_lag,                                /* I lag offset to search around */
@@ -646,7 +646,7 @@ static void silk_P_Ana_calc_corr_st3(
 /* Calculate the energies for first two subframes. The energies are */
 /* calculated recursively.                                          */
 /********************************************************************/
-static void silk_P_Ana_calc_energy_st3(
+static void oaci_silk_P_Ana_calc_energy_st3(
     silk_pe_stage3_vals energies_st3[],                 /* O 3 DIM energy array */
     const oac_int16 frame[],                           /* I vector to calc energy in    */
     oac_int start_lag,                                 /* I lag offset to search around */

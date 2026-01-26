@@ -313,7 +313,7 @@ void kf_work(
     p[i] * m[i] = m[i-1]
     m0 = n                  */
 static
-void kf_factor(int n, int * facbuf) {
+void oaci_kf_factor(int n, int * facbuf) {
     int p = 4;
     double floor_sqrt;
     floor_sqrt = floor( sqrt((double)n));
@@ -368,7 +368,7 @@ mini_kiss_fft_cfg mini_kiss_fft_alloc(int nfft, int inverse_fft, void * mem, siz
             mini_kf_cexp(st->twiddles + i, phase );
         }
 
-        kf_factor(nfft, st->factors);
+        oaci_kf_factor(nfft, st->factors);
     }
     return st;
 }

@@ -594,7 +594,7 @@ void oaci_update_plc_state(LPCNetPLCState *lpcnet, celt_sig *decode_mem[2], floa
         for (j = 0; j < SINC_ORDER + 1; j++) {
             sum += buf48k[3*i + j + offset]*sinc_filter[j];
         }
-        buf16k[i] = float2int(MIN32(32767.f, MAX32(-32767.f, sum)));
+        buf16k[i] = oaci_float2int(MIN32(32767.f, MAX32(-32767.f, sum)));
     }
     tmp_read_post = lpcnet->fec_read_pos;
     tmp_fec_skip = lpcnet->fec_skip;
@@ -1093,7 +1093,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
         if (mode->Fs == 48000 && mode->shortMdctSize == 120)
 # endif
         {
-            data0 = fromOac(data0);
+            data0 = oaci_fromOac(data0);
             if (data0 < 0)
                 return OAC_INVALID_PACKET;
         }
@@ -1424,7 +1424,7 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     RESTORE_STACK;
     if (oaci_ec_tell(dec) > 8*len)
         return OAC_INTERNAL_ERROR;
-    if (ec_get_error(dec))
+    if (oaci_ec_get_error(dec))
         st->error = 1;
     return frame_size/st->downsample;
 }

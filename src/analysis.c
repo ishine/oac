@@ -538,7 +538,7 @@ static void oaci_tonality_analysis(TonalityAnalysisState *tonal, const CELTMode 
     oac_fft(oaci_kfft, in, out, tonal->arch);
 # ifndef FIXED_POINT
     /* If there's any NaN on the input, the entire output will be NaN, so we only need to check one value. */
-    if (celt_isnan(out[0].r)) {
+    if (oaci_celt_isnan(out[0].r)) {
         info->valid = 0;
         RESTORE_STACK;
         return;
@@ -555,20 +555,20 @@ static void oaci_tonality_analysis(TonalityAnalysisState *tonal, const CELTMode 
         X2r = (float)out[i].i + out[N - i].i;
         X2i = (float)out[N - i].r - out[i].r;
 
-        angle = (float)(.5f/M_PI)*fast_atan2f(X1i, X1r);
+        angle = (float)(.5f/M_PI)*oaci_fast_atan2f(X1i, X1r);
         d_angle = angle - A[i];
         d2_angle = d_angle - dA[i];
 
-        angle2 = (float)(.5f/M_PI)*fast_atan2f(X2i, X2r);
+        angle2 = (float)(.5f/M_PI)*oaci_fast_atan2f(X2i, X2r);
         d_angle2 = angle2 - angle;
         d2_angle2 = d_angle2 - d_angle;
 
-        mod1 = d2_angle - (float)float2int(d2_angle);
+        mod1 = d2_angle - (float)oaci_float2int(d2_angle);
         noisiness[i] = ABS16(mod1);
         mod1 *= mod1;
         mod1 *= mod1;
 
-        mod2 = d2_angle2 - (float)float2int(d2_angle2);
+        mod2 = d2_angle2 - (float)oaci_float2int(d2_angle2);
         noisiness[i] += ABS16(mod2);
         mod2 *= mod2;
         mod2 *= mod2;
@@ -630,7 +630,7 @@ static void oaci_tonality_analysis(TonalityAnalysisState *tonal, const CELTMode 
         }
 # ifndef FIXED_POINT
         /* Check for extreme band energies that could cause NaNs later. */
-        if (!(E < 1e9f) || celt_isnan(E)) {
+        if (!(E < 1e9f) || oaci_celt_isnan(E)) {
             info->valid = 0;
             RESTORE_STACK;
             return;

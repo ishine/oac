@@ -137,12 +137,12 @@ void oaci_silk_CNG(
             gain_Q16 = silk_SMULTT( gain_Q16, gain_Q16 );
             gain_Q16 = silk_SUB_LSHIFT32(silk_SMULTT( psCNG->CNG_smth_Gain_Q16, psCNG->CNG_smth_Gain_Q16 ), gain_Q16,
             5 );
-            gain_Q16 = silk_LSHIFT32( silk_SQRT_APPROX( gain_Q16 ), 16 );
+            gain_Q16 = silk_LSHIFT32( oaci_silk_SQRT_APPROX( gain_Q16 ), 16 );
         } else {
             gain_Q16 = silk_SMULWW( gain_Q16, gain_Q16 );
             gain_Q16 = silk_SUB_LSHIFT32(silk_SMULWW( psCNG->CNG_smth_Gain_Q16, psCNG->CNG_smth_Gain_Q16 ), gain_Q16,
             5 );
-            gain_Q16 = silk_LSHIFT32( silk_SQRT_APPROX( gain_Q16 ), 8 );
+            gain_Q16 = silk_LSHIFT32( oaci_silk_SQRT_APPROX( gain_Q16 ), 8 );
         }
         gain_Q10 = silk_RSHIFT( gain_Q16, 6 );
 

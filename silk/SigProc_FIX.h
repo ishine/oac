@@ -94,7 +94,7 @@ void oaci_silk_resampler_down2_3(
 
 /*!
  * second order ARMA filter;
- * slower than biquad() but uses more precise coefficients
+ * slower than oaci_biquad() but uses more precise coefficients
  * can handle (slowly) varying coefficients
  */
 void oaci_silk_biquad_alt_stride1(

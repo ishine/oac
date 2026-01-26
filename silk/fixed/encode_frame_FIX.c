@@ -35,7 +35,7 @@
 #include "tuning_parameters.h"
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */
-static OAC_INLINE void silk_LBRR_encode_FIX(
+static OAC_INLINE void oaci_silk_LBRR_encode_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Pointer to Silk FIX encoder control struct                                  */
     const oac_int16 x16[],                                                 /* I    Input signal                                                                */
@@ -168,7 +168,7 @@ oac_int oaci_silk_encode_frame_FIX(
         /****************************************/
         /* Low Bitrate Redundant Encoding       */
         /****************************************/
-        silk_LBRR_encode_FIX( psEnc, &sEncCtrl, x_frame, condCoding );
+        oaci_silk_LBRR_encode_FIX( psEnc, &sEncCtrl, x_frame, condCoding );
 
         /* Loop over quantizer and entropy coding to control bitrate */
         maxIter = 6;
@@ -394,7 +394,7 @@ oac_int oaci_silk_encode_frame_FIX(
 }
 
 /* Low-Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode excitation at lower bitrate  */
-static OAC_INLINE void silk_LBRR_encode_FIX(
+static OAC_INLINE void oaci_silk_LBRR_encode_FIX(
     silk_encoder_state_FIX          *psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
     silk_encoder_control_FIX        *psEncCtrl,                             /* I/O  Pointer to Silk FIX encoder control struct                                  */
     const oac_int16 x16[],                                                 /* I    Input signal                                                                */
