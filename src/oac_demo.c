@@ -772,19 +772,60 @@ int main(int argc, char *argv[]) {
 
     if (!decode_only && ext && strcmp(ext, ".wav") == 0) {
       char header[44];
+      unsigned char chunk_size_bytes[4];
+      unsigned char data_size_bytes[4];
+      oac_int32 riff_chunk_size;
+      oac_int32 data_chunk_size;
+      short bits_per_sample;
+
       if (fread(header, 1, 44, fin) != 44) {
         fprintf(stderr, "Error reading WAV header from %s\n", inFile);
         goto failure;
       }
 
-        if (strncmp(header, "RIFF", 4) != 0 ||
-            strncmp(header + 8, "WAVE", 4) != 0) {
-          fprintf(stderr, "Input file %s is not a valid WAV file\n", inFile);
-          goto failure;
-        }
-        // TODO: Detect and handle/warn about multiple data chunks.
+      if (strncmp(header, "RIFF", 4) != 0 ||
+          strncmp(header + 8, "WAVE", 4) != 0 ||
+          strncmp(header + 12, "fmt ", 4) != 0 ||
+          strncmp(header + 36, "data", 4) != 0) {
+        fprintf(stderr,
+                "Input file %s is not a valid PCM WAV file or has unexpected "
+                "chunk order\n",
+                inFile);
+        goto failure;
+      }
 
-        // TODO: Auto-detect PCM format (16-bit, 24-bit, float).
+        memcpy(chunk_size_bytes, header + 4, 4);
+        riff_chunk_size = char_to_int(chunk_size_bytes);
+        memcpy(data_size_bytes, header + 40, 4);
+        data_chunk_size = char_to_int(data_size_bytes);
+
+        if (riff_chunk_size - 36 > data_chunk_size) {
+          fprintf(stderr,
+                  "Warning: WAV file %s contains additional chunks after the "
+                  "data chunk, which are not supported and will be ignored.\n",
+                  inFile);
+        }
+
+        bits_per_sample = char_to_short((unsigned char *)header + 34);
+        switch (bits_per_sample) {
+        case 16:
+          format = FORMAT_S16_LE;
+          break;
+        case 24:
+          format = FORMAT_S24_LE;
+          break;
+        case 32: // Assuming float for 32-bit
+          format = FORMAT_F32_LE;
+          break;
+        default:
+          fprintf(stderr,
+                  "Warning: Unsupported bits per sample in WAV header: %d. "
+                  "Assuming 16-bit PCM.\n",
+                  bits_per_sample);
+          format = FORMAT_S16_LE;
+        }
+        fprintf(stderr, "Detected WAV format: %d bits per sample.\n",
+                bits_per_sample);
 
         oac_int32 wav_format_samplerate =
             char_to_int((unsigned char *)header + 24);
@@ -839,7 +880,12 @@ int main(int argc, char *argv[]) {
         oac_encoder_ctl(enc, OAC_SET_PACKET_LOSS_PERC(packet_loss_perc));
 
         oac_encoder_ctl(enc, OAC_GET_LOOKAHEAD(&skip));
-        oac_encoder_ctl(enc, OAC_SET_LSB_DEPTH((format == FORMAT_S16_LE) ? 16 : 24));
+        int lsb_depth = 16;
+        if (format == FORMAT_S24_LE)
+          lsb_depth = 24;
+        else if (format == FORMAT_F32_LE)
+          lsb_depth = 24; // Typically use 24 for float as well
+        oac_encoder_ctl(enc, OAC_SET_LSB_DEPTH(lsb_depth));
         oac_encoder_ctl(enc, OAC_SET_EXPERT_FRAME_DURATION(variable_duration));
         if (dred_duration > 0) {
             oac_encoder_ctl(enc, OAC_SET_DRED_DURATION(dred_duration));
