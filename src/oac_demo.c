@@ -30,15 +30,14 @@
 # include "config.h"
 #endif
 
+#include "debug.h"
+#include "oac.h"
+#include "oac_multistream.h"
+#include "oac_private.h"
+#include "oac_types.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
-#include "oac.h"
-#include "debug.h"
-#include "oac_types.h"
-#include "oac_private.h"
-#include "oac_multistream.h"
 #ifdef ENABLE_LOSSGEN
 # include "lossgen.h"
 #endif
@@ -762,17 +761,44 @@ int main(int argc, char *argv[]) {
         fprintf (stderr, "Could not open input file %s\n", argv[argc - 2]);
         goto failure;
     }
-    if (mode_list) {
-        int size;
-        int sample_size = 2;
-        if (format == FORMAT_S24_LE) sample_size = 3;
-        else if (format == FORMAT_F32_LE) sample_size = 4;
-        fseek(fin, 0, SEEK_END);
-        size = ftell(fin);
-        fprintf(stderr, "File size is %d bytes\n", size);
-        fseek(fin, 0, SEEK_SET);
-        mode_switch_time = size/sample_size/channels/nb_modes_in_list;
-        fprintf(stderr, "Switching mode every %d samples\n", mode_switch_time);
+    const char *ext = strrchr(inFile, '.');
+    if (decode_only && ext && strcmp(ext, ".wav") == 0) {
+      char header[44];
+      if (fread(header, 1, 44, fin) != 44) {
+        fprintf(stderr, "Error reading WAV header from %s\n", inFile);
+        goto failure;
+      }
+
+      if (strncmp(header, "RIFF", 4) != 0 ||
+          strncmp(header + 8, "WAVE", 4) != 0) {
+        fprintf(stderr, "Input file %s is not a valid WAV file\n", inFile);
+        goto failure;
+      }
+
+      oac_int32 wav_format_samplerate = *(oac_int32 *)(header + 24);
+      short wav_format_channels = *(short *)(header + 22);
+      if (wav_format_samplerate != sampling_rate ||
+          wav_format_channels != channels) {
+        fprintf(stderr,
+                "Warning: WAV header parameters (%d Hz, %d ch) do not match "
+                "command line parameters (%d Hz, %d ch).\n",
+                wav_format_samplerate, wav_format_channels, sampling_rate,
+                channels);
+        fprintf(stderr, "Using parameters from command line.\n");
+      }
+    } else if (mode_list) {
+      int size;
+      int sample_size = 2;
+      if (format == FORMAT_S24_LE)
+        sample_size = 3;
+      else if (format == FORMAT_F32_LE)
+        sample_size = 4;
+      fseek(fin, 0, SEEK_END);
+      size = ftell(fin);
+      fprintf(stderr, "File size is %d bytes\n", size);
+      fseek(fin, 0, SEEK_SET);
+      mode_switch_time = size / sample_size / channels / nb_modes_in_list;
+      fprintf(stderr, "Switching mode every %d samples\n", mode_switch_time);
     }
 
     outFile = argv[argc - 1];
