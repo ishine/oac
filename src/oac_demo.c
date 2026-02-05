@@ -783,16 +783,16 @@ int main(int argc, char *argv[]) {
         goto failure;
       }
 
-      if (strncmp(header, "RIFF", 4) != 0 ||
-          strncmp(header + 8, "WAVE", 4) != 0 ||
-          strncmp(header + 12, "fmt ", 4) != 0 ||
-          strncmp(header + 36, "data", 4) != 0) {
-        fprintf(stderr,
-                "Input file %s is not a valid PCM WAV file or has unexpected "
-                "chunk order\n",
-                inFile);
-        goto failure;
-      }
+        if (strncmp(header, "RIFF", 4) != 0 ||
+            strncmp(header + 8, "WAVE", 4) != 0 ||
+            strncmp(header + 12, "fmt ", 4) != 0 ||
+            strncmp(header + 36, "data", 4) != 0) {
+          fprintf(stderr,
+                  "Input file %s is not a valid PCM WAV file or has unexpected "
+                  "chunk order\n",
+                  inFile);
+          goto failure;
+        }
 
         memcpy(chunk_size_bytes, header + 4, 4);
         riff_chunk_size = char_to_int(chunk_size_bytes);
