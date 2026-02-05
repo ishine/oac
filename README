@@ -82,7 +82,7 @@ options:
   -dtx              : enable SILK DTX
   -loss <perc>      : simulate packet loss, in percent (0-100); default: 0
 
-input and output are little-endian signed 16-bit PCM files or OAC
+input and output are little-endian signed 16-bit PCM files, WAV files (for decoding), or OAC
 bitstreams with simple oac_demo custom framing.
 
 == Testing ==

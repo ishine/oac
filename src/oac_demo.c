@@ -762,7 +762,7 @@ int main(int argc, char *argv[]) {
         goto failure;
     }
     const char *ext = strrchr(inFile, '.');
-    if (decode_only && ext && strcmp(ext, ".wav") == 0) {
+    if (!decode_only && ext && strcmp(ext, ".wav") == 0) {
       char header[44];
       if (fread(header, 1, 44, fin) != 44) {
         fprintf(stderr, "Error reading WAV header from %s\n", inFile);
