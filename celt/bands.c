@@ -591,6 +591,124 @@ void oaci_haar1(celt_norm *X, int N0, int stride) {
         }
 }
 
+#ifdef FIXED_POINT
+static const oac_val32 oaci_dctiv_8[64] = {
+        1068571464, 1027506862, 946955747, 830013654, 681174602, 506158392, 311690799, 105245103,
+        1027506862, 681174602, 105245103, -506158392, -946955747, -1068571464, -830013654, -311690799,
+        946955747, 105245103, -830013654, -1027506862, -311690799, 681174602, 1068571464, 506158392,
+        830013654, -506158392, -1027506862, 105245103, 1068571464, 311690799, -946955747, -681174602,
+        681174602, -946955747, -311690799, 1068571464, -105245103, -1027506862, 506158392, 830013654,
+        506158392, -1068571464, 681174602, 311690799, -1027506862, 830013654, 105245103, -946955747,
+        311690799, -830013654, 1068571464, -946955747, 506158392, 105245103, -681174602, 1027506862,
+        105245103, -311690799, 506158392, -681174602, 830013654, -946955747, 1027506862, -1068571464
+};
+
+static const oac_val32 oaci_dctiv_4[16] = {
+        1489322693, 1262586814, 843633538, 296244703,
+        1262586814, -296244703, -1489322693, -843633538,
+        843633538, -1489322693, 296244703, 1262586814,
+        296244703, -843633538, 1262586814, -1489322693
+};
+#else
+static const oac_val32 oaci_dctiv_8[64] = {
+    0.497592363f, 0.478470168f, 0.440960632f, 0.386505227f, 0.317196642f, 0.235698368f, 0.145142339f, 0.049008570f,
+    0.478470168f, 0.317196642f, 0.049008570f, -0.235698368f, -0.440960632f, -0.497592363f, -0.386505227f, -0.145142339f,
+    0.440960632f, 0.049008570f, -0.386505227f, -0.478470168f, -0.145142339f, 0.317196642f, 0.497592363f, 0.235698368f,
+    0.386505227f, -0.235698368f, -0.478470168f, 0.049008570f, 0.497592363f, 0.145142339f, -0.440960632f, -0.317196642f,
+    0.317196642f, -0.440960632f, -0.145142339f, 0.497592363f, -0.049008570f, -0.478470168f, 0.235698368f, 0.386505227f,
+    0.235698368f, -0.497592363f, 0.317196642f, 0.145142339f, -0.478470168f, 0.386505227f, 0.049008570f, -0.440960632f,
+    0.145142339f, -0.386505227f, 0.497592363f, -0.440960632f, 0.235698368f, 0.049008570f, -0.317196642f, 0.478470168f,
+    0.049008570f, -0.145142339f, 0.235698368f, -0.317196642f, 0.386505227f, -0.440960632f, 0.478470168f, -0.497592363f
+};
+
+static const oac_val32 oaci_dctiv_4[16] = {
+    0.693519923f, 0.587937801f, 0.392847479f, 0.137949690f,
+    0.587937801f, -0.137949690f, -0.693519923f, -0.392847479f,
+    0.392847479f, -0.693519923f, 0.137949690f, 0.587937801f,
+    0.137949690f, -0.392847479f, 0.587937801f, -0.693519923f
+};
+#endif
+
+static void oaci_dctiv8(oac_val32 *x) {
+    oac_val32 sums[8] = {0};
+    int i;
+    for (i = 0; i < 8; i++) {
+        int j;
+        oac_val32 xi = x[i];
+        for (j = 0; j < 8; j++) {
+            sums[j] += MULT32_32_Q31(xi, oaci_dctiv_8[8*i + j]);
+        }
+    }
+    for (i = 0; i < 8; i++) x[i] = sums[i];
+}
+
+static void oaci_dctiv4(oac_val32 *x) {
+    oac_val32 sums[4] = {0};
+    int i;
+    for (i = 0; i < 4; i++) {
+        int j;
+        oac_val32 xi = x[i];
+        for (j = 0; j < 4; j++) {
+            sums[j] += MULT32_32_Q31(xi, oaci_dctiv_4[4*i + j]);
+        }
+    }
+    for (i = 0; i < 4; i++) x[i] = sums[i];
+}
+
+static void oaci_haar(oac_val32 *x) {
+    oac_val32 a,b;
+    a = MULT32_32_Q31(x[0] + x[1], QCONST32(0.707106781f, 31));
+    b = MULT32_32_Q31(x[0] - x[1], QCONST32(0.707106781f, 31));
+    x[0] = a;
+    x[1] = b;
+}
+
+static void oaci_reverse(oac_val32 *x, int nb_chunks, int chunk_size) {
+    int i;
+    for (i = 0; i < nb_chunks; i++) {
+        int j;
+        for (j = 0; j < chunk_size/2; j++) {
+            oac_val32 tmp = x[i*chunk_size + j];
+            x[i*chunk_size + j] = x[i*chunk_size + chunk_size - j - 1];
+            x[i*chunk_size + chunk_size - j - 1] = tmp;
+        }
+    }
+}
+
+static void oaci_tf_transform(oac_val32 *x, int len, int tf_change)
+{
+    int i;
+    int abs_change, blocks;
+    if (tf_change==0) return;
+    abs_change = abs(tf_change);
+    blocks = len>>abs_change;
+
+    if (tf_change > 0) {
+        oaci_reverse(x, blocks, 1<<abs_change);
+    }
+
+    switch(abs_change) {
+        case 1: {
+            for (i = 0; i < blocks; i++) oaci_haar(&x[i<<abs_change]);
+        }
+        break;
+        case 2: {
+            for (i = 0; i < blocks; i++) oaci_dctiv4(&x[i<<abs_change]);
+        }
+        break;
+        case 3: {
+            for (i = 0; i < blocks; i++) oaci_dctiv8(&x[i<<abs_change]);
+        }
+        break;
+        default:
+            celt_assert(0);
+    }
+
+    if (tf_change < 0) {
+        oaci_reverse(x, blocks, 1<<abs_change);
+    }
+}
+
 static int oaci_compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
     static const oac_int16 exp2_table8[8] =
     {16384, 17866, 19483, 21247, 23170, 25267, 27554, 30048};
@@ -1096,11 +1214,7 @@ static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
                            oac_val32 gain, celt_norm *lowband_scratch, int fill) {
     int N0 = N;
     int N_B = N;
-    int N_B0;
     int B0 = B;
-    int time_divide = 0;
-    int recombine = 0;
-    int longBlocks;
     unsigned cm = 0;
     int k;
     int encode;
@@ -1109,87 +1223,58 @@ static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
     encode = ctx->encode;
     tf_change = ctx->tf_change;
 
-    longBlocks = B0 == 1;
-
-    N_B = oaci_celt_udiv(N_B, B);
-
     /* Special case for one sample */
     if (N == 1) {
         return oaci_quant_band_n1(ctx, X, NULL, lowband_out);
     }
+    if (tf_change == -1 && B == N) tf_change = 0;
+    B = B << 3 >> (3 + tf_change);
+    celt_assert(N >= B);
+    celt_assert(B > 0 && B <= 16);
+    N_B = oaci_celt_udiv(N_B, B);
 
-    if (tf_change > 0)
-        recombine = tf_change;
-    /* Band recombining to increase frequency resolution */
-
-    if (lowband_scratch && lowband && (recombine || ((N_B&1) == 0 && tf_change < 0) || B0 > 1)) {
+    if (lowband_scratch && lowband && (tf_change!=0 || B0>1)) {
         OAC_COPY(lowband_scratch, lowband, N);
         lowband = lowband_scratch;
     }
+    if (encode) oaci_tf_transform(X, N, tf_change);
+    if (lowband) oaci_tf_transform(lowband, N, tf_change);
 
-    for (k = 0; k < recombine; k++) {
+    if (B > 1) {
+        if (encode) oaci_deinterleave_hadamard(X, N_B, B, 0);
+        if (lowband) oaci_deinterleave_hadamard(lowband, N_B, B, 0);
+    }
+
+    for (k = 0; k < tf_change; k++) {
         static const unsigned char bit_interleave_table[16] = {
             0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3
         };
-        if (encode)
-            oaci_haar1(X, N>>k, 1<<k);
-        if (lowband)
-            oaci_haar1(lowband, N>>k, 1<<k);
         fill = bit_interleave_table[fill&0xF]|bit_interleave_table[fill>>4]<<2;
     }
-    B >>= recombine;
-    N_B <<= recombine;
 
-    /* Increasing the time resolution */
-    while ((N_B&1) == 0 && tf_change < 0) {
-        if (encode)
-            oaci_haar1(X, N_B, B);
-        if (lowband)
-            oaci_haar1(lowband, N_B, B);
-        fill |= fill<<B;
-        B <<= 1;
-        N_B >>= 1;
-        time_divide++;
-        tf_change++;
-    }
-    B0 = B;
-    N_B0 = N_B;
-
-    /* Reorganize the samples in time order instead of frequency order */
-    if (B0 > 1) {
-        if (encode)
-            oaci_deinterleave_hadamard(X, N_B>>recombine, B0<<recombine, longBlocks);
-        if (lowband)
-            oaci_deinterleave_hadamard(lowband, N_B>>recombine, B0<<recombine, longBlocks);
+    for (k = 0; k < -tf_change; k++) {
+        fill |= fill<<(B0<<k);
     }
 
     cm = oaci_quant_partition(ctx, X, N, b, B, lowband, LM, gain, fill);
 
     /* This code is used by the decoder and by the resynthesis-enabled encoder */
     if (ctx->resynth) {
-        /* Undo the sample reorganization going from time order to frequency order */
-        if (B0 > 1)
-            oaci_interleave_hadamard(X, N_B>>recombine, B0<<recombine, longBlocks);
 
-        /* Undo time-freq changes that we did earlier */
-        N_B = N_B0;
-        B = B0;
-        for (k = 0; k < time_divide; k++) {
-            B >>= 1;
-            N_B <<= 1;
-            cm |= cm>>B;
-            oaci_haar1(X, N_B, B);
-        }
+        if (B > 1) oaci_interleave_hadamard(X, N_B, B, 0);
+        oaci_tf_transform(X, N, -tf_change);
 
-        for (k = 0; k < recombine; k++) {
+        for (k = 0; k < tf_change; k++) {
             static const unsigned char bit_deinterleave_table[16] = {
                 0x00, 0x03, 0x0C, 0x0F, 0x30, 0x33, 0x3C, 0x3F,
                 0xC0, 0xC3, 0xCC, 0xCF, 0xF0, 0xF3, 0xFC, 0xFF
             };
             cm = bit_deinterleave_table[cm];
-            oaci_haar1(X, N0>>k, 1<<k);
         }
-        B <<= recombine;
+
+        for (k = 0; k < -tf_change; k++) {
+            cm |= cm>>(B>>(k+1));
+        }
 
         /* Scale output for later folding */
         if (lowband_out) {
@@ -1199,7 +1284,7 @@ static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
             for (j = 0; j < N0; j++)
                 lowband_out[j] = MULT16_32_Q15(n, X[j]);
         }
-        cm &= (1<<B) - 1;
+        cm &= (1<<B0) - 1;
     }
     return cm;
 }
