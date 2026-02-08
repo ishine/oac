@@ -1,10 +1,10 @@
 # How to Contribute
 
-We welcome community contributions to the ACWG-OAC Codec. Thank you for your time! By contributing to the project, you agree to the license, patent and copyright terms in the AOM License and Patent License  and to the release of your contribution under these terms. See [LICENSE](https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/LICENSE.md) and [PATENTS](https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/PATENTS.md) for details.
+We welcome community contributions to liboac. Thank you for your time!
 
-## Contributor agreement
+## Contributor License Agreement
 
-You will be required to execute the appropriate [contributor agreement](http://aomedia.org/license/) to ensure that the AOMedia Project has the right to distribute your changes.
+In order to contribute, you must execute the appropriate [Contributor License Agreement](https://aomedia.org/about/legal/#contributor-license-agreements) to ensure that the AOMedia has the right to distribute your changes.
 
 ## Contribution process
 

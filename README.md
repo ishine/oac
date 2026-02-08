@@ -1,7 +1,10 @@
-== OAC audio codec ==
+= liboac =
 
-OAC is the Alliance for Open Media's planned successor to Opus. It is
-currently a work in progress.
+== Introduction ==
+
+liboac is the reference implementation of the Open Audio Codec (OAC) specification.
+
+OAC intends to be the successor to [Opus](https://tools.ietf.org/html/rfc6716) and liboac is based on [libopus](https://gitlab.xiph.org/xiph/opus). Both are works in progress.
 
 This package implements a shared library for encoding and decoding raw OAC
 bitstreams. It also includes a number of test tools used for testing the
@@ -9,7 +12,13 @@ correct operation of the library. The bitstreams read/written by these
 tools should not be used for OAC file distribution: they include
 additional debugging data and cannot support seeking.
 
-== Compiling liboac ==
+== Software License ==
+
+Unless specified otherwise in individual files, libopus software is licensed as specified in (OPUS_LICENSE)[./OPUS_LICENSE].
+
+Modifications and additions made to the software by the Alliance for Open Media are licensed as specified in (LICENSE)[./LICENSE].
+
+== Compiling ==
 
 To build from a distribution tarball, you only need to do the following:
 
@@ -18,7 +27,7 @@ To build from a distribution tarball, you only need to do the following:
 
 To build from the git repository, the following steps are necessary:
 
-0) Set up a development environment:
+0. Set up a development environment:
 
 On an Ubuntu or Debian family Linux distribution:
 
@@ -36,12 +45,12 @@ On Apple macOS, install Xcode and brew.sh, then in the Terminal enter:
 
     % brew install autoconf automake libtool
 
-1) Clone the repository:
+1. Clone the repository:
 
     % git clone https://github.com/AOMediaCodec/oac.git
     % cd oac
 
-2) Compiling the source
+2. Compiling the source
 
     % ./autogen.sh
     % ./configure
@@ -49,13 +58,14 @@ On Apple macOS, install Xcode and brew.sh, then in the Terminal enter:
 
 On x86, it's a good idea to use a -march= option that allows the use of AVX2.
 
-3) Install the codec libraries (optional)
+3. Install the codec libraries (optional)
 
     % sudo make install
 
 Once you have compiled the codec, there will be a oac_demo executable
 in the top directory.
 
+```
 Usage: oac_demo [-e] <application> <sampling rate (Hz)> <channels (1/2)>
          <bits per second> [options] <input> <output>
        oac_demo -d <sampling rate (Hz)> <channels (1/2)> [options]
@@ -81,6 +91,7 @@ options:
   -forcemono        : force mono encoding, even for stereo input
   -dtx              : enable SILK DTX
   -loss <perc>      : simulate packet loss, in percent (0-100); default: 0
+```
 
 input and output are little-endian signed 16-bit PCM files or OAC
 bitstreams with simple oac_demo custom framing.
