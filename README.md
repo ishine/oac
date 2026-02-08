@@ -1,6 +1,6 @@
-= liboac =
+# liboac
 
-== Introduction ==
+## Introduction
 
 liboac is the reference implementation of the Open Audio Codec (OAC) specification.
 
@@ -12,13 +12,13 @@ correct operation of the library. The bitstreams read/written by these
 tools should not be used for OAC file distribution: they include
 additional debugging data and cannot support seeking.
 
-== Software License ==
+## Software License
 
 Unless specified otherwise in individual files, libopus software is licensed as specified in (OPUS_LICENSE)[./OPUS_LICENSE].
 
 Modifications and additions made to the software by the Alliance for Open Media are licensed as specified in (LICENSE)[./LICENSE].
 
-== Compiling ==
+## Compiling
 
 To build from a distribution tarball, you only need to do the following:
 
@@ -96,7 +96,7 @@ options:
 input and output are little-endian signed 16-bit PCM files or OAC
 bitstreams with simple oac_demo custom framing.
 
-== Testing ==
+## Testing
 
 This package includes a collection of automated unit and system tests
 which SHOULD be run after compiling the package especially the first
@@ -106,11 +106,11 @@ To run the integrated tests:
 
     % make check
 
-== Compiling liboac for Windows and alternative build systems ==
+## Compiling liboac for Windows and alternative build systems
 
 See cmake/README.md or meson/README.md.
 
-== Portability notes ==
+## Portability notes
 
 This implementation uses floating-point by default but can be compiled to
 use only fixed-point arithmetic by setting --enable-fixed-point (if using
@@ -124,15 +124,14 @@ While it does not rely on any _undefined behavior_ as defined by C89 or
 C99, it relies on common _implementation-defined behavior_ for two's
 complement architectures:
 
-o Right shifts of negative values are consistent with two's
-  complement arithmetic, so that a>>b is equivalent to
-  floor(a/(2^b)),
+- Right shifts of negative values are consistent with two's complement
+  arithmetic, so that a>>b is equivalent to floor(a/(2^b)),
 
-o For conversion to a signed integer of N bits, the value is reduced
-  modulo 2^N to be within range of the type,
+- For conversion to a signed integer of N bits, the value is reduced modulo 2^N
+  to be within range of the type,
 
-o The result of integer division of a negative value is truncated
-  towards zero, and
+- The result of integer division of a negative value is truncated towards zero,
+  and
 
-o The compiler provides a 64-bit integer type (a C99 requirement
-  which is supported by most C89 compilers).
+- The compiler provides a 64-bit integer type (a C99 requirement which is
+  supported by most C89 compilers).
