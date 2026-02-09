@@ -16,7 +16,7 @@ additional debugging data and cannot support seeking.
 
 Unless specified otherwise in individual files, libopus software is licensed as specified in (OPUS_LICENSE)[./OPUS_LICENSE].
 
-Modifications and additions made to the software by the Alliance for Open Media are licensed as specified in (LICENSE)[./LICENSE].
+Modifications and additions made to the software by the Alliance for Open Media are licensed as specified in (COPYING)[./COPYING].
 
 ## Compiling
 
