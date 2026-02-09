@@ -106,17 +106,34 @@ oac_int16 oaci_bitexact_cos(oac_int16 x) {
     return 1 + x2;
 }
 
-int oaci_bitexact_log2tan(int isin, int icos) {
-    int lc;
-    int ls;
-    lc = EC_ILOG(icos);
-    ls = EC_ILOG(isin);
-    icos <<= 15 - lc;
-    isin <<= 15 - ls;
-    return (ls - lc)*(1<<11)
-           + FRAC_MUL16(isin, FRAC_MUL16(isin, -2597) + 7932)
-           - FRAC_MUL16(icos, FRAC_MUL16(icos, -2597) + 7932);
+/* This is a log2() approximation designed to be bit-exact on any platform. Bit exactness
+   with this approximation is important because it has an impact on the bit allocation */
+static oac_int16 oaci_bitexact_log2(oac_int32 x) {
+    int i;
+    oac_int16 n, frac;
+    /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605,
+        0.15530808010959576, -0.08556153059057618 */
+    static const oac_int16 C[5] = {-6801 + (1<<(14 - 11)), 15746, -5217, 2545, -1401};
+    if (x == 0)
+        return -32767;
+    i = EC_ILOG(x)-1;
+    n = (x << 15 >> i) - 32768 - 16384;
+    frac = (C[0] + FRAC_MUL16(n, (C[1] + FRAC_MUL16(n, (C[2] + FRAC_MUL16(n, (C[3] + FRAC_MUL16(n, C[4]))))))));
+    return ((i - 12) <<  11) + (frac >> (14 - 11));
 }
+
+/* This is a log2(tan(x)) approximation designed to be bit-exact on any platform. Bit exactness
+   with this approximation is important because it has an impact on the bit allocation */
+int oaci_bitexact_delta(int itheta) {
+    int sign = 1;
+    if (itheta > 8192) {
+        itheta = 16384 - itheta;
+        sign = -1;
+    }
+    /* log2(tan(pi/4*x)) ~= log2(x) -.343 - .061*x + .404*x.^2. */
+    return IMIN(16384, IMAX(-16384, sign*(oaci_bitexact_log2(itheta) - 703 - FRAC_MUL16(itheta, (500 - FRAC_MUL16(itheta, 13238))))));
+}
+
 
 #ifdef FIXED_POINT
 /* Compute the amplitude (sqrt energy) in each of the bands */
@@ -682,7 +699,6 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
     int itheta = 0;
     int itheta_q30 = 0;
     int delta;
-    int imid, iside;
     int qalloc;
     int pulse_cap;
     int offset;
@@ -726,9 +742,7 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
                        to inject noise on one side. If so, make sure the energy of that side
                        is zero. */
                     int unquantized = oaci_celt_udiv((oac_int32)itheta*16384, qn);
-                    imid = oaci_bitexact_cos((oac_int16)unquantized);
-                    iside = oaci_bitexact_cos((oac_int16)(16384 - unquantized));
-                    delta = FRAC_MUL16((N - 1)<<7, oaci_bitexact_log2tan(iside, imid));
+                    delta = FRAC_MUL16((N - 1)<<7, oaci_bitexact_delta(unquantized));
                     if (delta > *b)
                         itheta = qn;
                     else if (delta < -*b)
@@ -841,21 +855,15 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
     *b -= qalloc;
 
     if (itheta == 0) {
-        imid = 32767;
-        iside = 0;
         *fill &= (1<<B) - 1;
         delta = -16384;
     } else if (itheta == 16384) {
-        imid = 0;
-        iside = 32767;
         *fill &= ((1<<B) - 1)<<B;
         delta = 16384;
     } else {
-        imid = oaci_bitexact_cos((oac_int16)itheta);
-        iside = oaci_bitexact_cos((oac_int16)(16384 - itheta));
         /* This is the mid vs side allocation that minimizes squared error
            in that band. */
-        delta = FRAC_MUL16((N - 1)<<7, oaci_bitexact_log2tan(iside, imid));
+        delta = FRAC_MUL16((N - 1)<<7, oaci_bitexact_delta(itheta));
     }
 
     sctx->inv = inv;

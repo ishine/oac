@@ -119,48 +119,23 @@ void testsqrt(void) {
     }
 }
 
-void testbitexactcos(void) {
-    int i;
-    oac_int32 min_d, max_d, last, chk;
-    chk = max_d = 0;
-    last = min_d = 32767;
-    for (i = 64; i <= 16320; i++) {
-        oac_int32 d;
-        oac_int32 q = oaci_bitexact_cos(i);
-        chk ^= q*i;
-        d = last - q;
-        if (d > max_d) max_d = d;
-        if (d < min_d) min_d = d;
-        last = q;
-    }
-    if ((chk != 89408644) || (max_d != 5) || (min_d != 0) || (oaci_bitexact_cos(64) != 32767)
-        || (oaci_bitexact_cos(16320) != 200) || (oaci_bitexact_cos(8192) != 23171)) {
-        fprintf (stderr, "oaci_bitexact_cos failed\n");
-        ret = 1;
-    }
+#ifndef DISABLE_FLOAT_API
+static int oaci_delta_ground_truth(int itheta) {
+    return 2048*log2(tan(itheta/8192.*M_PI/4));
 }
+#endif
 
 void testbitexactlog2tan(void) {
     int i, fail;
-    oac_int32 min_d, max_d, last, chk;
-    fail = chk = max_d = 0;
-    last = min_d = 15059;
-    for (i = 64; i < 8193; i++) {
-        oac_int32 d;
-        oac_int32 mid = oaci_bitexact_cos(i);
-        oac_int32 side = oaci_bitexact_cos(16384 - i);
-        oac_int32 q = oaci_bitexact_log2tan(mid, side);
-        chk ^= q*i;
-        d = last - q;
-        if (q != -1*oaci_bitexact_log2tan(side, mid))
-            fail = 1;
-        if (d > max_d) max_d = d;
-        if (d < min_d) min_d = d;
-        last = q;
+    fail = 0;
+    for (i = 42; i < 16340; i++) {
+        oac_int32 q = oaci_bitexact_delta(i);
+#ifndef DISABLE_FLOAT_API
+        if (abs(q - oaci_delta_ground_truth(i)) > 16) fail=1;
+#endif
+        if (q != -1*oaci_bitexact_delta(16384-i)) fail = 1;
     }
-    if ((chk != 15821257) || (max_d != 61) || (min_d != -2) || fail
-        || (oaci_bitexact_log2tan(32767, 200) != 15059) || (oaci_bitexact_log2tan(30274, 12540) != 2611)
-        || (oaci_bitexact_log2tan(23171, 23171) != 0)) {
+    if (fail) {
         fprintf (stderr, "oaci_bitexact_log2tan failed\n");
         ret = 1;
     }
@@ -722,7 +697,6 @@ int main(void) {
     int i;
     int use_ref_impl[2] = { 0, 1 };
 
-    testbitexactcos();
     testbitexactlog2tan();
     testdiv();
     testsqrt();
