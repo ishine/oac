@@ -669,8 +669,6 @@ struct band_ctx {
 
 struct split_ctx {
     int inv;
-    int imid;
-    int iside;
     int delta;
     int itheta;
     int itheta_q30;
@@ -869,8 +867,6 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
     }
 
     sctx->inv = inv;
-    sctx->imid = imid;
-    sctx->iside = iside;
     sctx->delta = delta;
     sctx->itheta = itheta;
     sctx->itheta_q30 = itheta_q30;
@@ -917,7 +913,6 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
     const unsigned char *cache;
     int q;
     int curr_bits;
-    int imid = 0, iside = 0;
     int B0 = B;
     oac_val32 mid = 0, side = 0;
     unsigned cm = 0;
@@ -953,12 +948,8 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
         B = (B + 1)>>1;
 
         oaci_compute_theta(ctx, &sctx, X, Y, N, &b, B, B0, LM, 0, &fill, split_mem);
-        imid = sctx.imid;
-        iside = sctx.iside;
         delta = sctx.delta;
         itheta = sctx.itheta;
-        (void)imid;
-        (void)iside;
 #ifdef FIXED_POINT
         mid = oaci_celt_cos_norm32(sctx.itheta_q30);
         side = oaci_celt_cos_norm32((1<<30) - sctx.itheta_q30);
@@ -1261,7 +1252,6 @@ static unsigned oaci_quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_
                                   int N, int b, int B, celt_norm *lowband,
                                   int LM, celt_norm *lowband_out,
                                   celt_norm *lowband_scratch, int fill, int split_mem[2][15]) {
-    int imid = 0, iside = 0;
     int inv = 0;
     oac_val32 mid = 0, side = 0;
     unsigned cm = 0;
@@ -1290,12 +1280,8 @@ static unsigned oaci_quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_
     }
     oaci_compute_theta(ctx, &sctx, X, Y, N, &b, B, B, LM, 1, &fill, NULL);
     inv = sctx.inv;
-    imid = sctx.imid;
-    iside = sctx.iside;
     delta = sctx.delta;
     itheta = sctx.itheta;
-    (void)imid;
-    (void)iside;
 #ifdef FIXED_POINT
     mid = oaci_celt_cos_norm32(sctx.itheta_q30);
     side = oaci_celt_cos_norm32((1<<30) - sctx.itheta_q30);
