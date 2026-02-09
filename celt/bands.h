@@ -36,8 +36,7 @@
 #include "entdec.h"
 #include "rate.h"
 
-oac_int16 oaci_bitexact_cos(oac_int16 x);
-int oaci_bitexact_log2tan(int isin, int icos);
+int oaci_bitexact_delta(int itheta);
 
 /** Compute the amplitude (sqrt energy) in each of the bands
  * @param m Mode data
