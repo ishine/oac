@@ -131,7 +131,7 @@ int oaci_bitexact_delta(int itheta) {
         sign = -1;
     }
     /* log2(tan(pi/4*x)) ~= log2(x) -.343 - .061*x + .404*x.^2. */
-    return IMIN(16384, IMAX(-16384, sign*(oaci_bitexact_log2(itheta) - 703 - FRAC_MUL16(itheta, (500 - FRAC_MUL16(itheta, 13238))))));
+    return sign*(oaci_bitexact_log2(itheta) - 703 - FRAC_MUL16(itheta, (500 - FRAC_MUL16(itheta, 13238))));
 }
 
 
@@ -641,7 +641,7 @@ void oaci_haar1(celt_norm *X, int N0, int stride) {
         }
 }
 
-static int oaci_compute_qn(int N, int b, int offset, int pulse_cap, int stereo) {
+static int oaci_compute_qn(int N, oac_int32 b, int offset, int pulse_cap, int stereo) {
     static const oac_int16 exp2_table8[8] =
     {16384, 17866, 19483, 21247, 23170, 25267, 27554, 30048};
     int qn, qb;
@@ -686,13 +686,13 @@ struct band_ctx {
 
 struct split_ctx {
     int inv;
-    int delta;
+    oac_int32 delta;
     int itheta;
     int itheta_q30;
 };
 
 static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
-                          celt_norm *X, celt_norm *Y, int N, int *b, int B, int B0,
+                          celt_norm *X, celt_norm *Y, int N, oac_int32 *b, int B, int B0,
                           int LM,
                           int stereo, int *fill, int *split_mem) {
     int qn;
@@ -1136,7 +1136,7 @@ unsigned oaci_cubic_quant_partition(struct band_ctx *ctx, celt_norm *X, int N, i
 
 /* This function is responsible for encoding and decoding a band for the mono case. */
 static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
-                           int N, int b, int B, celt_norm *lowband,
+                           int N, oac_int32 b, int B, celt_norm *lowband,
                            int LM, celt_norm *lowband_out,
                            oac_val32 gain, celt_norm *lowband_scratch, int fill, int *split_mem) {
     int N0 = N;
@@ -1257,7 +1257,7 @@ static unsigned oaci_quant_band(struct band_ctx *ctx, celt_norm *X,
 
 /* This function is responsible for encoding and decoding a band for the stereo case. */
 static unsigned oaci_quant_band_stereo(struct band_ctx *ctx, celt_norm *X, celt_norm *Y,
-                                  int N, int b, int B, celt_norm *lowband,
+                                  int N, oac_int32 b, int B, celt_norm *lowband,
                                   int LM, celt_norm *lowband_out,
                                   celt_norm *lowband_scratch, int fill, int split_mem[2][15]) {
     int inv = 0;
@@ -1490,7 +1490,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
     ctx.avoid_split_noise = B > 1;
     for (i = start; i < end; i++) {
         oac_int32 tell;
-        int b;
+        oac_int32 b;
         int N;
         oac_int32 curr_balance;
         int effective_lowband = -1;
@@ -1519,7 +1519,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
         ctx.total_bits = total_bits;
         if (i <= codedBands - 1) {
             curr_balance = oaci_celt_sudiv(balance, IMIN(3, codedBands - i));
-            b = IMAX(0, IMIN(16383, IMIN(remaining_bits, pulses[i] + curr_balance)));
+            b = IMAX(0, IMIN(32767, IMIN(remaining_bits, pulses[i] + curr_balance)));
         } else {
             b = 0;
         }

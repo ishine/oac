@@ -128,7 +128,7 @@ static int oaci_delta_ground_truth(int itheta) {
 void testbitexactlog2tan(void) {
     int i, fail;
     fail = 0;
-    for (i = 42; i < 16340; i++) {
+    for (i = 1; i <= 8192; i++) {
         oac_int32 q = oaci_bitexact_delta(i);
 #ifndef DISABLE_FLOAT_API
         if (abs(q - oaci_delta_ground_truth(i)) > 16) fail=1;
