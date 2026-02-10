@@ -51,6 +51,11 @@
 #include "celt_lpc.h"
 #include "vq.h"
 
+/* Maximum channels for multi-channel ambisonics support */
+#ifndef OAC_AMBISONICS_MAX_CHANNELS
+#define OAC_AMBISONICS_MAX_CHANNELS 36
+#endif
+
 #ifdef ENABLE_DEEP_PLC
 # include "lpcnet.h"
 # include "lpcnet_private.h"
@@ -118,7 +123,7 @@ struct OacCustomDecoder {
     int postfilter_tapset_old;
     int prefilter_and_fold;
 
-    celt_sig preemph_memD[2];
+    celt_sig preemph_memD[OAC_AMBISONICS_MAX_CHANNELS];
 
 #ifdef ENABLE_DEEP_PLC
     oac_int16 plc_pcm[PLC_UPDATE_SAMPLES];
@@ -127,10 +132,10 @@ struct OacCustomDecoder {
 #endif
 
     celt_sig _decode_mem[1]; /* Size = channels*(DECODE_BUFFER_SIZE+mode->overlap) */
-    /* celt_glog oldEBands[], Size = 2*mode->nbEBands */
-    /* celt_glog oldLogE[], Size = 2*mode->nbEBands */
-    /* celt_glog oldLogE2[], Size = 2*mode->nbEBands */
-    /* celt_glog backgroundLogE[], Size = 2*mode->nbEBands */
+    /* celt_glog oldEBands[], Size = channels*mode->nbEBands */
+    /* celt_glog oldLogE[], Size = channels*mode->nbEBands */
+    /* celt_glog oldLogE2[], Size = channels*mode->nbEBands */
+    /* celt_glog backgroundLogE[], Size = channels*mode->nbEBands */
     /* oac_val16 lpc[],  Size = channels*CELT_LPC_ORDER */
 };
 
@@ -149,8 +154,8 @@ void oaci_validate_celt_decoder(CELTDecoder *st) {
    Check if it's within the maximum number of Bark frequency bands instead */
     celt_assert(st->end <= 25);
 # endif
-    celt_assert(st->channels == 1 || st->channels == 2);
-    celt_assert(st->stream_channels == 1 || st->stream_channels == 2);
+    celt_assert(st->channels >= 1 && st->channels <= 36);
+    celt_assert(st->stream_channels >= 1 && st->stream_channels <= 36);
     celt_assert(st->downsample > 0);
     celt_assert(st->start == 0 || st->start == 17);
     celt_assert(st->start < st->end);
@@ -184,6 +189,9 @@ int oaci_celt_decoder_get_size(int channels) {
 
 OAC_CUSTOM_NOSTATIC int oac_custom_decoder_get_size(const CELTMode *mode, int channels) {
     int size;
+    /* For 1-2 channels, always allocate for 2 to maintain original behavior.
+       For >2 channels (ambisonics), allocate for actual channel count. */
+    int band_channels = IMAX(2, channels);
 #ifdef ENABLE_QEXT
     int qext_scale;
     if (mode->Fs == 96000 && (mode->shortMdctSize == 240 || mode->shortMdctSize == 180)) {
@@ -192,7 +200,7 @@ OAC_CUSTOM_NOSTATIC int oac_custom_decoder_get_size(const CELTMode *mode, int ch
 #endif
     size = sizeof(struct CELTDecoder)
            + (channels*(QEXT_SCALE(DECODE_BUFFER_SIZE) + mode->overlap) - 1)*sizeof(celt_sig)
-           + 4*2*mode->nbEBands*sizeof(celt_glog)
+           + 4*band_channels*mode->nbEBands*sizeof(celt_glog)
            + channels*CELT_LPC_ORDER*sizeof(oac_val16);
     return size;
 }
@@ -230,7 +238,7 @@ int oaci_celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channel
 }
 
 OAC_CUSTOM_NOSTATIC int oac_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int channels) {
-    if (channels < 0 || channels > 2)
+    if (channels < 0 || channels > 36)
         return OAC_BAD_ARG;
 
     if (st == NULL)
@@ -487,7 +495,7 @@ static void oaci_tf_decode(int start, int end, int isTransient, int *tf_res, int
     }
 }
 
-static int oaci_celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[2], int C, int arch) {
+static int oaci_celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS], int C, int arch) {
     int pitch_index;
 #ifdef ENABLE_QEXT
     int qext_scale;
@@ -515,7 +523,7 @@ static void oaci_prefilter_and_fold(CELTDecoder * OAC_RESTRICT st, int N) {
     int CC;
     int i;
     int overlap;
-    celt_sig *decode_mem[2];
+    celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS];
     const OacCustomMode *mode;
     int decode_buffer_size;
 #ifdef ENABLE_QEXT
@@ -571,7 +579,7 @@ static const float sinc_filter[SINC_ORDER + 1] = {
     4.2931e-05f
 };
 
-void oaci_update_plc_state(LPCNetPLCState *lpcnet, celt_sig *decode_mem[2], float *plc_preemphasis_mem, int CC) {
+void oaci_update_plc_state(LPCNetPLCState *lpcnet, celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS], float *plc_preemphasis_mem, int CC) {
     int i;
     int tmp_read_post, tmp_fec_skip;
     int offset;
@@ -614,8 +622,8 @@ static void oaci_celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
     int c;
     int i;
     const int C = st->channels;
-    celt_sig *decode_mem[2];
-    celt_sig *out_syn[2];
+    celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS];
+    celt_sig *out_syn[OAC_AMBISONICS_MAX_CHANNELS];
     oac_val16 *lpc;
     celt_glog *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
     const OacCustomMode *mode;
@@ -645,11 +653,15 @@ static void oaci_celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
         decode_mem[c] = st->_decode_mem + c*(decode_buffer_size + overlap);
         out_syn[c] = decode_mem[c] + decode_buffer_size - N;
     } while (++c < C);
-    oldBandE = (celt_glog*)(st->_decode_mem + (decode_buffer_size + overlap)*C);
-    oldLogE = oldBandE + 2*nbEBands;
-    oldLogE2 = oldLogE + 2*nbEBands;
-    backgroundLogE = oldLogE2 + 2*nbEBands;
-    lpc = (oac_val16*)(backgroundLogE + 2*nbEBands);
+    /* For band energy arrays, use IMAX(2, C) stride to match allocation */
+    {
+        int band_channels = IMAX(2, C);
+        oldBandE = (celt_glog*)(st->_decode_mem + (decode_buffer_size + overlap)*C);
+        oldLogE = oldBandE + band_channels*nbEBands;
+        oldLogE2 = oldLogE + band_channels*nbEBands;
+        backgroundLogE = oldLogE2 + band_channels*nbEBands;
+        lpc = (oac_val16*)(backgroundLogE + band_channels*nbEBands);
+    }
 
     loss_duration = st->loss_duration;
     start = st->start;
@@ -683,7 +695,8 @@ static void oaci_celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
                decode_buffer_size - N + overlap);
         } while (++c < C);
 
-        if (st->prefilter_and_fold) {
+        /* Prefilter and fold only for 1-2 channels */
+        if (st->prefilter_and_fold && C <= 2) {
             oaci_prefilter_and_fold(st, N);
         }
 
@@ -712,20 +725,22 @@ static void oaci_celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
 
         oaci_celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0, st->arch);
 
-        /* Run the postfilter with the last parameters. */
-        c = 0; do {
-            st->postfilter_period = IMAX(st->postfilter_period, COMBFILTER_MINPERIOD);
-            st->postfilter_period_old = IMAX(st->postfilter_period_old, COMBFILTER_MINPERIOD);
-            oaci_comb_filter(out_syn[c], out_syn[c], st->postfilter_period_old, st->postfilter_period, mode->shortMdctSize,
-               st->postfilter_gain_old, st->postfilter_gain, st->postfilter_tapset_old, st->postfilter_tapset,
-               mode->window, overlap, st->arch);
-            if (LM != 0)
-                oaci_comb_filter(out_syn[c] + mode->shortMdctSize, out_syn[c] + mode->shortMdctSize, st->postfilter_period,
-                st->postfilter_period, N - mode->shortMdctSize,
-                  st->postfilter_gain, st->postfilter_gain, st->postfilter_tapset, st->postfilter_tapset,
-                  mode->window, overlap, st->arch);
+        /* Run the postfilter with the last parameters (only for 1-2 channels). */
+        if (C <= 2) {
+            c = 0; do {
+                st->postfilter_period = IMAX(st->postfilter_period, COMBFILTER_MINPERIOD);
+                st->postfilter_period_old = IMAX(st->postfilter_period_old, COMBFILTER_MINPERIOD);
+                oaci_comb_filter(out_syn[c], out_syn[c], st->postfilter_period_old, st->postfilter_period, mode->shortMdctSize,
+                   st->postfilter_gain_old, st->postfilter_gain, st->postfilter_tapset_old, st->postfilter_tapset,
+                   mode->window, overlap, st->arch);
+                if (LM != 0)
+                    oaci_comb_filter(out_syn[c] + mode->shortMdctSize, out_syn[c] + mode->shortMdctSize, st->postfilter_period,
+                    st->postfilter_period, N - mode->shortMdctSize,
+                      st->postfilter_gain, st->postfilter_gain, st->postfilter_tapset, st->postfilter_tapset,
+                      mode->window, overlap, st->arch);
 
-        } while (++c < C);
+            } while (++c < C);
+        }
         st->postfilter_period_old = st->postfilter_period;
         st->postfilter_gain_old = st->postfilter_gain;
         st->postfilter_tapset_old = st->postfilter_tapset;
@@ -1029,8 +1044,8 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     VARDECL(int, fine_priority);
     VARDECL(int, tf_res);
     VARDECL(unsigned char, collapse_masks);
-    celt_sig *decode_mem[2];
-    celt_sig *out_syn[2];
+    celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS];
+    celt_sig *out_syn[OAC_AMBISONICS_MAX_CHANNELS];
     celt_glog *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
 
     int shortBlocks;
@@ -1080,10 +1095,14 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     end = st->end;
     frame_size *= st->downsample;
 
-    oldBandE = (celt_glog*)(st->_decode_mem + (decode_buffer_size + overlap)*CC);
-    oldLogE = oldBandE + 2*nbEBands;
-    oldLogE2 = oldLogE + 2*nbEBands;
-    backgroundLogE = oldLogE2 + 2*nbEBands;
+    /* For band energy arrays, use IMAX(2, CC) stride to match allocation */
+    {
+        int band_channels = IMAX(2, CC);
+        oldBandE = (celt_glog*)(st->_decode_mem + (decode_buffer_size + overlap)*CC);
+        oldLogE = oldBandE + band_channels*nbEBands;
+        oldLogE2 = oldLogE + band_channels*nbEBands;
+        backgroundLogE = oldLogE2 + band_channels*nbEBands;
+    }
 
 #if defined(CUSTOM_MODES) || defined(ENABLE_OAC_CUSTOM_API)
     if (st->signalling && data != NULL) {
@@ -1207,7 +1226,8 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     postfilter_gain = 0;
     postfilter_pitch = 0;
     postfilter_tapset = 0;
-    if (start == 0 && tell + 18 <= total_bits) {
+    /* Skip postfilter decoding for >2 channels (encoder doesn't encode it) */
+    if (start == 0 && tell + 18 <= total_bits && C <= 2) {
         if (oaci_ec_dec_bit_logp(dec, 1)) {
             int qg, octave;
             octave = oaci_ec_dec_uint(dec, 6);
@@ -1321,32 +1341,80 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     ALLOC(pulses, nbEBands, int);
     ALLOC(fine_priority, nbEBands, int);
 
-    codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
-         alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
-         fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
-
-    oaci_unquant_fine_energy(mode, start, end, oldBandE, NULL, fine_quant, dec, C);
-
-    c = 0; do {
-        OAC_MOVE(decode_mem[c], decode_mem[c] + N, decode_buffer_size - N + overlap);
-    } while (++c < CC);
-
-    /* Decode fixed codebook */
+    /* Allocate X and collapse_masks before the if/else since they're used after */
     ALLOC(collapse_masks, C*nbEBands, unsigned char);
-
     ALLOC(X, C*N, celt_norm);  /**< Interleaved normalised MDCTs */
 
-    oaci_quant_all_bands(0, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
-         NULL, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
-         len*(8<<BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, &st->rng, 0,
-         st->arch, st->disable_inv);
+    if (C <= 2) {
+        /* Standard mono/stereo path */
+        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
+             alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
+             fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
 
-    if (anti_collapse_rsv > 0) {
-        anti_collapse_on = oaci_ec_dec_bits(dec, 1);
+        oaci_unquant_fine_energy(mode, start, end, oldBandE, NULL, fine_quant, dec, C);
+
+        c = 0; do {
+            OAC_MOVE(decode_mem[c], decode_mem[c] + N, decode_buffer_size - N + overlap);
+        } while (++c < CC);
+
+        oaci_quant_all_bands(0, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
+             NULL, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
+             len*(8<<BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, &st->rng, 0,
+             st->arch, st->disable_inv);
+
+        if (anti_collapse_rsv > 0) {
+            anti_collapse_on = oaci_ec_dec_bits(dec, 1);
+        }
+
+        oaci_unquant_energy_finalise(mode, start, end, oldBandE,
+             fine_quant, fine_priority, len*8 - oaci_ec_tell(dec), dec, C);
+    } else {
+        /* Multi-channel path: compute allocation for mono with bits/C.
+           Each channel gets an equal share of the remaining bits. */
+        oac_int32 total_remaining_bits;
+        oac_int32 bits_per_channel;
+        int bits_left_per_channel;
+        int dummy_intensity = 0;
+        int dummy_dual_stereo = 0;
+
+        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
+             alloc_trim, &dummy_intensity, &dummy_dual_stereo, bits / C, &balance, pulses,
+             fine_quant, fine_priority, 1, LM, dec, 0, 0, 0);
+        intensity = 0;
+        dual_stereo = 0;
+
+        c = 0; do {
+            OAC_MOVE(decode_mem[c], decode_mem[c] + N, decode_buffer_size - N + overlap);
+        } while (++c < CC);
+
+        /* Fine energy for all channels first (like standard path) */
+        for (c = 0; c < C; c++) {
+            oaci_unquant_fine_energy(mode, start, end, oldBandE + c*nbEBands, NULL, fine_quant, dec, 1);
+        }
+
+        /* Then band dequantization for all channels */
+        total_remaining_bits = (len*(8<<BITRES) - anti_collapse_rsv) - (oac_int32)oaci_ec_tell_frac(dec);
+        bits_per_channel = total_remaining_bits / C;
+        for (c = 0; c < C; c++) {
+            oac_int32 chan_total_bits = (oac_int32)oaci_ec_tell_frac(dec) + bits_per_channel;
+
+            oaci_quant_all_bands(0, mode, start, end, X + c*N, NULL, collapse_masks + c*nbEBands,
+                 NULL, pulses, shortBlocks, spread_decision, 0, 0, tf_res,
+                 chan_total_bits, balance, dec, LM, codedBands, &st->rng, 0,
+                 st->arch, st->disable_inv);
+        }
+
+        if (anti_collapse_rsv > 0) {
+            anti_collapse_on = oaci_ec_dec_bits(dec, 1);
+        }
+
+        /* Energy finalise for all channels */
+        bits_left_per_channel = (len*8 - oaci_ec_tell(dec)) / C;
+        for (c = 0; c < C; c++) {
+            oaci_unquant_energy_finalise(mode, start, end, oldBandE + c*nbEBands,
+                 fine_quant, fine_priority, bits_left_per_channel, dec, 1);
+        }
     }
-
-    oaci_unquant_energy_finalise(mode, start, end, oldBandE,
-         fine_quant, fine_priority, len*8 - oaci_ec_tell(dec), dec, C);
 
     if (anti_collapse_on)
         oaci_anti_collapse(mode, X, collapse_masks, LM, C, N,
@@ -1356,25 +1424,29 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
         for (i = 0; i < C*nbEBands; i++)
             oldBandE[i] = -GCONST(28.f);
     }
-    if (st->prefilter_and_fold) {
+    /* Prefilter and fold only for 1-2 channels */
+    if (st->prefilter_and_fold && C <= 2) {
         oaci_prefilter_and_fold(st, N);
     }
     oaci_celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
                   C, CC, isTransient, LM, st->downsample, silence, st->arch);
 
-    c = 0; do {
-        st->postfilter_period = IMAX(st->postfilter_period, COMBFILTER_MINPERIOD);
-        st->postfilter_period_old = IMAX(st->postfilter_period_old, COMBFILTER_MINPERIOD);
-        oaci_comb_filter(out_syn[c], out_syn[c], st->postfilter_period_old, st->postfilter_period, mode->shortMdctSize,
-            st->postfilter_gain_old, st->postfilter_gain, st->postfilter_tapset_old, st->postfilter_tapset,
-            mode->window, overlap, st->arch);
-        if (LM != 0)
-            oaci_comb_filter(out_syn[c] + mode->shortMdctSize, out_syn[c] + mode->shortMdctSize, st->postfilter_period,
-            postfilter_pitch, N - mode->shortMdctSize,
-               st->postfilter_gain, postfilter_gain, st->postfilter_tapset, postfilter_tapset,
-               mode->window, overlap, st->arch);
+    /* Apply postfilter (comb filter) only for 1-2 channels */
+    if (C <= 2) {
+        c = 0; do {
+            st->postfilter_period = IMAX(st->postfilter_period, COMBFILTER_MINPERIOD);
+            st->postfilter_period_old = IMAX(st->postfilter_period_old, COMBFILTER_MINPERIOD);
+            oaci_comb_filter(out_syn[c], out_syn[c], st->postfilter_period_old, st->postfilter_period, mode->shortMdctSize,
+                st->postfilter_gain_old, st->postfilter_gain, st->postfilter_tapset_old, st->postfilter_tapset,
+                mode->window, overlap, st->arch);
+            if (LM != 0)
+                oaci_comb_filter(out_syn[c] + mode->shortMdctSize, out_syn[c] + mode->shortMdctSize, st->postfilter_period,
+                postfilter_pitch, N - mode->shortMdctSize,
+                   st->postfilter_gain, postfilter_gain, st->postfilter_tapset, postfilter_tapset,
+                   mode->window, overlap, st->arch);
 
-    } while (++c < CC);
+        } while (++c < CC);
+    }
     st->postfilter_period_old = st->postfilter_period;
     st->postfilter_gain_old = st->postfilter_gain;
     st->postfilter_tapset_old = st->postfilter_tapset;
@@ -1391,17 +1463,17 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
         OAC_COPY(&oldBandE[nbEBands], oldBandE, nbEBands);
 
     if (!isTransient) {
-        OAC_COPY(oldLogE2, oldLogE, 2*nbEBands);
-        OAC_COPY(oldLogE, oldBandE, 2*nbEBands);
+        OAC_COPY(oldLogE2, oldLogE, C*nbEBands);
+        OAC_COPY(oldLogE, oldBandE, C*nbEBands);
     } else {
-        for (i = 0; i < 2*nbEBands; i++)
+        for (i = 0; i < C*nbEBands; i++)
             oldLogE[i] = MING(oldLogE[i], oldBandE[i]);
     }
     /* In normal circumstances, we only allow the noise floor to increase by
        up to 2.4 dB/second, but when we're in DTX we give the weight of
        all missing packets to the update packet. */
     max_background_increase = IMIN(160, st->loss_duration + M)*GCONST(0.001f);
-    for (i = 0; i < 2*nbEBands; i++)
+    for (i = 0; i < C*nbEBands; i++)
         backgroundLogE[i] = MING(backgroundLogE[i] + max_background_increase, oldBandE[i]);
     /* In case start or end were to change */
     c = 0; do {
@@ -1569,7 +1641,9 @@ int oac_custom_decoder_ctl(CELTDecoder * OAC_RESTRICT st, int request, ...) {
         case CELT_SET_CHANNELS_REQUEST:
         {
             oac_int32 value = va_arg(ap, oac_int32);
-            if (value < 1 || value > 2)
+            /* For 1-2 channel decoders, allow stream_channels up to 2 for stereo->mono downmix.
+               For >2 channels (ambisonics), stream_channels must match decoder channels. */
+            if (value < 1 || value > IMAX(2, st->channels))
                 goto bad_arg;
             st->stream_channels = value;
         }
@@ -1596,17 +1670,18 @@ int oac_custom_decoder_ctl(CELTDecoder * OAC_RESTRICT st, int request, ...) {
             int i;
             celt_glog *oldBandE, *oldLogE, *oldLogE2;
             int decode_buffer_size;
+            int band_channels = IMAX(2, st->channels);
 #ifdef ENABLE_QEXT
             int qext_scale = st->qext_scale;
 #endif
             decode_buffer_size = QEXT_SCALE(DECODE_BUFFER_SIZE);
             oldBandE = (celt_glog*)(st->_decode_mem + (decode_buffer_size + st->overlap)*st->channels);
-            oldLogE = oldBandE + 2*st->mode->nbEBands;
-            oldLogE2 = oldLogE + 2*st->mode->nbEBands;
+            oldLogE = oldBandE + band_channels*st->mode->nbEBands;
+            oldLogE2 = oldLogE + band_channels*st->mode->nbEBands;
             OAC_CLEAR((char*)&st->DECODER_RESET_START,
                oac_custom_decoder_get_size(st->mode, st->channels)
                 - ((char*)&st->DECODER_RESET_START - (char*)st));
-            for (i = 0; i < 2*st->mode->nbEBands; i++)
+            for (i = 0; i < band_channels*st->mode->nbEBands; i++)
                 oldLogE[i] = oldLogE2[i] = -GCONST(28.f);
             st->skip_plc = 1;
             st->last_frame_type = FRAME_NONE;

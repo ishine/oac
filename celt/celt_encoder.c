@@ -56,6 +56,11 @@
 # define M_PI 3.141592653
 #endif
 
+/* Maximum channels for multi-channel ambisonics support */
+#ifndef OAC_AMBISONICS_MAX_CHANNELS
+#define OAC_AMBISONICS_MAX_CHANNELS 36
+#endif
+
 
 /** Encoder state
    @brief Encoder state
@@ -108,8 +113,8 @@ struct OacCustomEncoder {
     AnalysisInfo analysis;
     SILKInfo silk_info;
 
-    oac_val32 preemph_memE[2];
-    oac_val32 preemph_memD[2];
+    oac_val32 preemph_memE[OAC_AMBISONICS_MAX_CHANNELS];
+    oac_val32 preemph_memD[OAC_AMBISONICS_MAX_CHANNELS];
 
     /* VBR-related parameters */
     oac_int32 vbr_reservoir;
@@ -125,10 +130,10 @@ struct OacCustomEncoder {
 #ifdef RESYNTH
 # ifdef ENABLE_QEXT
     /* +MAX_PERIOD/2 to make space for overlap */
-    celt_sig syn_mem[2][2*DEC_PITCH_BUF_SIZE + MAX_PERIOD];
+    celt_sig syn_mem[OAC_AMBISONICS_MAX_CHANNELS][2*DEC_PITCH_BUF_SIZE + MAX_PERIOD];
 # else
     /* +MAX_PERIOD/2 to make space for overlap */
-    celt_sig syn_mem[2][DEC_PITCH_BUF_SIZE + MAX_PERIOD/2];
+    celt_sig syn_mem[OAC_AMBISONICS_MAX_CHANNELS][DEC_PITCH_BUF_SIZE + MAX_PERIOD/2];
 # endif
 #endif
 
@@ -185,7 +190,7 @@ CELTEncoder *oac_custom_encoder_create(const CELTMode *mode, int channels, int *
 
 static int oac_custom_encoder_init_arch(CELTEncoder *st, const CELTMode *mode,
                                         int channels, int arch) {
-    if (channels < 0 || channels > 2)
+    if (channels < 0 || channels > 36)
         return OAC_BAD_ARG;
 
     if (st == NULL || mode == NULL)
@@ -1894,18 +1899,28 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     {
         int enabled;
         int qg;
+        /* Disable prefilter for >2 channels (pitch estimate from channel mix doesn't apply) */
         enabled = ((st->lfe && nbAvailableBytes > 3) || nbAvailableBytes > 12*C) && !hybrid && !silence
-                  && tell + 16 <= total_bits && !st->disable_pf;
+                  && tell + 16 <= total_bits && !st->disable_pf && C <= 2;
 
         prefilter_tapset = st->tapset_decision;
-        pf_on = oaci_run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled,
-        st->complexity, tf_estimate, nbAvailableBytes, &st->analysis, tone_freq, toneishness, qext_scale);
+        /* Skip prefilter entirely for >2 channels to avoid array bounds issues */
+        if (C > 2) {
+            pf_on = 0;
+            pitch_index = COMBFILTER_MINPERIOD;
+            gain1 = 0;
+            qg = 0;
+        } else {
+            pf_on = oaci_run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled,
+            st->complexity, tf_estimate, nbAvailableBytes, &st->analysis, tone_freq, toneishness, qext_scale);
+        }
         if ((gain1 > QCONST16(.4f, 15) || st->prefilter_gain > QCONST16(.4f,
         15)) && (!st->analysis.valid || st->analysis.tonality > .3)
             && (pitch_index > 1.26*st->prefilter_period || pitch_index < .79*st->prefilter_period))
             pitch_change = 1;
         if (pf_on == 0) {
-            if (!hybrid && tell + 18 <= total_bits)
+            /* Skip writing postfilter bit for >2 channels - decoder skips reading it */
+            if (!hybrid && tell + 18 <= total_bits && C <= 2)
                 oaci_ec_enc_bit_logp(enc, 0, 1);
         } else {
             /*This block is not gated by a total bits check only because
@@ -2388,33 +2403,93 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
 #endif
     if (st->lfe)
         signalBandwidth = 1;
-    codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
-         alloc_trim, &st->intensity, &dual_stereo, bits, &balance, pulses,
-         fine_quant, fine_priority, C, LM, enc, 1, st->lastCodedBands, signalBandwidth);
+
+    if (C <= 2) {
+        /* Standard mono/stereo path - compute allocation once for all channels */
+        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
+             alloc_trim, &st->intensity, &dual_stereo, bits, &balance, pulses,
+             fine_quant, fine_priority, C, LM, enc, 1, st->lastCodedBands, signalBandwidth);
+    } else {
+        /* Multi-channel path: compute allocation for mono with bits/C.
+           No intensity/dual_stereo for multi-channel. */
+        oac_int32 bits_per_channel = bits / C;
+        int dummy_intensity = 0;
+        int dummy_dual_stereo = 0;
+        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
+             alloc_trim, &dummy_intensity, &dummy_dual_stereo, bits_per_channel, &balance, pulses,
+             fine_quant, fine_priority, 1, LM, enc, 1, st->lastCodedBands, signalBandwidth);
+        st->intensity = 0;
+        dual_stereo = 0;
+    }
     if (st->lastCodedBands)
         st->lastCodedBands = IMIN(st->lastCodedBands + 1, IMAX(st->lastCodedBands - 1, codedBands));
     else
         st->lastCodedBands = codedBands;
 
-    oaci_quant_fine_energy(mode, start, end, oldBandE, error, NULL, fine_quant, enc, C);
-    OAC_CLEAR(energyError, nbEBands*CC);
-
-    /* Residual quantisation */
+    /* Allocate collapse_masks here so it's visible in RESYNTH block */
     ALLOC(collapse_masks, C*nbEBands, unsigned char);
-    oaci_quant_all_bands(1, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
-         bandE, pulses, shortBlocks, st->spread_decision,
-         dual_stereo, st->intensity, tf_res, nbCompressedBytes*(8<<BITRES) - anti_collapse_rsv,
-         balance, enc, LM, codedBands, &st->rng, st->complexity, st->arch, st->disable_inv);
 
-    if (anti_collapse_rsv > 0) {
-        anti_collapse_on = st->consec_transient < 2;
+    if (C <= 2) {
+        /* Standard mono/stereo path */
+        oaci_quant_fine_energy(mode, start, end, oldBandE, error, NULL, fine_quant, enc, C);
+        OAC_CLEAR(energyError, nbEBands*CC);
+
+        /* Residual quantisation */
+        oaci_quant_all_bands(1, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
+             bandE, pulses, shortBlocks, st->spread_decision,
+             dual_stereo, st->intensity, tf_res, nbCompressedBytes*(8<<BITRES) - anti_collapse_rsv,
+             balance, enc, LM, codedBands, &st->rng, st->complexity, st->arch, st->disable_inv);
+
+        if (anti_collapse_rsv > 0) {
+            anti_collapse_on = st->consec_transient < 2;
 #ifdef FUZZING
-        anti_collapse_on = rand()&0x1;
+            anti_collapse_on = rand()&0x1;
 #endif
-        oaci_ec_enc_bits(enc, anti_collapse_on, 1);
+            oaci_ec_enc_bits(enc, anti_collapse_on, 1);
+        }
+        oaci_quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority,
+        nbCompressedBytes*8 - oaci_ec_tell(enc), enc, C);
+    } else {
+        /* Multi-channel path: process each channel independently as mono.
+           Each channel gets an equal share of the remaining bits. */
+        oac_int32 total_remaining_bits;
+        oac_int32 bits_per_channel;
+        int bits_left_per_channel;
+
+        OAC_CLEAR(energyError, nbEBands*CC);
+
+        /* Fine energy for all channels first (like standard path) */
+        for (c = 0; c < C; c++) {
+            oaci_quant_fine_energy(mode, start, end, oldBandE + c*nbEBands, error + c*nbEBands, NULL, fine_quant, enc, 1);
+        }
+
+        /* Then band quantization for all channels */
+        total_remaining_bits = (nbCompressedBytes*(8<<BITRES) - anti_collapse_rsv) - (oac_int32)oaci_ec_tell_frac(enc);
+        bits_per_channel = total_remaining_bits / C;
+        for (c = 0; c < C; c++) {
+            oac_int32 chan_total_bits = (oac_int32)oaci_ec_tell_frac(enc) + bits_per_channel;
+
+            oaci_quant_all_bands(1, mode, start, end, X + c*N, NULL, collapse_masks + c*nbEBands,
+                 bandE + c*nbEBands, pulses, shortBlocks, st->spread_decision,
+                 0, 0, tf_res, chan_total_bits,
+                 balance, enc, LM, codedBands, &st->rng, st->complexity, st->arch, st->disable_inv);
+        }
+
+        if (anti_collapse_rsv > 0) {
+            anti_collapse_on = st->consec_transient < 2;
+#ifdef FUZZING
+            anti_collapse_on = rand()&0x1;
+#endif
+            oaci_ec_enc_bits(enc, anti_collapse_on, 1);
+        }
+
+        /* Energy finalise for all channels */
+        bits_left_per_channel = (nbCompressedBytes*8 - oaci_ec_tell(enc)) / C;
+        for (c = 0; c < C; c++) {
+            oaci_quant_energy_finalise(mode, start, end, oldBandE + c*nbEBands, error + c*nbEBands, fine_quant, fine_priority,
+                bits_left_per_channel, enc, 1);
+        }
     }
-    oaci_quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority,
-    nbCompressedBytes*8 - oaci_ec_tell(enc), enc, C);
     c = 0;
     do {
         for (i = start; i < end; i++) {
@@ -2430,7 +2505,8 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
 #ifdef RESYNTH
     /* Re-synthesis of the coded audio if required */
     {
-        celt_sig *out_mem[2];
+        VARDECL(celt_sig*, out_mem);
+        ALLOC(out_mem, CC, celt_sig*);
 
         if (anti_collapse_on) {
             oaci_anti_collapse(mode, X, collapse_masks, LM, C, N,
@@ -2694,7 +2770,7 @@ int oac_custom_encoder_ctl(CELTEncoder * OAC_RESTRICT st, int request, ...) {
         case CELT_SET_CHANNELS_REQUEST:
         {
             oac_int32 value = va_arg(ap, oac_int32);
-            if (value < 1 || value > 2)
+            if (value < 1 || value > st->channels)
                 goto bad_arg;
             st->stream_channels = value;
         }
