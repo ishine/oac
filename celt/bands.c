@@ -1554,6 +1554,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     int nstart_bytes, nend_bytes, save_bytes;
                     unsigned char *bytes_buf;
                     oac_val16 w[2];
+                    int split_mem_save[2][15];
                     oaci_compute_channel_weights(bandE[i], bandE[i + m->nbEBands], w);
                     /* Make a copy. */
                     cm = x_cm|y_cm;
@@ -1561,11 +1562,12 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                     ctx_save = ctx;
                     OAC_COPY(X_save, X, N);
                     OAC_COPY(Y_save, Y, N);
+                    OAC_COPY(split_mem_save, split_mem, 2);
                     /* Encode and round down. */
                     ctx.theta_round = -1;
                     x_cm = oaci_quant_band_stereo(&ctx, X, Y, N, b, B,
                      effective_lowband != -1 ? norm + effective_lowband : NULL, LM,
-                     last?NULL:norm + M*eBands[i] - norm_offset, lowband_scratch, cm, split_mem);
+                     last?NULL:norm + M*eBands[i] - norm_offset, lowband_scratch, cm, split_mem_save);
                     dist0 = MULT16_32_Q15(w[0], oaci_celt_inner_prod_norm_shift(X_save, X, N, arch)) + MULT16_32_Q15(w[1],
                     oaci_celt_inner_prod_norm_shift(Y_save, Y, N, arch));
 
@@ -1603,6 +1605,7 @@ void oaci_quant_all_bands(int encode, const CELTMode *m, int start, int end,
                         ctx = ctx_save2;
                         OAC_COPY(X, X_save2, N);
                         OAC_COPY(Y, Y_save2, N);
+                        OAC_COPY(split_mem, split_mem_save, 2);
                         if (!last)
                             OAC_COPY(norm + M*eBands[i] - norm_offset, norm_save2, N);
                         OAC_COPY(bytes_buf, bytes_save, save_bytes);
