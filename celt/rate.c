@@ -115,39 +115,32 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
     oac_int16 *cindex;
     unsigned char *bits;
     unsigned char *cap;
-
-    cindex = (oac_int16 *)oac_alloc(sizeof(cache->index[0])*m->nbEBands*(LM + 2));
+    int entryB[100];
+    int max_n = ((eBands[m->nbEBands]-eBands[m->nbEBands-1])<<LM);
+    cindex = (oac_int16 *)oac_alloc(sizeof(cache->index[0])*(max_n+1));
+    for (i = 0; i <= max_n; i++) cindex[i] = -1;
     cache->index = cindex;
 
-    /* Scan for all unique band sizes */
-    for (i = 0; i <= LM + 1; i++) {
-        for (j = 0; j < m->nbEBands; j++) {
-            int k;
-            int N = (eBands[j + 1] - eBands[j])<<i>>1;
-            cindex[i*m->nbEBands + j] = -1;
-            /* Find other bands that have the same size */
-            for (k = 0; k <= i; k++) {
-                int n;
-                for (n = 0; n < m->nbEBands && (k != i || n < j); n++) {
-                    if (N == (eBands[n + 1] - eBands[n])<<k>>1) {
-                        cindex[i*m->nbEBands + j] = cindex[k*m->nbEBands + n];
-                        break;
-                    }
-                }
-            }
-            if (cache->index[i*m->nbEBands + j] == -1 && N != 0) {
+    for (j = 0; j < m->nbEBands; j++) {
+        int N = (eBands[j + 1] - eBands[j])<<LM;
+        for (;;) {
+            if (cindex[N] == -1)
+            {
                 int K;
+                oac_int16 tmp[CELT_MAX_PULSES + 1];
                 entryN[nbEntries] = N;
                 K = 0;
-                while (oaci_fits_in32(N, oaci_get_pulses(K + 1)) && K < MAX_PSEUDO)
-                    K++;
+                while (oaci_fits_in32(N, oaci_get_pulses(K + 1)) && K < MAX_PSEUDO) K++;
+                oaci_get_required_bits(tmp, N, oaci_get_pulses(K), BITRES);
                 entryK[nbEntries] = K;
-                cindex[i*m->nbEBands + j] = curr;
+                entryB[nbEntries] = (tmp[oaci_get_pulses(K)]+4)>>BITRES;
+                cindex[N] = curr;
                 entryI[nbEntries] = curr;
-
-                curr += K + 1;
+                curr += entryB[nbEntries] + 1;
                 nbEntries++;
             }
+            if (N&1) break;
+            N>>=1;
         }
     }
     bits = (unsigned char *)oac_alloc(sizeof(unsigned char)*curr);
@@ -155,12 +148,23 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
     cache->size = curr;
     /* Compute the cache for all unique sizes */
     for (i = 0; i < nbEntries; i++) {
+        int b;
         unsigned char *ptr = bits + entryI[i];
         oac_int16 tmp[CELT_MAX_PULSES + 1];
         oaci_get_required_bits(tmp, entryN[i], oaci_get_pulses(entryK[i]), BITRES);
-        for (j = 1; j <= entryK[i]; j++)
-            ptr[j] = tmp[oaci_get_pulses(j)] - 1;
-        ptr[0] = entryK[i];
+        for (b = 1; b <= entryB[i]; b++) {
+            int best_dist = b<<BITRES;
+            int best_pulses=0;
+            for (j = 1; j <= entryK[i]; j++) {
+                int dist = abs(tmp[oaci_get_pulses(j)] - (b<<BITRES));
+                if (dist < best_dist) {
+                    best_dist = dist;
+                    best_pulses = j;
+                }
+            }
+            ptr[b] = best_pulses;
+        }
+        ptr[0] = entryB[i];
     }
 
     /* Compute the maximum rate for each band at which we'll reliably use as
@@ -176,7 +180,6 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
                 if (N0<<i == 1)
                     max_bits = C*(1 + MAX_FINE_BITS)<<BITRES;
                 else {
-                    const unsigned char *pcache;
                     oac_int32 num;
                     oac_int32 den;
                     int LM0;
@@ -199,8 +202,7 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
                     }
                     /* Compute the cost for the lowest-level PVQ of a fully split
                         band. */
-                    pcache = bits + cindex[(LM0 + 1)*m->nbEBands + j];
-                    max_bits = pcache[pcache[0]] + 1;
+                    max_bits = bits[cindex[N0]]<<BITRES;
                     /* Add in the cost of coding regular splits. */
                     N = N0;
                     for (k = 0; k < i - LM0; k++) {
