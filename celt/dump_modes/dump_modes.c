@@ -186,7 +186,7 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes) {
             }
             fprintf (file, "};\n");
 
-            fprintf(file, " #endif\n");
+            fprintf(file, "# endif\n");
             fprintf(file, "\n");
         }
 
@@ -300,7 +300,7 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes) {
 #ifdef ENABLE_QEXT
 	if (j == 1 && mode->Fs == 96000) continue;
 #endif
-        fprintf(file, "&mode%d_%d_%d,\n", mode->Fs, mdctSize, mode->overlap);
+        fprintf(file, "    &mode%d_%d_%d,\n", mode->Fs, mdctSize, mode->overlap);
     }
     fprintf(file, "};\n");
     }
