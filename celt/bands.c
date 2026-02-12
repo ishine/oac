@@ -920,27 +920,24 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
                                 oac_val32 gain, int fill, int *split_mem) {
     const unsigned char *cache;
     int q;
-    int curr_bits;
     int B0 = B;
     oac_val32 mid = 0, side = 0;
     unsigned cm = 0;
     celt_norm *Y = NULL;
     int encode;
     const CELTMode *m;
-    int i;
     int spread;
     ec_ctx *ec;
     oac_int32 tell;
 
     encode = ctx->encode;
     m = ctx->m;
-    i = ctx->i;
     spread = ctx->spread;
     ec = ctx->ec;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
-    cache = m->cache.bits + m->cache.index[(LM + 1)*m->nbEBands + i];
-    if (LM != -1 && b > cache[cache[0]] + 12 && N > 2) {
+    cache = m->cache.bits + m->cache.index[N];
+    if (LM != -1 && b > (cache[0] << BITRES) + 12 && N > 2) {
         int mbits, sbits, delta;
         int itheta;
         struct split_ctx sctx;
@@ -1005,19 +1002,13 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
         }
     } else {
         oac_int32 remaining_bits;
+        int bits;
+        int bust_safety;
         /* This is the basic no-split case */
-        q = oaci_bits2pulses(m, i, LM, b);
-        curr_bits = oaci_pulses2bits(m, i, LM, q);
         remaining_bits = ctx->total_bits - oaci_ec_tell_frac(ec) - 1;
-        remaining_bits -= curr_bits;
-
-        /* Ensures we can never bust the budget */
-        while (remaining_bits < 0 && q > 0) {
-            remaining_bits += curr_bits;
-            q--;
-            curr_bits = oaci_pulses2bits(m, i, LM, q);
-            remaining_bits -= curr_bits;
-        }
+        bust_safety = remaining_bits < (32<<BITRES) && remaining_bits < b + (5<<BITRES);
+        bits = (IMIN(b, remaining_bits)+4)>>BITRES;
+        q = IMAX(0, cache[IMAX(1, IMIN(cache[0], bits - bust_safety))] - bust_safety);
 
         if (q != 0) {
             int K = oaci_get_pulses(q);

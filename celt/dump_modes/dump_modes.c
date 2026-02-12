@@ -110,6 +110,7 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes) {
         CELTMode *mode = modes[i];
         int mdctSize;
         int standard, framerate;
+        int index_size;
 
         mdctSize = mode->shortMdctSize*mode->nbShortMdcts;
         standard = (mode->Fs == 400*(oac_int32)mode->shortMdctSize);
@@ -167,9 +168,10 @@ void dump_modes(FILE *file, CELTMode **modes, int nb_modes) {
         /* Pulse cache */
         fprintf(file, "#ifndef DEF_PULSE_CACHE%d\n", mode->Fs/mdctSize);
         fprintf(file, "# define DEF_PULSE_CACHE%d\n", mode->Fs/mdctSize);
+        index_size = 1+((mode->eBands[mode->nbEBands]-mode->eBands[mode->nbEBands-1])<<mode->maxLM);
         fprintf (file, "static const oac_int16 cache_index%d[%d] = {\n", mode->Fs/mdctSize,
-            (mode->maxLM + 2)*mode->nbEBands);
-        for (j = 0; j < mode->nbEBands*(mode->maxLM + 2); j++) {
+            index_size);
+        for (j = 0; j < index_size; j++) {
             if (j%15 == 0) fprintf( file, "    ");
             fprintf (file, "%d,%c", mode->cache.index[j], (j + 16)%15 == 0?'\n':' ');
         }
