@@ -889,21 +889,18 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
                                 oac_val32 gain, int fill, int *split_mem) {
     const unsigned char *cache;
     int q;
-    int curr_bits;
     int B0 = B;
     oac_val32 mid = 0, side = 0;
     unsigned cm = 0;
     celt_norm *Y = NULL;
     int encode;
     const CELTMode *m;
-    int i;
     int spread;
     ec_ctx *ec;
     oac_int32 tell;
 
     encode = ctx->encode;
     m = ctx->m;
-    i = ctx->i;
     spread = ctx->spread;
     ec = ctx->ec;
 
@@ -970,11 +967,12 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
     } else {
         oac_int32 remaining_bits;
         int bits;
+        int bust_safety;
         /* This is the basic no-split case */
         remaining_bits = ctx->total_bits - oaci_ec_tell_frac(ec) - 1;
+        bust_safety = remaining_bits < (32<<BITRES) && remaining_bits < b + (5<<BITRES);
         bits = (IMIN(b, remaining_bits)+4)>>BITRES;
-        q = cache[IMAX(1, IMIN(cache[0], bits))];
-        if (remaining_bits < (32<<BITRES)&& remaining_bits < b + (5<<BITRES) && q>0) q--;
+        q = IMAX(0, cache[IMAX(1, IMIN(cache[0], bits - bust_safety))] - bust_safety);
 
         if (q != 0) {
             int K = oaci_get_pulses(q);
