@@ -63,7 +63,6 @@
 #define RATE_H
 
 #define MAX_PSEUDO 40
-#define LOG_MAX_PSEUDO 6
 
 #define CELT_MAX_PULSES 128
 
@@ -80,39 +79,6 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM);
 
 static OAC_INLINE int oaci_get_pulses(int i) {
     return i < 8 ? i : (8 + (i&7))<<((i>>3) - 1);
-}
-
-static OAC_INLINE int oaci_bits2pulses(const CELTMode *m, int band, int LM, int bits) {
-    int i;
-    int lo, hi;
-    const unsigned char *cache;
-
-    LM++;
-    cache = m->cache.bits + m->cache.index[LM*m->nbEBands + band];
-
-    lo = 0;
-    hi = cache[0];
-    bits--;
-    for (i = 0; i < LOG_MAX_PSEUDO; i++) {
-        int mid = (lo + hi + 1)>>1;
-        /* OPT: Make sure this is implemented with a conditional move */
-        if ((int)cache[mid] >= bits)
-            hi = mid;
-        else
-            lo = mid;
-    }
-    if (bits - (lo == 0 ? -1 : (int)cache[lo]) <= (int)cache[hi] - bits)
-        return lo;
-    else
-        return hi;
-}
-
-static OAC_INLINE int oaci_pulses2bits(const CELTMode *m, int band, int LM, int pulses) {
-    const unsigned char *cache;
-
-    LM++;
-    cache = m->cache.bits + m->cache.index[LM*m->nbEBands + band];
-    return pulses == 0 ? 0 : cache[pulses] + 1;
 }
 
 /** Compute the pulse allocation, i.e. how many pulses will go in each
