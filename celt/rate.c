@@ -169,7 +169,7 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
                     }
                     /* Compute the cost for the lowest-level PVQ of a fully split
                         band. */
-                    max_bits = bits[cindex[(m->eBands[j + 1] - m->eBands[j])<<(LM0+1)>>1]]<<BITRES;
+                    max_bits = bits[cindex[N0]]<<BITRES;
                     /* Add in the cost of coding regular splits. */
                     N = N0;
                     for (k = 0; k < i - LM0; k++) {
