@@ -908,8 +908,8 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
     ec = ctx->ec;
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
-    cache = m->cache.bits + m->cache.index[(LM + 1)*m->nbEBands + i];
-    if (LM != -1 && b > cache[cache[0]] + 12 && N > 2) {
+    cache = m->cache.bits + m->cache.index[N];
+    if (LM != -1 && b > (cache[0]<<BITRES) + 12 && N > 2) {
         int mbits, sbits, delta;
         int itheta;
         struct split_ctx sctx;
@@ -969,19 +969,12 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
         }
     } else {
         oac_int32 remaining_bits;
+        int bits;
         /* This is the basic no-split case */
-        q = oaci_bits2pulses(m, i, LM, b);
-        curr_bits = oaci_pulses2bits(m, i, LM, q);
         remaining_bits = ctx->total_bits - oaci_ec_tell_frac(ec) - 1;
-        remaining_bits -= curr_bits;
-
-        /* Ensures we can never bust the budget */
-        while (remaining_bits < 0 && q > 0) {
-            remaining_bits += curr_bits;
-            q--;
-            curr_bits = oaci_pulses2bits(m, i, LM, q);
-            remaining_bits -= curr_bits;
-        }
+        bits = (IMIN(b, remaining_bits)+4)>>BITRES;
+        q = cache[IMAX(1, IMIN(cache[0], bits))];
+        if (remaining_bits < (32<<BITRES)&& remaining_bits < b + (5<<BITRES) && q>0) q--;
 
         if (q != 0) {
             int K = oaci_get_pulses(q);
