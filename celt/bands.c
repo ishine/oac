@@ -701,6 +701,7 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
     }
     tell = oaci_ec_tell_frac(ec);
     if (qn != 1) {
+        int triangular;
         if (encode) {
             if (!stereo || ctx->theta_round == 0) {
                 itheta = (itheta*(oac_int32)qn + 8192)>>14;
@@ -726,10 +727,7 @@ static void oaci_compute_theta(struct band_ctx *ctx, struct split_ctx *sctx,
                     itheta = down + 1;
             }
         }
-        int triangular=0;
-        if (B0 > 1 && !stereo) {
-            triangular = *split_mem == 0 || *split_mem == 3;
-        }
+        triangular = B0 > 1 && !stereo && (*split_mem == 0 || *split_mem == 3);
 
         /* Entropy coding of the angle. We use a uniform pdf for the
            time split, a step for stereo, and a triangular one for the rest. */
@@ -906,12 +904,13 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
     cache = m->cache.bits + m->cache.index[N];
-    if (LM != -1 && b > (cache[0]<<BITRES) + 12 && N > 2) {
+    if (LM != -1 && b > (cache[0] << BITRES) + 12 && N > 2 && (N & 1) == 0) {
         int mbits, sbits, delta;
         int itheta;
         struct split_ctx sctx;
         celt_norm *next_lowband2 = NULL;
         oac_int32 rebalance;
+        int *left_split_mem = NULL, *right_split_mem = NULL;
 
         N >>= 1;
         Y = X + N;
@@ -947,22 +946,26 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
             next_lowband2 = lowband + N; /* >32-bit split case */
 
         tell = oaci_ec_tell_frac(ec);
+        if (B > 1) {
+            left_split_mem = &split_mem[1];
+            right_split_mem = &split_mem[1 << (LM + 1)];
+        }
         if (mbits >= sbits) {
             cm = oaci_quant_partition(ctx, X, N, mbits, B, lowband, LM,
-               MULT32_32_Q31(gain, mid), fill, &split_mem[1]);
+               MULT32_32_Q31(gain, mid), fill, left_split_mem);
             rebalance = mbits - (oaci_ec_tell_frac(ec) - tell);
             if (rebalance > 3<<BITRES && itheta != 0)
                 sbits += rebalance - (3<<BITRES);
             cm |= oaci_quant_partition(ctx, Y, N, sbits, B, next_lowband2, LM,
-               MULT32_32_Q31(gain, side), fill>>B, &split_mem[1<<(LM+1)])<<(B0>>1);
+               MULT32_32_Q31(gain, side), fill>>B, right_split_mem)<<(B0>>1);
         } else {
             cm = oaci_quant_partition(ctx, Y, N, sbits, B, next_lowband2, LM,
-               MULT32_32_Q31(gain, side), fill>>B, &split_mem[1<<(LM+1)])<<(B0>>1);
+               MULT32_32_Q31(gain, side), fill>>B, right_split_mem)<<(B0>>1);
             rebalance = sbits - (oaci_ec_tell_frac(ec) - tell);
             if (rebalance > 3<<BITRES && itheta != 16384)
                 mbits += rebalance - (3<<BITRES);
             cm |= oaci_quant_partition(ctx, X, N, mbits, B, lowband, LM,
-               MULT32_32_Q31(gain, mid), fill, &split_mem[1]);
+               MULT32_32_Q31(gain, mid), fill, left_split_mem);
         }
     } else {
         oac_int32 remaining_bits;
