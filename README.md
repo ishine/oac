@@ -18,7 +18,7 @@ Modifications and additions made to the software by the Alliance for Open Media 
 
 See the git commit logs for a list of modifications.
 
-The libopus license is preserved at (OPUS_LICENSE)[./OPUS_LICENSE].
+The libopus COPYING file is preserved as (OPUS_LICENSE)[./OPUS_LICENSE].
 
 ## Compiling
 
