@@ -937,7 +937,7 @@ static unsigned oaci_quant_partition(struct band_ctx *ctx, celt_norm *X,
 
     /* If we need 1.5 more bit than we can produce, split the band in two. */
     cache = m->cache.bits + m->cache.index[N];
-    if (LM != -1 && b > (cache[0] << BITRES) + 12 && N > 2) {
+    if (b > (cache[0] << BITRES) + 12 && N > 2 && (N & 1) == 0) {
         int mbits, sbits, delta;
         int itheta;
         struct split_ctx sctx;

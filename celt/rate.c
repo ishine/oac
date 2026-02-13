@@ -192,8 +192,10 @@ void oaci_compute_pulse_cache(CELTMode *m, int LM) {
                     /* Even-sized bands bigger than N=2 can be split one more time.
                        As of commit 44203907 all bands >1 are even, including custom modes.*/
                     if (N0 > 2) {
-                        N0 >>= 1;
-                        LM0--;
+                        while ((N0 & 1) == 0 && N0 > 2) {
+                            N0 >>= 1;
+                            LM0--;
+                        }
                     }
                     /* N0=1 bands can't be split down to N<2. */
                     else if (N0 <= 1) {

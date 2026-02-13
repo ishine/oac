@@ -69,9 +69,7 @@
 #include "mathops.h"
 #include "arch.h"
 
-#if defined(CUSTOM_MODES)
-# define CWRS_EXTRA_ROWS
-#endif
+#define CWRS_EXTRA_ROWS
 
 #if defined(CUSTOM_MODES)
 
