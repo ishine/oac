@@ -44,7 +44,7 @@
 
 #  include "fixed/main_FIX.h"
 
-oac_int64 (*const oaci_SILK_INNER_PROD16_IMPL[ OAC_ARCHMASK + 1 ] )(
+oac_int64 (*const OACI_SILK_INNER_PROD16_IMPL[ OAC_ARCHMASK + 1 ] )(
     const oac_int16 *inVec1,
     const oac_int16 *inVec2,
     const oac_int len
@@ -58,7 +58,7 @@ oac_int64 (*const oaci_SILK_INNER_PROD16_IMPL[ OAC_ARCHMASK + 1 ] )(
 
 # endif
 
-oac_int (*const oaci_SILK_VAD_GETSA_Q8_IMPL[ OAC_ARCHMASK + 1 ] )(
+oac_int (*const OACI_SILK_VAD_GETSA_Q8_IMPL[ OAC_ARCHMASK + 1 ] )(
     silk_encoder_state *psEncC,
     const oac_int16 pIn[]
     ) = {
@@ -69,7 +69,7 @@ oac_int (*const oaci_SILK_VAD_GETSA_Q8_IMPL[ OAC_ARCHMASK + 1 ] )(
     MAY_HAVE_SSE4_1( oaci_silk_VAD_GetSA_Q8 ) /* avx */
 };
 
-void (*const oaci_SILK_NSQ_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_NSQ_IMPL[ OAC_ARCHMASK + 1 ] )(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -93,7 +93,7 @@ void (*const oaci_SILK_NSQ_IMPL[ OAC_ARCHMASK + 1 ] )(
     MAY_HAVE_SSE4_1( oaci_silk_NSQ ) /* avx */
 };
 
-void (*const oaci_SILK_VQ_WMAT_EC_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_VQ_WMAT_EC_IMPL[ OAC_ARCHMASK + 1 ] )(
     oac_int8                   *ind,                           /* O    index of best codebook vector               */
     oac_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
     oac_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
@@ -114,7 +114,7 @@ void (*const oaci_SILK_VQ_WMAT_EC_IMPL[ OAC_ARCHMASK + 1 ] )(
     MAY_HAVE_SSE4_1( oaci_silk_VQ_WMat_EC ) /* avx */
 };
 
-void (*const oaci_SILK_NSQ_DEL_DEC_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_NSQ_DEL_DEC_IMPL[ OAC_ARCHMASK + 1 ] )(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -140,7 +140,7 @@ void (*const oaci_SILK_NSQ_DEL_DEC_IMPL[ OAC_ARCHMASK + 1 ] )(
 
 # if defined(FIXED_POINT)
 
-void (*const oaci_SILK_BURG_MODIFIED_IMPL[ OAC_ARCHMASK + 1 ] )(
+void (*const OACI_SILK_BURG_MODIFIED_IMPL[ OAC_ARCHMASK + 1 ] )(
     oac_int32                  *res_nrg,           /* O    Residual energy                                             */
     oac_int                    *res_nrg_Q,         /* O    Residual energy Q value                                     */
     oac_int32 A_Q16[],                             /* O    Prediction coefficients (length order)                      */
@@ -162,7 +162,7 @@ void (*const oaci_SILK_BURG_MODIFIED_IMPL[ OAC_ARCHMASK + 1 ] )(
 
 # ifndef FIXED_POINT
 
-double (*const oaci_SILK_INNER_PRODUCT_FLP_IMPL[ OAC_ARCHMASK + 1 ] )(
+double (*const OACI_SILK_INNER_PRODUCT_FLP_IMPL[ OAC_ARCHMASK + 1 ] )(
     const silk_float    *data1,
     const silk_float    *data2,
     oac_int dataSize

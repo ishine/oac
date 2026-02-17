@@ -49,7 +49,7 @@ void oaci_celt_fir_sse4_1(
 
 # elif defined(OAC_HAVE_RTCD)
 
-extern void (*const oaci_CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *num,
          oac_val16 *y,
@@ -59,7 +59,7 @@ extern void (*const oaci_CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
 
 #  define OVERRIDE_CELT_FIR
 #  define oaci_celt_fir(x, num, y, N, ord, arch) \
-        ((*oaci_CELT_FIR_IMPL[(arch)&OAC_ARCHMASK])(x, num, y, N, ord, arch))
+        ((*OACI_CELT_FIR_IMPL[(arch)&OAC_ARCHMASK])(x, num, y, N, ord, arch))
 
 # endif
 #endif

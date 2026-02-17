@@ -41,7 +41,7 @@
 
 #  if defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)
 
-void (*const oaci_CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *num,
          oac_val16       *y,
@@ -56,7 +56,7 @@ void (*const oaci_CELT_FIR_IMPL[OAC_ARCHMASK + 1])(
     MAY_HAVE_SSE4_1(oaci_celt_fir) /* avx  */
 };
 
-void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
          oac_val32 sum[4],
@@ -74,7 +74,7 @@ void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
 #  if (defined(OAC_X86_MAY_HAVE_SSE4_1) && !defined(OAC_X86_PRESUME_SSE4_1)) ||  \
     (!defined(OAC_X86_MAY_HAVE_SSE_4_1) && defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_SSE2))
 
-oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+oac_val32 (*const OACI_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
          int N
@@ -92,7 +92,7 @@ oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
 
 #  if defined(OAC_X86_MAY_HAVE_AVX2) && !defined(OAC_X86_PRESUME_AVX2)
 
-void (*const oaci_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
          const float *_x,
          const float *_y,
          float *xcorr,
@@ -112,7 +112,7 @@ void (*const oaci_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
 
 #  if defined(OAC_X86_MAY_HAVE_SSE) && !defined(OAC_X86_PRESUME_SSE)
 
-void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
          oac_val32 sum[4],
@@ -125,7 +125,7 @@ void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
     MAY_HAVE_SSE(oaci_xcorr_kernel)
 };
 
-oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+oac_val32 (*const OACI_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
          int N

@@ -63,7 +63,7 @@ oac_int32 (*const SILK_LPC_INVERSE_PRED_GAIN_IMPL[OAC_ARCHMASK + 1])( /* O   Ret
     oaci_silk_LPC_inverse_pred_gain_neon,   /* dotprod */
 };
 
-void  (*const oaci_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
+void  (*const OACI_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
         const silk_encoder_state    *psEncC,                                    /* I    Encoder State                   */
         silk_nsq_state              *NSQ,                                       /* I/O  NSQ state                       */
         SideInfoIndices             *psIndices,                                 /* I/O  Quantization Indices            */

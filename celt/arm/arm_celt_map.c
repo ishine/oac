@@ -59,7 +59,7 @@ int (*const OAC_LIMIT2_CHECKWITHIN1_IMPL[OAC_ARCHMASK + 1])(float * samples, int
 # endif
 
 # if defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
-oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N) = {
+oac_val32 (*const OACI_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N) = {
     oaci_celt_inner_prod_c, /* ARMv4 */
     oaci_celt_inner_prod_c, /* EDSP */
     oaci_celt_inner_prod_c, /* Media */
@@ -107,7 +107,7 @@ void (*const CELT_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *,
 # if defined(FIXED_POINT) && defined(OAC_HAVE_RTCD) && \
     defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR)
 
-void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
          const oac_val16 *x,
          const oac_val16 *y,
          oac_val32 sum[4],

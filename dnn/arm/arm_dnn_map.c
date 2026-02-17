@@ -36,7 +36,7 @@
 
 # if (defined(OAC_ARM_MAY_HAVE_DOTPROD) && !defined(OAC_ARM_PRESUME_DOTPROD))
 
-void (*const oaci_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
          const LinearLayer *linear,
          float *out,
          const float *in
@@ -52,7 +52,7 @@ void (*const oaci_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
 
 # if (defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON)) && !defined(OAC_ARM_PRESUME_NEON)
 
-void (*const oaci_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
          float *output,
          const float *input,
          int N,
@@ -65,7 +65,7 @@ void (*const oaci_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
     MAY_HAVE_DOTPROD(oaci_compute_activation) /* dotprod  */
 };
 
-void (*const oaci_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
          const Conv2dLayer *conv,
          float *out,
          float *mem,

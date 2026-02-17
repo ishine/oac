@@ -54,14 +54,14 @@ void oaci_compute_conv2d_dotprod(const Conv2dLayer *conv, float *out, float *mem
 
 #elif defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON))
 
-extern void (*const oaci_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
                     const LinearLayer *linear,
                     float *out,
                     const float *in
     );
 # define OVERRIDE_COMPUTE_LINEAR
 # define oaci_compute_linear(linear, out, in, arch) \
-        ((*oaci_DNN_COMPUTE_LINEAR_IMPL[(arch)&OAC_ARCHMASK])(linear, out, in))
+        ((*OACI_DNN_COMPUTE_LINEAR_IMPL[(arch)&OAC_ARCHMASK])(linear, out, in))
 
 
 #endif
@@ -78,7 +78,7 @@ extern void (*const oaci_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
 
 #elif defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_DOTPROD) || defined(OAC_ARM_MAY_HAVE_NEON))
 
-extern void (*const oaci_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
                     float *output,
                     const float *input,
                     int N,
@@ -86,10 +86,10 @@ extern void (*const oaci_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
     );
 # define OVERRIDE_COMPUTE_ACTIVATION
 # define oaci_compute_activation(output, input, N, activation, arch) \
-        ((*oaci_DNN_COMPUTE_ACTIVATION_IMPL[(arch)&OAC_ARCHMASK])(output, input, N, activation))
+        ((*OACI_DNN_COMPUTE_ACTIVATION_IMPL[(arch)&OAC_ARCHMASK])(output, input, N, activation))
 
 
-extern void (*const oaci_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
                     const Conv2dLayer *conv,
                     float *out,
                     float *mem,
@@ -100,7 +100,7 @@ extern void (*const oaci_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
     );
 # define OVERRIDE_COMPUTE_CONV2D
 # define oaci_compute_conv2d(conv, out, mem, in, height, hstride, activation, arch) \
-        ((*oaci_DNN_COMPUTE_CONV2D_IMPL[(arch)&OAC_ARCHMASK])(conv, out, mem, in, height, hstride, activation))
+        ((*OACI_DNN_COMPUTE_CONV2D_IMPL[(arch)&OAC_ARCHMASK])(conv, out, mem, in, height, hstride, activation))
 
 
 #endif

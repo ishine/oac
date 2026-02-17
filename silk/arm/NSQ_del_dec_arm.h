@@ -62,7 +62,7 @@ void oaci_silk_NSQ_del_dec_neon(
 /*Is run-time CPU detection enabled on this platform?*/
 # if defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && \
     !defined(OAC_ARM_PRESUME_NEON_INTR))
-extern void (*const oaci_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
     const silk_encoder_state *psEncC, silk_nsq_state *NSQ,
     SideInfoIndices *psIndices, const oac_int16 x16[], oac_int8 pulses[],
     const oac_int16 *PredCoef_Q12,
@@ -79,7 +79,7 @@ extern void (*const oaci_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
                            LTPCoef_Q14, AR_Q13, HarmShapeGain_Q14, Tilt_Q14,  \
                            LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10,         \
                            LTP_scale_Q14, arch)                               \
-        ((*oaci_SILK_NSQ_DEL_DEC_IMPL[(arch)&OAC_ARCHMASK])(                        \
+        ((*OACI_SILK_NSQ_DEL_DEC_IMPL[(arch)&OAC_ARCHMASK])(                        \
              psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14,     \
              AR_Q13, HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, \
              Lambda_Q10, LTP_scale_Q14))

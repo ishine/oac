@@ -60,7 +60,7 @@ void oaci_silk_VQ_WMat_EC_sse4_1(
 
 # elif defined(OAC_HAVE_RTCD)
 
-extern void (*const oaci_SILK_VQ_WMAT_EC_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_SILK_VQ_WMAT_EC_IMPL[OAC_ARCHMASK + 1])(
     oac_int8                   *ind,                           /* O    index of best codebook vector               */
     oac_int32                  *res_nrg_Q15,                   /* O    best residual energy                        */
     oac_int32                  *rate_dist_Q8,                  /* O    best total bitrate                          */
@@ -78,7 +78,7 @@ extern void (*const oaci_SILK_VQ_WMAT_EC_IMPL[OAC_ARCHMASK + 1])(
 #  define OVERRIDE_oaci_silk_VQ_WMat_EC
 #  define oaci_silk_VQ_WMat_EC(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, cb_gain_Q7, cl_Q5, \
                           subfr_len, max_gain_Q7, L, arch) \
-        ((*oaci_SILK_VQ_WMAT_EC_IMPL[(arch)&OAC_ARCHMASK])(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, \
+        ((*OACI_SILK_VQ_WMAT_EC_IMPL[(arch)&OAC_ARCHMASK])(ind, res_nrg_Q15, rate_dist_Q8, gain_Q7, XX_Q17, xX_Q17, cb_Q7, \
                                                       cb_gain_Q7, cl_Q5, \
                                                       subfr_len, max_gain_Q7, L))
 
@@ -112,7 +112,7 @@ void oaci_silk_NSQ_sse4_1(
 
 # elif defined(OAC_HAVE_RTCD)
 
-extern void (*const oaci_SILK_NSQ_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_SILK_NSQ_IMPL[OAC_ARCHMASK + 1])(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -133,7 +133,7 @@ extern void (*const oaci_SILK_NSQ_IMPL[OAC_ARCHMASK + 1])(
 #  define OVERRIDE_oaci_silk_NSQ
 #  define oaci_silk_NSQ(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
                    HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-        ((*oaci_SILK_NSQ_IMPL[(arch)&OAC_ARCHMASK])(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
+        ((*OACI_SILK_NSQ_IMPL[(arch)&OAC_ARCHMASK])(psEncC, NSQ, psIndices, x_Q3, pulses, PredCoef_Q12, LTPCoef_Q14, AR2_Q13, \
                                                HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, \
                                                LTP_scale_Q14))
 
@@ -193,7 +193,7 @@ void oaci_silk_NSQ_del_dec_avx2(
 
 # elif defined(OAC_HAVE_RTCD)
 
-extern void (*const oaci_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
     const silk_encoder_state    *psEncC,                                      /* I    Encoder State                   */
     silk_nsq_state              *NSQ,                                         /* I/O  NSQ state                       */
     SideInfoIndices             *psIndices,                                   /* I/O  Quantization Indices            */
@@ -214,7 +214,7 @@ extern void (*const oaci_SILK_NSQ_DEL_DEC_IMPL[OAC_ARCHMASK + 1])(
 #  define OVERRIDE_oaci_silk_NSQ_del_dec
 #  define oaci_silk_NSQ_del_dec(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, AR_Q13, \
                            HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, Lambda_Q10, LTP_scale_Q14, arch) \
-        ((*oaci_SILK_NSQ_DEL_DEC_IMPL[(arch)&OAC_ARCHMASK])(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, \
+        ((*OACI_SILK_NSQ_DEL_DEC_IMPL[(arch)&OAC_ARCHMASK])(psEncC, NSQ, psIndices, x16, pulses, PredCoef_Q12, LTPCoef_Q14, \
                                                        AR_Q13, \
                                                        HarmShapeGain_Q14, Tilt_Q14, LF_shp_Q14, Gains_Q16, pitchL, \
                                                        Lambda_Q10, LTP_scale_Q14))
@@ -263,13 +263,13 @@ oac_int oaci_silk_VAD_GetSA_Q8_sse4_1(
 
 # elif defined(OAC_HAVE_RTCD)
 
-extern oac_int (*const oaci_SILK_VAD_GETSA_Q8_IMPL[OAC_ARCHMASK + 1])(
+extern oac_int (*const OACI_SILK_VAD_GETSA_Q8_IMPL[OAC_ARCHMASK + 1])(
      silk_encoder_state *psEnC,
      const oac_int16 pIn[]);
 
 #  define OVERRIDE_oaci_silk_VAD_GetSA_Q8
 #  define oaci_silk_VAD_GetSA_Q8(psEnC, pIn, arch) \
-        ((*oaci_SILK_VAD_GETSA_Q8_IMPL[(arch)&OAC_ARCHMASK])(psEnC, pIn))
+        ((*OACI_SILK_VAD_GETSA_Q8_IMPL[(arch)&OAC_ARCHMASK])(psEnC, pIn))
 
 # endif
 
@@ -288,14 +288,14 @@ double oaci_silk_inner_product_FLP_avx2(
 #  elif defined(OAC_HAVE_RTCD) && defined(OAC_X86_MAY_HAVE_AVX2)
 
 #   define OVERRIDE_inner_product_FLP
-extern double (*const oaci_SILK_INNER_PRODUCT_FLP_IMPL[OAC_ARCHMASK + 1])(
+extern double (*const OACI_SILK_INNER_PRODUCT_FLP_IMPL[OAC_ARCHMASK + 1])(
     const silk_float    *data1,
     const silk_float    *data2,
     oac_int dataSize
     );
 
 #   define oaci_silk_inner_product_FLP(data1, data2, dataSize, arch) ((void)arch, \
-                                                                 (*oaci_SILK_INNER_PRODUCT_FLP_IMPL[(arch) \
+                                                                 (*OACI_SILK_INNER_PRODUCT_FLP_IMPL[(arch) \
                                                                                                &OAC_ARCHMASK])(data1, \
                                                                                                                data2, \
                                                                                                                dataSize))

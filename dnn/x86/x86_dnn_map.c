@@ -36,7 +36,7 @@
 
 # if (defined(OAC_X86_MAY_HAVE_SSE2) && !defined(OAC_X86_PRESUME_AVX2))
 
-void (*const oaci_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
          const LinearLayer *linear,
          float *out,
          const float *in
@@ -48,7 +48,7 @@ void (*const oaci_DNN_COMPUTE_LINEAR_IMPL[OAC_ARCHMASK + 1])(
     MAY_HAVE_AVX2(oaci_compute_linear) /* avx  */
 };
 
-void (*const oaci_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
          float *output,
          const float *input,
          int N,
@@ -61,7 +61,7 @@ void (*const oaci_DNN_COMPUTE_ACTIVATION_IMPL[OAC_ARCHMASK + 1])(
     MAY_HAVE_AVX2(oaci_compute_activation) /* avx  */
 };
 
-void (*const oaci_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
+void (*const OACI_DNN_COMPUTE_CONV2D_IMPL[OAC_ARCHMASK + 1])(
          const Conv2dLayer *conv,
          float *out,
          float *mem,

@@ -66,7 +66,7 @@ void oaci_xcorr_kernel_sse(
 #elif defined(OAC_HAVE_RTCD) &&  ((defined(OAC_X86_MAY_HAVE_SSE4_1) && defined(FIXED_POINT)) \
     || (defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)))
 
-extern void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y,
                     oac_val32 sum[4],
@@ -74,7 +74,7 @@ extern void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
 
 # define OVERRIDE_XCORR_KERNEL
 # define oaci_xcorr_kernel(x, y, sum, len, arch) \
-        ((*oaci_XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
+        ((*OACI_XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
 
 #endif
 
@@ -120,14 +120,14 @@ oac_val32 oaci_celt_inner_prod_sse(
     && defined(FIXED_POINT)) || \
     (defined(OAC_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT)))
 
-extern oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
+extern oac_val32 (*const OACI_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y,
                     int N);
 
 # define OVERRIDE_CELT_INNER_PROD
 # define oaci_celt_inner_prod(x, y, N, arch) \
-        ((*oaci_CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
+        ((*OACI_CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
 
 #endif
 
@@ -198,7 +198,7 @@ void oaci_celt_pitch_xcorr_avx2(const float *_x, const float *_y, float *xcorr, 
 # elif defined(OAC_HAVE_RTCD) && defined(OAC_X86_MAY_HAVE_AVX2)
 
 #  define OVERRIDE_PITCH_XCORR
-extern void (*const oaci_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
               const float *_x,
               const float *_y,
               float *xcorr,
@@ -208,7 +208,7 @@ extern void (*const oaci_PITCH_XCORR_IMPL[OAC_ARCHMASK + 1])(
     );
 
 #  define oaci_celt_pitch_xcorr(_x, _y, xcorr, len, max_pitch, arch) \
-        ((*oaci_PITCH_XCORR_IMPL[(arch)&OAC_ARCHMASK])(_x, _y, xcorr, len, max_pitch, arch))
+        ((*OACI_PITCH_XCORR_IMPL[(arch)&OAC_ARCHMASK])(_x, _y, xcorr, len, max_pitch, arch))
 
 
 # endif /* OAC_X86_PRESUME_AVX2 && !OAC_HAVE_RTCD */

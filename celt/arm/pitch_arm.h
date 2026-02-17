@@ -46,9 +46,9 @@ void oaci_dual_inner_prod_neon(const oac_val16 *x, const oac_val16 *y01,
 
 #if !defined(OVERRIDE_CELT_INNER_PROD)
 # if defined(OAC_HAVE_RTCD) && (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
-extern oac_val32 (*const oaci_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N);
+extern oac_val32 (*const OACI_CELT_INNER_PROD_IMPL[OAC_ARCHMASK + 1])(const oac_val16 *x, const oac_val16 *y, int N);
 #  define OVERRIDE_CELT_INNER_PROD (1)
-#  define oaci_celt_inner_prod(x, y, N, arch) ((*oaci_CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
+#  define oaci_celt_inner_prod(x, y, N, arch) ((*OACI_CELT_INNER_PROD_IMPL[(arch)&OAC_ARCHMASK])(x, y, N))
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #  define OVERRIDE_CELT_INNER_PROD (1)
 #  define oaci_celt_inner_prod(x, y, N, arch) ((void)(arch), oaci_celt_inner_prod_neon(x, y, N))
@@ -115,7 +115,7 @@ void oaci_xcorr_kernel_neon_fixed(
 # if defined(OAC_HAVE_RTCD) && \
     (defined(OAC_ARM_MAY_HAVE_NEON_INTR) && !defined(OAC_ARM_PRESUME_NEON_INTR))
 
-extern void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
+extern void (*const OACI_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
                     const oac_val16 *x,
                     const oac_val16 *y,
                     oac_val32 sum[4],
@@ -123,7 +123,7 @@ extern void (*const oaci_XCORR_KERNEL_IMPL[OAC_ARCHMASK + 1])(
 
 #  define OVERRIDE_XCORR_KERNEL (1)
 #  define oaci_xcorr_kernel(x, y, sum, len, arch) \
-        ((*oaci_XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
+        ((*OACI_XCORR_KERNEL_IMPL[(arch)&OAC_ARCHMASK])(x, y, sum, len))
 
 # elif defined(OAC_ARM_PRESUME_NEON_INTR)
 #  define OVERRIDE_XCORR_KERNEL (1)
