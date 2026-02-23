@@ -478,23 +478,19 @@ class CoreDecoder(nn.Module):
         self.input_size = self.input_dim
 
         # layers
-        self.dense_1    = nn.Linear(self.input_size, 96)
-        self.gru1 = nn.GRU(96, 64, batch_first=True)
-        self.conv1 = MyConv(160, 32, softquant=softquant)
-        self.gru2 = nn.GRU(192, 64, batch_first=True)
-        self.conv2 = MyConv(256, 32, softquant=softquant)
-        self.gru3 = nn.GRU(288, 64, batch_first=True)
-        self.conv3 = MyConv(352, 32, softquant=softquant)
-        self.gru4 = nn.GRU(384, 64, batch_first=True)
-        self.conv4 = MyConv(448, 32, softquant=softquant)
-        self.gru5 = nn.GRU(480, 64, batch_first=True)
-        self.conv5 = MyConv(544, 32, softquant=softquant)
-        self.output  = nn.Linear(576, self.FRAMES_PER_STEP * self.output_dim)
-        self.glu1 = GLU(64, softquant=softquant)
-        self.glu2 = GLU(64, softquant=softquant)
-        self.glu3 = GLU(64, softquant=softquant)
-        self.glu4 = GLU(64, softquant=softquant)
-        self.glu5 = GLU(64, softquant=softquant)
+        self.input_dense    = nn.Linear(self.input_size, 96)
+        self.input_conv = MyConv(96, 128, softquant=softquant)
+        self.dense1  = nn.Linear(128, 128)
+        self.dense2  = nn.Linear(256, 128)
+        self.dense3  = nn.Linear(384, 128)
+        self.dense4  = nn.Linear(512, 128)
+        self.dense5  = nn.Linear(640, 128)
+        self.output  = nn.Linear(768, self.FRAMES_PER_STEP * self.output_dim)
+        self.glu1 = GLU(128, softquant=softquant)
+        self.glu2 = GLU(128, softquant=softquant)
+        self.glu3 = GLU(128, softquant=softquant)
+        self.glu4 = GLU(128, softquant=softquant)
+        self.glu5 = GLU(128, softquant=softquant)
 
         nb_params = sum(p.numel() for p in self.parameters())
         print(f"decoder: {nb_params} weights")
@@ -507,24 +503,9 @@ class CoreDecoder(nn.Module):
             stop = sparsify_stop
         self.apply(init_weights)
         self.sparsifier = []
-        self.sparsifier.append(GRUSparsifier([(self.gru1, sparse_params1)], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(GRUSparsifier([(self.gru2, sparse_params2)], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(GRUSparsifier([(self.gru3, sparse_params3)], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(GRUSparsifier([(self.gru4, sparse_params4)], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(GRUSparsifier([(self.gru5, sparse_params5)], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(LinearSparsifier([(self.conv1.conv_dense, conv_params[1-1])], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(LinearSparsifier([(self.conv2.conv_dense, conv_params[2-1])], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(LinearSparsifier([(self.conv3.conv_dense, conv_params[3-1])], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(LinearSparsifier([(self.conv4.conv_dense, conv_params[4-1])], start, stop, sparsify_interval, sparsify_exponent))
-        self.sparsifier.append(LinearSparsifier([(self.conv5.conv_dense, conv_params[5-1])], start, stop, sparsify_interval, sparsify_exponent))
         self.sparsifier.append(LinearSparsifier([(self.output, dense_params)], start, stop, sparsify_interval, sparsify_exponent))
 
         if softquant:
-            self.gru1 = soft_quant(self.gru1, names=['weight_hh_l0', 'weight_ih_l0'])
-            self.gru2 = soft_quant(self.gru2, names=['weight_hh_l0', 'weight_ih_l0'])
-            self.gru3 = soft_quant(self.gru3, names=['weight_hh_l0', 'weight_ih_l0'])
-            self.gru4 = soft_quant(self.gru4, names=['weight_hh_l0', 'weight_ih_l0'])
-            self.gru5 = soft_quant(self.gru5, names=['weight_hh_l0', 'weight_ih_l0'])
             self.output = soft_quant(self.output)
 
     def sparsify(self):
@@ -533,21 +514,15 @@ class CoreDecoder(nn.Module):
 
     def forward(self, z):
 
-        zero_state = torch.zeros((1, z.shape[0], 64), device=z.device)
-
         # run decoding layer stack
-        x = n(torch.tanh(self.dense_1(z)))
+        x = n(torch.tanh(self.input_dense(z)))
 
-        x = torch.cat([x, n(self.glu1(n(self.gru1(x, zero_state)[0])))], -1)
-        x = torch.cat([x, n(self.conv1(x))], -1)
-        x = torch.cat([x, n(self.glu2(n(self.gru2(x, zero_state)[0])))], -1)
-        x = torch.cat([x, n(self.conv2(x))], -1)
-        x = torch.cat([x, n(self.glu3(n(self.gru3(x, zero_state)[0])))], -1)
-        x = torch.cat([x, n(self.conv3(x))], -1)
-        x = torch.cat([x, n(self.glu4(n(self.gru4(x, zero_state)[0])))], -1)
-        x = torch.cat([x, n(self.conv4(x))], -1)
-        x = torch.cat([x, n(self.glu5(n(self.gru5(x, zero_state)[0])))], -1)
-        x = torch.cat([x, n(self.conv5(x))], -1)
+        x = n(self.input_conv(x))
+        x = torch.cat([x, n(self.glu1(n(torch.tanh(self.dense1(x)))))], -1)
+        x = torch.cat([x, n(self.glu2(n(torch.tanh(self.dense2(x)))))], -1)
+        x = torch.cat([x, n(self.glu3(n(torch.tanh(self.dense3(x)))))], -1)
+        x = torch.cat([x, n(self.glu4(n(torch.tanh(self.dense4(x)))))], -1)
+        x = torch.cat([x, n(self.glu5(n(torch.tanh(self.dense5(x)))))], -1)
 
         # output layer and reshaping
         x10 = self.output(x)
