@@ -196,7 +196,7 @@ int oac_decoder_init(OacDecoder *st, oac_int32 Fs, int channels, int format) {
     }
 
     /* Initialize CELT decoder */
-    ret = oaci_celt_decoder_init(celt_dec, Fs, channels);
+    ret = oaci_celt_decoder_init(celt_dec, Fs, channels, st->format);
     if (ret != OAC_OK) return OAC_INTERNAL_ERROR;
 
     celt_decoder_ctl(celt_dec, CELT_SET_SIGNALLING(0));
@@ -781,8 +781,9 @@ int oac_decode_native(OacDecoder *st, const unsigned char *data,
         st->mode = packet_mode;
         st->bandwidth = packet_bandwidth;
         st->frame_size = packet_frame_size;
-        /* For ambisonics with >2 channels, ignore TOC channel bit and use initialized channel count */
-        st->stream_channels = (st->format == OAC_FORMAT_AMBISONICS && st->channels > 2) ? st->channels : packet_stream_channels;
+        /* FEC is SILK-only, so we should never reach here with ambisonics (which forces CELT-only) */
+        celt_assert(st->format != OAC_FORMAT_AMBISONICS);
+        st->stream_channels = packet_stream_channels;
         ret = oac_decode_frame(st, data, size[0], pcm + st->channels*(frame_size - packet_frame_size),
             packet_frame_size, 1);
         if (ret < 0)
@@ -802,8 +803,8 @@ int oac_decode_native(OacDecoder *st, const unsigned char *data,
     st->mode = packet_mode;
     st->bandwidth = packet_bandwidth;
     st->frame_size = packet_frame_size;
-    /* For ambisonics with >2 channels, ignore TOC channel bit and use initialized channel count */
-    st->stream_channels = (st->format == OAC_FORMAT_AMBISONICS && st->channels > 2) ? st->channels : packet_stream_channels;
+    /* For ambisonics, ignore TOC channel bit and use initialized channel count */
+    st->stream_channels = (st->format == OAC_FORMAT_AMBISONICS) ? st->channels : packet_stream_channels;
 
     nb_samples = 0;
     for (i = 0; i < count; i++) {

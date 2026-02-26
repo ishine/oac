@@ -94,6 +94,7 @@ struct OacCustomDecoder {
     int overlap;
     int channels;
     int stream_channels;
+    int format;                   /**< OAC_FORMAT_STANDARD or OAC_FORMAT_AMBISONICS */
 
     int downsample;
     int start, end;
@@ -220,11 +221,14 @@ CELTDecoder *oac_custom_decoder_create(const CELTMode *mode, int channels, int *
 }
 #endif /* CUSTOM_MODES */
 
-int oaci_celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channels) {
+int oaci_celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channels, int format) {
     int ret;
 #ifdef ENABLE_QEXT
     if (sampling_rate == 96000) {
-        return oac_custom_decoder_init(st, oac_custom_mode_create(96000, 960, NULL), channels);
+        ret = oac_custom_decoder_init(st, oac_custom_mode_create(96000, 960, NULL), channels);
+        if (ret == OAC_OK)
+            st->format = format;
+        return ret;
     }
 #endif
     ret = oac_custom_decoder_init(st, oac_custom_mode_create(48000, 960, NULL), channels);
@@ -233,8 +237,8 @@ int oaci_celt_decoder_init(CELTDecoder *st, oac_int32 sampling_rate, int channel
     st->downsample = oaci_resampling_factor(sampling_rate);
     if (st->downsample == 0)
         return OAC_BAD_ARG;
-    else
-        return OAC_OK;
+    st->format = format;
+    return OAC_OK;
 }
 
 OAC_CUSTOM_NOSTATIC int oac_custom_decoder_init(CELTDecoder *st, const CELTMode *mode, int channels) {

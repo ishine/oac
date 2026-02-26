@@ -300,7 +300,7 @@ int oac_encoder_init(OacEncoder* st, oac_int32 Fs, int channels, int format, int
     /* Initialize CELT encoder */
     if (application != OAC_APPLICATION_RESTRICTED_SILK) {
         celt_enc = (CELTEncoder*)((char*)st + st->celt_enc_offset);
-        err = oaci_celt_encoder_init(celt_enc, Fs, channels, st->arch);
+        err = oaci_celt_encoder_init(celt_enc, Fs, channels, st->arch, st->format);
         if (err != OAC_OK) return OAC_INTERNAL_ERROR;
         celt_encoder_ctl(celt_enc, CELT_SET_SIGNALLING(0));
         celt_encoder_ctl(celt_enc, OAC_SET_COMPLEXITY(st->silk_mode.complexity));
@@ -1470,11 +1470,11 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
     }
     if (st->lfe && st->application != OAC_APPLICATION_RESTRICTED_SILK)
         st->mode = MODE_CELT_ONLY;
-    /* Multi-channel ambisonics: force CELT-only mode (SILK only supports 1-2 channels) */
-    if (st->channels > 2)
+    /* Ambisonics: force CELT-only mode (SILK only supports 1-2 channels) */
+    if (st->format == OAC_FORMAT_AMBISONICS)
         st->mode = MODE_CELT_ONLY;
 
-    if (st->prev_mode > 0
+    if (st->prev_mode > 0 && st->format != OAC_FORMAT_AMBISONICS
         && ((st->mode != MODE_CELT_ONLY && st->prev_mode == MODE_CELT_ONLY)
             || (st->mode == MODE_CELT_ONLY && st->prev_mode != MODE_CELT_ONLY))) {
         redundancy = 1;
@@ -1489,9 +1489,6 @@ oac_int32 oac_encode_native(OacEncoder *st, const oac_res *pcm, int frame_size,
             }
         }
     }
-    /* Re-enforce CELT-only for multi-channel after mode transition logic */
-    if (st->channels > 2)
-        st->mode = MODE_CELT_ONLY;
 
     /* When encoding multiframes, we can ask for a switch to CELT only in the last frame. This switch
      * is processed above as the requested mode shouldn't interrupt stereo->mono transition. */
@@ -1815,8 +1812,8 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
     if (st->application == OAC_APPLICATION_RESTRICTED_LOWDELAY || st->application == OAC_APPLICATION_RESTRICTED_CELT
         || st->application == OAC_APPLICATION_RESTRICTED_SILK)
         delay_compensation = 0;
-    else if (st->channels > 2)
-        /* Multi-channel ambisonics has no delay buffer (encoder_buffer=0), so no delay compensation */
+    else if (st->format == OAC_FORMAT_AMBISONICS)
+        /* Ambisonics has no delay buffer (encoder_buffer=0), so no delay compensation */
         delay_compensation = 0;
     else
         delay_compensation = st->delay_compensation;
@@ -1909,8 +1906,8 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         }
 #endif
     } else {
-        /* Skip DC rejection for multi-channel ambisonics (channels > 2) - just copy input to output */
-        if (st->channels > 2) {
+        /* Skip DC rejection for ambisonics - just copy input to output */
+        if (st->format == OAC_FORMAT_AMBISONICS) {
             OAC_COPY(&pcm_buf[total_buffer*st->channels], pcm, frame_size*st->channels);
         } else {
             oaci_dc_reject(pcm, 3, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs);

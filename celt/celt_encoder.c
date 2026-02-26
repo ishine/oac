@@ -69,6 +69,7 @@ struct OacCustomEncoder {
     const OacCustomMode *mode;    /**< Mode used by the encoder */
     int channels;
     int stream_channels;
+    int format;                   /**< OAC_FORMAT_STANDARD or OAC_FORMAT_AMBISONICS */
 
     int force_intra;
     int clip;
@@ -233,13 +234,16 @@ int oac_custom_encoder_init(CELTEncoder *st, const CELTMode *mode, int channels)
 #endif
 
 int oaci_celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channels,
-                      int arch) {
+                      int arch, int format) {
     int ret;
 #ifdef ENABLE_QEXT
     if (sampling_rate == 96000) {
         st->upsample = 1;
-        return oac_custom_encoder_init_arch(st,
+        ret = oac_custom_encoder_init_arch(st,
               oac_custom_mode_create(96000, 1920, NULL), channels, arch);
+        if (ret == OAC_OK)
+            st->format = format;
+        return ret;
     }
 #endif
     ret = oac_custom_encoder_init_arch(st,
@@ -247,6 +251,7 @@ int oaci_celt_encoder_init(CELTEncoder *st, oac_int32 sampling_rate, int channel
     if (ret != OAC_OK)
         return ret;
     st->upsample = oaci_resampling_factor(sampling_rate);
+    st->format = format;
     return OAC_OK;
 }
 
