@@ -51,9 +51,9 @@
 #include "celt_lpc.h"
 #include "vq.h"
 
-/* Maximum channels for multi-channel ambisonics support */
-#ifndef OAC_AMBISONICS_MAX_CHANNELS
-#define OAC_AMBISONICS_MAX_CHANNELS 36
+/* Maximum channels for multi-channel support */
+#ifndef OAC_MAX_CHANNELS
+#define OAC_MAX_CHANNELS 36
 #endif
 
 #ifdef ENABLE_DEEP_PLC
@@ -124,7 +124,7 @@ struct OacCustomDecoder {
     int postfilter_tapset_old;
     int prefilter_and_fold;
 
-    celt_sig preemph_memD[OAC_AMBISONICS_MAX_CHANNELS];
+    celt_sig preemph_memD[OAC_MAX_CHANNELS];
 
 #ifdef ENABLE_DEEP_PLC
     oac_int16 plc_pcm[PLC_UPDATE_SAMPLES];
@@ -499,7 +499,7 @@ static void oaci_tf_decode(int start, int end, int isTransient, int *tf_res, int
     }
 }
 
-static int oaci_celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS], int C, int arch) {
+static int oaci_celt_plc_pitch_search(CELTDecoder *st, celt_sig *decode_mem[OAC_MAX_CHANNELS], int C, int arch) {
     int pitch_index;
 #ifdef ENABLE_QEXT
     int qext_scale;
@@ -527,7 +527,7 @@ static void oaci_prefilter_and_fold(CELTDecoder * OAC_RESTRICT st, int N) {
     int CC;
     int i;
     int overlap;
-    celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS];
+    celt_sig *decode_mem[OAC_MAX_CHANNELS];
     const OacCustomMode *mode;
     int decode_buffer_size;
 #ifdef ENABLE_QEXT
@@ -583,7 +583,7 @@ static const float sinc_filter[SINC_ORDER + 1] = {
     4.2931e-05f
 };
 
-void oaci_update_plc_state(LPCNetPLCState *lpcnet, celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS], float *plc_preemphasis_mem, int CC) {
+void oaci_update_plc_state(LPCNetPLCState *lpcnet, celt_sig *decode_mem[OAC_MAX_CHANNELS], float *plc_preemphasis_mem, int CC) {
     int i;
     int tmp_read_post, tmp_fec_skip;
     int offset;
@@ -626,8 +626,8 @@ static void oaci_celt_decode_lost(CELTDecoder * OAC_RESTRICT st, int N, int LM
     int c;
     int i;
     const int C = st->channels;
-    celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS];
-    celt_sig *out_syn[OAC_AMBISONICS_MAX_CHANNELS];
+    celt_sig *decode_mem[OAC_MAX_CHANNELS];
+    celt_sig *out_syn[OAC_MAX_CHANNELS];
     oac_val16 *lpc;
     celt_glog *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
     const OacCustomMode *mode;
@@ -1048,8 +1048,8 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     VARDECL(int, fine_priority);
     VARDECL(int, tf_res);
     VARDECL(unsigned char, collapse_masks);
-    celt_sig *decode_mem[OAC_AMBISONICS_MAX_CHANNELS];
-    celt_sig *out_syn[OAC_AMBISONICS_MAX_CHANNELS];
+    celt_sig *decode_mem[OAC_MAX_CHANNELS];
+    celt_sig *out_syn[OAC_MAX_CHANNELS];
     celt_glog *oldBandE, *oldLogE, *oldLogE2, *backgroundLogE;
 
     int shortBlocks;

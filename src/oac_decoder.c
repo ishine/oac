@@ -89,7 +89,7 @@ struct OacDecoder {
     int prev_redundancy;
     int last_packet_duration;
 #ifndef FIXED_POINT
-    oac_val16 softclip_mem[OAC_AMBISONICS_MAX_CHANNELS];
+    oac_val16 softclip_mem[OAC_MAX_CHANNELS];
 #endif
 
     oac_uint32 rangeFinal;
@@ -97,7 +97,7 @@ struct OacDecoder {
 
 #if defined(ENABLE_HARDENING) || defined(ENABLE_ASSERTIONS)
 static void validate_oac_decoder(OacDecoder *st) {
-    celt_assert(st->channels >= 1 && st->channels <= OAC_AMBISONICS_MAX_CHANNELS);
+    celt_assert(st->channels >= 1 && st->channels <= OAC_MAX_CHANNELS);
 # ifdef ENABLE_QEXT
     celt_assert(st->Fs == 96000 || st->Fs == 48000 || st->Fs == 24000 || st->Fs == 16000 || st->Fs == 12000
         || st->Fs == 8000);
@@ -117,7 +117,7 @@ static void validate_oac_decoder(OacDecoder *st) {
     celt_assert(st->arch >= 0);
     celt_assert(st->arch <= OAC_ARCHMASK);
 # endif
-    celt_assert(st->stream_channels >= 1 && st->stream_channels <= OAC_AMBISONICS_MAX_CHANNELS);
+    celt_assert(st->stream_channels >= 1 && st->stream_channels <= OAC_MAX_CHANNELS);
 }
 # define VALIDATE_OAC_DECODER(st) validate_oac_decoder(st)
 #else
@@ -852,7 +852,7 @@ int oac_decode(OacDecoder *st, const unsigned char *data,
         else
             return OAC_INVALID_PACKET;
     }
-    celt_assert(st->channels >= 1 && st->channels <= 36);
+    celt_assert(st->channels >= 1 && st->channels <= OAC_MAX_CHANNELS);
     ALLOC(out, frame_size*st->channels, oac_res);
 
     ret = oac_decode_native(st, data, len, out, frame_size, decode_fec, 0, NULL, OPTIONAL_CLIP, NULL, 0);
@@ -895,7 +895,7 @@ int oac_decode24(OacDecoder *st, const unsigned char *data,
         else
             return OAC_INVALID_PACKET;
     }
-    celt_assert(st->channels >= 1 && st->channels <= 36);
+    celt_assert(st->channels >= 1 && st->channels <= OAC_MAX_CHANNELS);
     ALLOC(out, frame_size*st->channels, oac_res);
 
     ret = oac_decode_native(st, data, len, out, frame_size, decode_fec, 0, NULL, 0, NULL, 0);
@@ -938,7 +938,7 @@ int oac_decode_float(OacDecoder *st, const unsigned char *data,
         else
             return OAC_INVALID_PACKET;
     }
-    celt_assert(st->channels >= 1 && st->channels <= 36);
+    celt_assert(st->channels >= 1 && st->channels <= OAC_MAX_CHANNELS);
     ALLOC(out, frame_size*st->channels, oac_res);
 
     ret = oac_decode_native(st, data, len, out, frame_size, decode_fec, 0, NULL, 0, NULL, 0);
@@ -1511,7 +1511,7 @@ int oac_decoder_dred_decode(OacDecoder *st, const OacDRED *dred, oac_int32 dred_
         return OAC_BAD_ARG;
     }
 
-    celt_assert(st->channels >= 1 && st->channels <= 36);
+    celt_assert(st->channels >= 1 && st->channels <= OAC_MAX_CHANNELS);
     ALLOC(out, frame_size*st->channels, float);
 
     ret = oac_decode_native(st, NULL, 0, out, frame_size, 0, 0, NULL, 1, dred, dred_offset);
@@ -1543,7 +1543,7 @@ int oac_decoder_dred_decode24(OacDecoder *st, const OacDRED *dred, oac_int32 dre
         return OAC_BAD_ARG;
     }
 
-    celt_assert(st->channels >= 1 && st->channels <= 36);
+    celt_assert(st->channels >= 1 && st->channels <= OAC_MAX_CHANNELS);
     ALLOC(out, frame_size*st->channels, float);
 
     ret = oac_decode_native(st, NULL, 0, out, frame_size, 0, 0, NULL, 1, dred, dred_offset);

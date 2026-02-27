@@ -56,9 +56,9 @@
 # define M_PI 3.141592653
 #endif
 
-/* Maximum channels for multi-channel ambisonics support */
-#ifndef OAC_AMBISONICS_MAX_CHANNELS
-#define OAC_AMBISONICS_MAX_CHANNELS 36
+/* Maximum channels for multi-channel support */
+#ifndef OAC_MAX_CHANNELS
+#define OAC_MAX_CHANNELS 36
 #endif
 
 
@@ -114,8 +114,8 @@ struct OacCustomEncoder {
     AnalysisInfo analysis;
     SILKInfo silk_info;
 
-    oac_val32 preemph_memE[OAC_AMBISONICS_MAX_CHANNELS];
-    oac_val32 preemph_memD[OAC_AMBISONICS_MAX_CHANNELS];
+    oac_val32 preemph_memE[OAC_MAX_CHANNELS];
+    oac_val32 preemph_memD[OAC_MAX_CHANNELS];
 
     /* VBR-related parameters */
     oac_int32 vbr_reservoir;
@@ -131,10 +131,10 @@ struct OacCustomEncoder {
 #ifdef RESYNTH
 # ifdef ENABLE_QEXT
     /* +MAX_PERIOD/2 to make space for overlap */
-    celt_sig syn_mem[OAC_AMBISONICS_MAX_CHANNELS][2*DEC_PITCH_BUF_SIZE + MAX_PERIOD];
+    celt_sig syn_mem[OAC_MAX_CHANNELS][2*DEC_PITCH_BUF_SIZE + MAX_PERIOD];
 # else
     /* +MAX_PERIOD/2 to make space for overlap */
-    celt_sig syn_mem[OAC_AMBISONICS_MAX_CHANNELS][DEC_PITCH_BUF_SIZE + MAX_PERIOD/2];
+    celt_sig syn_mem[OAC_MAX_CHANNELS][DEC_PITCH_BUF_SIZE + MAX_PERIOD/2];
 # endif
 #endif
 

@@ -39,9 +39,9 @@
 #include "stack_alloc.h"
 #include "rate.h"
 
-/* Maximum channels for multi-channel ambisonics support */
-#ifndef OAC_AMBISONICS_MAX_CHANNELS
-#define OAC_AMBISONICS_MAX_CHANNELS 36
+/* Maximum channels for multi-channel support */
+#ifndef OAC_MAX_CHANNELS
+#define OAC_MAX_CHANNELS 36
 #endif
 
 #ifdef FIXED_POINT
@@ -163,7 +163,7 @@ static int oaci_quant_coarse_energy_impl(const CELTMode *m, int start, int end,
                                     int C, int LM, int intra, celt_glog max_decay, int lfe) {
     int i, c;
     int badness = 0;
-    oac_val32 prev[OAC_AMBISONICS_MAX_CHANNELS];
+    oac_val32 prev[OAC_MAX_CHANNELS];
     oac_val16 coef;
     oac_val16 beta;
 
@@ -422,7 +422,7 @@ void oaci_unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog
                            int LM) {
     const unsigned char *prob_model = e_prob_model[LM][intra];
     int i, c;
-    oac_val64 prev[OAC_AMBISONICS_MAX_CHANNELS];
+    oac_val64 prev[OAC_MAX_CHANNELS];
     oac_val16 coef;
     oac_val16 beta;
     oac_int32 budget;
@@ -450,7 +450,7 @@ void oaci_unquant_coarse_energy(const CELTMode *m, int start, int end, celt_glog
             oac_val32 q;
             oac_val32 tmp;
             /* Multi-channel ambisonics support: c can now be up to 36 channels */
-            celt_sig_assert(c < OAC_AMBISONICS_MAX_CHANNELS);
+            celt_sig_assert(c < OAC_MAX_CHANNELS);
             tell = oaci_ec_tell(dec);
             if (budget - tell >= 15) {
                 int pi;

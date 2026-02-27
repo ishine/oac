@@ -258,8 +258,8 @@ oac_int32 oac_packet_extensions_count_ext(const unsigned char *data,
 oac_int32 oac_packet_pad_impl(unsigned char *data, oac_int32 len, oac_int32 new_len, int pad,
     const oac_extension_data  *extensions, int nb_extensions);
 
-/** Maximum number of channels supported in ambisonics format (order 5). */
-#define OAC_AMBISONICS_MAX_CHANNELS 36
+/** Maximum number of channels supported across all formats (ambisonics order 5). */
+#define OAC_MAX_CHANNELS 36
 
 /** Validate format and channel count combination.
  * @param format OAC_FORMAT_STANDARD or OAC_FORMAT_AMBISONICS
