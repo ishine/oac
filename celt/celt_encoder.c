@@ -2409,23 +2409,9 @@ int oaci_celt_encode_with_ec(CELTEncoder * OAC_RESTRICT st, const oac_res * pcm,
     if (st->lfe)
         signalBandwidth = 1;
 
-    if (C <= 2) {
-        /* Standard mono/stereo path - compute allocation once for all channels */
-        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
-             alloc_trim, &st->intensity, &dual_stereo, bits, &balance, pulses,
-             fine_quant, fine_priority, C, LM, enc, 1, st->lastCodedBands, signalBandwidth);
-    } else {
-        /* Multi-channel path: compute allocation for mono with bits/C.
-           No intensity/dual_stereo for multi-channel. */
-        oac_int32 bits_per_channel = bits / C;
-        int dummy_intensity = 0;
-        int dummy_dual_stereo = 0;
-        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
-             alloc_trim, &dummy_intensity, &dummy_dual_stereo, bits_per_channel, &balance, pulses,
-             fine_quant, fine_priority, 1, LM, enc, 1, st->lastCodedBands, signalBandwidth);
-        st->intensity = 0;
-        dual_stereo = 0;
-    }
+    codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
+         alloc_trim, &st->intensity, &dual_stereo, bits, &balance, pulses,
+         fine_quant, fine_priority, C, LM, enc, 1, st->lastCodedBands, signalBandwidth);
     if (st->lastCodedBands)
         st->lastCodedBands = IMIN(st->lastCodedBands + 1, IMAX(st->lastCodedBands - 1, codedBands));
     else

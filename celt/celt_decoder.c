@@ -1349,17 +1349,16 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
     ALLOC(collapse_masks, C*nbEBands, unsigned char);
     ALLOC(X, C*N, celt_norm);  /**< Interleaved normalised MDCTs */
 
+    codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
+         alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
+         fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
+
+    c = 0; do {
+        OAC_MOVE(decode_mem[c], decode_mem[c] + N, decode_buffer_size - N + overlap);
+    } while (++c < CC);
+
     if (C <= 2) {
-        /* Standard mono/stereo path */
-        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
-             alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
-             fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
-
         oaci_unquant_fine_energy(mode, start, end, oldBandE, NULL, fine_quant, dec, C);
-
-        c = 0; do {
-            OAC_MOVE(decode_mem[c], decode_mem[c] + N, decode_buffer_size - N + overlap);
-        } while (++c < CC);
 
         oaci_quant_all_bands(0, mode, start, end, X, C == 2 ? X + N : NULL, collapse_masks,
              NULL, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
@@ -1373,23 +1372,10 @@ int oaci_celt_decode_with_ec_dred(CELTDecoder * OAC_RESTRICT st, const unsigned 
         oaci_unquant_energy_finalise(mode, start, end, oldBandE,
              fine_quant, fine_priority, len*8 - oaci_ec_tell(dec), dec, C);
     } else {
-        /* Multi-channel path: compute allocation for mono with bits/C.
-           Each channel gets an equal share of the remaining bits. */
+        /* Multi-channel path: process each channel independently as mono. */
         oac_int32 total_remaining_bits;
         oac_int32 bits_per_channel;
         int bits_left_per_channel;
-        int dummy_intensity = 0;
-        int dummy_dual_stereo = 0;
-
-        codedBands = oaci_clt_compute_allocation(mode, start, end, offsets, cap,
-             alloc_trim, &dummy_intensity, &dummy_dual_stereo, bits / C, &balance, pulses,
-             fine_quant, fine_priority, 1, LM, dec, 0, 0, 0);
-        intensity = 0;
-        dual_stereo = 0;
-
-        c = 0; do {
-            OAC_MOVE(decode_mem[c], decode_mem[c] + N, decode_buffer_size - N + overlap);
-        } while (++c < CC);
 
         /* Fine energy for all channels first (like standard path) */
         for (c = 0; c < C; c++) {
