@@ -112,7 +112,7 @@ struct OacEncoder {
     oac_int16 hybrid_stereo_width_Q14;
     oac_int32 variable_HP_smth2_Q15;
     oac_val16 prev_HB_gain;
-    oac_val32 hp_mem[4];
+    oac_val32 hp_mem[2*OAC_MAX_CHANNELS];
     int mode;
     int prev_mode;
     int prev_channels;
@@ -513,38 +513,21 @@ static void oaci_dc_reject(const oac_res *in, oac_int32 cutoff_Hz, oac_res *out,
 #else
 static void oaci_dc_reject(const oac_val16 *in, oac_int32 cutoff_Hz, oac_val16 *out, oac_val32 *hp_mem, int len,
                       int channels, oac_int32 Fs) {
-    int i;
+    int c, i;
     float coef, coef2;
     coef = 6.3f*cutoff_Hz/Fs;
     coef2 = 1 - coef;
-    if (channels == 2) {
-        float m0, m2;
-        m0 = hp_mem[0];
-        m2 = hp_mem[2];
-        for (i = 0; i < len; i++) {
-            oac_val32 x0, x1, out0, out1;
-            x0 = in[2*i + 0];
-            x1 = in[2*i + 1];
-            out0 = x0 - m0;
-            out1 = x1 - m2;
-            m0 = coef*x0 + VERY_SMALL + coef2*m0;
-            m2 = coef*x1 + VERY_SMALL + coef2*m2;
-            out[2*i + 0] = out0;
-            out[2*i + 1] = out1;
-        }
-        hp_mem[0] = m0;
-        hp_mem[2] = m2;
-    } else if (channels == 1) {
-        float m0;
-        m0 = hp_mem[0];
+    for (c = 0; c < channels; c++) {
+        float m;
+        m = hp_mem[2*c];
         for (i = 0; i < len; i++) {
             oac_val32 x, y;
-            x = in[i];
-            y = x - m0;
-            m0 = coef*x + VERY_SMALL + coef2*m0;
-            out[i] = y;
+            x = in[channels*i + c];
+            y = x - m;
+            m = coef*x + VERY_SMALL + coef2*m;
+            out[channels*i + c] = y;
         }
-        hp_mem[0] = m0;
+        hp_mem[2*c] = m;
     }
 }
 #endif
@@ -1906,12 +1889,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
         }
 #endif
     } else {
-        /* Skip DC rejection for ambisonics - just copy input to output */
-        if (st->format == OAC_FORMAT_AMBISONICS) {
-            OAC_COPY(&pcm_buf[total_buffer*st->channels], pcm, frame_size*st->channels);
-        } else {
-            oaci_dc_reject(pcm, 3, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs);
-        }
+        oaci_dc_reject(pcm, 3, &pcm_buf[total_buffer*st->channels], st->hp_mem, frame_size, st->channels, st->Fs);
     }
 #ifndef FIXED_POINT
     if (float_api) {
@@ -1922,7 +1900,7 @@ static oac_int32 oac_encode_frame_native(OacEncoder *st, const oac_res *pcm, int
            cause NaNs further down. */
         if (!(sum < 1e9f) || oaci_celt_isnan(sum)) {
             OAC_CLEAR(&pcm_buf[total_buffer*st->channels], frame_size*st->channels);
-            st->hp_mem[0] = st->hp_mem[1] = st->hp_mem[2] = st->hp_mem[3] = 0;
+            OAC_CLEAR(st->hp_mem, 2*st->channels);
         }
     }
 #else
