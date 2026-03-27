@@ -119,7 +119,7 @@ static oac_int16 oaci_bitexact_log2(oac_int32 x) {
     i = EC_ILOG(x)-1;
     n = (x << 15 >> i) - 32768 - 16384;
     frac = (C[0] + FRAC_MUL16(n, (C[1] + FRAC_MUL16(n, (C[2] + FRAC_MUL16(n, (C[3] + FRAC_MUL16(n, C[4]))))))));
-    return ((i - 12) <<  11) + (frac >> (14 - 11));
+    return (i - 12)*(1 << 11) + (frac >> (14 - 11));
 }
 
 /* This is a log2(tan(x)) approximation designed to be bit-exact on any platform. Bit exactness
